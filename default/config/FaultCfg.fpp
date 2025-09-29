@@ -3,6 +3,7 @@ module FaultCfg {
 
     @ Enumeration (project configured) of the potential faults in the system
     enum FaultId {
+        FATAL_OCCURRED @< REQUIRED (FatalToFault): a FATAL occurred and was translated into a fault
         FAULT_RESPONSE_FAILURE @< REQUIRED: fault response reported by Svc.FaultManager
     }
 

@@ -1,4 +1,5 @@
 module Svc {
+
     @ Port used to report a fault has occurred
     port FaultReport(faultId: FaultCfg.FaultId @< ID of the reported fault
     )

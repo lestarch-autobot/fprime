@@ -1,6 +1,6 @@
 # Svc::FaultManager
 
-Translates incoming fault report port calls into a series of fault response broadcast port calls.
+Translates incoming fault report port calls into a series of fault response port calls.
 
 ## 1. Requirements
 
@@ -30,6 +30,8 @@ The `Svc.FaultManager` component is an `active` component. It takes fault report
 Each fault is mapped to a series of fault responses, which will be dispatched sequentially. The initial response is dispatched and the subsequent response is dispatched upon the completion of the previous response. Should a fault response return an error completion result, a FAULT_RESPONSE_FAILED fault will be reported directly and the existing fault response sequence will halt thus transitioning to handling the FAULT_RESPONSE_FAILED fault itself.
 
 `Svc.FaultManager` uses an internal interface to queue non-discarded faults.
+
+![Component Block Diagram](./sample_topology.svg)
 
 ## 3. Configuration
 
