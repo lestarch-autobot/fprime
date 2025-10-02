@@ -6,7 +6,7 @@
 #ifndef FaultProtection_SubtopologyTopologyDefs_hpp
 #define FaultProtection_SubtopologyTopologyDefs_hpp
 
-
+namespace Svc {
 namespace FaultProtection {
     struct SubtopologyState {
     };
@@ -14,5 +14,6 @@ namespace FaultProtection {
     struct TopologyState {
         SubtopologyState fp;
     };
+}
 }
 #endif // FaultProtection_SubtopologyTopologyDefs_hpp

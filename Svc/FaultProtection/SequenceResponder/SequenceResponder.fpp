@@ -1,12 +1,8 @@
 module Svc {
+module FaultProtection {
     @ Responds to faults via sequence
     passive component SequenceResponder {
-
-        @ Incoming fault response dispatches
-        sync input port responseDispatch: Svc.FaultResponseDispatch
-
-        @ Outgoing fault response completion notifications
-        output port responseComplete: Svc.FaultResponseComplete
+        import SyncResponder
 
         ###############################################################################
         # Standard AC Ports: Required for Channels, Events, Commands, and Parameters  #
@@ -24,4 +20,5 @@ module Svc {
         command resp port cmdResponseOut
 
     }
-}
+} # FaultProtection
+} # Svc

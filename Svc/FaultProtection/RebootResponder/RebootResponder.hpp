@@ -4,12 +4,14 @@
 // \brief  hpp file for RebootResponder component implementation class
 // ======================================================================
 
-#ifndef Svc_RebootResponder_HPP
-#define Svc_RebootResponder_HPP
+#ifndef Svc_FaultProtection_RebootResponder_HPP
+#define Svc_FaultProtection_RebootResponder_HPP
 
 #include "Svc/FaultProtection/RebootResponder/RebootResponderComponentAc.hpp"
 
 namespace Svc {
+
+namespace FaultProtection {
 
 class RebootResponder final : public RebootResponderComponentBase {
   public:
@@ -29,14 +31,24 @@ class RebootResponder final : public RebootResponderComponentBase {
     // Handler implementations for typed input ports
     // ----------------------------------------------------------------------
 
-    //! Handler implementation for responseDispatch
+    //! Handler implementation for faultResponseCancel
     //!
-    //! Incoming fault response dispatches
-    Fw::Success responseDispatch_handler(FwIndexType portNum,                           //!< The port number
-                                         const FaultCfg::FaultResponse& faultResponse,  //!< Fault response enumeration
-                                         const FaultCfg::FaultId& faultId               //!< ID of the reported fault
-                                         ) override;
+    //! Cancel a running fault response step
+    void faultResponseCancel_handler(FwIndexType portNum  //!< The port number
+                                     ) override;
+
+    //! Handler implementation for faultResponseDispatch
+    //!
+    //! Start a fault response step
+    void faultResponseDispatch_handler(
+        FwIndexType portNum,                    //!< The port number
+        const FaultConfig::Response& response,  //!< Active fault response
+        const FaultConfig::Step& step,          //!< Step of the active fault response
+        const FaultConfig::Context& context     //!< Context of the step of the active fault response
+        ) override;
 };
+
+}  // namespace FaultProtection
 
 }  // namespace Svc
 

@@ -8,6 +8,8 @@
 
 namespace Svc {
 
+namespace FaultProtection {
+
 // ----------------------------------------------------------------------
 // Component construction and destruction
 // ----------------------------------------------------------------------
@@ -21,7 +23,9 @@ FatalToFault ::~FatalToFault() {}
 // ----------------------------------------------------------------------
 
 void FatalToFault ::FatalReceive_handler(FwIndexType portNum, FwEventIdType Id) {
-    this->faultOut_out(0, FaultCfg::FaultId::FATAL_OCCURRED);
+    // TODO
 }
+
+}  // namespace FaultProtection
 
 }  // namespace Svc

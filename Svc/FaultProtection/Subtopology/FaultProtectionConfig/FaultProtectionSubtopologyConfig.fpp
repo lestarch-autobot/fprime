@@ -1,3 +1,4 @@
+module Svc {
 module FaultProtection {
 
     constant BASE_ID = 0x0F000000
@@ -13,4 +14,5 @@ module FaultProtection {
     module Priorities {
         constant faultManager  = 99
     }
+}
 }

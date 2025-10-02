@@ -4,12 +4,14 @@
 // \brief  hpp file for FatalToFault component implementation class
 // ======================================================================
 
-#ifndef Svc_FatalToFault_HPP
-#define Svc_FatalToFault_HPP
+#ifndef Svc_FaultProtection_FatalToFault_HPP
+#define Svc_FaultProtection_FatalToFault_HPP
 
 #include "Svc/FaultProtection/FatalToFault/FatalToFaultComponentAc.hpp"
 
 namespace Svc {
+
+namespace FaultProtection {
 
 class FatalToFault final : public FatalToFaultComponentBase {
   public:
@@ -36,6 +38,8 @@ class FatalToFault final : public FatalToFaultComponentBase {
                               FwEventIdType Id      //!< The ID of the FATAL event
                               ) override;
 };
+
+}  // namespace FaultProtection
 
 }  // namespace Svc
 

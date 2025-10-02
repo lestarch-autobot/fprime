@@ -8,6 +8,8 @@
 
 namespace Svc {
 
+namespace FaultProtection {
+
 // ----------------------------------------------------------------------
 // Component construction and destruction
 // ----------------------------------------------------------------------
@@ -20,12 +22,17 @@ SequenceResponder ::~SequenceResponder() {}
 // Handler implementations for typed input ports
 // ----------------------------------------------------------------------
 
-Fw::Success SequenceResponder ::responseDispatch_handler(FwIndexType portNum,
-                                                         const FaultCfg::FaultResponse& faultResponse,
-                                                         const FaultCfg::FaultId& faultId) {
-
+void SequenceResponder ::faultResponseCancel_handler(FwIndexType portNum) {
     // TODO
-    return Fw::Success::FAILURE;
 }
+
+void SequenceResponder ::faultResponseDispatch_handler(FwIndexType portNum,
+                                                       const FaultConfig::Response& response,
+                                                       const FaultConfig::Step& step,
+                                                       const FaultConfig::Context& context) {
+    // TODO
+}
+
+}  // namespace FaultProtection
 
 }  // namespace Svc
