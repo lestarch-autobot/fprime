@@ -55,10 +55,10 @@ class FaultManager final : public FaultManagerComponentBase, public Fw::ParamExt
 
     //! Handler implementation for command SET_FAULT_ENABLED
     //!
-    //! * Set a fault enabled state
-    //! *
-    //! * Enable/disable response to the supplied Fault ID. This will update the internal parameter and may be
-    //! * persisted by FAULT_RESPONSE_TABLE_SAVE. Command is dropped on overflow to prevent triggering fault response.
+    //! Set a fault enabled state
+    //!
+    //! Enable/disable response to the supplied Fault ID. This will update the internal parameter and may be
+    //! persisted by FAULT_RESPONSE_TABLE_SAVE. Command is dropped on overflow to prevent triggering fault response.
     void SET_FAULT_ENABLED_cmdHandler(FwOpcodeType opCode,  //!< The opcode
                                       U32 cmdSeq,           //!< The command sequence number
                                       FaultConfig::Fault fault,
@@ -66,25 +66,25 @@ class FaultManager final : public FaultManagerComponentBase, public Fw::ParamExt
 
     //! Handler implementation for command SET_RESPONSE_ENABLED
     //!
-    //! * Set a response enabled state
-    //! *
-    //! * Enable/disable response. This will update the internal parameter and may be persisted by
-    //! * RESPONSE_TABLE_SAVE. Command is dropped on overflow to prevent triggering fault response.
+    //! Set a response enabled state
+    //! 
+    //! Enable/disable response. This will update the internal parameter and may be persisted by
+    //! RESPONSE_TABLE_SAVE. Command is dropped on overflow to prevent triggering fault response.
     void SET_RESPONSE_ENABLED_cmdHandler(FwOpcodeType opCode,  //!< The opcode
                                          U32 cmdSeq,           //!< The command sequence number
-                                         FaultConfig::Step step,
+                                         FaultConfig::Response response,
                                          Fw::Enabled enabled) override;
 
     //! Handler implementation for command UPDATE_RESPONSE_STEP
     //!
-    //! * Set a response step failure mode
-    //! *
-    //! * Set the FAILURE_MODE of response step. This will update the internal parameter and may be persisted by
-    //! * STEP_TABLE_SAVE. Command is dropped on overflow to prevent triggering fault response.
-    void UPDATE_RESPONSE_STEP_cmdHandler(FwOpcodeType opCode,  //!< The opcode
-                                         U32 cmdSeq,           //!< The command sequence number
-                                         FaultConfig::Step step,
-                                         FaultConfig::FailureMode failureMode) override;
+    //! Set a response step failure mode
+    //! 
+    //! Set the FAILURE_MODE of response step. This will update the internal parameter and may be persisted by
+    //! STEP_TABLE_SAVE. Command is dropped on overflow to prevent triggering fault response.
+    void UPDATE_STEP_FAILURE_MODE_cmdHandler(FwOpcodeType opCode,  //!< The opcode
+                                             U32 cmdSeq,           //!< The command sequence number
+                                             FaultConfig::Step step,
+                                             FaultConfig::FailureMode failureMode) override;
 
   private:
     // ----------------------------------------------------------------------
@@ -130,7 +130,6 @@ class FaultManager final : public FaultManagerComponentBase, public Fw::ParamExt
 };
 
 }  // namespace FaultProtection
-
 }  // namespace Svc
 
 #endif

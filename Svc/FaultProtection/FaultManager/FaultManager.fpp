@@ -30,13 +30,13 @@ module FaultProtection {
         @*
         @* Enable/disable response. This will update the internal parameter and may be persisted by
         @* RESPONSE_TABLE_SAVE. Command is dropped on overflow to prevent triggering fault response.
-        async command SET_RESPONSE_ENABLED(step: FaultConfig.Step, enabled: Fw.Enabled) drop
+        async command SET_RESPONSE_ENABLED(response: FaultConfig.Response, enabled: Fw.Enabled) drop
     
         @* Set a response step failure mode
         @*
         @* Set the FAILURE_MODE of response step. This will update the internal parameter and may be persisted by
         @* STEP_TABLE_SAVE. Command is dropped on overflow to prevent triggering fault response.
-        async command UPDATE_RESPONSE_STEP(step: FaultConfig.Step, failureMode: FaultConfig.FailureMode) drop
+        async command UPDATE_STEP_FAILURE_MODE(step: FaultConfig.Step, failureMode: FaultConfig.FailureMode) drop
 
         @ Incoming fault report
         sync input port reportIn: FaultReport

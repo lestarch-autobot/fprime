@@ -14,7 +14,9 @@ namespace FaultProtection {
 // Component construction and destruction
 // ----------------------------------------------------------------------
 
-FaultManager ::FaultManager(const char* const compName) : FaultManagerComponentBase(compName) {}
+FaultManager ::FaultManager(const char* const compName) {
+    this->registerExternalParameters(this);
+}
 
 FaultManager ::~FaultManager() {}
 
@@ -22,14 +24,20 @@ FaultManager ::~FaultManager() {}
 // Handler implementations for typed input ports
 // ----------------------------------------------------------------------
 
-void FaultManager ::stepCompletionIn_handler(FwIndexType portNum,
-                                         const Fw::Success& status,
-                                         const FaultConfig::Response& response,
-                                         const FaultConfig::Step& step) {
-    // TODO
+void FaultManager ::reportIn_handler(FwIndexType portNum, const FaultConfig::Fault& id) {
+    if (no fault) {
+        startResponse();
+    } else if (lower precedence) {
+        cancelResponse();
+    } else {
+        ignoreResponse();
+    }
 }
 
-void FaultManager ::reportIn_handler(FwIndexType portNum, const FaultConfig::Fault& id) {
+void FaultManager ::stepCompletionIn_handler(FwIndexType portNum,
+                                             const Fw::Success& status,
+                                             const FaultConfig::Response& response,
+                                             const FaultConfig::Step& step) {
     // TODO
 }
 
@@ -41,23 +49,26 @@ void FaultManager ::SET_FAULT_ENABLED_cmdHandler(FwOpcodeType opCode,
                                                  U32 cmdSeq,
                                                  FaultConfig::Fault fault,
                                                  Fw::Enabled enabled) {
-    // TODO
+    FW_ASSERT(fault < FaultConfig::Fault::NUM_FAULTS, static_cast<FwAssertArgType>(fault));
+    this->m_fault_parameter[fault].set_enabled(enabled);
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
 }
 
 void FaultManager ::SET_RESPONSE_ENABLED_cmdHandler(FwOpcodeType opCode,
                                                     U32 cmdSeq,
-                                                    FaultConfig::Step step,
+                                                    FaultConfig::Response response,
                                                     Fw::Enabled enabled) {
-    // TODO
+    FW_ASSERT(response < FaultConfig::Response::NUM_RESPONSES, static_cast<FwAssertArgType>(response));
+    this->m_response_parameter[response] = enabled;
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
 }
 
-void FaultManager ::UPDATE_RESPONSE_STEP_cmdHandler(FwOpcodeType opCode,
-                                                    U32 cmdSeq,
-                                                    FaultConfig::Step step,
-                                                    FaultConfig::FailureMode failureMode) {
-    // TODO
+void FaultManager ::UPDATE_STEP_FAILURE_MODE_cmdHandler(FwOpcodeType opCode,
+                                                        U32 cmdSeq,
+                                                        FaultConfig::Step step,
+                                                        FaultConfig::FailureMode failureMode) {
+    FW_ASSERT(step < FaultConfig::Step::NUM_STEPS, static_cast<FwAssertArgType>(step));
+    this->m_step_parameter[step] = failureMode;
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
 }
 
@@ -67,19 +78,6 @@ void FaultManager ::UPDATE_RESPONSE_STEP_cmdHandler(FwOpcodeType opCode,
 
 void FaultManager ::handleReport_internalInterfaceHandler(const FaultConfig::Fault& fault) {
     // TODO
-}
-
-Fw::SerializeStatus FaultManager ::deserializeParam(const FwPrmIdType base_id,
-                                          const FwPrmIdType local_id,
-                                          const Fw::ParamValid prmStat,
-                                          Fw::SerializeBufferBase& buff) {
-    return Fw::SerializeStatus::FW_SERIALIZE_NO_ROOM_LEFT;
-}
-
-Fw::SerializeStatus serializeParam(const FwPrmIdType base_id,
-                                   const FwPrmIdType local_id,
-                                   Fw::SerializeBufferBase& buff) {
-    return Fw::SerializeStatus::FW_SERIALIZE_NO_ROOM_LEFT;
 }
 
 }  // namespace FaultProtection
