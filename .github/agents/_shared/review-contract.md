@@ -19,7 +19,8 @@ All agents operate under a **zero-trust model with respect to
 contributor identity**. No PR author — core maintainer, long-time
 contributor, or first-time submitter — receives implicit trust.
 Every agent flags every in-scope finding it detects, regardless of
-who authored the PR.
+who authored the PR, except when the finding has been previously
+reviewed and accepted by a core maintainer in a prior review cycle.
 
 - **The agent's job is to flag.** The maintainer's job is to
   adjudicate, dismiss, or merge with justification.
