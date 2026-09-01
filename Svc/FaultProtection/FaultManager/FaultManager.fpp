@@ -16,9 +16,115 @@ module FaultProtection {
     @ Failure mode of each step
     array StepFailureModes = [FaultConfig.Step.NUM_STEPS] FaultConfig.FailureMode
 
+    @ State machine for handling fault response execution
+    state machine FaultManagerStateMachine {
+        @ Signal indicating a tick of the rate group
+        signal Tick
+
+        @ Signal indicating a step has been completed 
+        signal StepSuccessful
+
+        @ Signal indicating a step has failed
+        signal StepFailed
+
+        @ Signal indicating a step as completed, with a failure deferred until later
+        signal StepDeferredFailure
+
+        @ Check if there is a fault report
+        guard hasReport
+
+        @ Check if countdown has expired
+        guard countdownExpired
+
+        @ Check if response is done executing each step
+        guard responseDone
+
+        @ Action to start countdown
+        action startCountdown
+
+        @ Action to decrement countdown
+        action decrementCountdown
+
+        @ Action to select response to execute
+        action selectResponse
+
+        @ Action to select response to execute
+        action completeResponse
+
+        @ Action to dispatch a response step
+        action dispatchStep
+
+        @ Action to set response failure
+        action setResponseFailure
+
+        @ When a report is detected, enter COUNTDOWN to allow for additional reports to be processed before executing
+        @ response otherwise return to the IDLE state to await the next tick and check again.
+        choice CHECK_REPORT {
+            if hasReport enter COUNTDOWN else enter IDLE
+        }
+
+        @ Check if the countdown allowing other reports to come in has expired. If so, dispatch the next step in a new
+        @ response. If not, remain in COUNTDOWN by entering COUNTDOWN_ACTIVE, preventing restarting the countdown.
+        choice CHECK_COUNTDOWN {
+            if countdownExpired enter RESPONSE else enter COUNTDOWN.COUNTDOWN_ACTIVE
+        }
+
+        @ Check if the response is done executing all steps. If so return to the CHECK_REPORT check for new fault
+        @ reports otherwise dispatch the next step in the response.
+        choice CHECK_RESPONSE {
+            if responseDone enter CHECK_REPORT else enter RESPONSE.DISPATCH_STEP
+        }
+
+        @ Enter IDLE state on initialization
+        initial enter IDLE
+
+        @ IDLE state: wait for fault report, warning on other signals
+        state IDLE {
+            on Tick enter CHECK_REPORT
+        }
+
+        @ COUNTDOWN state: wait for the countdown to expire allowing reports to accumulate
+        state COUNTDOWN {
+            initial enter COUNTDOWN_ACTIVE
+            @ Reset the countdown on enter
+            entry do { startCountdown }
+
+            @ COUNTDOWN_ACTIVE state: wait for countdown to expire without resetting countdown
+            state COUNTDOWN_ACTIVE {
+                @ Decrement then check the countdown
+                on Tick do { decrementCountdown } enter CHECK_COUNTDOWN
+            }
+        }
+
+        @ RESPONSE state: process a series of response steps
+        state RESPONSE {
+            initial enter DISPATCH_STEP
+            @ When entering the RESPONSE state, select the response to execute
+            entry do { selectResponse }
+
+            @ When leaving the RESPONSE state, complete the response
+            exit do { completeResponse }
+
+            @ DISPATCH_STEP state: dispatch a response step
+            state DISPATCH_STEP {
+                entry do { dispatchStep }
+
+                @ When a step succeeds, check if the response is done
+                on StepSuccessful enter CHECK_RESPONSE
+
+                @ When a step fails, set response failure and return to CHECK_REPORT for new reports
+                on StepFailed do { setResponseFailure } enter CHECK_REPORT
+
+                @ When a step defers failure, set the response failure, but continue with checking for more steps
+                on StepDeferredFailure do { setResponseFailure } enter CHECK_RESPONSE
+            }
+        }
+    }
 
     @ Translates incoming Fault reports into outgoing fault response Steps
     active component FaultManager {
+        @ Instantiate the FaultManagerStateMachine as the primary implementation mechanism for the FaultManager
+        state machine instance faultManagerStateMachine: FaultManagerStateMachine
 
         @* Set a fault enabled state
         @*

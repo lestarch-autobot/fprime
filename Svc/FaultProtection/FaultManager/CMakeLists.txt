@@ -19,8 +19,9 @@ register_fprime_library(
         "${CMAKE_CURRENT_LIST_DIR}/FaultManager.fpp"
     SOURCES
         "${CMAKE_CURRENT_LIST_DIR}/FaultManager.cpp"
-#   DEPENDS
-#       MyPackage_MyOtherModule
+   DEPENDS
+        Svc_FaultProtection_FaultConfig
+        Svc_FaultProtection_Types
 )
 
 ### Unit Tests ###

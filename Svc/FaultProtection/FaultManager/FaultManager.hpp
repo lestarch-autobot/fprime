@@ -9,6 +9,8 @@
 
 #include "Svc/FaultProtection/FaultManager/FaultManagerComponentAc.hpp"
 #include "Fw/Prm/PrmExternalTypes.hpp"
+#include "Svc/FaultProtection/FaultManager/StepDefinitionTableArrayAc.hpp"
+#include "Svc/FaultProtection/FaultManager/ResponseDefinitionTableArrayAc.hpp"
 
 namespace Svc {
 
@@ -16,6 +18,17 @@ namespace FaultProtection {
 
 class FaultManager final : public FaultManagerComponentBase, public Fw::ParamExternalDelegate {
   public:
+    /**
+     * \struct GovernedState: State governed by the state machine actions
+     */
+    struct GovernedState {
+        FwSizeType countdown; //!< Countdown for delayed response execution
+        Fw::Success response_result; //!< Result of the response execution
+        FwSizeType active_response_index; //!< Index of active response being executed
+        FwSizeType active_step_index; //!< Index of the currently active step in the active response
+        std::atomic<bool> latched_fault_reports[FaultResponseTable::SIZE]; //!< Array tracking which faults are currently latched
+    };
+
     // ----------------------------------------------------------------------
     // Component construction and destruction
     // ----------------------------------------------------------------------
@@ -111,7 +124,7 @@ class FaultManager final : public FaultManagerComponentBase, public Fw::ParamExt
      Fw::SerializeStatus deserializeParam(const FwPrmIdType base_id,
                                           const FwPrmIdType local_id,
                                           const Fw::ParamValid prmStat,
-                                          Fw::SerializeBufferBase& buff) override;
+                                          Fw::SerialBufferBase& buff) override;
 
     //! Serialize a parameter into a parameter buffer
     //!
@@ -122,11 +135,110 @@ class FaultManager final : public FaultManagerComponentBase, public Fw::ParamExt
     //! \return: The status of the serialize operation
     Fw::SerializeStatus serializeParam(const FwPrmIdType base_id,
                                        const FwPrmIdType local_id,
-                                       Fw::SerializeBufferBase& buff) const override;
+                                       Fw::SerialBufferBase& buff) const override;
+  private:
+    // ----------------------------------------------------------------------
+    // Implementations for internal state machine actions
+    // ----------------------------------------------------------------------
+
+    //! Implementation for action startCountdown of state machine Svc_FaultProtection_FaultManagerStateMachine
+    //!
+    //! Action to start countdown
+    void Svc_FaultProtection_FaultManagerStateMachine_action_startCountdown(
+        SmId smId,                                                   //!< The state machine id
+        Svc_FaultProtection_FaultManagerStateMachine::Signal signal  //!< The signal
+        ) override;
+
+    //! Implementation for action decrementCountdown of state machine Svc_FaultProtection_FaultManagerStateMachine
+    //!
+    //! Action to decrement countdown
+    void Svc_FaultProtection_FaultManagerStateMachine_action_decrementCountdown(
+        SmId smId,                                                   //!< The state machine id
+        Svc_FaultProtection_FaultManagerStateMachine::Signal signal  //!< The signal
+        ) override;
+
+    //! Implementation for action selectResponse of state machine Svc_FaultProtection_FaultManagerStateMachine
+    //!
+    //! Action to select response to execute
+    void Svc_FaultProtection_FaultManagerStateMachine_action_selectResponse(
+        SmId smId,                                                   //!< The state machine id
+        Svc_FaultProtection_FaultManagerStateMachine::Signal signal  //!< The signal
+        ) override;
+
+    //! Implementation for action completeResponse of state machine Svc_FaultProtection_FaultManagerStateMachine
+    //!
+    //! Action to select response to execute
+    void Svc_FaultProtection_FaultManagerStateMachine_action_completeResponse(
+        SmId smId,                                                   //!< The state machine id
+        Svc_FaultProtection_FaultManagerStateMachine::Signal signal  //!< The signal
+        ) override;
+
+    //! Implementation for action dispatchStep of state machine Svc_FaultProtection_FaultManagerStateMachine
+    //!
+    //! Action to dispatch a response step
+    void Svc_FaultProtection_FaultManagerStateMachine_action_dispatchStep(
+        SmId smId,                                                   //!< The state machine id
+        Svc_FaultProtection_FaultManagerStateMachine::Signal signal  //!< The signal
+        ) override;
+
+    //! Implementation for action setResponseFailure of state machine Svc_FaultProtection_FaultManagerStateMachine
+    //!
+    //! Action to set response failure
+    void Svc_FaultProtection_FaultManagerStateMachine_action_setResponseFailure(
+        SmId smId,                                                   //!< The state machine id
+        Svc_FaultProtection_FaultManagerStateMachine::Signal signal  //!< The signal
+        ) override;
+
+  private:
+    // ----------------------------------------------------------------------
+    // Implementations for internal state machine guards
+    // ----------------------------------------------------------------------
+
+    //! Implementation for guard hasReport of state machine Svc_FaultProtection_FaultManagerStateMachine
+    //!
+    //! Check if there is a fault report
+    bool Svc_FaultProtection_FaultManagerStateMachine_guard_hasReport(
+        SmId smId,                                                   //!< The state machine id
+        Svc_FaultProtection_FaultManagerStateMachine::Signal signal  //!< The signal
+    ) const override;
+
+    //! Implementation for guard countdownExpired of state machine Svc_FaultProtection_FaultManagerStateMachine
+    //!
+    //! Check if countdown has expired
+    bool Svc_FaultProtection_FaultManagerStateMachine_guard_countdownExpired(
+        SmId smId,                                                   //!< The state machine id
+        Svc_FaultProtection_FaultManagerStateMachine::Signal signal  //!< The signal
+    ) const override;
+
+    //! Implementation for guard responseDone of state machine Svc_FaultProtection_FaultManagerStateMachine
+    //!
+    //! Check if response is done executing each step
+    bool Svc_FaultProtection_FaultManagerStateMachine_guard_responseDone(
+        SmId smId,                                                   //!< The state machine id
+        Svc_FaultProtection_FaultManagerStateMachine::Signal signal  //!< The signal
+    ) const override;
+
+  private:
+    // ----------------------------------------------------------------------
+    // Private helper functions
+    // ----------------------------------------------------------------------
+
+    const StepDefinitionEntry& stepToStepEntry(const FaultConfig::Step& step);
+
+    FwSizeType responseToResponseEntryIndex(const FaultConfig::Response& response);
+
+    void dispatchStep(const FaultConfig::Response& response, const FaultConfig::Step& step);
   private:
       FaultResponseTable m_fault_parameter;
       ResponsesEnabled m_response_parameter;
       StepFailureModes m_step_parameter;
+
+      // Step definition table
+      const ResponseDefinitionTable m_response_definition_table;
+      const StepDefinitionTable m_step_definition_table;
+
+
+      GovernedState m_sm_state; //!< State governed by the state machine actions
 };
 
 }  // namespace FaultProtection
