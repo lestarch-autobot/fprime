@@ -5,8 +5,8 @@
 // ======================================================================
 
 #include "Svc/FaultProtection/FaultManager/FaultManager.hpp"
-#include "Fw/Types/Assert.hpp"
 #include "Fw/Logger/Logger.hpp"
+#include "Fw/Types/Assert.hpp"
 
 namespace Svc {
 
@@ -16,7 +16,7 @@ namespace FaultProtection {
 // Component construction and destruction
 // ----------------------------------------------------------------------
 
-FaultManager ::FaultManager(const char* const compName) {
+FaultManager ::FaultManager(const char* const compName) : FaultManagerComponentBase(compName) {
     this->registerExternalParameters(this);
 }
 
@@ -70,8 +70,8 @@ void FaultManager ::stepCompletionIn_handler(FwIndexType portNum,
 
 void FaultManager ::SET_FAULT_ENABLED_cmdHandler(FwOpcodeType opCode,
                                                  U32 cmdSeq,
-                                                 FaultConfig::Fault fault,
-                                                 Fw::Enabled enabled) {
+                                                 const FaultConfig::Fault& fault,
+                                                 const Fw::Enabled& enabled) {
     FW_ASSERT(fault < FaultConfig::Fault::NUM_FAULTS, static_cast<FwAssertArgType>(fault));
     this->m_fault_parameter[fault].set_enabled(enabled);
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
@@ -79,8 +79,8 @@ void FaultManager ::SET_FAULT_ENABLED_cmdHandler(FwOpcodeType opCode,
 
 void FaultManager ::SET_RESPONSE_ENABLED_cmdHandler(FwOpcodeType opCode,
                                                     U32 cmdSeq,
-                                                    FaultConfig::Response response,
-                                                    Fw::Enabled enabled) {
+                                                    const FaultConfig::Response& response,
+                                                    const Fw::Enabled& enabled) {
     FW_ASSERT(response < FaultConfig::Response::NUM_RESPONSES, static_cast<FwAssertArgType>(response));
     this->m_response_parameter[response] = enabled;
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
@@ -88,8 +88,8 @@ void FaultManager ::SET_RESPONSE_ENABLED_cmdHandler(FwOpcodeType opCode,
 
 void FaultManager ::UPDATE_STEP_FAILURE_MODE_cmdHandler(FwOpcodeType opCode,
                                                         U32 cmdSeq,
-                                                        FaultConfig::Step step,
-                                                        FaultConfig::FailureMode failureMode) {
+                                                        const FaultConfig::Step& step,
+                                                        const FaultConfig::FailureMode& failureMode) {
     FW_ASSERT(step < FaultConfig::Step::NUM_STEPS, static_cast<FwAssertArgType>(step));
     this->m_step_parameter[step] = failureMode;
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
@@ -114,7 +114,7 @@ const StepDefinitionEntry& FaultManager ::stepToStepEntry(const FaultConfig::Ste
         }
     }
     FW_ASSERT(0, static_cast<FwAssertArgType>(step));
-    //TODO: what to do here?
+    // TODO: what to do here?
     return this->m_step_definition_table[0];
 }
 
@@ -125,7 +125,7 @@ FwSizeType FaultManager ::responseToResponseEntryIndex(const FaultConfig::Respon
         }
     }
     FW_ASSERT(0, static_cast<FwAssertArgType>(response));
-    //TODO: what to do here?
+    // TODO: what to do here?
     return 0;
 }
 
@@ -138,9 +138,11 @@ void FaultManager ::dispatchStep(const FaultConfig::Response& response, const Fa
     }
     // When this should have asserted, emit an ERROR and move on
     else {
-        Fw::Logger::log("[CRITICAL] FaultManager: Attempted to dispatch step on non-connected port %d. Response: %d, Step: %d",
-                         step_entry.get_dispatchPort(), response.e, step.e);
-        Fw::Logger::log("        This is a configuration error. Step will be considered FAILED and execution will continue.");
+        Fw::Logger::log(
+            "[CRITICAL] FaultManager: Attempted to dispatch step on non-connected port %d. Response: %d, Step: %d",
+            step_entry.get_dispatchPort(), response.e, step.e);
+        Fw::Logger::log(
+            "        This is a configuration error. Step will be considered FAILED and execution will continue.");
         // Trigger the step complete handler immediately with a failure status to indicate this step did not execute.
         this->stepCompletionIn_handler(std::numeric_limits<FwIndexType>::max(), Fw::Success::FAILURE, response, step);
     }
@@ -153,7 +155,7 @@ void FaultManager ::dispatchStep(const FaultConfig::Response& response, const Fa
 void FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_action_startCountdown(
     SmId smId,
     Svc_FaultProtection_FaultManagerStateMachine::Signal signal) {
-    this->m_sm_state.countdown = 4; // TODO: this should be driven from configuration
+    this->m_sm_state.countdown = 4;  // TODO: this should be driven from configuration
 }
 
 void FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_action_decrementCountdown(
@@ -166,16 +168,17 @@ void FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_action_decremen
 void FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_action_selectResponse(
     SmId smId,
     Svc_FaultProtection_FaultManagerStateMachine::Signal signal) {
-    
     bool found_some_fault = false;
     U8 current_precedence = 0;
 
     for (FwSizeType i = 0; i < FaultResponseTable::SIZE; i++) {
-        if (this->m_sm_state.latched_fault_reports[i] && this->m_fault_parameter[i].get_enabled() == Fw::Enabled::ENABLED) {
+        if (this->m_sm_state.latched_fault_reports[i] &&
+            this->m_fault_parameter[i].get_enabled() == Fw::Enabled::ENABLED) {
             const U8 fault_precedence = this->m_fault_parameter[i].get_precedence();
             if (not found_some_fault || (fault_precedence > current_precedence)) {
                 current_precedence = fault_precedence;
-                this->m_sm_state.active_response_index = this->responseToResponseEntryIndex(this->m_fault_parameter[i].get_response());
+                this->m_sm_state.active_response_index =
+                    this->responseToResponseEntryIndex(this->m_fault_parameter[i].get_response());
                 found_some_fault = true;
             }
         }
@@ -192,13 +195,12 @@ void FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_action_selectRe
 void FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_action_completeResponse(
     SmId smId,
     Svc_FaultProtection_FaultManagerStateMachine::Signal signal) {
-    
     if (this->m_sm_state.response_result == Fw::Success::SUCCESS) {
-        //TODO: clear latched faults
-        //TODO: emit completed fault response failure event
+        // TODO: clear latched faults
+        // TODO: emit completed fault response failure event
     } else {
-        //TODO: emit completed fault response failure event
-        //TODO: clear latched faults when clear-on-failure
+        // TODO: emit completed fault response failure event
+        // TODO: clear latched faults when clear-on-failure
     }
 
     // Reset state related to active response
@@ -209,8 +211,10 @@ void FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_action_complete
 void FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_action_dispatchStep(
     SmId smId,
     Svc_FaultProtection_FaultManagerStateMachine::Signal signal) {
-    FW_ASSERT(this->m_sm_state.active_response_index < ResponseDefinitionTable::SIZE, static_cast<FwAssertArgType>(this->m_sm_state.active_response_index));
-    const ResponseDefinitionEntry& response_entry = this->m_response_definition_table[this->m_sm_state.active_response_index];
+    FW_ASSERT(this->m_sm_state.active_response_index < ResponseDefinitionTable::SIZE,
+              static_cast<FwAssertArgType>(this->m_sm_state.active_response_index));
+    const ResponseDefinitionEntry& response_entry =
+        this->m_response_definition_table[this->m_sm_state.active_response_index];
     this->dispatchStep(response_entry.get_response(), response_entry.get_steps()[this->m_sm_state.active_step_index]);
     this->m_sm_state.active_step_index++;
 }
@@ -231,7 +235,8 @@ bool FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_guard_hasReport
     Svc_FaultProtection_FaultManagerStateMachine::Signal signal) const {
     // Check all latched faults to see if there is an active report and that the response is enabled
     for (FwSizeType i = 0; i < FaultResponseTable::SIZE; i++) {
-        if (this->m_sm_state.latched_fault_reports[i] && this->m_fault_parameter[i].get_enabled() == Fw::Enabled::ENABLED) {
+        if (this->m_sm_state.latched_fault_reports[i] &&
+            this->m_fault_parameter[i].get_enabled() == Fw::Enabled::ENABLED) {
             return true;
         }
     }
@@ -247,21 +252,25 @@ bool FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_guard_countdown
 bool FaultManager ::Svc_FaultProtection_FaultManagerStateMachine_guard_responseDone(
     SmId smId,
     Svc_FaultProtection_FaultManagerStateMachine::Signal signal) const {
-    FW_ASSERT(this->m_sm_state.active_response_index < ResponseDefinitionTable::SIZE, static_cast<FwAssertArgType>(this->m_sm_state.active_response_index));
-    const ResponseDefinitionEntry& response_entry = this->m_response_definition_table[this->m_sm_state.active_response_index];
+    FW_ASSERT(this->m_sm_state.active_response_index < ResponseDefinitionTable::SIZE,
+              static_cast<FwAssertArgType>(this->m_sm_state.active_response_index));
+    const ResponseDefinitionEntry& response_entry =
+        this->m_response_definition_table[this->m_sm_state.active_response_index];
     // Response is done is done when the step index is out of bounds ...
     return (this->m_sm_state.active_step_index >= Steps::SIZE) ||
-        // ... or when the current step is a SKIP step
-        (response_entry.get_steps()[this->m_sm_state.active_step_index].e == FaultConfig::Step::SKIP);
+           // ... or when the current step is a SKIP step
+           (response_entry.get_steps()[this->m_sm_state.active_step_index].e == FaultConfig::Step::SKIP);
 }
-
 
 // ----------------------------------------------------------------------
 // Implementations for external parameter handling
 // ----------------------------------------------------------------------
 
 // TODO: should this be moved into a helper?
-Fw::SerializeStatus FaultManager ::deserializeParam(const FwPrmIdType base_id, const FwPrmIdType local_id, const Fw::ParamValid prmStat, Fw::SerialBufferBase& buff) {
+Fw::SerializeStatus FaultManager ::deserializeParam(const FwPrmIdType base_id,
+                                                    const FwPrmIdType local_id,
+                                                    const Fw::ParamValid prmStat,
+                                                    Fw::SerialBufferBase& buff) {
     // TODO: validate the tables are correct before allowing them to be set
     Fw::SerializeStatus status = Fw::SerializeStatus::FW_DESERIALIZE_FORMAT_ERROR;
     switch (base_id) {
@@ -282,7 +291,9 @@ Fw::SerializeStatus FaultManager ::deserializeParam(const FwPrmIdType base_id, c
 }
 
 // TODO: should this be moved into a helper?
-Fw::SerializeStatus FaultManager ::serializeParam(const FwPrmIdType base_id, const FwPrmIdType local_id, Fw::SerialBufferBase& buff) const {
+Fw::SerializeStatus FaultManager ::serializeParam(const FwPrmIdType base_id,
+                                                  const FwPrmIdType local_id,
+                                                  Fw::SerialBufferBase& buff) const {
     Fw::SerializeStatus status = Fw::SerializeStatus::FW_SERIALIZE_FORMAT_ERROR;
     switch (base_id) {
         case PARAMID_FAULT_RESPONSE_TABLE:
