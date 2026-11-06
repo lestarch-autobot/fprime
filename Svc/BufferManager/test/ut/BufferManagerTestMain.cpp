@@ -76,7 +76,7 @@ TEST(OffNominal, UseBeforeSetupAsserts) {
 // White-box test of the memory layout built by setup(); expected to change if the layout does
 TEST(Implementation, ContiguousLayout) {
     BufferManagerTester tester;
-    tester.testSetup();
+    tester.contiguousLayout();
 }
 
 // ----------------------------------------------------------------------
@@ -152,6 +152,7 @@ TEST(Rules, Random) {
     STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, numRulesToApply);
     const U32 numSteps = bounded.run(tester);
     printf("Ran %u steps.\n", numSteps);
+    ASSERT_EQ(numRulesToApply, numSteps);
     tester.teardownRules();
 }
 
@@ -172,6 +173,7 @@ TEST(Rules, RandomBins) {
     STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, numRulesToApply);
     const U32 numSteps = bounded.run(tester);
     printf("Ran %u steps.\n", numSteps);
+    ASSERT_EQ(numRulesToApply, numSteps);
     tester.teardownRules();
 }
 

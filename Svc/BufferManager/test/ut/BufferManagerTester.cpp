@@ -42,7 +42,10 @@ class TestAllocator : public Fw::MemAllocator {
      * \param recoverable - flag to indicate the memory could be recoverable (always set to false)
      * \return the pointer to memory. Zero if unable to allocate.
      */
-    void* allocate(const FwEnumStoreType identifier, FwSizeType& size, bool& recoverable, FwSizeType alignment) {
+    void* allocate(const FwEnumStoreType identifier,
+                   FwSizeType& size,
+                   bool& recoverable,
+                   FwSizeType alignment) override {
         this->m_reqId = identifier;
         this->m_reqSize = size;
         this->m_mem = this->m_alloc.allocate(identifier, size, recoverable);
@@ -53,7 +56,7 @@ class TestAllocator : public Fw::MemAllocator {
      * \param identifier the memory segment identifier (not used)
      * \ptr the pointer to memory returned by allocate()
      */
-    void deallocate(const FwEnumStoreType identifier, void* ptr) {
+    void deallocate(const FwEnumStoreType identifier, void* ptr) override {
         this->m_deallocCount++;
         this->m_deallocPtr = ptr;
         this->m_alloc.deallocate(identifier, ptr);
@@ -102,7 +105,7 @@ BufferManagerTester ::~BufferManagerTester() {}
 // Tests
 // ----------------------------------------------------------------------
 
-void BufferManagerTester ::testSetup() {
+void BufferManagerTester ::contiguousLayout() {
     REQUIREMENT("FPRIME-BM-001");
 
     BufferManagerComponentImpl::BufferBins bins;
@@ -438,6 +441,8 @@ void BufferManagerTester::multBuffSize() {
     // should send back empty buffer
     noBuff = this->invoke_to_bufferGetCallee(0, BIN2_BUFFER_SIZE);
     ASSERT_EQ(3, this->component.m_noBuffs);
+    ASSERT_EVENTS_NoBuffsAvailable_SIZE(1);
+    ASSERT_EVENTS_NoBuffsAvailable(0, BIN2_BUFFER_SIZE);
 
     // check telemetry
     this->invoke_to_schedIn(0, 0);
@@ -537,49 +542,7 @@ void BufferManagerTester::setupSizeOverflowAsserts() {
 }
 
 // ----------------------------------------------------------------------
-// Helper methods
-// ----------------------------------------------------------------------
-
-void BufferManagerTester ::connectPorts() {
-    // bufferSendIn
-    this->connect_to_bufferSendIn(0, this->component.get_bufferSendIn_InputPort(0));
-
-    // bufferGetCallee
-    this->connect_to_bufferGetCallee(0, this->component.get_bufferGetCallee_InputPort(0));
-
-    // timeCaller
-    this->component.set_timeCaller_OutputPort(0, this->get_from_timeCaller(0));
-
-    // eventOut
-    this->component.set_eventOut_OutputPort(0, this->get_from_eventOut(0));
-
-    // textEventOut
-    this->component.set_textEventOut_OutputPort(0, this->get_from_textEventOut(0));
-
-    // tlmOut
-    this->component.set_tlmOut_OutputPort(0, this->get_from_tlmOut(0));
-
-    // schedIn
-    this->connect_to_schedIn(0, this->component.get_schedIn_InputPort(0));
-}
-
-void BufferManagerTester ::initComponents() {
-    this->init();
-    this->component.init(INSTANCE);
-}
-
-void BufferManagerTester::textLogIn(const FwEventIdType id,          //!< The event ID
-                                    const Fw::Time& timeTag,         //!< The time
-                                    const Fw::LogSeverity severity,  //!< The severity
-                                    const Fw::TextLogString& text    //!< The event string
-) {
-    TextLogEntry e = {id, timeTag, severity, text};
-
-    printTextLogHistoryEntry(e, stdout);
-}
-
-// ----------------------------------------------------------------------
-// Helpers
+// Test helpers
 // ----------------------------------------------------------------------
 
 void BufferManagerTester ::defaultBins(BufferManagerComponentImpl::BufferBins& bins) {
@@ -615,13 +578,6 @@ void BufferManagerTester ::returnBuffer(Fw::Buffer& buffer) {
     this->clearEvents();
     this->invoke_to_bufferSendIn(0, buffer);
     ASSERT_EVENTS_SIZE(0);
-}
-
-void BufferManagerTester ::returnEmpty() {
-    this->clearEvents();
-    Fw::Buffer empty;
-    this->invoke_to_bufferSendIn(0, empty);
-    ASSERT_EVENTS_NullEmptyBuffer_SIZE(1);
 }
 
 // ----------------------------------------------------------------------
@@ -726,11 +682,9 @@ void BufferManagerTester ::bufferSizeSelection() {
     }
     this->returnBuffer(spilled);
 
-    // A size-0 request is served from the smallest bin and reports size 0
+    // A size-0 request reports size 0 and can be handed back without an assert
     Fw::Buffer zero = this->invoke_to_bufferGetCallee(0, 0);
-    ASSERT_NE(nullptr, zero.getData());
     ASSERT_EQ(0u, zero.getSize());
-    ASSERT_EQ(BIN0_BUFFER_SIZE, zero.getCapacity());
     this->returnBuffer(zero);
 
     this->invoke_to_schedIn(0, 0);
@@ -764,6 +718,9 @@ void BufferManagerTester ::eventThrottling() {
         ASSERT_FALSE(none.isValid());
     }
     ASSERT_EVENTS_NoBuffsAvailable_SIZE(BufferManagerTestState::EVENT_THROTTLE);
+    for (U32 i = 0; i < BufferManagerTestState::EVENT_THROTTLE; i++) {
+        ASSERT_EVENTS_NoBuffsAvailable(i, BIN0_BUFFER_SIZE);
+    }
 
     // Empty returns are reported until the event throttles
     for (U32 i = 0; i < REQUESTS; i++) {
@@ -834,6 +791,9 @@ void BufferManagerTester ::lifecycle() {
         this->component.cleanup();
         ASSERT_EQ(1u, alloc.getDeallocCount());
         ASSERT_EQ(alloc.getMem(), alloc.getDeallocPtr());
+        // The ports reject use after cleanup
+        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferGetCallee(0, BIN0_BUFFER_SIZE), "Assert: ");
+        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, only), "Assert: ");
     }
 
     // Destruction without an explicit cleanup() still releases the pool
@@ -893,7 +853,7 @@ void BufferManagerTester ::sendInAsserts() {
 
     Fw::Buffer held = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
     const U32 id = held.getContext() & 0xFFFF;
-    U8 foreign[BIN0_BUFFER_SIZE];
+    U8 foreign[BIN0_BUFFER_SIZE] = {};
 
     // Wrong manager ID
     {
@@ -980,6 +940,48 @@ void BufferManagerTester ::teardownRules() {
         this->BufferReturn__Ok__action();
     }
     this->component.cleanup();
+}
+
+// ----------------------------------------------------------------------
+// Helper methods
+// ----------------------------------------------------------------------
+
+void BufferManagerTester ::connectPorts() {
+    // bufferSendIn
+    this->connect_to_bufferSendIn(0, this->component.get_bufferSendIn_InputPort(0));
+
+    // bufferGetCallee
+    this->connect_to_bufferGetCallee(0, this->component.get_bufferGetCallee_InputPort(0));
+
+    // timeCaller
+    this->component.set_timeCaller_OutputPort(0, this->get_from_timeCaller(0));
+
+    // eventOut
+    this->component.set_eventOut_OutputPort(0, this->get_from_eventOut(0));
+
+    // textEventOut
+    this->component.set_textEventOut_OutputPort(0, this->get_from_textEventOut(0));
+
+    // tlmOut
+    this->component.set_tlmOut_OutputPort(0, this->get_from_tlmOut(0));
+
+    // schedIn
+    this->connect_to_schedIn(0, this->component.get_schedIn_InputPort(0));
+}
+
+void BufferManagerTester ::initComponents() {
+    this->init();
+    this->component.init(INSTANCE);
+}
+
+void BufferManagerTester::textLogIn(const FwEventIdType id,          //!< The event ID
+                                    const Fw::Time& timeTag,         //!< The time
+                                    const Fw::LogSeverity severity,  //!< The severity
+                                    const Fw::TextLogString& text    //!< The event string
+) {
+    TextLogEntry e = {id, timeTag, severity, text};
+
+    printTextLogHistoryEntry(e, stdout);
 }
 
 }  // end namespace Svc

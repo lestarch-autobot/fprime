@@ -79,16 +79,27 @@ FwSizeType BufferManagerTestState::pickServableSize() const {
     FW_ASSERT(largest != 0);
     // Favor the bin boundaries, which are where selection decisions change
     if (STest::Pick::lowerUpper(0, 1) == 0) {
-        U16 bin = 0;
-        do {
-            bin = static_cast<U16>(STest::Pick::lowerUpper(0, this->shadow_numBins - 1));
-        } while (this->shadow_binFree[bin] == 0);
-        return this->shadow_binSize[bin];
+        U16 freeBins = 0;
+        for (U16 bin = 0; bin < this->shadow_numBins; bin++) {
+            freeBins = static_cast<U16>(freeBins + ((this->shadow_binFree[bin] != 0) ? 1 : 0));
+        }
+        U16 pick = static_cast<U16>(STest::Pick::lowerUpper(0, freeBins - 1));
+        for (U16 bin = 0; bin < this->shadow_numBins; bin++) {
+            if (this->shadow_binFree[bin] != 0) {
+                if (pick == 0) {
+                    return this->shadow_binSize[bin];
+                }
+                pick--;
+            }
+        }
+        FW_ASSERT(0);
     }
     return static_cast<FwSizeType>(STest::Pick::lowerUpper(1, static_cast<U32>(largest)));
 }
 
 FwSizeType BufferManagerTestState::pickUnservableSize() const {
+    // Anything above the largest free buffer is unservable; range up to two past the largest bin so the
+    // over-every-bin case is reached even when every bin has a free buffer
     const FwSizeType largest = this->largestFreeSize();
     return static_cast<FwSizeType>(
         STest::Pick::lowerUpper(static_cast<U32>(largest) + 1, static_cast<U32>(this->largestBinSize()) + 2));

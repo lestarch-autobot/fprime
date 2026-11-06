@@ -2,6 +2,12 @@
 // \title  BufferManagerTester.hpp
 // \author tcanham
 // \brief  hpp file for BufferManager test harness implementation class
+//
+// \copyright
+// Copyright 2009-2015, by the California Institute of Technology.
+// ALL RIGHTS RESERVED.  United States Government Sponsorship
+// acknowledged.
+//
 // ======================================================================
 
 #ifndef TESTER_HPP
@@ -33,7 +39,7 @@ class BufferManagerTester : public BufferManagerGTestBase {
     // ----------------------------------------------------------------------
 
     //! White-box check of the contiguous [structs][payloads] memory layout
-    void testSetup();
+    void contiguousLayout();
     //! Setup, allocator contract, telemetry and buffer identity through the ports
     void setupBehavior();
     void oneBufferSize();
@@ -84,6 +90,13 @@ class BufferManagerTester : public BufferManagerGTestBase {
     //! Shadow state for rule-based testing
     BufferManagerTestState shadow;
 
+    static_assert(BufferManagerTestState::EVENT_THROTTLE ==
+                      BufferManagerComponentImpl::EVENTID_NOBUFFSAVAILABLE_THROTTLE,
+                  "shadow throttle must match the NoBuffsAvailable throttle in the model");
+    static_assert(BufferManagerTestState::EVENT_THROTTLE ==
+                      BufferManagerComponentImpl::EVENTID_NULLEMPTYBUFFER_THROTTLE,
+                  "shadow throttle must match the NullEmptyBuffer throttle in the model");
+
   private:
     // ----------------------------------------------------------------------
     // Helpers
@@ -97,8 +110,6 @@ class BufferManagerTester : public BufferManagerGTestBase {
     void getNoBuffer(FwSizeType size);
     //! Return a buffer and check that no event was emitted
     void returnBuffer(Fw::Buffer& buffer);
-    //! Return an empty buffer and check the warning event
-    void returnEmpty();
 
     void connectPorts();
     void initComponents();

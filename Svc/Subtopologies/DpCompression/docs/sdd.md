@@ -70,7 +70,7 @@ topology Flight {
 Configure the buffer store properties in `Svc/Subtopologies/DpCompression/DpCompressionConfig/DpCompressionConfig.fpp`:
 
 * **Base ID** — Base identifier for the subtopology; component IDs are offset from this base.
-* **ZLibBuffMgr** — Compression buffer store size/count, ZLib allocation buffer store size/count, and the buffer manager ID.
+* **ZLibBuffMgr** — Compression buffer store size/count, ZLib allocation buffer store size/count, and the buffer manager ID. `compressionBufferStoreSize` must be less than or equal to `allocBufferStoreSize`: `Svc.BufferManager::setup()` asserts if the non-empty bins are not in non-decreasing `bufferSize` order (FPRIME-BM-008).
 
 The memory allocator used by the subtopology is provided by `DpCompressionSubtopologyConfig.cpp` (`DpCompression::Allocation::memAllocator`).
 

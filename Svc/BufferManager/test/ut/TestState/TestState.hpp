@@ -21,12 +21,13 @@ class BufferManagerTestState {
   public:
     //! A buffer obtained from the component and not yet returned
     struct HeldBuffer {
-        Fw::Buffer buffer;     //!< The buffer as returned by bufferGetCallee
-        U16 bin;               //!< Shadow bin expected to have served it
-        FwSizeType requested;  //!< Size requested
+        Fw::Buffer buffer;         //!< The buffer as returned by bufferGetCallee
+        U16 bin = 0;               //!< Shadow bin expected to have served it
+        FwSizeType requested = 0;  //!< Size requested
     };
 
-    //! Number of events the component emits before a throttled event goes quiet
+    //! Number of events the component emits before a throttled event goes quiet (checked against the model in the
+    //! Tester)
     static const U32 EVENT_THROTTLE = 10;
 
   public:

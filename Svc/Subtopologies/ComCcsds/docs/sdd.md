@@ -221,7 +221,7 @@ topology Flight {
 
 ### 4.2 Buffer Manager Bin Configuration
 
-`module BuffMgr` provides constants for the bins configured for `commsBufferManager`.
+`module BuffMgr` provides constants for the bins configured for `commsBufferManager`. `commsBuffSize` must be less than or equal to `commsFileBuffSize`: `Svc.BufferManager::setup()` asserts if the non-empty bins are not in non-decreasing `bufferSize` order (FPRIME-BM-008).
 
 ---
 

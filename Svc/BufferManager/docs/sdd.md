@@ -18,7 +18,7 @@ FPRIME-BM-004 | `BufferManager` shall accept empty returned buffers without an a
 FPRIME-BM-005 | `BufferManager` shall use a provided Fw::MemAllocator instance to request overall buffer memory|Let the user decide where the memory comes from|Test
 FPRIME-BM-006 | `BufferManager` shall allow buffers to be returned in any order|Do not restrict the lifetime or usage of buffers|Test
 FPRIME-BM-007 | `BufferManager` shall return a buffer whose size is set exactly to the requested size|Allow callers to use the requested size without checking the underlying allocation size|Test|
-FPRIME-BM-008 | `BufferManager` shall assert during setup if the configured bins are not ordered by non-decreasing buffer size|The allocation search is a linear first fit over the bins in configuration order, so FPRIME-BM-002 holds only when smaller bins precede larger ones|Test|
+FPRIME-BM-008 | `BufferManager` shall assert during setup if the bins with a non-zero `numBuffers` are not ordered by non-decreasing buffer size|The allocation search is a linear first fit over the bins in configuration order, so FPRIME-BM-002 holds only when smaller bins precede larger ones|Test|
 
 ## 3 Design
 
@@ -132,7 +132,7 @@ sequenceDiagram
 * A returned buffer is returned with a correct buffer ID, but it isn't already allocated.
 * A returned buffer has an indicated size larger than originally allocated.
 * A returned buffer has a pointer different than the one originally allocated.
-* The bins passed to `setup()` are not ordered by non-decreasing buffer size.
+* The non-empty bins passed to `setup()` are not ordered by non-decreasing buffer size.
 
 ## 4 Configuration
 
