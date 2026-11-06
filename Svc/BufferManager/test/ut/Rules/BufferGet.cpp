@@ -36,6 +36,9 @@ void BufferManagerTester::BufferGet__Between__action() {
 
 // ----------------------------------------------------------------------
 // BufferGet.Zero — a size-0 request reports size 0 and can be handed back
+//
+// Characterization of current behavior only: nothing is recorded in the shadow, so
+// apply it last in a sequence and keep it out of random scenarios.
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::BufferGet__Zero__precondition() const {
@@ -47,10 +50,6 @@ void BufferManagerTester::BufferGet__Zero__action() {
     Fw::Buffer zero = this->invoke_to_bufferGetCallee(0, 0);
     ASSERT_EQ(0u, zero.getSize());
     this->invoke_to_bufferSendIn(0, zero);
-    // The slot is occupied only transiently; the high-water mark may have moved
-    if (this->shadow.shadow_currBuffs + 1 > this->shadow.shadow_highWater) {
-        this->shadow.shadow_highWater = this->shadow.shadow_currBuffs + 1;
-    }
 }
 
 // ----------------------------------------------------------------------

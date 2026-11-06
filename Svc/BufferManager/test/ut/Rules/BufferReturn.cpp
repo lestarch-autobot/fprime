@@ -68,7 +68,9 @@ void BufferManagerTester::BufferReturn__Empty__action() {
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::BufferReturn__Asserts__precondition() const {
-    return this->shadow.shadow_isSetup && !this->shadow.shadow_held.empty();
+    // At least one buffer out and at least one still in the pool
+    return this->shadow.shadow_isSetup && !this->shadow.shadow_held.empty() &&
+           this->shadow.shadow_held.size() < this->shadow.shadow_totalBuffs;
 }
 
 void BufferManagerTester::BufferReturn__Asserts__action() {
@@ -91,13 +93,15 @@ void BufferManagerTester::BufferReturn__Asserts__action() {
         ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
     }
     // Buffer ID of a buffer that is not out
-    for (U32 other = 0; other < this->shadow.shadow_totalBuffs; other++) {
+    bool foundFree = false;
+    for (U32 other = 0; other < this->shadow.shadow_totalBuffs && !foundFree; other++) {
         if (!this->shadow.isHeldId(other)) {
             Fw::Buffer bad(held.getData(), held.getSize(), (static_cast<U32>(MGR_ID) << 16) | other);
             ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
-            break;
+            foundFree = true;
         }
     }
+    ASSERT_TRUE(foundFree);
     // Pointer outside the buffer's own memory
     {
         Fw::Buffer bad(foreign, 1, held.getContext());

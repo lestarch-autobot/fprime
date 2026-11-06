@@ -20,15 +20,8 @@
 #define MAX_HISTORY_SIZE 100
 
 // Bin buffer sizes/numbers
-static const Fw::Buffer::SizeType BIN0_BUFFER_SIZE = 10;
-static const U16 BIN0_NUM_BUFFERS = 2;
-static const Fw::Buffer::SizeType BIN1_BUFFER_SIZE = 12;
-static const U16 BIN1_NUM_BUFFERS = 4;
-static const Fw::Buffer::SizeType BIN2_BUFFER_SIZE = 100;
-static const U16 BIN2_NUM_BUFFERS = 3;
 
 // Other constants
-static const U16 TOTAL_NUM_BUFFERS = BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS;
 
 //! True if the memory ranges of two buffers do not overlap
 static bool disjoint(const Fw::Buffer& a, const Fw::Buffer& b) {
@@ -39,7 +32,14 @@ namespace Svc {
 
 const FwEnumStoreType BufferManagerTester::MEM_ID;
 const U16 BufferManagerTester::MGR_ID;
-const FwSizeType BufferManagerTester::BIN0_BUFFER_SIZE_FOR_RULES;
+const FwSizeType BufferManagerTester::ANY_REQUEST_SIZE;
+const Fw::Buffer::SizeType BufferManagerTester::BIN0_BUFFER_SIZE;
+const U16 BufferManagerTester::BIN0_NUM_BUFFERS;
+const Fw::Buffer::SizeType BufferManagerTester::BIN1_BUFFER_SIZE;
+const U16 BufferManagerTester::BIN1_NUM_BUFFERS;
+const Fw::Buffer::SizeType BufferManagerTester::BIN2_BUFFER_SIZE;
+const U16 BufferManagerTester::BIN2_NUM_BUFFERS;
+const U16 BufferManagerTester::TOTAL_NUM_BUFFERS;
 
 // ----------------------------------------------------------------------
 // Construction and destruction

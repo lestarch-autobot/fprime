@@ -4,6 +4,7 @@
 //
 // These rules exercise setup() and cleanup() and the checks they perform.
 // ======================================================================
+#include <cstring>
 #include <limits>
 #include "Svc/BufferManager/test/ut/BufferManagerTester.hpp"
 
@@ -18,6 +19,7 @@ bool BufferManagerTester::Lifecycle__Setup__precondition() const {
 }
 
 void BufferManagerTester::Lifecycle__Setup__action() {
+    // Copy: configure() below resets the whole shadow, including shadow_bins
     const BufferManagerComponentImpl::BufferBins bins = this->shadow.shadow_bins;
     this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins);
     this->shadow.configure(bins);
@@ -44,7 +46,7 @@ void BufferManagerTester::Lifecycle__Cleanup__action() {
     }
     const U32 before = this->m_rulesAllocator.getDeallocCount();
     this->component.cleanup();
-    this->component.cleanup();
+    this->component.cleanup();  // second call must be a no-op
     ASSERT_EQ(before + 1, this->m_rulesAllocator.getDeallocCount());
     ASSERT_EQ(this->m_rulesAllocator.getMem(), this->m_rulesAllocator.getDeallocPtr());
     this->shadow.shadow_isSetup = false;
@@ -60,7 +62,7 @@ bool BufferManagerTester::Lifecycle__NotSetupAsserts__precondition() const {
 
 void BufferManagerTester::Lifecycle__NotSetupAsserts__action() {
     Fw::Buffer empty;
-    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferGetCallee(0, BIN0_BUFFER_SIZE_FOR_RULES), "Assert: ");
+    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferGetCallee(0, ANY_REQUEST_SIZE), "Assert: ");
     ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, empty), "Assert: ");
     if (!this->shadow.shadow_everSetup) {
         ASSERT_DEATH_IF_SUPPORTED(this->component.cleanup(), "Assert: ");
@@ -79,16 +81,16 @@ void BufferManagerTester::Lifecycle__BinOrderAsserts__action() {
     BufferManagerComponentImpl::BufferBins bins;
     // Descending sizes are rejected
     memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = 12;
+    bins.bins[0].bufferSize = BIN1_BUFFER_SIZE;
     bins.bins[0].numBuffers = 1;
-    bins.bins[1].bufferSize = 10;
+    bins.bins[1].bufferSize = BIN0_BUFFER_SIZE;
     bins.bins[1].numBuffers = 1;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
     // An empty bin between them does not hide the descending pair
     memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = 12;
+    bins.bins[0].bufferSize = BIN1_BUFFER_SIZE;
     bins.bins[0].numBuffers = 1;
-    bins.bins[2].bufferSize = 10;
+    bins.bins[2].bufferSize = BIN0_BUFFER_SIZE;
     bins.bins[2].numBuffers = 1;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
 }

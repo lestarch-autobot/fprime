@@ -62,8 +62,16 @@ class BufferManagerTester : public BufferManagerGTestBase {
     static const FwEnumStoreType MEM_ID = 49;
     //! Manager identifier passed to setup()
     static const U16 MGR_ID = 32;
-    //! A request size used by rules that fire while the component is not set up
-    static const FwSizeType BIN0_BUFFER_SIZE_FOR_RULES = 10;
+    //! An arbitrary request size for rules where the value cannot matter
+    static const FwSizeType ANY_REQUEST_SIZE = 10;
+    //! The three-bin test configuration (see defaultBins())
+    static const Fw::Buffer::SizeType BIN0_BUFFER_SIZE = 10;
+    static const U16 BIN0_NUM_BUFFERS = 2;
+    static const Fw::Buffer::SizeType BIN1_BUFFER_SIZE = 12;
+    static const U16 BIN1_NUM_BUFFERS = 4;
+    static const Fw::Buffer::SizeType BIN2_BUFFER_SIZE = 100;
+    static const U16 BIN2_NUM_BUFFERS = 3;
+    static const U16 TOTAL_NUM_BUFFERS = BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS;
 
   public:
     BufferManagerTester();

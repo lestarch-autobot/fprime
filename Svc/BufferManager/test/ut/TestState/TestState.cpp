@@ -55,7 +55,7 @@ FwSizeType BufferManagerTestState::totalPayloadBytes() const {
 }
 
 FwSizeType BufferManagerTestState::pickBetweenBinSize() const {
-    FwSizeType candidates[BUFFERMGR_MAX_NUM_BINS];
+    FwSizeType candidates[BUFFERMGR_MAX_NUM_BINS] = {};
     U16 count = 0;
     for (U16 bin = 1; bin < this->shadow_numBins; bin++) {
         if (this->shadow_binFree[bin] != 0 && this->shadow_binSize[bin] > this->shadow_binSize[bin - 1] + 1) {

@@ -105,8 +105,7 @@ struct Rules {
 
 //! Apply the port rules at random for numSteps steps against an already set up tester
 void runRandom(BufferManagerTester& tester, Rules& r, const U32 numSteps) {
-    STest::Rule<BufferManagerTester>* rules[] = {&r.get, &r.between, &r.zero,  &r.none,
-                                                 &r.ret, &r.trimmed, &r.empty, &r.sched};
+    STest::Rule<BufferManagerTester>* rules[] = {&r.get, &r.between, &r.none, &r.ret, &r.trimmed, &r.empty, &r.sched};
     STest::RandomScenario<BufferManagerTester> random("Random Rules", rules, FW_NUM_ARRAY_ELEMENTS(rules));
     STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, numSteps);
     const U32 ran = bounded.run(tester);
@@ -177,7 +176,6 @@ TEST(Rules, BufferSizeSelection) {
     r.between.apply(tester);
     r.ret.apply(tester);
     r.none.apply(tester);
-    r.zero.apply(tester);
     while (tester.shadow.anyFree()) {
         if (r.between.precondition(tester) && STest::Pick::lowerUpper(0, 1) == 0) {
             r.between.apply(tester);
@@ -188,6 +186,8 @@ TEST(Rules, BufferSizeSelection) {
     r.ret.apply(tester);
     r.get.apply(tester);
     r.sched.apply(tester);
+    r.ret.apply(tester);
+    r.zero.apply(tester);
     tester.teardownRules();
 }
 
@@ -225,11 +225,11 @@ TEST(Rules, SetupAsserts) {
     r.sizeOverflowAsserts.apply(tester);
     Svc::BufferManagerComponentImpl::BufferBins bins;
     memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = 10;
+    bins.bins[0].bufferSize = Svc::BufferManagerTester::BIN0_BUFFER_SIZE;
     bins.bins[0].numBuffers = 1;
-    bins.bins[1].bufferSize = 10;
+    bins.bins[1].bufferSize = Svc::BufferManagerTester::BIN0_BUFFER_SIZE;
     bins.bins[1].numBuffers = 1;
-    bins.bins[3].bufferSize = 12;
+    bins.bins[3].bufferSize = Svc::BufferManagerTester::BIN1_BUFFER_SIZE;
     bins.bins[3].numBuffers = 1;
     tester.setupRules(bins);
     r.get.apply(tester);
