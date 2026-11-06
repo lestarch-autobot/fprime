@@ -25,6 +25,10 @@ register_fprime_ut(
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/BufferManagerTester.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/BufferManagerTestMain.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/test/ut/TestState/TestState.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/test/ut/Rules/BufferGet.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/test/ut/Rules/BufferReturn.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/test/ut/Rules/Sched.cpp"
   DEPENDS
     STest
 )
