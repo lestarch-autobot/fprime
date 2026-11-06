@@ -46,7 +46,7 @@ namespace Svc {
 // 3. A returned buffer is returned with a correct buffer ID, but it isn't already allocated.
 // 4. A returned buffer has an indicated size larger than originally allocated.
 // 5. A returned buffer has a pointer different than the one originally allocated.
-// 6. The bins passed to setup() are not ordered by non-decreasing bufferSize.
+// 6. The non-empty bins (numBuffers != 0) passed to setup() are not ordered by non-decreasing bufferSize.
 //
 // Note that a pointer to the Fw::MemAllocator used in setup() is stored for later memory cleanup.
 // The instance of the allocator must persist beyond calling the cleanup() function or the

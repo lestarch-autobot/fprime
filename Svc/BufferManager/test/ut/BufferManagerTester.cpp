@@ -682,11 +682,6 @@ void BufferManagerTester ::bufferSizeSelection() {
     }
     this->returnBuffer(spilled);
 
-    // A size-0 request reports size 0 and can be handed back without an assert
-    Fw::Buffer zero = this->invoke_to_bufferGetCallee(0, 0);
-    ASSERT_EQ(0u, zero.getSize());
-    this->returnBuffer(zero);
-
     this->invoke_to_schedIn(0, 0);
     ASSERT_TLM_SIZE(5);
     ASSERT_TLM_TotalBuffs(0, TOTAL_NUM_BUFFERS);
@@ -694,6 +689,11 @@ void BufferManagerTester ::bufferSizeSelection() {
     ASSERT_TLM_HiBuffs(0, 3);
     ASSERT_TLM_NoBuffs(0, 1);
     ASSERT_TLM_EmptyBuffs(0, 0);
+
+    // A size-0 request reports size 0 and can be handed back without an assert
+    Fw::Buffer zero = this->invoke_to_bufferGetCallee(0, 0);
+    ASSERT_EQ(0u, zero.getSize());
+    this->invoke_to_bufferSendIn(0, zero);
 
     this->component.cleanup();
 }

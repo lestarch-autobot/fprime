@@ -81,8 +81,11 @@ FwSizeType BufferManagerTestState::pickServableSize() const {
     if (STest::Pick::lowerUpper(0, 1) == 0) {
         U16 freeBins = 0;
         for (U16 bin = 0; bin < this->shadow_numBins; bin++) {
-            freeBins = static_cast<U16>(freeBins + ((this->shadow_binFree[bin] != 0) ? 1 : 0));
+            if (this->shadow_binFree[bin] != 0) {
+                freeBins++;
+            }
         }
+        // At least one bin is free (largest != 0), so the pick always lands on a free bin below
         U16 pick = static_cast<U16>(STest::Pick::lowerUpper(0, freeBins - 1));
         for (U16 bin = 0; bin < this->shadow_numBins; bin++) {
             if (this->shadow_binFree[bin] != 0) {
@@ -92,7 +95,7 @@ FwSizeType BufferManagerTestState::pickServableSize() const {
                 pick--;
             }
         }
-        FW_ASSERT(0);
+        FW_ASSERT(0);  // unreachable: pick < freeBins
     }
     return static_cast<FwSizeType>(STest::Pick::lowerUpper(1, static_cast<U32>(largest)));
 }

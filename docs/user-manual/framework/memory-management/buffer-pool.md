@@ -146,7 +146,7 @@ Buffer manager will assert under the following conditions:
 3. A returned buffer is returned with a correct buffer ID but hasn't already been allocated.
 4. A returned buffer has an indicated size larger than originally allocated.
 5. A returned buffer has a pointer outside the region originally allocated.
-6. The bins passed to `setup()` are not ordered by non-decreasing `bufferSize`.
+6. The non-empty bins passed to `setup()` are not ordered by non-decreasing `bufferSize`.
 
 **Connections**
 
