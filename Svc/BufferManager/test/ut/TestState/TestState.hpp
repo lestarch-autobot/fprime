@@ -24,6 +24,7 @@ class BufferManagerTestState {
         Fw::Buffer buffer;         //!< The buffer as returned by bufferGetCallee
         U16 bin = 0;               //!< Shadow bin expected to have served it
         FwSizeType requested = 0;  //!< Size requested
+        U8 pattern = 0;            //!< Byte pattern written over the requested size
     };
 
     //! Number of events the component emits before a throttled event goes quiet (checked against the model in the
@@ -35,6 +36,15 @@ class BufferManagerTestState {
 
     //! Reset the shadow to mirror a freshly set up component with the given bins
     void configure(const BufferManagerComponentImpl::BufferBins& bins);
+
+    //! Sum of every configured payload size
+    FwSizeType totalPayloadBytes() const;
+
+    //! Random request size strictly between two adjacent bin sizes that can be served (0 if none exists)
+    FwSizeType pickBetweenBinSize() const;
+
+    //! True if the given buffer ID (low 16 bits of a context) belongs to a held buffer
+    bool isHeldId(U32 id) const;
 
     // ----------------------------------------------------------------------
     // Queries used by rule preconditions and actions
@@ -70,7 +80,7 @@ class BufferManagerTestState {
     // ----------------------------------------------------------------------
 
     //! Record a successful allocation served from bin
-    void recordGet(const Fw::Buffer& buffer, U16 bin, FwSizeType requested);
+    void recordGet(const Fw::Buffer& buffer, U16 bin, FwSizeType requested, U8 pattern);
 
     //! Record a failed allocation
     void recordNoBuffer();
@@ -85,6 +95,10 @@ class BufferManagerTestState {
     // ----------------------------------------------------------------------
     // Shadow state
     // ----------------------------------------------------------------------
+
+    BufferManagerComponentImpl::BufferBins shadow_bins;  //!< Bins staged for the next setup()
+    bool shadow_isSetup;                                 //!< True between setup() and cleanup()
+    bool shadow_everSetup;                               //!< True once setup() has been called
 
     FwSizeType shadow_binSize[BUFFERMGR_MAX_NUM_BINS];  //!< Buffer size per configured bin
     U16 shadow_binFree[BUFFERMGR_MAX_NUM_BINS];         //!< Free buffers per configured bin

@@ -30,55 +30,6 @@ static const U16 BIN2_NUM_BUFFERS = 3;
 // Other constants
 static const U16 TOTAL_NUM_BUFFERS = BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS;
 
-// Define our own instrumented allocator for testing
-class TestAllocator : public Fw::MemAllocator {
-  public:
-    TestAllocator() : m_reqId(0), m_reqSize(0), m_mem(nullptr), m_deallocCount(0), m_deallocPtr(nullptr) {};
-    virtual ~TestAllocator() {};
-    //! Allocate memory
-    /*!
-     * \param identifier the memory segment identifier (not used)
-     * \param size the requested size (not changed)
-     * \param recoverable - flag to indicate the memory could be recoverable (always set to false)
-     * \return the pointer to memory. Zero if unable to allocate.
-     */
-    void* allocate(const FwEnumStoreType identifier,
-                   FwSizeType& size,
-                   bool& recoverable,
-                   FwSizeType alignment) override {
-        this->m_reqId = identifier;
-        this->m_reqSize = size;
-        this->m_mem = this->m_alloc.allocate(identifier, size, recoverable);
-        return this->m_mem;
-    }
-    //! Deallocate memory
-    /*!
-     * \param identifier the memory segment identifier (not used)
-     * \ptr the pointer to memory returned by allocate()
-     */
-    void deallocate(const FwEnumStoreType identifier, void* ptr) override {
-        this->m_deallocCount++;
-        this->m_deallocPtr = ptr;
-        this->m_alloc.deallocate(identifier, ptr);
-    }
-
-    FwEnumStoreType getId() { return this->m_reqId; }
-
-    FwSizeType getSize() { return this->m_reqSize; }
-
-    void* getMem() { return this->m_mem; }
-    U32 getDeallocCount() { return this->m_deallocCount; }
-    void* getDeallocPtr() { return this->m_deallocPtr; }
-
-  private:
-    Fw::MallocAllocator m_alloc;
-    FwEnumStoreType m_reqId;
-    FwSizeType m_reqSize;
-    void* m_mem;
-    U32 m_deallocCount;
-    void* m_deallocPtr;
-};
-
 //! True if the memory ranges of two buffers do not overlap
 static bool disjoint(const Fw::Buffer& a, const Fw::Buffer& b) {
     return (a.getData() + a.getCapacity() <= b.getData()) || (b.getData() + b.getCapacity() <= a.getData());
@@ -88,6 +39,7 @@ namespace Svc {
 
 const FwEnumStoreType BufferManagerTester::MEM_ID;
 const U16 BufferManagerTester::MGR_ID;
+const FwSizeType BufferManagerTester::BIN0_BUFFER_SIZE_FOR_RULES;
 
 // ----------------------------------------------------------------------
 // Construction and destruction
@@ -902,9 +854,16 @@ void BufferManagerTester ::useBeforeSetupAsserts() {
 // ----------------------------------------------------------------------
 
 void BufferManagerTester ::setupRules(const BufferManagerComponentImpl::BufferBins& bins) {
-    this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins);
-    this->shadow.configure(bins);
-    this->clearHistory();
+    this->shadow.shadow_bins = bins;
+    this->Lifecycle__Setup__action();
+}
+
+void BufferManagerTester ::setupRulesOneBuffer() {
+    BufferManagerComponentImpl::BufferBins bins;
+    memset(&bins, 0, sizeof(bins));
+    bins.bins[0].bufferSize = BIN0_BUFFER_SIZE;
+    bins.bins[0].numBuffers = 1;
+    this->setupRules(bins);
 }
 
 void BufferManagerTester ::setupRulesOneBin() {
@@ -936,10 +895,38 @@ void BufferManagerTester ::setupRulesRandom() {
 }
 
 void BufferManagerTester ::teardownRules() {
-    while (!this->shadow.shadow_held.empty()) {
-        this->BufferReturn__Ok__action();
+    this->Lifecycle__Cleanup__action();
+}
+
+void BufferManagerTester ::ruleGet(FwSizeType size) {
+    U16 bin = 0;
+    ASSERT_TRUE(this->shadow.expectedBin(size, bin));
+
+    Fw::Buffer buffer = this->invoke_to_bufferGetCallee(0, size);
+
+    ASSERT_NE(nullptr, buffer.getData());
+    ASSERT_EQ(size, buffer.getSize());
+    ASSERT_EQ(this->shadow.shadow_binSize[bin], buffer.getCapacity());
+    ASSERT_EQ(static_cast<U32>(MGR_ID), buffer.getContext() >> 16);
+    ASSERT_FALSE(this->shadow.overlapsHeld(buffer));
+    ASSERT_EVENTS_SIZE(0);
+
+    // Stamp the payload so a later return can detect cross-talk between buffers
+    const U8 pattern = static_cast<U8>(STest::Pick::lowerUpper(1, 255));
+    (void)memset(buffer.getData(), pattern, buffer.getSize());
+    this->shadow.recordGet(buffer, bin, size, pattern);
+}
+
+void BufferManagerTester ::ruleReturn(FwSizeType index, Fw::Buffer& buffer) {
+    const BufferManagerTestState::HeldBuffer& held = this->shadow.shadow_held[index];
+    for (FwSizeType k = 0; k < held.requested; k++) {
+        ASSERT_EQ(held.pattern, held.buffer.getData()[k]);
     }
-    this->component.cleanup();
+
+    this->invoke_to_bufferSendIn(0, buffer);
+
+    ASSERT_EVENTS_SIZE(0);
+    this->shadow.recordReturn(index);
 }
 
 // ----------------------------------------------------------------------

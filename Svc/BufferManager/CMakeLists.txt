@@ -29,6 +29,7 @@ register_fprime_ut(
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/Rules/BufferGet.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/Rules/BufferReturn.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/Rules/Sched.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/test/ut/Rules/Lifecycle.cpp"
   DEPENDS
     STest
 )

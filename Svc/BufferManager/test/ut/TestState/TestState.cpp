@@ -10,7 +10,9 @@
 namespace Svc {
 
 BufferManagerTestState::BufferManagerTestState()
-    : shadow_numBins(0),
+    : shadow_isSetup(false),
+      shadow_everSetup(false),
+      shadow_numBins(0),
       shadow_totalBuffs(0),
       shadow_currBuffs(0),
       shadow_highWater(0),
@@ -24,12 +26,16 @@ BufferManagerTestState::BufferManagerTestState()
       shadow_lastHighWater(0),
       shadow_lastNoBuffs(0),
       shadow_lastEmptyBuffs(0) {
+    (void)memset(&this->shadow_bins, 0, sizeof(this->shadow_bins));
     (void)memset(this->shadow_binSize, 0, sizeof(this->shadow_binSize));
     (void)memset(this->shadow_binFree, 0, sizeof(this->shadow_binFree));
 }
 
 void BufferManagerTestState::configure(const BufferManagerComponentImpl::BufferBins& bins) {
     *this = BufferManagerTestState();
+    this->shadow_bins = bins;
+    this->shadow_isSetup = true;
+    this->shadow_everSetup = true;
     for (U16 bin = 0; bin < BUFFERMGR_MAX_NUM_BINS; bin++) {
         if (bins.bins[bin].numBuffers != 0) {
             this->shadow_binSize[this->shadow_numBins] = bins.bins[bin].bufferSize;
@@ -38,6 +44,36 @@ void BufferManagerTestState::configure(const BufferManagerComponentImpl::BufferB
             this->shadow_numBins++;
         }
     }
+}
+
+FwSizeType BufferManagerTestState::totalPayloadBytes() const {
+    FwSizeType total = 0;
+    for (U16 bin = 0; bin < BUFFERMGR_MAX_NUM_BINS; bin++) {
+        total += this->shadow_bins.bins[bin].bufferSize * this->shadow_bins.bins[bin].numBuffers;
+    }
+    return total;
+}
+
+FwSizeType BufferManagerTestState::pickBetweenBinSize() const {
+    FwSizeType candidates[BUFFERMGR_MAX_NUM_BINS];
+    U16 count = 0;
+    for (U16 bin = 1; bin < this->shadow_numBins; bin++) {
+        if (this->shadow_binFree[bin] != 0 && this->shadow_binSize[bin] > this->shadow_binSize[bin - 1] + 1) {
+            candidates[count] = static_cast<FwSizeType>(STest::Pick::lowerUpper(
+                static_cast<U32>(this->shadow_binSize[bin - 1]) + 1, static_cast<U32>(this->shadow_binSize[bin]) - 1));
+            count++;
+        }
+    }
+    return (count == 0) ? 0 : candidates[STest::Pick::lowerUpper(0, count - 1)];
+}
+
+bool BufferManagerTestState::isHeldId(U32 id) const {
+    for (const HeldBuffer& held : this->shadow_held) {
+        if ((held.buffer.getContext() & 0xFFFF) == id) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool BufferManagerTestState::anyFree() const {
@@ -126,11 +162,11 @@ bool BufferManagerTestState::overlapsHeld(const Fw::Buffer& buffer) const {
     return false;
 }
 
-void BufferManagerTestState::recordGet(const Fw::Buffer& buffer, U16 bin, FwSizeType requested) {
+void BufferManagerTestState::recordGet(const Fw::Buffer& buffer, U16 bin, FwSizeType requested, U8 pattern) {
     FW_ASSERT(bin < this->shadow_numBins);
     FW_ASSERT(this->shadow_binFree[bin] != 0);
     this->shadow_binFree[bin]--;
-    this->shadow_held.push_back(HeldBuffer{buffer, bin, requested});
+    this->shadow_held.push_back(HeldBuffer{buffer, bin, requested, pattern});
     this->shadow_currBuffs++;
     if (this->shadow_currBuffs > this->shadow_highWater) {
         this->shadow_highWater = this->shadow_currBuffs;

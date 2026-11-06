@@ -2,6 +2,7 @@
 // TestMain.cpp
 // ----------------------------------------------------------------------
 
+#include <cstring>
 #include "BufferManagerTester.hpp"
 #include "STest/Random/Random.hpp"
 #include "STest/Scenario/BoundedScenario.hpp"
@@ -83,97 +84,183 @@ TEST(Implementation, ContiguousLayout) {
 // Rule-based tests
 // ----------------------------------------------------------------------
 
+namespace {
+//! Every rule, so the scenario tests share one declaration
+struct Rules {
+    BufferManagerTester::Lifecycle__Setup setup;
+    BufferManagerTester::Lifecycle__Cleanup cleanup;
+    BufferManagerTester::Lifecycle__NotSetupAsserts notSetupAsserts;
+    BufferManagerTester::Lifecycle__BinOrderAsserts binOrderAsserts;
+    BufferManagerTester::Lifecycle__SizeOverflowAsserts sizeOverflowAsserts;
+    BufferManagerTester::BufferGet__Ok get;
+    BufferManagerTester::BufferGet__Between between;
+    BufferManagerTester::BufferGet__Zero zero;
+    BufferManagerTester::BufferGet__NoneAvailable none;
+    BufferManagerTester::BufferReturn__Ok ret;
+    BufferManagerTester::BufferReturn__Trimmed trimmed;
+    BufferManagerTester::BufferReturn__Empty empty;
+    BufferManagerTester::BufferReturn__Asserts returnAsserts;
+    BufferManagerTester::Sched__Telemetry sched;
+};
+
+//! Apply the port rules at random for numSteps steps against an already set up tester
+void runRandom(BufferManagerTester& tester, Rules& r, const U32 numSteps) {
+    STest::Rule<BufferManagerTester>* rules[] = {&r.get, &r.between, &r.zero,  &r.none,
+                                                 &r.ret, &r.trimmed, &r.empty, &r.sched};
+    STest::RandomScenario<BufferManagerTester> random("Random Rules", rules, FW_NUM_ARRAY_ELEMENTS(rules));
+    STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, numSteps);
+    const U32 ran = bounded.run(tester);
+    printf("Ran %u steps.\n", ran);
+    ASSERT_EQ(numSteps, ran);
+}
+}  // namespace
+
+// Setup: allocator contract, telemetry before any request, every buffer obtainable, release on cleanup
+TEST(Rules, Setup) {
+    BufferManagerTester tester;
+    Rules r;
+    tester.setupRulesDefault();
+    r.sched.apply(tester);
+    while (tester.shadow.anyFree()) {
+        r.get.apply(tester);
+    }
+    r.none.apply(tester);
+    r.cleanup.apply(tester);
+}
+
 // Exhaust a single bin, check telemetry, return everything in random order, return an empty buffer
 TEST(Rules, OneSize) {
     BufferManagerTester tester;
-    BufferManagerTester::BufferGet__Ok get;
-    BufferManagerTester::BufferGet__NoneAvailable none;
-    BufferManagerTester::BufferReturn__Ok ret;
-    BufferManagerTester::BufferReturn__Empty empty;
-    BufferManagerTester::Sched__Telemetry sched;
-
+    Rules r;
     tester.setupRulesOneBin();
-    sched.apply(tester);
+    r.sched.apply(tester);
     while (tester.shadow.anyFree()) {
-        get.apply(tester);
+        r.get.apply(tester);
     }
-    none.apply(tester);
-    sched.apply(tester);
+    r.none.apply(tester);
+    r.sched.apply(tester);
     while (!tester.shadow.shadow_held.empty()) {
-        ret.apply(tester);
+        r.ret.apply(tester);
     }
-    empty.apply(tester);
-    sched.apply(tester);
+    r.empty.apply(tester);
+    r.sched.apply(tester);
     tester.teardownRules();
 }
 
 // Exhaust three bins with random sizes, then drain them with full and trimmed returns
 TEST(Rules, MultSize) {
     BufferManagerTester tester;
-    BufferManagerTester::BufferGet__Ok get;
-    BufferManagerTester::BufferGet__NoneAvailable none;
-    BufferManagerTester::BufferReturn__Ok ret;
-    BufferManagerTester::BufferReturn__Trimmed trimmed;
-    BufferManagerTester::BufferReturn__Empty empty;
-    BufferManagerTester::Sched__Telemetry sched;
-
+    Rules r;
     tester.setupRulesDefault();
     while (tester.shadow.anyFree()) {
-        get.apply(tester);
+        r.get.apply(tester);
     }
-    none.apply(tester);
-    sched.apply(tester);
+    r.none.apply(tester);
+    r.sched.apply(tester);
     while (!tester.shadow.shadow_held.empty()) {
         if (STest::Pick::lowerUpper(0, 1) == 0) {
-            ret.apply(tester);
+            r.ret.apply(tester);
         } else {
-            trimmed.apply(tester);
+            r.trimmed.apply(tester);
         }
     }
-    empty.apply(tester);
-    sched.apply(tester);
+    r.empty.apply(tester);
+    r.sched.apply(tester);
     tester.teardownRules();
 }
 
-// Randomized test: apply rules in a random sequence against the three-bin configuration
-TEST(Rules, Random) {
-    const U32 numRulesToApply = 10000;
+// Bin selection: between-bin sizes, over-max with everything free, size 0, spill-over and reuse
+TEST(Rules, BufferSizeSelection) {
     BufferManagerTester tester;
-    BufferManagerTester::BufferGet__Ok get;
-    BufferManagerTester::BufferGet__NoneAvailable none;
-    BufferManagerTester::BufferReturn__Ok ret;
-    BufferManagerTester::BufferReturn__Trimmed trimmed;
-    BufferManagerTester::BufferReturn__Empty empty;
-    BufferManagerTester::Sched__Telemetry sched;
-    STest::Rule<BufferManagerTester>* rules[] = {&get, &none, &ret, &trimmed, &empty, &sched};
-
+    Rules r;
     tester.setupRulesDefault();
-    STest::RandomScenario<BufferManagerTester> random("Random Rules", rules, FW_NUM_ARRAY_ELEMENTS(rules));
-    STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, numRulesToApply);
-    const U32 numSteps = bounded.run(tester);
-    printf("Ran %u steps.\n", numSteps);
-    ASSERT_EQ(numRulesToApply, numSteps);
+    r.between.apply(tester);
+    r.ret.apply(tester);
+    r.none.apply(tester);
+    r.zero.apply(tester);
+    while (tester.shadow.anyFree()) {
+        if (r.between.precondition(tester) && STest::Pick::lowerUpper(0, 1) == 0) {
+            r.between.apply(tester);
+        } else {
+            r.get.apply(tester);
+        }
+    }
+    r.ret.apply(tester);
+    r.get.apply(tester);
+    r.sched.apply(tester);
+    tester.teardownRules();
+}
+
+// Events throttle while the counters keep counting
+TEST(Rules, EventThrottling) {
+    BufferManagerTester tester;
+    Rules r;
+    tester.setupRulesOneBuffer();
+    r.get.apply(tester);
+    for (U32 i = 0; i < Svc::BufferManagerTestState::EVENT_THROTTLE + 2; i++) {
+        r.none.apply(tester);
+        r.empty.apply(tester);
+    }
+    r.sched.apply(tester);
+    tester.teardownRules();
+}
+
+// Use before setup, single-buffer pool, idempotent cleanup, use after cleanup
+TEST(Rules, Lifecycle) {
+    BufferManagerTester tester;
+    Rules r;
+    r.notSetupAsserts.apply(tester);
+    tester.setupRulesOneBuffer();
+    r.get.apply(tester);
+    r.none.apply(tester);
+    r.cleanup.apply(tester);
+    r.notSetupAsserts.apply(tester);
+}
+
+// setup() rejects misordered bins and wrapping sizes, then accepts equal sizes and gaps
+TEST(Rules, SetupAsserts) {
+    BufferManagerTester tester;
+    Rules r;
+    r.binOrderAsserts.apply(tester);
+    r.sizeOverflowAsserts.apply(tester);
+    Svc::BufferManagerComponentImpl::BufferBins bins;
+    memset(&bins, 0, sizeof(bins));
+    bins.bins[0].bufferSize = 10;
+    bins.bins[0].numBuffers = 1;
+    bins.bins[1].bufferSize = 10;
+    bins.bins[1].numBuffers = 1;
+    bins.bins[3].bufferSize = 12;
+    bins.bins[3].numBuffers = 1;
+    tester.setupRules(bins);
+    r.get.apply(tester);
+    tester.teardownRules();
+}
+
+// bufferSendIn rejects a corrupt or foreign buffer and a double return
+TEST(Rules, SendInAsserts) {
+    BufferManagerTester tester;
+    Rules r;
+    tester.setupRulesDefault();
+    r.get.apply(tester);
+    r.returnAsserts.apply(tester);
+    tester.teardownRules();
+}
+
+// Randomized test against the three-bin configuration
+TEST(Rules, Random) {
+    BufferManagerTester tester;
+    Rules r;
+    tester.setupRulesDefault();
+    runRandom(tester, r, 10000);
     tester.teardownRules();
 }
 
 // Randomized test against a random bin configuration
 TEST(Rules, RandomBins) {
-    const U32 numRulesToApply = 10000;
     BufferManagerTester tester;
-    BufferManagerTester::BufferGet__Ok get;
-    BufferManagerTester::BufferGet__NoneAvailable none;
-    BufferManagerTester::BufferReturn__Ok ret;
-    BufferManagerTester::BufferReturn__Trimmed trimmed;
-    BufferManagerTester::BufferReturn__Empty empty;
-    BufferManagerTester::Sched__Telemetry sched;
-    STest::Rule<BufferManagerTester>* rules[] = {&get, &none, &ret, &trimmed, &empty, &sched};
-
+    Rules r;
     tester.setupRulesRandom();
-    STest::RandomScenario<BufferManagerTester> random("Random Rules", rules, FW_NUM_ARRAY_ELEMENTS(rules));
-    STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, numRulesToApply);
-    const U32 numSteps = bounded.run(tester);
-    printf("Ran %u steps.\n", numSteps);
-    ASSERT_EQ(numRulesToApply, numSteps);
+    runRandom(tester, r, 10000);
     tester.teardownRules();
 }
 

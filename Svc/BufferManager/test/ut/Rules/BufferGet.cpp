@@ -9,29 +9,48 @@
 namespace Svc {
 
 // ----------------------------------------------------------------------
-// BufferGet.Ok
+// BufferGet.Ok — a servable size, biased to the bin boundaries
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::BufferGet__Ok__precondition() const {
-    return this->shadow.anyFree();
+    return this->shadow.shadow_isSetup && this->shadow.anyFree();
 }
 
 void BufferManagerTester::BufferGet__Ok__action() {
     this->clearHistory();
-    const FwSizeType size = this->shadow.pickServableSize();
-    U16 bin = 0;
-    ASSERT_TRUE(this->shadow.expectedBin(size, bin));
+    this->ruleGet(this->shadow.pickServableSize());
+}
 
-    Fw::Buffer buffer = this->invoke_to_bufferGetCallee(0, size);
+// ----------------------------------------------------------------------
+// BufferGet.Between — a size strictly between two adjacent bin sizes
+// ----------------------------------------------------------------------
 
-    ASSERT_TRUE(buffer.isValid());
-    ASSERT_EQ(size, buffer.getSize());
-    ASSERT_EQ(this->shadow.shadow_binSize[bin], buffer.getCapacity());
-    ASSERT_EQ(static_cast<U32>(MGR_ID), buffer.getContext() >> 16);
-    ASSERT_FALSE(this->shadow.overlapsHeld(buffer));
-    ASSERT_EVENTS_SIZE(0);
+bool BufferManagerTester::BufferGet__Between__precondition() const {
+    return this->shadow.shadow_isSetup && this->shadow.pickBetweenBinSize() != 0;
+}
 
-    this->shadow.recordGet(buffer, bin, size);
+void BufferManagerTester::BufferGet__Between__action() {
+    this->clearHistory();
+    this->ruleGet(this->shadow.pickBetweenBinSize());
+}
+
+// ----------------------------------------------------------------------
+// BufferGet.Zero — a size-0 request reports size 0 and can be handed back
+// ----------------------------------------------------------------------
+
+bool BufferManagerTester::BufferGet__Zero__precondition() const {
+    return this->shadow.shadow_isSetup && this->shadow.anyFree();
+}
+
+void BufferManagerTester::BufferGet__Zero__action() {
+    this->clearHistory();
+    Fw::Buffer zero = this->invoke_to_bufferGetCallee(0, 0);
+    ASSERT_EQ(0u, zero.getSize());
+    this->invoke_to_bufferSendIn(0, zero);
+    // The slot is occupied only transiently; the high-water mark may have moved
+    if (this->shadow.shadow_currBuffs + 1 > this->shadow.shadow_highWater) {
+        this->shadow.shadow_highWater = this->shadow.shadow_currBuffs + 1;
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -39,7 +58,7 @@ void BufferManagerTester::BufferGet__Ok__action() {
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::BufferGet__NoneAvailable__precondition() const {
-    return true;
+    return this->shadow.shadow_isSetup;
 }
 
 void BufferManagerTester::BufferGet__NoneAvailable__action() {

@@ -13,7 +13,7 @@ namespace Svc {
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::Sched__Telemetry__precondition() const {
-    return true;
+    return this->shadow.shadow_isSetup;
 }
 
 void BufferManagerTester::Sched__Telemetry__action() {
