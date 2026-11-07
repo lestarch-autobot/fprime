@@ -19,6 +19,10 @@ FPRIME-BM-005 | `BufferManager` shall use a provided Fw::MemAllocator instance t
 FPRIME-BM-006 | `BufferManager` shall allow buffers to be returned in any order|Do not restrict the lifetime or usage of buffers|Test
 FPRIME-BM-007 | `BufferManager` shall return a buffer whose size is set exactly to the requested size|Allow callers to use the requested size without checking the underlying allocation size|Test|
 FPRIME-BM-008 | `BufferManager` shall assert during setup if the bins with a non-zero `numBuffers` are not ordered by non-decreasing buffer size|The allocation search is a linear first fit over the bins in configuration order, so FPRIME-BM-002 holds only when smaller bins precede larger ones|Test|
+FPRIME-BM-009 | `BufferManager` shall return an empty buffer and issue a warning event for a request of size zero, without allocating a buffer|A zero-sized buffer is indistinguishable from the "no buffers available" result to the caller, so serving it would silently consume a buffer|Test|
+FPRIME-BM-010 | `BufferManager` shall assert during setup if the bins contain no buffers, or if a non-empty bin has a buffer size of zero|A pool with no buffers is a configuration error (and allocating zero bytes has allocator-dependent results); a bin of zero-sized buffers can never serve a request|Test|
+FPRIME-BM-011 | `BufferManager` shall assert if `setup()` is called while already set up|Setting up over a live pool would leak it|Test|
+FPRIME-BM-012 | `BufferManager` shall support `setup()` after `cleanup()`: the new pool shall be released by the next `cleanup()` and the current and high-water buffer counts shall restart at zero|Re-initialization must not leak the new pool or attribute the old pool's usage to it|Test|
 
 ## 3 Design
 
@@ -66,6 +70,10 @@ Name | Type | Kind | Purpose
 `BufferManager` maintains the following state:
 
 * *m_buffers*: A set of buffers to allocate to users.
+* *m_currBuffs*, *m_highWater*: The number of buffers currently allocated and the most ever allocated from the current pool (`CurrBuffs`, `HiBuffs`).
+* *m_noBuffs*, *m_emptyBuffs*: The number of requests that could not return a buffer (including zero-size requests) and the number of empty buffers returned (`NoBuffs`, `EmptyBuffs`).
+
+`cleanup()` releases the pool whether or not every buffer has been returned; buffers still out become invalid with it. On `setup()` after `cleanup()`, *m_currBuffs* and *m_highWater* restart at zero with the new pool; *m_noBuffs* and *m_emptyBuffs* persist over the lifetime of the instance.
 
 * *AllocatedBuffer::allocated*: Indicates whether a particular buffer in the pool has been allocated to the user.
 
@@ -76,18 +84,19 @@ Name | Type | Kind | Purpose
 When `BufferManager` receives a request for a buffer of size *s* on
 [*bufferGetCallee*](#bufferGetCallee), it carries out the following steps:
 
-1. Search for an unallocated buffer that is big enough to hold the requested buffer size.
-2. Mark the buffer as allocated.
-3. Set the returned buffer's size to the requested size. The underlying allocation may be larger.
-4. Return the `Fw::Buffer` instance to the user.
-5. If a free buffer cannot be found, return an empty buffer to the user.
+1. If the requested size is zero, issue the `ZeroSizeRequest` WARNING_HI event (throttled), count it in `NoBuffs`, and return an empty buffer without allocating.
+2. Search for an unallocated buffer that is big enough to hold the requested buffer size.
+3. Mark the buffer as allocated.
+4. Set the returned buffer's size to the requested size. The underlying allocation may be larger.
+5. Return the `Fw::Buffer` instance to the user.
+6. If a free buffer cannot be found, issue the `NoBuffsAvailable` WARNING_HI event (throttled), count it in `NoBuffs`, and return an empty buffer to the user.
 
 #### 3.6.2 bufferSendIn
 
 When `BufferManager` receives notification of a free buffer on
 [*bufferSendIn*](#bufferSendIn), it carries out the following steps:
 
-1. Check to see if it is an empty buffer. If so, issue a WARNING_HI event and return.
+1. Check to see if it is an empty buffer. If so, issue the `NullEmptyBuffer` WARNING_HI event (throttled), count it in `EmptyBuffs`, and return.
 2. Extract the manager ID and buffer ID from the context member of the `Fw::Buffer` instance.
 3. If they are valid, use the buffer ID to find the allocated buffer.
 4. Clear the "allocated" flag to make the buffer available again.
@@ -133,6 +142,9 @@ sequenceDiagram
 * A returned buffer has an indicated size larger than originally allocated.
 * A returned buffer has a pointer different than the one originally allocated.
 * The non-empty bins passed to `setup()` are not ordered by non-decreasing buffer size.
+* The bins passed to `setup()` contain no buffers.
+* `setup()` is called while the instance is already set up.
+* A bin with a non-zero `numBuffers` has a `bufferSize` of zero.
 
 ## 4 Configuration
 

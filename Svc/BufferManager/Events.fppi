@@ -13,3 +13,10 @@ event NullEmptyBuffer \
   id 0x01 \
   format "Received null pointer and zero size buffer" \
   throttle 10
+
+@ The buffer manager received a request for a zero-sized buffer and returned an empty buffer
+event ZeroSizeRequest \
+  severity warning high \
+  id 0x02 \
+  format "Zero size buffer request rejected" \
+  throttle 10
