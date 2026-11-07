@@ -106,10 +106,10 @@ struct Rules {
     BufferManagerTester::Sched__Telemetry sched;
 };
 
-//! Apply the port rules at random for numSteps steps against an already set up tester
+//! Apply the port and lifecycle rules at random for numSteps steps against an already set up tester
 void runRandom(BufferManagerTester& tester, Rules& r, const U32 numSteps) {
-    STest::Rule<BufferManagerTester>* rules[] = {&r.get, &r.between, &r.zero,  &r.none,
-                                                 &r.ret, &r.trimmed, &r.empty, &r.sched};
+    STest::Rule<BufferManagerTester>* rules[] = {&r.setup, &r.cleanup, &r.cleanupHolding, &r.get,   &r.between, &r.zero,
+                                                 &r.none,  &r.ret,     &r.trimmed,        &r.empty, &r.sched};
     STest::RandomScenario<BufferManagerTester> random("Random Rules", rules, FW_NUM_ARRAY_ELEMENTS(rules));
     STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, numSteps);
     const U32 ran = bounded.run(tester);
@@ -225,7 +225,7 @@ TEST(Rules, Lifecycle) {
     r.get.apply(tester);
     r.sched.apply(tester);
     r.cleanupHolding.apply(tester);
-    r.setup.apply(tester);
+    tester.setupRulesDefault();  // a different bin table: TotalBuffs changes
     r.sched.apply(tester);
     r.zero.apply(tester);
     r.sched.apply(tester);

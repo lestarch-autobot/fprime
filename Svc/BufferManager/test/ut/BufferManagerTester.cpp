@@ -651,7 +651,10 @@ void BufferManagerTester ::bufferSizeSelection() {
     ASSERT_EVENTS_SIZE(1);
     ASSERT_EVENTS_ZeroSizeRequest_SIZE(1);
     this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_CurrBuffs_SIZE(0);  // CurrBuffs is update-on-change and was already reported as 0
+    // Telemetry is update-on-change: only NoBuffs moved (1 -> 2), nothing was allocated
+    ASSERT_TLM_SIZE(1);
+    ASSERT_TLM_NoBuffs_SIZE(1);
+    ASSERT_TLM_NoBuffs(0, 2);
     // and handing the empty result back is the ordinary empty-buffer warning
     this->clearHistory();
     this->invoke_to_bufferSendIn(0, zero);
@@ -768,7 +771,8 @@ void BufferManagerTester ::lifecycle() {
 
         // setup() after cleanup() yields a pool that cleanup() releases
         REQUIREMENT("FPRIME-BM-012");
-        this->component.setup(MGR_ID, MEM_ID, alloc, bins);
+        TestAllocator other;
+        this->component.setup(MGR_ID, MEM_ID, other, bins);
         this->clearHistory();
         this->invoke_to_schedIn(0, 0);
         ASSERT_TLM_HiBuffs(0, 0);  // the high-water mark restarted with the new pool
@@ -778,8 +782,10 @@ void BufferManagerTester ::lifecycle() {
         ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
         this->returnBuffer(again);
         this->component.cleanup();
-        ASSERT_EQ(2u, alloc.getDeallocCount());
-        ASSERT_EQ(alloc.getMem(), alloc.getDeallocPtr());
+        // the second pool goes back to the allocator it came from
+        ASSERT_EQ(1u, alloc.getDeallocCount());
+        ASSERT_EQ(1u, other.getDeallocCount());
+        ASSERT_EQ(other.getMem(), other.getDeallocPtr());
     }
 
     // A configuration with no buffers asserts
@@ -788,6 +794,9 @@ void BufferManagerTester ::lifecycle() {
         TestAllocator alloc;
         BufferManagerComponentImpl::BufferBins empty;
         memset(&empty, 0, sizeof(empty));
+        ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, empty), "Assert: ");
+        // ... and so does a bin of zero-sized buffers
+        empty.bins[0].numBuffers = 1;
         ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, empty), "Assert: ");
     }
 

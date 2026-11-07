@@ -20,7 +20,7 @@ FPRIME-BM-006 | `BufferManager` shall allow buffers to be returned in any order|
 FPRIME-BM-007 | `BufferManager` shall return a buffer whose size is set exactly to the requested size|Allow callers to use the requested size without checking the underlying allocation size|Test|
 FPRIME-BM-008 | `BufferManager` shall assert during setup if the bins with a non-zero `numBuffers` are not ordered by non-decreasing buffer size|The allocation search is a linear first fit over the bins in configuration order, so FPRIME-BM-002 holds only when smaller bins precede larger ones|Test|
 FPRIME-BM-009 | `BufferManager` shall return an empty buffer and issue a warning event for a request of size zero, without allocating a buffer|A zero-sized buffer is indistinguishable from the "no buffers available" result to the caller, so serving it would silently consume a buffer|Test|
-FPRIME-BM-010 | `BufferManager` shall assert during setup if the bins contain no buffers|A pool with no buffers is a configuration error, and allocating zero bytes has allocator-dependent results|Test|
+FPRIME-BM-010 | `BufferManager` shall assert during setup if the bins contain no buffers, or if a non-empty bin has a buffer size of zero|A pool with no buffers is a configuration error (and allocating zero bytes has allocator-dependent results); a bin of zero-sized buffers can never serve a request|Test|
 FPRIME-BM-011 | `BufferManager` shall assert if `setup()` is called while already set up|Setting up over a live pool would leak it|Test|
 FPRIME-BM-012 | `BufferManager` shall support `setup()` after `cleanup()`: the new pool shall be released by the next `cleanup()` and the current and high-water buffer counts shall restart at zero|Re-initialization must not leak the new pool or attribute the old pool's usage to it|Test|
 
@@ -70,8 +70,10 @@ Name | Type | Kind | Purpose
 `BufferManager` maintains the following state:
 
 * *m_buffers*: A set of buffers to allocate to users.
+* *m_currBuffs*, *m_highWater*: The number of buffers currently allocated and the most ever allocated from the current pool (`CurrBuffs`, `HiBuffs`).
+* *m_noBuffs*, *m_emptyBuffs*: The number of requests that could not return a buffer (including zero-size requests) and the number of empty buffers returned (`NoBuffs`, `EmptyBuffs`).
 
-On `setup()` after `cleanup()`, the current and high-water buffer counts restart at zero with the new pool; the counts of failed requests and of returned empty buffers persist over the lifetime of the instance.
+`cleanup()` releases the pool whether or not every buffer has been returned; buffers still out become invalid with it. On `setup()` after `cleanup()`, *m_currBuffs* and *m_highWater* restart at zero with the new pool; *m_noBuffs* and *m_emptyBuffs* persist over the lifetime of the instance.
 
 * *AllocatedBuffer::allocated*: Indicates whether a particular buffer in the pool has been allocated to the user.
 
@@ -142,6 +144,7 @@ sequenceDiagram
 * The non-empty bins passed to `setup()` are not ordered by non-decreasing buffer size.
 * The bins passed to `setup()` contain no buffers.
 * `setup()` is called while the instance is already set up.
+* A bin with a non-zero `numBuffers` has a `bufferSize` of zero.
 
 ## 4 Configuration
 
