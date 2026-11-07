@@ -19,6 +19,7 @@ BufferManagerTestState::BufferManagerTestState()
       shadow_noBuffs(0),
       shadow_emptyBuffs(0),
       shadow_noBuffsEvents(0),
+      shadow_zeroEvents(0),
       shadow_emptyBuffsEvents(0),
       shadow_tlmSent(false),
       shadow_lastTotalBuffs(0),
@@ -171,6 +172,10 @@ void BufferManagerTestState::recordGet(const Fw::Buffer& buffer, U16 bin, FwSize
     if (this->shadow_currBuffs > this->shadow_highWater) {
         this->shadow_highWater = this->shadow_currBuffs;
     }
+}
+
+void BufferManagerTestState::recordZeroRequest() {
+    this->shadow_zeroEvents++;
 }
 
 void BufferManagerTestState::recordNoBuffer() {

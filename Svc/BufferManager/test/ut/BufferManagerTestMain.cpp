@@ -92,6 +92,8 @@ struct Rules {
     BufferManagerTester::Lifecycle__NotSetupAsserts notSetupAsserts;
     BufferManagerTester::Lifecycle__BinOrderAsserts binOrderAsserts;
     BufferManagerTester::Lifecycle__SizeOverflowAsserts sizeOverflowAsserts;
+    BufferManagerTester::Lifecycle__EmptyBinsAsserts emptyBinsAsserts;
+    BufferManagerTester::Lifecycle__SetupTwiceAsserts setupTwiceAsserts;
     BufferManagerTester::BufferGet__Ok get;
     BufferManagerTester::BufferGet__Between between;
     BufferManagerTester::BufferGet__Zero zero;
@@ -105,7 +107,8 @@ struct Rules {
 
 //! Apply the port rules at random for numSteps steps against an already set up tester
 void runRandom(BufferManagerTester& tester, Rules& r, const U32 numSteps) {
-    STest::Rule<BufferManagerTester>* rules[] = {&r.get, &r.between, &r.none, &r.ret, &r.trimmed, &r.empty, &r.sched};
+    STest::Rule<BufferManagerTester>* rules[] = {&r.get, &r.between, &r.zero,  &r.none,
+                                                 &r.ret, &r.trimmed, &r.empty, &r.sched};
     STest::RandomScenario<BufferManagerTester> random("Random Rules", rules, FW_NUM_ARRAY_ELEMENTS(rules));
     STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, numSteps);
     const U32 ran = bounded.run(tester);
@@ -185,9 +188,8 @@ TEST(Rules, BufferSizeSelection) {
     }
     r.ret.apply(tester);
     r.get.apply(tester);
-    r.sched.apply(tester);
-    r.ret.apply(tester);
     r.zero.apply(tester);
+    r.sched.apply(tester);
     tester.teardownRules();
 }
 
@@ -200,12 +202,14 @@ TEST(Rules, EventThrottling) {
     for (U32 i = 0; i < Svc::BufferManagerTestState::EVENT_THROTTLE + 2; i++) {
         r.none.apply(tester);
         r.empty.apply(tester);
+        r.zero.apply(tester);
     }
     r.sched.apply(tester);
     tester.teardownRules();
 }
 
-// Use before setup, single-buffer pool, idempotent cleanup, use after cleanup
+// Use before setup, single-buffer pool, setup over a live pool, idempotent cleanup, use after
+// cleanup, and a second setup/cleanup cycle that releases its own pool
 TEST(Rules, Lifecycle) {
     BufferManagerTester tester;
     Rules r;
@@ -213,8 +217,12 @@ TEST(Rules, Lifecycle) {
     tester.setupRulesOneBuffer();
     r.get.apply(tester);
     r.none.apply(tester);
+    r.setupTwiceAsserts.apply(tester);
     r.cleanup.apply(tester);
     r.notSetupAsserts.apply(tester);
+    r.setup.apply(tester);
+    r.get.apply(tester);
+    r.cleanup.apply(tester);
 }
 
 // setup() rejects misordered bins and wrapping sizes, then accepts equal sizes and gaps
@@ -223,6 +231,7 @@ TEST(Rules, SetupAsserts) {
     Rules r;
     r.binOrderAsserts.apply(tester);
     r.sizeOverflowAsserts.apply(tester);
+    r.emptyBinsAsserts.apply(tester);
     Svc::BufferManagerComponentImpl::BufferBins bins;
     memset(&bins, 0, sizeof(bins));
     bins.bins[0].bufferSize = Svc::BufferManagerTester::BIN0_BUFFER_SIZE;

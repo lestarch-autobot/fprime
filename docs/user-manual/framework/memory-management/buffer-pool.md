@@ -147,6 +147,8 @@ Buffer manager will assert under the following conditions:
 4. A returned buffer has an indicated size larger than originally allocated.
 5. A returned buffer has a pointer outside the region originally allocated.
 6. The non-empty bins passed to `setup()` are not ordered by non-decreasing `bufferSize`.
+7. The bins passed to `setup()` contain no buffers.
+8. `setup()` is called while the instance is already set up (call `cleanup()` first).
 
 **Connections**
 

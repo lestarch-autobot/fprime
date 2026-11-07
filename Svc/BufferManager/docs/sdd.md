@@ -19,6 +19,9 @@ FPRIME-BM-005 | `BufferManager` shall use a provided Fw::MemAllocator instance t
 FPRIME-BM-006 | `BufferManager` shall allow buffers to be returned in any order|Do not restrict the lifetime or usage of buffers|Test
 FPRIME-BM-007 | `BufferManager` shall return a buffer whose size is set exactly to the requested size|Allow callers to use the requested size without checking the underlying allocation size|Test|
 FPRIME-BM-008 | `BufferManager` shall assert during setup if the bins with a non-zero `numBuffers` are not ordered by non-decreasing buffer size|The allocation search is a linear first fit over the bins in configuration order, so FPRIME-BM-002 holds only when smaller bins precede larger ones|Test|
+FPRIME-BM-009 | `BufferManager` shall return an empty buffer and issue a warning event for a request of size zero, without allocating a buffer|A zero-sized buffer is indistinguishable from the "no buffers available" result to the caller, so serving it would silently consume a buffer|Test|
+FPRIME-BM-010 | `BufferManager` shall assert during setup if the bins contain no buffers|A pool with no buffers is a configuration error, and allocating zero bytes has allocator-dependent results|Test|
+FPRIME-BM-011 | `BufferManager` shall assert if `setup()` is called while already set up, and shall support `setup()` after `cleanup()`|Setting up over a live pool would leak it; re-initialization after cleanup must release the new pool|Test|
 
 ## 3 Design
 
@@ -76,11 +79,12 @@ Name | Type | Kind | Purpose
 When `BufferManager` receives a request for a buffer of size *s* on
 [*bufferGetCallee*](#bufferGetCallee), it carries out the following steps:
 
-1. Search for an unallocated buffer that is big enough to hold the requested buffer size.
-2. Mark the buffer as allocated.
-3. Set the returned buffer's size to the requested size. The underlying allocation may be larger.
-4. Return the `Fw::Buffer` instance to the user.
-5. If a free buffer cannot be found, return an empty buffer to the user.
+1. If the requested size is zero, issue a WARNING_HI event and return an empty buffer without allocating.
+2. Search for an unallocated buffer that is big enough to hold the requested buffer size.
+3. Mark the buffer as allocated.
+4. Set the returned buffer's size to the requested size. The underlying allocation may be larger.
+5. Return the `Fw::Buffer` instance to the user.
+6. If a free buffer cannot be found, issue a WARNING_HI event and return an empty buffer to the user.
 
 #### 3.6.2 bufferSendIn
 
@@ -133,6 +137,8 @@ sequenceDiagram
 * A returned buffer has an indicated size larger than originally allocated.
 * A returned buffer has a pointer different than the one originally allocated.
 * The non-empty bins passed to `setup()` are not ordered by non-decreasing buffer size.
+* The bins passed to `setup()` contain no buffers.
+* `setup()` is called while the instance is already set up.
 
 ## 4 Configuration
 

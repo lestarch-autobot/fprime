@@ -35,21 +35,29 @@ void BufferManagerTester::BufferGet__Between__action() {
 }
 
 // ----------------------------------------------------------------------
-// BufferGet.Zero — a size-0 request reports size 0 and can be handed back
-//
-// Characterization of current behavior only: nothing is recorded in the shadow, so
-// apply it last in a sequence and keep it out of random scenarios.
+// BufferGet.Zero — a size-0 request is rejected with a warning and consumes nothing
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::BufferGet__Zero__precondition() const {
-    return this->shadow.shadow_isSetup && this->shadow.anyFree();
+    return this->shadow.shadow_isSetup;
 }
 
 void BufferManagerTester::BufferGet__Zero__action() {
     this->clearHistory();
     Fw::Buffer zero = this->invoke_to_bufferGetCallee(0, 0);
+
+    ASSERT_FALSE(zero.isValid());
+    ASSERT_EQ(nullptr, zero.getData());
     ASSERT_EQ(0u, zero.getSize());
-    this->invoke_to_bufferSendIn(0, zero);
+
+    const U32 eventsBefore = this->shadow.shadow_zeroEvents;
+    this->shadow.recordZeroRequest();
+    if (eventsBefore < BufferManagerTestState::EVENT_THROTTLE) {
+        ASSERT_EVENTS_SIZE(1);
+        ASSERT_EVENTS_ZeroSizeRequest_SIZE(1);
+    } else {
+        ASSERT_EVENTS_SIZE(0);
+    }
 }
 
 // ----------------------------------------------------------------------

@@ -642,10 +642,20 @@ void BufferManagerTester ::bufferSizeSelection() {
     ASSERT_TLM_NoBuffs(0, 1);
     ASSERT_TLM_EmptyBuffs(0, 0);
 
-    // A size-0 request reports size 0 and can be handed back without an assert
+    // REQUIREMENT("FPRIME-BM-009"): a size-0 request is rejected with a warning and consumes nothing
+    this->clearHistory();
     Fw::Buffer zero = this->invoke_to_bufferGetCallee(0, 0);
-    ASSERT_EQ(0u, zero.getSize());
+    ASSERT_FALSE(zero.isValid());
+    ASSERT_EQ(nullptr, zero.getData());
+    ASSERT_EVENTS_SIZE(1);
+    ASSERT_EVENTS_ZeroSizeRequest_SIZE(1);
+    this->invoke_to_schedIn(0, 0);
+    ASSERT_TLM_CurrBuffs_SIZE(0);  // CurrBuffs is update-on-change and was already reported as 0
+    // and handing the empty result back is the ordinary empty-buffer warning
+    this->clearHistory();
     this->invoke_to_bufferSendIn(0, zero);
+    ASSERT_EVENTS_SIZE(1);
+    ASSERT_EVENTS_NullEmptyBuffer_SIZE(1);
 
     this->component.cleanup();
 }
@@ -687,6 +697,14 @@ void BufferManagerTester ::eventThrottling() {
     ASSERT_TLM_EmptyBuffs(0, REQUESTS);
 
     this->returnBuffer(only);
+
+    // ZeroSizeRequest throttles the same way
+    this->clearHistory();
+    for (U32 i = 0; i < BufferManagerComponentImpl::EVENTID_ZEROSIZEREQUEST_THROTTLE + 2; i++) {
+        Fw::Buffer zero = this->invoke_to_bufferGetCallee(0, 0);
+        ASSERT_FALSE(zero.isValid());
+    }
+    ASSERT_EVENTS_ZeroSizeRequest_SIZE(BufferManagerComponentImpl::EVENTID_ZEROSIZEREQUEST_THROTTLE);
     this->component.cleanup();
 }
 
@@ -746,6 +764,24 @@ void BufferManagerTester ::lifecycle() {
         // The ports reject use after cleanup
         ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferGetCallee(0, BIN0_BUFFER_SIZE), "Assert: ");
         ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, only), "Assert: ");
+
+        // REQUIREMENT("FPRIME-BM-011"): setup() after cleanup() yields a pool that cleanup() releases
+        this->component.setup(MGR_ID, MEM_ID, alloc, bins);
+        Fw::Buffer again = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
+        // ... and setting up over a live pool asserts
+        ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
+        this->returnBuffer(again);
+        this->component.cleanup();
+        ASSERT_EQ(2u, alloc.getDeallocCount());
+        ASSERT_EQ(alloc.getMem(), alloc.getDeallocPtr());
+    }
+
+    // REQUIREMENT("FPRIME-BM-010"): a configuration with no buffers asserts
+    {
+        TestAllocator alloc;
+        BufferManagerComponentImpl::BufferBins empty;
+        memset(&empty, 0, sizeof(empty));
+        ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, empty), "Assert: ");
     }
 
     // Destruction without an explicit cleanup() still releases the pool
