@@ -150,6 +150,7 @@ Buffer manager will assert under the following conditions:
 6. The non-empty bins passed to `setup()` are not ordered by non-decreasing `bufferSize`.
 7. The bins passed to `setup()` contain no buffers.
 8. `setup()` is called while the instance is already set up (call `cleanup()` first).
+9. A bin with a non-zero `numBuffers` has a `bufferSize` of zero.
 
 **Connections**
 
@@ -193,7 +194,7 @@ The rules for specifying bins:
 4. A single bin can be specified if a single size is needed. 
    
 > [!NOTE]
-> a pointer to the Fw::MemAllocator used in setup() is stored for later memory cleanup. The instance of the allocator must persist beyond calling the cleanup() function or the destructor of BufferManager if cleanup() is not called. If a project-specific manual memory allocator is not needed, Fw::MallocAllocator can be used to supply heap allocated memory. After cleanup(), setup() may be called again; the new pool is released by the next cleanup(), and `CurrBuffs`/`HiBuffs` restart with it.
+> a pointer to the Fw::MemAllocator used in setup() is stored for later memory cleanup. The instance of the allocator must persist beyond calling the cleanup() function or the destructor of BufferManager if cleanup() is not called. If a project-specific manual memory allocator is not needed, Fw::MallocAllocator can be used to supply heap allocated memory. cleanup() does not require every buffer to have been returned, but buffers still out become invalid with the pool. After cleanup(), setup() may be called again; the new pool is released by the next cleanup(), and `CurrBuffs`/`HiBuffs` restart with it.
 
 **Example Setup of Svc.BufferManager in a Topology.cpp**
 ```c++

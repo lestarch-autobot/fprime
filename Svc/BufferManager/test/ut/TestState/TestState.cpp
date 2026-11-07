@@ -33,24 +33,18 @@ BufferManagerTestState::BufferManagerTestState()
 }
 
 void BufferManagerTestState::configure(const BufferManagerComponentImpl::BufferBins& bins) {
-    // Everything that outlives the pool in the component survives a re-setup here too: the lifetime
-    // counters, the event throttles (owned by the autocoded base) and the last telemetry written
-    const BufferManagerTestState previous = *this;
-    *this = BufferManagerTestState();
-    this->shadow_noBuffs = previous.shadow_noBuffs;
-    this->shadow_emptyBuffs = previous.shadow_emptyBuffs;
-    this->shadow_noBuffsEvents = previous.shadow_noBuffsEvents;
-    this->shadow_emptyBuffsEvents = previous.shadow_emptyBuffsEvents;
-    this->shadow_zeroEvents = previous.shadow_zeroEvents;
-    this->shadow_tlmSent = previous.shadow_tlmSent;
-    this->shadow_lastTotalBuffs = previous.shadow_lastTotalBuffs;
-    this->shadow_lastCurrBuffs = previous.shadow_lastCurrBuffs;
-    this->shadow_lastHighWater = previous.shadow_lastHighWater;
-    this->shadow_lastNoBuffs = previous.shadow_lastNoBuffs;
-    this->shadow_lastEmptyBuffs = previous.shadow_lastEmptyBuffs;
+    // Like setup(), only the per-pool state restarts; lifetime counters, event throttles and the
+    // last telemetry written persist across a re-setup
     this->shadow_bins = bins;
     this->shadow_isSetup = true;
     this->shadow_everSetup = true;
+    this->shadow_numBins = 0;
+    this->shadow_totalBuffs = 0;
+    (void)memset(this->shadow_binSize, 0, sizeof(this->shadow_binSize));
+    (void)memset(this->shadow_binFree, 0, sizeof(this->shadow_binFree));
+    this->shadow_held.clear();
+    this->shadow_currBuffs = 0;
+    this->shadow_highWater = 0;
     for (U16 bin = 0; bin < BUFFERMGR_MAX_NUM_BINS; bin++) {
         if (bins.bins[bin].numBuffers != 0) {
             this->shadow_binSize[this->shadow_numBins] = bins.bins[bin].bufferSize;

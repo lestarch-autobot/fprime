@@ -128,6 +128,10 @@ void BufferManagerTester::Lifecycle__EmptyBinsAsserts__action() {
     // a size without any buffers is still empty
     bins.bins[0].bufferSize = BIN0_BUFFER_SIZE;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
+    // buffers without a size can never serve a request
+    bins.bins[0].bufferSize = 0;
+    bins.bins[0].numBuffers = 1;
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
 }
 
 // ----------------------------------------------------------------------

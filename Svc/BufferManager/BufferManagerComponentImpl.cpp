@@ -157,6 +157,8 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     for (U16 bin = 0; bin < BUFFERMGR_MAX_NUM_BINS; bin++) {
         if (this->m_bufferBins.bins[bin].numBuffers) {
             const FwSizeType bufferSize = this->m_bufferBins.bins[bin].bufferSize;
+            // A bin of zero-sized buffers could never serve a request (zero-size requests are rejected)
+            FW_ASSERT(bufferSize > 0, static_cast<FwAssertArgType>(bin));
             // Bins must be ordered by non-decreasing buffer size so the first fit is also the smallest fit
             FW_ASSERT(bufferSize >= previousBinSize, static_cast<FwAssertArgType>(bin),
                       static_cast<FwAssertArgType>(bufferSize), static_cast<FwAssertArgType>(previousBinSize));
