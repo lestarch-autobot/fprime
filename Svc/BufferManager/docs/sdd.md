@@ -21,7 +21,8 @@ FPRIME-BM-007 | `BufferManager` shall return a buffer whose size is set exactly 
 FPRIME-BM-008 | `BufferManager` shall assert during setup if the bins with a non-zero `numBuffers` are not ordered by non-decreasing buffer size|The allocation search is a linear first fit over the bins in configuration order, so FPRIME-BM-002 holds only when smaller bins precede larger ones|Test|
 FPRIME-BM-009 | `BufferManager` shall return an empty buffer and issue a warning event for a request of size zero, without allocating a buffer|A zero-sized buffer is indistinguishable from the "no buffers available" result to the caller, so serving it would silently consume a buffer|Test|
 FPRIME-BM-010 | `BufferManager` shall assert during setup if the bins contain no buffers|A pool with no buffers is a configuration error, and allocating zero bytes has allocator-dependent results|Test|
-FPRIME-BM-011 | `BufferManager` shall assert if `setup()` is called while already set up, and shall support `setup()` after `cleanup()`|Setting up over a live pool would leak it; re-initialization after cleanup must release the new pool|Test|
+FPRIME-BM-011 | `BufferManager` shall assert if `setup()` is called while already set up|Setting up over a live pool would leak it|Test|
+FPRIME-BM-012 | `BufferManager` shall support `setup()` after `cleanup()`: the new pool shall be released by the next `cleanup()` and the current and high-water buffer counts shall restart at zero|Re-initialization must not leak the new pool or attribute the old pool's usage to it|Test|
 
 ## 3 Design
 
@@ -70,6 +71,8 @@ Name | Type | Kind | Purpose
 
 * *m_buffers*: A set of buffers to allocate to users.
 
+On `setup()` after `cleanup()`, the current and high-water buffer counts restart at zero with the new pool; the counts of failed requests and of returned empty buffers persist over the lifetime of the instance.
+
 * *AllocatedBuffer::allocated*: Indicates whether a particular buffer in the pool has been allocated to the user.
 
 ### 3.6 Port Behavior
@@ -79,19 +82,19 @@ Name | Type | Kind | Purpose
 When `BufferManager` receives a request for a buffer of size *s* on
 [*bufferGetCallee*](#bufferGetCallee), it carries out the following steps:
 
-1. If the requested size is zero, issue a WARNING_HI event and return an empty buffer without allocating.
+1. If the requested size is zero, issue the `ZeroSizeRequest` WARNING_HI event (throttled), count it in `NoBuffs`, and return an empty buffer without allocating.
 2. Search for an unallocated buffer that is big enough to hold the requested buffer size.
 3. Mark the buffer as allocated.
 4. Set the returned buffer's size to the requested size. The underlying allocation may be larger.
 5. Return the `Fw::Buffer` instance to the user.
-6. If a free buffer cannot be found, issue a WARNING_HI event and return an empty buffer to the user.
+6. If a free buffer cannot be found, issue the `NoBuffsAvailable` WARNING_HI event (throttled), count it in `NoBuffs`, and return an empty buffer to the user.
 
 #### 3.6.2 bufferSendIn
 
 When `BufferManager` receives notification of a free buffer on
 [*bufferSendIn*](#bufferSendIn), it carries out the following steps:
 
-1. Check to see if it is an empty buffer. If so, issue a WARNING_HI event and return.
+1. Check to see if it is an empty buffer. If so, issue the `NullEmptyBuffer` WARNING_HI event (throttled), count it in `EmptyBuffs`, and return.
 2. Extract the manager ID and buffer ID from the context member of the `Fw::Buffer` instance.
 3. If they are valid, use the buffer ID to find the allocated buffer.
 4. Clear the "allocated" flag to make the buffer available again.

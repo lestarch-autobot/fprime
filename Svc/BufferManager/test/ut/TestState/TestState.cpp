@@ -33,7 +33,21 @@ BufferManagerTestState::BufferManagerTestState()
 }
 
 void BufferManagerTestState::configure(const BufferManagerComponentImpl::BufferBins& bins) {
+    // Everything that outlives the pool in the component survives a re-setup here too: the lifetime
+    // counters, the event throttles (owned by the autocoded base) and the last telemetry written
+    const BufferManagerTestState previous = *this;
     *this = BufferManagerTestState();
+    this->shadow_noBuffs = previous.shadow_noBuffs;
+    this->shadow_emptyBuffs = previous.shadow_emptyBuffs;
+    this->shadow_noBuffsEvents = previous.shadow_noBuffsEvents;
+    this->shadow_emptyBuffsEvents = previous.shadow_emptyBuffsEvents;
+    this->shadow_zeroEvents = previous.shadow_zeroEvents;
+    this->shadow_tlmSent = previous.shadow_tlmSent;
+    this->shadow_lastTotalBuffs = previous.shadow_lastTotalBuffs;
+    this->shadow_lastCurrBuffs = previous.shadow_lastCurrBuffs;
+    this->shadow_lastHighWater = previous.shadow_lastHighWater;
+    this->shadow_lastNoBuffs = previous.shadow_lastNoBuffs;
+    this->shadow_lastEmptyBuffs = previous.shadow_lastEmptyBuffs;
     this->shadow_bins = bins;
     this->shadow_isSetup = true;
     this->shadow_everSetup = true;
@@ -175,7 +189,15 @@ void BufferManagerTestState::recordGet(const Fw::Buffer& buffer, U16 bin, FwSize
 }
 
 void BufferManagerTestState::recordZeroRequest() {
-    this->shadow_zeroEvents++;
+    this->shadow_noBuffs++;
+    if (this->shadow_zeroEvents < EVENT_THROTTLE) {
+        this->shadow_zeroEvents++;
+    }
+}
+
+void BufferManagerTestState::dropHeld() {
+    this->shadow_held.clear();
+    this->shadow_currBuffs = 0;
 }
 
 void BufferManagerTestState::recordNoBuffer() {

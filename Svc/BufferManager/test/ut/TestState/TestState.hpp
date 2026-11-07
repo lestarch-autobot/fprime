@@ -85,8 +85,11 @@ class BufferManagerTestState {
     //! Record a failed allocation
     void recordNoBuffer();
 
-    //! Record a rejected zero-sized request
+    //! Record a rejected zero-sized request (counted in NoBuffs, event throttled)
     void recordZeroRequest();
+
+    //! Forget every held buffer (the pool they came from was cleaned up underneath them)
+    void dropHeld();
 
     //! Record the return of held buffer at index
     void recordReturn(FwSizeType index);

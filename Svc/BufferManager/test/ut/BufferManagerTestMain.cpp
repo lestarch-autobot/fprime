@@ -89,6 +89,7 @@ namespace {
 struct Rules {
     BufferManagerTester::Lifecycle__Setup setup;
     BufferManagerTester::Lifecycle__Cleanup cleanup;
+    BufferManagerTester::Lifecycle__CleanupHolding cleanupHolding;
     BufferManagerTester::Lifecycle__NotSetupAsserts notSetupAsserts;
     BufferManagerTester::Lifecycle__BinOrderAsserts binOrderAsserts;
     BufferManagerTester::Lifecycle__SizeOverflowAsserts sizeOverflowAsserts;
@@ -209,7 +210,7 @@ TEST(Rules, EventThrottling) {
 }
 
 // Use before setup, single-buffer pool, setup over a live pool, idempotent cleanup, use after
-// cleanup, and a second setup/cleanup cycle that releases its own pool
+// cleanup, then setup/cleanup cycles (one with a buffer still out) whose telemetry restarts per pool
 TEST(Rules, Lifecycle) {
     BufferManagerTester tester;
     Rules r;
@@ -222,6 +223,12 @@ TEST(Rules, Lifecycle) {
     r.notSetupAsserts.apply(tester);
     r.setup.apply(tester);
     r.get.apply(tester);
+    r.sched.apply(tester);
+    r.cleanupHolding.apply(tester);
+    r.setup.apply(tester);
+    r.sched.apply(tester);
+    r.zero.apply(tester);
+    r.sched.apply(tester);
     r.cleanup.apply(tester);
 }
 

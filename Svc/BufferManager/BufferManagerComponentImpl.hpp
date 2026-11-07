@@ -51,6 +51,10 @@ namespace Svc {
 // 7. The bins passed to setup() contain no buffers at all.
 // 8. setup() is called while the instance is already set up (call cleanup() first).
 //
+// After cleanup(), setup() may be called again (with the same or another allocator and bin table);
+//    the new pool is released by the next cleanup(). CurrBuffs/HiBuffs restart with the new pool while
+//    NoBuffs/EmptyBuffs keep counting over the lifetime of the instance.
+//
 // Note that a pointer to the Fw::MemAllocator used in setup() is stored for later memory cleanup.
 // The instance of the allocator must persist beyond calling the cleanup() function or the
 // destructor of BufferManager if cleanup() is not called. If a project-specific manual memory
