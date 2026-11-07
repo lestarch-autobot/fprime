@@ -947,7 +947,10 @@ void BufferManagerTester ::setupRulesRandom() {
 }
 
 void BufferManagerTester ::teardownRules() {
-    this->Lifecycle__Cleanup__action();
+    // A random scenario may end with the pool already cleaned up by a lifecycle rule
+    if (this->shadow.shadow_isSetup) {
+        this->Lifecycle__Cleanup__action();
+    }
 }
 
 void BufferManagerTester ::ruleGet(FwSizeType size) {
