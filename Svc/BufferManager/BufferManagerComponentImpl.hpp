@@ -27,9 +27,9 @@ namespace Svc {
 // The rules for specifying bins:
 // 1. For each bin (BufferBins.bins[n]), specify the size of the buffers (bufferSize) in the
 //    bin and how many buffers for that bin (numBuffers).
-// 2. The bins should be ordered based on an increasing bufferSize to allow BufferManager to
-//    search for available buffers. When receiving a request for a buffer, the component will
-//    search for the first buffer from the bins that is equal to or greater
+// 2. Bins with a non-zero numBuffers must be ordered by non-decreasing bufferSize (empty bins
+//    may appear anywhere); setup() asserts otherwise. When receiving a request for a buffer, the
+//    component will search for the first buffer from the bins that is equal to or greater
 //    than the requested size, starting at the beginning of the table.
 // 3. Any unused bins should have numBuffers set to 0.
 // 4. A single bin can be specified if a single size is needed.
@@ -46,6 +46,7 @@ namespace Svc {
 // 3. A returned buffer is returned with a correct buffer ID, but it isn't already allocated.
 // 4. A returned buffer has an indicated size larger than originally allocated.
 // 5. A returned buffer has a pointer different than the one originally allocated.
+// 6. The non-empty bins (numBuffers != 0) passed to setup() are not ordered by non-decreasing bufferSize.
 //
 // Note that a pointer to the Fw::MemAllocator used in setup() is stored for later memory cleanup.
 // The instance of the allocator must persist beyond calling the cleanup() function or the

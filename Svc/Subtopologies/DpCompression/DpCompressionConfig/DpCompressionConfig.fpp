@@ -5,6 +5,7 @@ module DpCompressionConfig {
     # Buffer management constants
 
     module ZLibBuffMgr {
+        # compressionBufferStoreSize must be <= allocBufferStoreSize: BufferManager asserts on bins not in non-decreasing size order
         constant compressionBufferStoreSize  = 32*1024
         constant compressionBufferStoreCount = 2
         constant allocBufferStoreSize  = 269000

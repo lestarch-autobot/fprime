@@ -146,6 +146,7 @@ Buffer manager will assert under the following conditions:
 3. A returned buffer is returned with a correct buffer ID but hasn't already been allocated.
 4. A returned buffer has an indicated size larger than originally allocated.
 5. A returned buffer has a pointer outside the region originally allocated.
+6. The non-empty bins passed to `setup()` are not ordered by non-decreasing `bufferSize`.
 
 **Connections**
 
@@ -181,9 +182,10 @@ The rules for specifying bins:
 
 1. For each bin (BufferBins.bins[n]), specify the size of the buffers (bufferSize) in the bin and how many buffers for
    that bin (numBuffers).
-2. The bins must be ordered based on an increasing bufferSize to allow BufferManager to search for available buffers.
-   When receiving a request for a buffer, the component will search for the first buffer from the bins that are equal to
-   or greater than the requested size, starting at the beginning of the table.
+2. Bins with a non-zero `numBuffers` must be ordered by non-decreasing `bufferSize` (equal sizes are allowed; unused
+   bins may appear anywhere); `setup()` asserts otherwise, so a misordered table fails at initialization rather than at
+   run time. When receiving a request for a buffer, the component will search for the first buffer from the bins that
+   are equal to or greater than the requested size, starting at the beginning of the table.
 3. Any unused bins should have numBuffers set to 0.
 4. A single bin can be specified if a single size is needed. 
    
