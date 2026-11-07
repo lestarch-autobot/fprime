@@ -106,6 +106,7 @@ Fw::Buffer BufferManagerComponentImpl ::bufferGetCallee_handler(const FwIndexTyp
     // a zero-sized request would consume a slot while reading as empty to the caller; reject it
     if (size == 0) {
         this->log_WARNING_HI_ZeroSizeRequest();
+        this->m_noBuffs++;
         return Fw::Buffer();
     }
     // find smallest buffer based on size.
@@ -140,6 +141,9 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     this->m_memId = memId;
     this->m_allocator = &allocator;
     this->m_cleaned = false;
+    // per-pool statistics restart with the new pool; NoBuffs/EmptyBuffs count over the instance lifetime
+    this->m_currBuffs = 0;
+    this->m_highWater = 0;
     // clear bins
     (void)memset(&this->m_bufferBins, 0, sizeof(this->m_bufferBins));
 

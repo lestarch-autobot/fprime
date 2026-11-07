@@ -126,6 +126,7 @@ class BufferManagerTester : public BufferManagerGTestBase {
     //! Rules for setup() and cleanup()
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, Setup);
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, Cleanup);
+    FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, CleanupHolding);
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, NotSetupAsserts);
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, BinOrderAsserts);
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, SizeOverflowAsserts);

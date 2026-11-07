@@ -54,6 +54,23 @@ void BufferManagerTester::Lifecycle__Cleanup__action() {
 }
 
 // ----------------------------------------------------------------------
+// Lifecycle.CleanupHolding — clean up while buffers are still out; the pool goes away with them
+// ----------------------------------------------------------------------
+
+bool BufferManagerTester::Lifecycle__CleanupHolding__precondition() const {
+    return this->shadow.shadow_isSetup && !this->shadow.shadow_held.empty();
+}
+
+void BufferManagerTester::Lifecycle__CleanupHolding__action() {
+    const U32 before = this->m_rulesAllocator.getDeallocCount();
+    this->component.cleanup();
+    ASSERT_EQ(before + 1, this->m_rulesAllocator.getDeallocCount());
+    ASSERT_EQ(this->m_rulesAllocator.getMem(), this->m_rulesAllocator.getDeallocPtr());
+    this->shadow.dropHeld();
+    this->shadow.shadow_isSetup = false;
+}
+
+// ----------------------------------------------------------------------
 // Lifecycle.NotSetupAsserts — the ports reject use while not set up
 // ----------------------------------------------------------------------
 
