@@ -36,9 +36,10 @@ namespace Svc {
 //
 // If a buffer is requested that can't be found among available buffers, the call will
 //    return an Fw::Buffer with a size of zero. It is expected that the user will notice
-//    and have the appropriate response for the design. If an empty buffer is returned to
-//    the BufferManager instance, a warning event will be issued but no other action will
-//    be taken.
+//    and have the appropriate response for the design. A request for a zero-sized buffer
+//    is rejected the same way (empty Fw::Buffer plus a warning event) without consuming a
+//    buffer. If an empty buffer is returned to the BufferManager instance, a warning event
+//    will be issued but no other action will be taken.
 //
 // Buffer manager will assert under the following conditions:
 // 1. A returned buffer has the incorrect manager ID.
@@ -47,6 +48,8 @@ namespace Svc {
 // 4. A returned buffer has an indicated size larger than originally allocated.
 // 5. A returned buffer has a pointer different than the one originally allocated.
 // 6. The non-empty bins (numBuffers != 0) passed to setup() are not ordered by non-decreasing bufferSize.
+// 7. The bins passed to setup() contain no buffers at all.
+// 8. setup() is called while the instance is already set up (call cleanup() first).
 //
 // Note that a pointer to the Fw::MemAllocator used in setup() is stored for later memory cleanup.
 // The instance of the allocator must persist beyond calling the cleanup() function or the

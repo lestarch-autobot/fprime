@@ -129,6 +129,8 @@ class BufferManagerTester : public BufferManagerGTestBase {
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, NotSetupAsserts);
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, BinOrderAsserts);
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, SizeOverflowAsserts);
+    FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, EmptyBinsAsserts);
+    FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, SetupTwiceAsserts);
     //! Rules for the bufferGetCallee port
     FW_RBT_DEFINE_RULE(BufferManagerTester, BufferGet, Ok);
     FW_RBT_DEFINE_RULE(BufferManagerTester, BufferGet, Between);
@@ -151,6 +153,9 @@ class BufferManagerTester : public BufferManagerGTestBase {
     static_assert(BufferManagerTestState::EVENT_THROTTLE ==
                       BufferManagerComponentImpl::EVENTID_NULLEMPTYBUFFER_THROTTLE,
                   "shadow throttle must match the NullEmptyBuffer throttle in the model");
+    static_assert(BufferManagerTestState::EVENT_THROTTLE ==
+                      BufferManagerComponentImpl::EVENTID_ZEROSIZEREQUEST_THROTTLE,
+                  "shadow throttle must match the ZeroSizeRequest throttle in the model");
 
   private:
     // ----------------------------------------------------------------------
