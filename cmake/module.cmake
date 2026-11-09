@@ -213,23 +213,19 @@ function(fprime__process_module_setup FPRIME_MODULE_TYPE ADDITIONAL_CONTROL_SETS
 endfunction()
 
 ####
-# Function `fprime__internal_setup_universe`:
+# Function `fprime__internal_mark_exclusion`:
 #
-# Places a newly registered target in the `universe` target and, when the target belongs to included code (the
-# framework or a library) and `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL` is in effect, excludes it from `all`. A target that
-# excluded itself explicitly (EXCLUDE_FROM_ALL in its register call, or inherited from a directory added with
-# EXCLUDE_FROM_ALL) is recorded as FPRIME_EXPLICITLY_EXCLUDED and is not added to `universe`: it builds only when named
-# or depended upon. A unit test so excluded is also skipped by deployment unit-test roll-ups.
+# Records how a newly registered target relates to `all`. A target that excluded itself explicitly (EXCLUDE_FROM_ALL in
+# its register call, or inherited from a directory added with EXCLUDE_FROM_ALL) is recorded as
+# FPRIME_EXPLICITLY_EXCLUDED: it is left out of `universe` and builds only when named or depended upon, and a unit test
+# so excluded is skipped by deployment unit-test roll-ups. Otherwise, when the target belongs to included code (the
+# framework or a library) and `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL` is in effect, it is excluded from `all` and built
+# through `universe` (see `fprime__internal_setup_universe_target`).
 #
 # - **TARGET_NAME:** name of the registered target
 # - **FPRIME_CMAKE_ADD_OPTIONS:** CMake `add_*` options supplied to the registration
 ####
-function(fprime__internal_setup_universe TARGET_NAME FPRIME_CMAKE_ADD_OPTIONS)
-    if (NOT TARGET "${FPRIME_UNIVERSE_TARGET}")
-        add_custom_target("${FPRIME_UNIVERSE_TARGET}")
-    endif()
-    # Explicit exclusion: EXCLUDE_FROM_ALL on the register call, or inherited from a directory added with
-    # add_fprime_subdirectory(... EXCLUDE_FROM_ALL). Such targets build only when named or depended upon.
+function(fprime__internal_mark_exclusion TARGET_NAME FPRIME_CMAKE_ADD_OPTIONS)
     get_target_property(FPRIME__INTERNAL_ALREADY_EXCLUDED "${TARGET_NAME}" EXCLUDE_FROM_ALL)
     if ("EXCLUDE_FROM_ALL" IN_LIST FPRIME_CMAKE_ADD_OPTIONS OR FPRIME__INTERNAL_ALREADY_EXCLUDED)
         set_target_properties("${TARGET_NAME}" PROPERTIES FPRIME_EXPLICITLY_EXCLUDED TRUE)
@@ -239,11 +235,29 @@ function(fprime__internal_setup_universe TARGET_NAME FPRIME_CMAKE_ADD_OPTIONS)
     if (FPRIME__INTERNAL_INCLUDED_CODE AND FPRIME__INTERNAL_EXCLUDING)
         set_target_properties("${TARGET_NAME}" PROPERTIES EXCLUDE_FROM_ALL TRUE)
     endif()
-    get_target_property(FPRIME__INTERNAL_TARGET_TYPE "${TARGET_NAME}" TYPE)
-    if (NOT FPRIME__INTERNAL_TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
-        add_dependencies("${FPRIME_UNIVERSE_TARGET}" "${TARGET_NAME}")
+endfunction(fprime__internal_mark_exclusion)
+
+####
+# Function `fprime__internal_setup_universe_target`:
+#
+# Creates the `universe` target (name: FPRIME_UNIVERSE_TARGET) depending on every module registered through the F Prime
+# API (the FPRIME_MODULES global property) except modules that excluded themselves explicitly. Runs once, deferred to the
+# end of the top-level directory's configuration so that every module is known; builds the whole build system.
+####
+function(fprime__internal_setup_universe_target)
+    if (TARGET "${FPRIME_UNIVERSE_TARGET}")
+        return()
     endif()
-endfunction(fprime__internal_setup_universe)
+    add_custom_target("${FPRIME_UNIVERSE_TARGET}")
+    get_property(FPRIME__INTERNAL_ALL_MODULES GLOBAL PROPERTY FPRIME_MODULES)
+    foreach (FPRIME__INTERNAL_MODULE IN LISTS FPRIME__INTERNAL_ALL_MODULES)
+        get_target_property(FPRIME__INTERNAL_TARGET_TYPE "${FPRIME__INTERNAL_MODULE}" TYPE)
+        get_target_property(FPRIME__INTERNAL_EXPLICIT "${FPRIME__INTERNAL_MODULE}" FPRIME_EXPLICITLY_EXCLUDED)
+        if (NOT FPRIME__INTERNAL_EXPLICIT AND NOT FPRIME__INTERNAL_TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
+            add_dependencies("${FPRIME_UNIVERSE_TARGET}" "${FPRIME__INTERNAL_MODULE}")
+        endif()
+    endforeach()
+endfunction(fprime__internal_setup_universe_target)
 
 ####
 # Function `fprime__internal_add_build_target_helper`:
@@ -287,7 +301,7 @@ function(fprime__internal_add_build_target_helper TARGET_NAME TYPE SOURCES AUTOC
         )
     endif()
     if (NOT FPRIME_IS_SUB_BUILD)
-        fprime__internal_setup_universe("${TARGET_NAME}" "${FPRIME_CMAKE_ADD_OPTIONS}")
+        fprime__internal_mark_exclusion("${TARGET_NAME}" "${FPRIME_CMAKE_ADD_OPTIONS}")
     endif()
     fprime_util_metadata_add_build_target("${TARGET_NAME}")
     # TODO: this is needed because sub-builds still attempt register targets, but without the build target to add back in the
