@@ -77,6 +77,11 @@ message from the active rate group but will not start until their thread becomes
 without blocking each other, however; it becomes harder to detect when more work is scheduled in a cycle than can be
 completed during the cycle because all work runs concurrently and competes for time across multiple threads.
 
+Active components whose rate group work only needs to run once per backlog (telemetry writes, housekeeping, paced
+background processing) should receive the tick through the
+[single queued message pattern](./single-queued-message.md), so that a component that falls behind holds at most one
+tick message on its queue rather than accumulating one message per missed cycle.
+
 
 ## Rate Group Example: `Ref`
 
