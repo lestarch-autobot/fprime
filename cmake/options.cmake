@@ -128,7 +128,8 @@ option(FPRIME_ENABLE_FRAMEWORK_UTS "Enable framework UT generation" ON)
 # `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL`:
 #
 # Mark the modules of the F Prime framework and of F Prime libraries `EXCLUDE_FROM_ALL`, so that a project build (the
-# `all` target, `fprime-util build` at the project root, or `fprime-util build --project`) builds the project's own
+# `all` target, `fprime-util build` at the project root, or `fprime-util build --project` in fprime-tools releases after
+# 4.4.0) builds the project's own
 # modules, deployments, unit tests, and only the framework and library modules they depend upon. Every registered
 # module, excluded or not, is added to the `universe` target, which builds the whole build system
 # (`cmake --build . --target universe`). Framework and library unit tests that are excluded from `all` carry the CTest
