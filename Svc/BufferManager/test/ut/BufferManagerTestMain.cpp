@@ -157,6 +157,8 @@ TEST(Rules, SingleBin) {
 TEST(Rules, MultipleBins) {
     REQUIREMENT("FPRIME-BM-001");
     REQUIREMENT("FPRIME-BM-002");
+    REQUIREMENT("FPRIME-BM-003");
+    REQUIREMENT("FPRIME-BM-004");
     REQUIREMENT("FPRIME-BM-007");
     BufferManagerTester tester;
     Rules r;
@@ -271,11 +273,16 @@ TEST(Rules, SendInAsserts) {
     tester.teardownRules();
 }
 
-// Randomized test against the three-bin configuration
+// Randomized test against the three-bin configuration: every port and lifecycle behavior interleaved
 TEST(Rules, Random) {
+    REQUIREMENT("FPRIME-BM-001");
     REQUIREMENT("FPRIME-BM-002");
+    REQUIREMENT("FPRIME-BM-003");
+    REQUIREMENT("FPRIME-BM-004");
+    REQUIREMENT("FPRIME-BM-005");
     REQUIREMENT("FPRIME-BM-006");
     REQUIREMENT("FPRIME-BM-007");
+    REQUIREMENT("FPRIME-BM-009");
     REQUIREMENT("FPRIME-BM-012");
     BufferManagerTester tester;
     Rules r;
@@ -284,10 +291,17 @@ TEST(Rules, Random) {
     tester.teardownRules();
 }
 
-// Randomized test against a random bin configuration
+// Randomized test against a random bin configuration: the same mix over an arbitrary legal table
 TEST(Rules, RandomBins) {
     REQUIREMENT("FPRIME-BM-001");
     REQUIREMENT("FPRIME-BM-002");
+    REQUIREMENT("FPRIME-BM-003");
+    REQUIREMENT("FPRIME-BM-004");
+    REQUIREMENT("FPRIME-BM-005");
+    REQUIREMENT("FPRIME-BM-006");
+    REQUIREMENT("FPRIME-BM-007");
+    REQUIREMENT("FPRIME-BM-009");
+    REQUIREMENT("FPRIME-BM-012");
     BufferManagerTester tester;
     Rules r;
     tester.setupRulesRandom();

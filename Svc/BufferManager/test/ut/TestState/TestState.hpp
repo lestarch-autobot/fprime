@@ -3,7 +3,8 @@
 // \brief  Shadow state model for BufferManager rule-based testing
 //
 // Models only what the ports expose: the bin table, free counts per bin, the buffers held by the test
-// and the telemetry counters. It knows nothing of how the component lays out or indexes its pool.
+// and the telemetry counters. It knows nothing of how the component lays out its pool; buffer identity
+// is read only from the Fw::Buffer context (encoding below).
 // ======================================================================
 #ifndef Svc_BufferManagerTestState_HPP
 #define Svc_BufferManagerTestState_HPP
@@ -29,7 +30,8 @@ class BufferManagerTestState {
     static const U32 EVENT_THROTTLE = 10;
 
     // ----------------------------------------------------------------------
-    // Buffer context encoding (SDD 3.6.2): manager ID in the high 16 bits, buffer ID in the low 16 bits
+    // Buffer context encoding: manager ID in the high 16 bits, buffer ID (dense, 0..TotalBuffs-1) in the low 16
+    // bits. SDD 3.6.2 names the two fields; the split is the component's port contract.
     // ----------------------------------------------------------------------
 
     static U32 contextOf(U16 mgrId, U32 bufferId);
@@ -37,14 +39,12 @@ class BufferManagerTestState {
     static U32 bufferIdOf(const Fw::Buffer& buffer);
 
   public:
-    BufferManagerTestState();
-
     // ----------------------------------------------------------------------
     // Updates mirroring component actions
     // ----------------------------------------------------------------------
 
     //! Stage the bin table the next setup() will use
-    void stageBins(const BufferManagerComponentImpl::BufferBins& table);
+    void stageBins(const BufferManagerComponentImpl::BufferBins& bins);
 
     //! Mirror setup() with the staged bins: the per-pool state restarts while the lifetime counters, event
     //! throttles and last telemetry written persist
@@ -109,37 +109,41 @@ class BufferManagerTestState {
     //! True if the given buffer's [data, data + capacity) overlaps any held buffer
     bool overlapsHeld(const Fw::Buffer& buffer) const;
 
+  private:
+    //! True if bin has a free buffer and is more than one byte larger than the bin before it
+    bool hasGapBelow(U16 bin) const;
+
   public:
     // ----------------------------------------------------------------------
     // Shadow state
     // ----------------------------------------------------------------------
 
-    BufferManagerComponentImpl::BufferBins bins;  //!< Bins staged for the next setup()
-    bool isSetup;                                 //!< True between setup() and cleanup()
-    bool everSetup;                               //!< True once setup() has been called
+    BufferManagerComponentImpl::BufferBins table = {};  //!< Bin table staged for the next setup()
+    bool isSetup = false;                               //!< True between setup() and cleanup()
+    bool everSetup = false;                             //!< True once setup() has been called
 
-    FwSizeType binSize[BUFFERMGR_MAX_NUM_BINS];  //!< Buffer size per configured bin
-    U16 binFree[BUFFERMGR_MAX_NUM_BINS];         //!< Free buffers per configured bin
-    U16 numBins;                                 //!< Number of configured (non-empty) bins
+    FwSizeType binSize[BUFFERMGR_MAX_NUM_BINS] = {};  //!< Buffer size per configured bin
+    U16 binFree[BUFFERMGR_MAX_NUM_BINS] = {};         //!< Free buffers per configured bin
+    U16 numBins = 0;                                  //!< Number of configured (non-empty) bins
 
     std::vector<HeldBuffer> held;  //!< Buffers obtained and not yet returned
 
-    U32 totalBuffs;  //!< Expected TotalBuffs telemetry
-    U32 currBuffs;   //!< Expected CurrBuffs telemetry
-    U32 highWater;   //!< Expected HiBuffs telemetry
-    U32 noBuffs;     //!< Expected NoBuffs telemetry
-    U32 emptyBuffs;  //!< Expected EmptyBuffs telemetry
+    U32 totalBuffs = 0;  //!< Expected TotalBuffs telemetry
+    U32 currBuffs = 0;   //!< Expected CurrBuffs telemetry
+    U32 highWater = 0;   //!< Expected HiBuffs telemetry
+    U32 noBuffs = 0;     //!< Expected NoBuffs telemetry
+    U32 emptyBuffs = 0;  //!< Expected EmptyBuffs telemetry
 
-    U32 noBuffsEvents;     //!< NoBuffsAvailable events emitted so far (throttled)
-    U32 zeroEvents;        //!< ZeroSizeRequest events emitted so far (throttled)
-    U32 emptyBuffsEvents;  //!< NullEmptyBuffer events emitted so far (throttled)
+    U32 noBuffsEvents = 0;     //!< NoBuffsAvailable events emitted so far (throttled)
+    U32 zeroEvents = 0;        //!< ZeroSizeRequest events emitted so far (throttled)
+    U32 emptyBuffsEvents = 0;  //!< NullEmptyBuffer events emitted so far (throttled)
 
-    bool tlmSent;        //!< True once schedIn has written telemetry
-    U32 lastTotalBuffs;  //!< Last TotalBuffs value written
-    U32 lastCurrBuffs;   //!< Last CurrBuffs value written
-    U32 lastHighWater;   //!< Last HiBuffs value written
-    U32 lastNoBuffs;     //!< Last NoBuffs value written
-    U32 lastEmptyBuffs;  //!< Last EmptyBuffs value written
+    bool tlmSent = false;    //!< True once schedIn has written telemetry
+    U32 lastTotalBuffs = 0;  //!< Last TotalBuffs value written
+    U32 lastCurrBuffs = 0;   //!< Last CurrBuffs value written
+    U32 lastHighWater = 0;   //!< Last HiBuffs value written
+    U32 lastNoBuffs = 0;     //!< Last NoBuffs value written
+    U32 lastEmptyBuffs = 0;  //!< Last EmptyBuffs value written
 };
 
 }  // namespace Svc

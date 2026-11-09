@@ -19,7 +19,7 @@ bool BufferManagerTester::Lifecycle__Setup__precondition() const {
 
 void BufferManagerTester::Lifecycle__Setup__action() {
     const U32 deallocsBefore = this->m_allocator.getDeallocCount();
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, this->shadow.bins);
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, this->shadow.table);
     this->shadow.configure();
     this->clearHistory();
 
@@ -66,7 +66,7 @@ void BufferManagerTester::Lifecycle__CleanupHolding__action() {
 }
 
 // ----------------------------------------------------------------------
-// Lifecycle.NotSetupAsserts — the ports reject use while not set up
+// Lifecycle.NotSetupAsserts — the ports reject use while not set up; so does cleanup() before any setup()
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::Lifecycle__NotSetupAsserts__precondition() const {
@@ -98,7 +98,7 @@ void BufferManagerTester::Lifecycle__BinOrderAsserts__action() {
 }
 
 // ----------------------------------------------------------------------
-// Lifecycle.EmptyBinsAsserts — a configuration with no buffers is rejected
+// Lifecycle.EmptyBinsAsserts — a configuration with no buffers, or with zero-sized buffers, is rejected
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::Lifecycle__EmptyBinsAsserts__precondition() const {
@@ -124,7 +124,7 @@ bool BufferManagerTester::Lifecycle__SetupTwiceAsserts__precondition() const {
 }
 
 void BufferManagerTester::Lifecycle__SetupTwiceAsserts__action() {
-    this->expectSetupDeath(this->shadow.bins);
+    this->expectSetupDeath(this->shadow.table);
 }
 
 // ----------------------------------------------------------------------

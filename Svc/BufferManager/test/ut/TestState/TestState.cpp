@@ -26,34 +26,12 @@ U32 BufferManagerTestState::bufferIdOf(const Fw::Buffer& buffer) {
     return buffer.getContext() & CONTEXT_ID_MASK;
 }
 
-BufferManagerTestState::BufferManagerTestState()
-    : bins(),
-      isSetup(false),
-      everSetup(false),
-      binSize(),
-      binFree(),
-      numBins(0),
-      totalBuffs(0),
-      currBuffs(0),
-      highWater(0),
-      noBuffs(0),
-      emptyBuffs(0),
-      noBuffsEvents(0),
-      zeroEvents(0),
-      emptyBuffsEvents(0),
-      tlmSent(false),
-      lastTotalBuffs(0),
-      lastCurrBuffs(0),
-      lastHighWater(0),
-      lastNoBuffs(0),
-      lastEmptyBuffs(0) {}
-
 // ----------------------------------------------------------------------
 // Updates mirroring component actions
 // ----------------------------------------------------------------------
 
-void BufferManagerTestState::stageBins(const BufferManagerComponentImpl::BufferBins& table) {
-    this->bins = table;
+void BufferManagerTestState::stageBins(const BufferManagerComponentImpl::BufferBins& bins) {
+    this->table = bins;
 }
 
 void BufferManagerTestState::configure() {
@@ -69,10 +47,10 @@ void BufferManagerTestState::configure() {
         this->binFree[bin] = 0;
     }
     for (U16 bin = 0; bin < BUFFERMGR_MAX_NUM_BINS; bin++) {
-        if (this->bins.bins[bin].numBuffers != 0) {
-            this->binSize[this->numBins] = this->bins.bins[bin].bufferSize;
-            this->binFree[this->numBins] = this->bins.bins[bin].numBuffers;
-            this->totalBuffs += this->bins.bins[bin].numBuffers;
+        if (this->table.bins[bin].numBuffers != 0) {
+            this->binSize[this->numBins] = this->table.bins[bin].bufferSize;
+            this->binFree[this->numBins] = this->table.bins[bin].numBuffers;
+            this->totalBuffs += this->table.bins[bin].numBuffers;
             this->numBins++;
         }
     }
@@ -169,9 +147,13 @@ bool BufferManagerTestState::expectedBin(FwSizeType size, U16& bin) const {
     return false;
 }
 
+bool BufferManagerTestState::hasGapBelow(U16 bin) const {
+    return this->binFree[bin] != 0 && this->binSize[bin] > this->binSize[bin - 1] + 1;
+}
+
 bool BufferManagerTestState::hasBetweenBinSize() const {
     for (U16 bin = 1; bin < this->numBins; bin++) {
-        if (this->binFree[bin] != 0 && this->binSize[bin] > this->binSize[bin - 1] + 1) {
+        if (this->hasGapBelow(bin)) {
             return true;
         }
     }
@@ -184,7 +166,7 @@ FwSizeType BufferManagerTestState::pickBetweenBinSize() const {
     U16 candidates[BUFFERMGR_MAX_NUM_BINS] = {};
     U16 count = 0;
     for (U16 bin = 1; bin < this->numBins; bin++) {
-        if (this->binFree[bin] != 0 && this->binSize[bin] > this->binSize[bin - 1] + 1) {
+        if (this->hasGapBelow(bin)) {
             candidates[count] = bin;
             count++;
         }

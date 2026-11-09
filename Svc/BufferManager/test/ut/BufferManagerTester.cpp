@@ -13,6 +13,7 @@
 #include "BufferManagerTester.hpp"
 #include <algorithm>
 #include <cstring>
+#include <utility>
 #include "Fw/Test/UnitTest.hpp"
 #include "STest/Pick/Pick.hpp"
 
@@ -135,7 +136,7 @@ void BufferManagerTester ::singleBin() {
     for (U16 b = 0; b < BIN1_NUM_BUFFERS; b++) {
         this->returnBuffer(buffers[order[b]]);
     }
-    // The empty result of the failed request is rejected with a warning
+    // An empty buffer (what a failed request returns) is rejected with a warning
     Fw::Buffer empty;
     this->returnEmptyBuffer(empty);
     // Update on change: only CurrBuffs and EmptyBuffs moved
@@ -278,11 +279,11 @@ void BufferManagerTester ::eventThrottling() {
 
     this->component.setup(MGR_ID, MEM_ID, this->m_allocator, oneBin(BIN0_BUFFER_SIZE, 1));
 
-    const U32 REQUESTS = BufferManagerTestState::EVENT_THROTTLE + 2;
+    const U32 requests = BufferManagerTestState::EVENT_THROTTLE + 2;
     Fw::Buffer only = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
 
     // Failed requests are reported until the event throttles
-    for (U32 i = 0; i < REQUESTS; i++) {
+    for (U32 i = 0; i < requests; i++) {
         Fw::Buffer none = this->invoke_to_bufferGetCallee(0, BIN0_BUFFER_SIZE);
         ASSERT_FALSE(none.isValid());
     }
@@ -292,7 +293,7 @@ void BufferManagerTester ::eventThrottling() {
     }
 
     // Empty returns are reported until the event throttles
-    for (U32 i = 0; i < REQUESTS; i++) {
+    for (U32 i = 0; i < requests; i++) {
         Fw::Buffer empty;
         this->invoke_to_bufferSendIn(0, empty);
     }
@@ -300,21 +301,21 @@ void BufferManagerTester ::eventThrottling() {
 
     // Counters keep counting past the throttle
     this->checkTelemetry(NUM_TLM_CHANNELS);
-    ASSERT_TLM_NoBuffs(0, REQUESTS);
-    ASSERT_TLM_EmptyBuffs(0, REQUESTS);
+    ASSERT_TLM_NoBuffs(0, requests);
+    ASSERT_TLM_EmptyBuffs(0, requests);
 
     this->returnBuffer(only);
 
     // ZeroSizeRequest throttles the same way, and each rejection still counts in NoBuffs
     this->clearHistory();
-    for (U32 i = 0; i < REQUESTS; i++) {
+    for (U32 i = 0; i < requests; i++) {
         Fw::Buffer zero = this->invoke_to_bufferGetCallee(0, 0);
         ASSERT_FALSE(zero.isValid());
     }
     ASSERT_EVENTS_ZeroSizeRequest_SIZE(BufferManagerTestState::EVENT_THROTTLE);
     this->checkTelemetry(2);  // CurrBuffs (the return) and NoBuffs moved
     ASSERT_TLM_CurrBuffs(0, 0);
-    ASSERT_TLM_NoBuffs(0, 2 * REQUESTS);
+    ASSERT_TLM_NoBuffs(0, 2 * requests);
     this->component.cleanup();
 }
 

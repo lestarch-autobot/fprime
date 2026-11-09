@@ -24,7 +24,6 @@ namespace Svc {
 //! Instrumented allocator recording the latest allocation and every deallocation
 class TestAllocator : public Fw::MemAllocator {
   public:
-    TestAllocator() : m_reqId(0), m_reqSize(0), m_mem(nullptr), m_deallocCount(0), m_deallocPtr(nullptr) {}
     ~TestAllocator() override = default;
     void* allocate(const FwEnumStoreType identifier,
                    FwSizeType& size,
@@ -48,11 +47,11 @@ class TestAllocator : public Fw::MemAllocator {
 
   private:
     Fw::MallocAllocator m_alloc;
-    FwEnumStoreType m_reqId;
-    FwSizeType m_reqSize;
-    void* m_mem;
-    U32 m_deallocCount;
-    void* m_deallocPtr;
+    FwEnumStoreType m_reqId = 0;
+    FwSizeType m_reqSize = 0;
+    void* m_mem = nullptr;
+    U32 m_deallocCount = 0;
+    void* m_deallocPtr = nullptr;
 };
 
 class BufferManagerTester : public BufferManagerGTestBase {
@@ -194,7 +193,7 @@ class BufferManagerTester : public BufferManagerGTestBase {
 
     //! Request a buffer and check its size, capacity and manager ID; no event is emitted
     Fw::Buffer getBuffer(FwSizeType size, FwSizeType expectedCapacity);
-    //! Request every configured buffer in bin order, each at its bin's size
+    //! Request every buffer of the three-bin table (defaultBins()) in bin order, each at its bin's size
     void getAllBuffers(Fw::Buffer (&buffers)[TOTAL_NUM_BUFFERS]);
     //! Request a buffer that cannot be served and check the empty result and the NoBuffsAvailable warning
     void getNoBuffer(FwSizeType size);

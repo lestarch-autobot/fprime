@@ -24,7 +24,7 @@ void BufferManagerTester::BufferReturn__Ok__action() {
 }
 
 // ----------------------------------------------------------------------
-// BufferReturn.Trimmed — the user hands back less than was requested
+// BufferReturn.Trimmed — the user hands back at most what was requested
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::BufferReturn__Trimmed__precondition() const {
