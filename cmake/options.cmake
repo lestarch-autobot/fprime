@@ -125,6 +125,33 @@ endif()
 option(FPRIME_ENABLE_FRAMEWORK_UTS "Enable framework UT generation" ON)
 
 ####
+# `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL`:
+#
+# Mark the modules of the F Prime framework and of F Prime libraries `EXCLUDE_FROM_ALL`, so that a project build (the
+# `all` target, `fprime-util build` at the project root, or `fprime-util build --project` in fprime-tools releases after
+# 4.4.0) builds the project's own
+# modules, deployments, unit tests, and only the framework and library modules they depend upon. Every registered
+# module, excluded or not, is added to the `universe` target, which builds the whole build system
+# (`cmake --build . --target universe`). Framework and library unit tests that are excluded from `all` carry the CTest
+# label `fprime_universe` (`ctest -LE fprime_universe` runs the project's tests only).
+#
+# A module may still exclude itself explicitly with the `EXCLUDE_FROM_ALL` argument of its `register_fprime_*` call (or
+# of `add_fprime_subdirectory`); such modules are not part of `universe` either and are built only when named directly
+# or depended upon. A unit test so excluded is skipped by deployment unit-test roll-ups.
+#
+# This option is ignored (forced OFF) when F Prime itself is the top-level CMake project, since the framework build
+# must build everything.
+#
+# **Values:**
+# - ON: (default) framework and library modules are excluded from `all` and built on demand
+# - OFF: framework and library modules are part of `all` (historical behavior)
+#
+# e.g. `-DFPRIME_EXCLUDE_LIBRARIES_FROM_ALL=OFF`, or in `settings.ini`:
+# `default_cmake_options: FPRIME_EXCLUDE_LIBRARIES_FROM_ALL=OFF`
+####
+option(FPRIME_EXCLUDE_LIBRARIES_FROM_ALL "Exclude framework and library modules from 'all'; build them via 'universe'" ON)
+
+####
 # `FPRIME_ENABLE_AUTOCODER_UTS:`
 #
 # When FPRIME_ENABLE_FRAMEWORK_UTS is set, this allows a projects to also enable running the autocoder UTs which do not
