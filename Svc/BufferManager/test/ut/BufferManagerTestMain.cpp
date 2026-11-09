@@ -2,7 +2,6 @@
 // TestMain.cpp
 // ----------------------------------------------------------------------
 
-#include <cstring>
 #include "BufferManagerTester.hpp"
 #include "STest/Random/Random.hpp"
 #include "STest/Scenario/BoundedScenario.hpp"
@@ -106,9 +105,7 @@ void runRandom(BufferManagerTester& tester, Rules& r, const U32 numSteps) {
                                                  &r.none,  &r.ret,     &r.trimmed,        &r.empty, &r.sched};
     STest::RandomScenario<BufferManagerTester> random("Random Rules", rules, FW_NUM_ARRAY_ELEMENTS(rules));
     STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, numSteps);
-    const U32 ran = bounded.run(tester);
-    printf("Ran %u steps.\n", ran);
-    ASSERT_EQ(numSteps, ran);
+    ASSERT_EQ(numSteps, bounded.run(tester));
 }
 }  // namespace
 
@@ -234,13 +231,7 @@ TEST(Rules, SetupAsserts) {
     r.sizeOverflowAsserts.apply(tester);
     r.emptyBinsAsserts.apply(tester);
     Svc::BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = Svc::BufferManagerTester::BIN0_BUFFER_SIZE;
-    bins.bins[0].numBuffers = 1;
-    bins.bins[1].bufferSize = Svc::BufferManagerTester::BIN0_BUFFER_SIZE;
-    bins.bins[1].numBuffers = 1;
-    bins.bins[3].bufferSize = Svc::BufferManagerTester::BIN1_BUFFER_SIZE;
-    bins.bins[3].numBuffers = 1;
+    BufferManagerTester::equalAndGappedBins(bins);
     tester.setupRules(bins);
     r.get.apply(tester);
     tester.teardownRules();

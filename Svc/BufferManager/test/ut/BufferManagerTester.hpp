@@ -10,8 +10,8 @@
 //
 // ======================================================================
 
-#ifndef TESTER_HPP
-#define TESTER_HPP
+#ifndef Svc_BufferManagerTester_HPP
+#define Svc_BufferManagerTester_HPP
 
 #include <STest/Pick/Pick.hpp>
 #include "BufferManagerGTestBase.hpp"
@@ -84,8 +84,11 @@ class BufferManagerTester : public BufferManagerGTestBase {
 
     //! Setup, allocator contract, telemetry and buffer identity through the ports
     void setupBehavior();
+    //! A single bin: exhaustion, return in any order, every buffer available again
     void oneBufferSize();
+    //! Three bins: requests of each bin's size drain that bin and the larger ones in order
     void multBuffSize();
+    //! A buffer's size is trimmed to the request and it returns to its slot
     void bufferSizeTrimmed();
     //! Bin selection for sizes between, at, and beyond the bin boundaries
     void bufferSizeSelection();
@@ -120,6 +123,9 @@ class BufferManagerTester : public BufferManagerGTestBase {
     void setupRulesRandom();
     //! Return every held buffer and clean up the component (Lifecycle.Cleanup)
     void teardownRules();
+
+    //! Fill bins with two equal-size bins, an empty bin, then a larger bin: a legal irregular configuration
+    static void equalAndGappedBins(BufferManagerComponentImpl::BufferBins& bins);
 
     //! Rules for setup() and cleanup()
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, Setup);
@@ -163,6 +169,8 @@ class BufferManagerTester : public BufferManagerGTestBase {
 
     //! Fill bins with the three-bin test configuration
     static void defaultBins(BufferManagerComponentImpl::BufferBins& bins);
+    //! Fill bins with a single bin of count buffers of the given size
+    static void oneBin(BufferManagerComponentImpl::BufferBins& bins, Fw::Buffer::SizeType size, U16 count);
     //! Request a buffer expected to be served from the shadow's bin and record it (shared by the BufferGet rules)
     void ruleGet(FwSizeType size);
     //! Hand back held buffer index after checking its pattern and record it (shared by the BufferReturn rules)
@@ -173,6 +181,8 @@ class BufferManagerTester : public BufferManagerGTestBase {
     void getNoBuffer(FwSizeType size);
     //! Return a buffer and check that no event was emitted
     void returnBuffer(Fw::Buffer& buffer);
+    //! Return an empty buffer and check the NullEmptyBuffer warning
+    void returnEmptyBuffer(Fw::Buffer& empty);
 
     void connectPorts();
     void initComponents();
