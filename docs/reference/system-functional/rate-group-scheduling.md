@@ -8,6 +8,7 @@
 - [F Prime PassiveRateGroup SDD](https://github.com/nasa/fprime/blob/devel/Svc/PassiveRateGroup/docs/sdd.md)
 - [F Prime ActivePhaser SDD](https://github.com/nasa/fprime/blob/devel/Svc/ActivePhaser/docs/sdd.md)
 - [F Prime Rate Group Design Pattern](https://github.com/nasa/fprime/blob/devel/docs/user-manual/design-patterns/rate-group.md)
+- [F Prime Single Queued Message Design Pattern](https://github.com/nasa/fprime/blob/devel/docs/user-manual/design-patterns/single-queued-message.md)
 
 ## Overview
 

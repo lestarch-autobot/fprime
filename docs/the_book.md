@@ -138,6 +138,7 @@ knowing them will make both the standard components and other projects much easi
 - [LED Blinker extension: Timeliness and Deadline-Driven Components](../tutorials-led-blinker/docs/timeliness.md)
 - [Common Port Design Patterns](user-manual/design-patterns/common-port-patterns.md)
 - [The Manager/Worker Pattern](user-manual/design-patterns/manager-worker.md)
+- [Single Queued Message Pattern](user-manual/design-patterns/single-queued-message.md)
 - [Asserts in F´](user-manual/framework/assert.md)
 
 ### Chapter 10: The Ground Data System
