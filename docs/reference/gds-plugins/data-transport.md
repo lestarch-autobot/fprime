@@ -27,9 +27,12 @@ The selection may also be set in a GDS configuration file like any other pipelin
 
 ## Considerations
 
+- `get_connection_uri(client, **arguments)` is called with `client=True` for pipeline clients (GUI, `fprime-cli`, the test API) and `client=False` for the process that owns the transport (`fprime-gds`); `client` is therefore a reserved name that transport arguments must not use. The returned URI is passed to `connect()`.
+- A transport that decodes ground-system data itself (rather than forwarding raw F Prime frames) may define `set_pipeline_references(dictionaries, channel_decoder, event_decoder)`; `StandardPipeline.setup()` then hands it the dictionaries and decoders and registers it as the command consumer.
+
 - The transport runs inside the pipeline process (GUI, CLI, or test). `send()` is called from the pipeline's thread; incoming data must be delivered through `data_callback()` (push) or returned from `recv()` (pull, driven by the pipeline's receive thread).
 - The transport speaks the ground system's protocol, not the deployment's: the plugin receives fully encoded F Prime command bytes and must emit `ChData`/`EventData` objects (or raw F Prime records for the pipeline's decoders), as the built-in clients do.
-- `fprime-gds` only launches the GDS communication process for the built-in `zmq` and `tcp` transports; an external transport is expected to reach a ground system that already holds the link to the deployment.
+- `fprime-gds` only launches the threaded TCP server for `tcp`, and the communication process (`fprime-comm-bridge`) and the deployment binary only for `zmq` and `tcp`; with any other transport it prints a warning and expects the ground system to hold the link to the deployment already.
 
 ## Required Interface
 

@@ -385,7 +385,7 @@ Framing Plugin Options:
   --framing-selection {fprime,my-plugin}
                         Select framing implementer. (default: fprime)
 ...
-Gds_App Plugin 'my-app' Options:
+Gds App Plugin 'my-app' Options:
   --disable-my-app      Disable the gds_app plugin 'my-app' (default: False)
   --message MESSAGE     Message to print (default: None)
 ```
