@@ -1,6 +1,6 @@
 # Single Queued Message Pattern
 
-The single queued message pattern bounds a repeating input to at most one message on an active component's queue. A synchronous input port handler runs on the caller's thread, atomically claims a "queued" flag, and invokes an internal port only when the flag was clear. The internal port handler clears the flag and performs the work on the component's thread. The internal port uses the `hook` queue-full behavior so that an overflow also clears the flag, allowing the next input to retry. Repeated inputs that arrive while a message is already queued are coalesced into that one message.
+The single queued message pattern bounds a repeating input to at most one message on an active (or queued) component's queue. A synchronous input port handler runs on the caller's thread, atomically claims a "queued" flag, and invokes an internal port only when the flag was clear. The internal port handler clears the flag and performs the work on the component's thread. The internal port uses the `hook` queue-full behavior so that an overflow also clears the flag, allowing the next input to retry. Repeated inputs that arrive while a message is already queued are coalesced into that one message.
 
 The most common use case is a `Svc.Sched` input (`schedIn`/`run`) that performs periodic work on an active component, such as writing telemetry. Reference implementations in the framework include [`Svc::EventManager`](../../../Svc/EventManager/EventManager.fpp), [`Svc::CmdDispatcher`](../../../Svc/CmdDispatcher/CmdDispatcher.fpp), [`Svc::ComQueue`](../../../Svc/ComQueue/ComQueue.fpp), [`Svc::DpManager`](../../../Svc/DpManager/DpManager.fpp), [`Svc::DpWriter`](../../../Svc/DpWriter/DpWriter.fpp), [`Svc::ComLoggerDp`](../../../Svc/ComLoggerDp/ComLoggerDp.fpp), [`Svc::FileManager`](../../../Svc/FileManager/FileManager.fpp), and [`Svc::WasmSequencer`](../../../Svc/WasmSequencer/WasmSequencer.fpp).
 
@@ -12,7 +12,7 @@ Use this pattern when an active component receives a repeating input whose indiv
   - Notifications that state has changed and a consumer should re-read it.
   - Periodic polling requests where the latest poll supersedes earlier ones.
 
-Without this pattern, such an input is typically modeled as an `async input port`. Each occurrence then places a message on the component's queue regardless of how many are already waiting. A component that falls behind accumulates identical messages, which crowd out commands and other port messages. The configured queue-full behavior then forces a choice between asserting (`assert`), losing the input (`drop`), or stalling the caller (`block`), each of which is a system-level fault when the caller is a rate group.
+Without this pattern, such an input is typically modeled as an `async input port`. Each occurrence then places a message on the component's queue regardless of how many are already waiting. A component that falls behind accumulates identical messages, which crowd out commands and other port messages until the queue fills. The configured queue-full behavior then decides what happens next: asserting (`assert`), dropping messages only after they have filled the queue (`drop`), or stalling the caller (`block`), which slips the whole rate group. This pattern instead keeps the queue footprint of the input at one entry whether or not the component keeps up.
 
 Do not use this pattern when each input occurrence must be processed individually (for example, buffers to be written or commands to be executed), or when the input carries arguments that must not be lost. See [Other Considerations](#other-considerations) for inputs that carry a value.
 
@@ -52,7 +52,7 @@ The overflow hook exists because every other queue-full behavior defeats the pat
 | `assert` (default) | Asserts. The caller (e.g. the rate group thread) takes down the system because an unrelated flood filled the queue. |
 | `drop` | Silently drops the message with the flag left set. No further input is ever queued: the component's periodic work stops permanently. |
 | `block` | Blocks the caller until queue space frees. A rate group thread stalls, slipping every other component in the group. |
-| `hook` | Calls `<port>_overflowHook()` on the caller's thread. The hook clears the flag so the next input retries. One occurrence is skipped; the next one succeeds once the queue drains. |
+| `hook` | Calls `<port>_overflowHook()` on the caller's thread. The hook clears the flag so the next input retries. Occurrences that arrive while the queue is full are skipped; the first one after the queue drains succeeds. |
 
 > [!IMPORTANT]
 > The flag must be cleared in both the internal port handler and the overflow hook. Omitting the hook clear (or using `drop`) wedges the flag after a single overflow.
@@ -139,7 +139,7 @@ ASSERT_TLM_SIZE(1);
 
 The coalescing property is verified by invoking the input several times before dispatching once and asserting that the work ran exactly once. The re-arm property is verified by invoking the input once more after that dispatch, dispatching again, and asserting that the work ran a second time. `doDispatch()` blocks on an empty queue, so a test must dispatch exactly as many times as messages were queued.
 
-Overflow behavior is verified by filling the component's queue (for example with messages on another `async` input), invoking the sync input while the queue is full, draining the queue, and invoking the input again: the final invocation must queue a message that a single dispatch processes, demonstrating that the overflow hook cleared the flag. `Svc::EventManager`'s `runDroppedTelemetry` test follows this shape.
+Overflow behavior is verified by filling the component's queue (for example with messages on another `async` input), invoking the sync input while the queue is full, draining the queue, and invoking the input again: the final invocation must queue a message that a single dispatch processes, demonstrating that the overflow hook cleared the flag.
 
 ## Other Considerations
 
@@ -157,7 +157,7 @@ Internal ports require a queue, so this pattern applies only to `active` and `qu
 
 ### Dropped Occurrences
 
-When the queue overflows, one occurrence of the input is skipped; the work resumes with the next occurrence after the queue drains. Components whose periodic work must never be skipped should reserve queue depth so that overflow cannot occur, or count the skips in the overflow hook and report them via telemetry.
+While the queue is full, every occurrence of the input is skipped; the work resumes with the first occurrence after the queue drains. Components whose periodic work must never be skipped should reserve queue depth so that overflow cannot occur. Components that tolerate skips but must account for them can increment an atomic counter in the overflow hook and report it from the internal handler on the component thread.
 
 ## Conclusion
 
