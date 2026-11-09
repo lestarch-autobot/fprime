@@ -49,7 +49,7 @@ pytest ./lib/fprime/Svc/CmdDispatcher/test/int \
        --deployment-config ./MyDeployment/test/int/int_config.json
 ```
 
-`--deployment-config` is provided by the `fprime-gds` pytest plugin (see [pytest_integration.py](https://github.com/nasa/fprime-gds/blob/devel/src/fprime_gds/common/testing_fw/pytest_integration.py)). All other flags (`--dictionary`, `--logs`, etc.) are the standard GDS pipeline options.
+`--deployment-config` is provided by the `fprime-gds` pytest plugin (see [pytest_integration.py](https://github.com/nasa/fprime-gds/blob/devel/src/fprime_gds/common/testing_fw/pytest_integration.py)). All other flags (`--dictionary`, `--logs`, etc.) are the standard GDS pipeline options. This includes `--data-transport-selection <name>` and the selected transport's arguments, so the same tests run through ZeroMQ (default), the threaded TCP server (`tcp`), or any installed [data transport plugin](../../reference/gds-plugins/data-transport.md).
 
 ## CI example
 
