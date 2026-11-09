@@ -139,6 +139,7 @@ knowing them will make both the standard components and other projects much easi
 - [Common Port Design Patterns](user-manual/design-patterns/common-port-patterns.md)
 - [The Manager/Worker Pattern](user-manual/design-patterns/manager-worker.md)
 - [Single Queued Message Pattern](user-manual/design-patterns/single-queued-message.md)
+- [Fixed Message Limit Pattern](user-manual/design-patterns/fixed-message-limit.md)
 - [Asserts in F´](user-manual/framework/assert.md)
 
 ### Chapter 10: The Ground Data System

@@ -14,7 +14,7 @@ Use this pattern when an active component receives a repeating input whose indiv
 
 Without this pattern, such an input is typically modeled as an `async input port`. Each occurrence then places a message on the component's queue regardless of how many are already waiting. A component that falls behind accumulates identical messages, which crowd out commands and other port messages until the queue fills. The configured queue-full behavior then decides what happens next: asserting (`assert`), dropping messages only after they have filled the queue (`drop`), or stalling the caller (`block`), which slips the whole rate group. This pattern instead keeps the queue footprint of the input at one entry whether or not the component keeps up.
 
-Do not use this pattern when each input occurrence must be processed individually (for example, buffers to be written or commands to be executed), or when the input carries arguments that must not be lost. See [Other Considerations](#other-considerations) for inputs that carry a value.
+Do not use this pattern when each input occurrence must be processed individually (for example, buffers to be written or commands to be executed), or when the input carries arguments that must not be lost. See [Other Considerations](#other-considerations) for inputs that carry a value. When occurrences should be processed individually up to a bounded backlog, with the excess skipped, use the [fixed message limit pattern](./fixed-message-limit.md), which generalizes this pattern to `N` pending messages.
 
 ## Design
 
@@ -146,6 +146,10 @@ Overflow behavior is verified by filling the component's queue (for example with
 ### Inputs With Arguments
 
 The internal port in this pattern takes no arguments, because a coalesced message cannot carry the arguments of every occurrence it replaces. The `Svc.Sched` `context` argument is discarded for this reason. When the handler needs the most recent value of an input argument (e.g. a changed-state notification carrying the new state), store it in a separate atomic or mutex-protected member in the sync handler before claiming the flag, and read it in the internal handler. The internal handler then always observes the latest value, with intermediate values superseded.
+
+### Allowing a Bounded Backlog
+
+This pattern is the `N = 1` case of the [fixed message limit pattern](./fixed-message-limit.md), which replaces the flag with an atomic counter so that up to `N` occurrences are queued and processed individually before further occurrences are skipped. Use it when each tick advances the work by one step and a small backlog of ticks is worth preserving.
 
 ### Queue Sizing
 
