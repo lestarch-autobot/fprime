@@ -93,7 +93,7 @@ endfunction()
 # Function `fprime_util_metadata_add_project_test`:
 #
 # Adds a test to the project-level (root of the build cache) metadata, i.e. the tests run by `fprime-util check` at the
-# project root and by `fprime-util check --project`.
+# project root (and by `fprime-util check --project` in fprime-tools releases after 4.4.0).
 #
 # - **TEST_NAME:** name of the test to add
 ####

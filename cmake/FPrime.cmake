@@ -178,6 +178,10 @@ endmacro(fprime_initialize_build_system)
 #
 # Sets up the code/build for fprime and libraries. Call after all project specific targets and autocoders are set up and
 # registered. Resets the fprime-util metadata of the calling directory, so nothing may register in it before this call.
+#
+# Decides whether the framework and library modules registered here are excluded from `all` (global property
+# FPRIME_EXCLUDING_INCLUDED_CODE: `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL`, forced OFF when F Prime is the top-level project)
+# and writes the project-level fprime-util test metadata at the root of the build cache accordingly.
 ####
 function(fprime_setup_included_code)
     # The calling directory (e.g. "F-Prime") has no add_fprime_subdirectory parent to reset its metadata
