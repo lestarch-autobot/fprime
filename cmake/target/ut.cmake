@@ -56,6 +56,11 @@ function(ut_add_deployment_target MODULE TARGET SOURCES DEPENDENCIES FULL_DEPEND
         get_property(DEPENDENCY_UNIT_TESTS TARGET ${DEPENDENCY} PROPERTY FPRIME_UNIT_TESTS)
         if(DEPENDENCY_UNIT_TESTS)
             foreach(UNIT_TEST IN LISTS DEPENDENCY_UNIT_TESTS)
+                # A unit test that excluded itself explicitly is never rolled into a deployment's tests
+                get_target_property(UNIT_TEST_EXPLICITLY_EXCLUDED "${UNIT_TEST}" FPRIME_EXPLICITLY_EXCLUDED)
+                if (UNIT_TEST_EXPLICITLY_EXCLUDED)
+                    continue()
+                endif()
                 fprime_util_metadata_add_test("${UNIT_TEST}")
                 list(APPEND DEPLOYMENT_TESTS "${UNIT_TEST}")
             endforeach()
@@ -133,6 +138,16 @@ function(ut_add_ctest UT_EXECUTABLE_TARGET)
     )
     add_test(NAME ${UT_EXECUTABLE_TARGET} COMMAND ${UT_EXECUTABLE_TARGET} WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
     fprime_util_metadata_add_test("${UT_EXECUTABLE_TARGET}")
+    # Tests excluded from "all" (framework/library tests under FPRIME_EXCLUDE_LIBRARIES_FROM_ALL) are labeled so that
+    # `ctest -LE fprime_universe` runs the project's tests only. Project tests are listed in the root metadata when
+    # the root does not already carry the ".*" catch-all.
+    get_target_property(UT_EXCLUDED_FROM_ALL "${UT_EXECUTABLE_TARGET}" EXCLUDE_FROM_ALL)
+    get_property(UT_EXCLUDING_INCLUDED_CODE GLOBAL PROPERTY FPRIME_EXCLUDING_INCLUDED_CODE)
+    if (UT_EXCLUDED_FROM_ALL)
+        set_tests_properties(${UT_EXECUTABLE_TARGET} PROPERTIES LABELS "fprime_universe")
+    elseif (UT_EXCLUDING_INCLUDED_CODE)
+        fprime_util_metadata_add_project_test("${UT_EXECUTABLE_TARGET}")
+    endif()
 endfunction(ut_add_ctest)
 
 ####

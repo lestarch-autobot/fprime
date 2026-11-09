@@ -13,6 +13,29 @@ Targets are applied both at the global scope and per-module scope. Thus each tar
 The CMake system supplies several targets that are useful for all projects and thus are included
 as part of the CMake system. These targets are defined in [cmake/target](https://github.com/nasa/fprime/tree/devel/cmake/target).
 
+### `all` and `universe`
+
+CMake's `all` target builds the project: the modules, deployments, and unit tests registered by the project, plus the
+framework and library modules they depend upon. Framework and library modules the project does not use are registered
+`EXCLUDE_FROM_ALL` (option `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL`, default `ON`) and are built only when named directly or
+depended upon. The `universe` target builds every registered module, excluded or not:
+
+```bash
+cmake --build . --target all        # the project and what it depends upon (fprime-util build / build --project)
+cmake --build . --target universe   # everything the build system knows about
+```
+
+In unit-test builds (`BUILD_TESTING=ON`) the tests of excluded modules carry the CTest label `fprime_universe`, so
+`ctest -LE fprime_universe` runs the project's tests only, and `fprime-util check` at the project root (or
+`check --project`) runs exactly those tests. `fprime-util check --all` runs CTest unfiltered.
+
+A module may exclude itself regardless of this option with the `EXCLUDE_FROM_ALL` argument of its `register_fprime_*`
+call; such a module is also left out of `universe` and of deployment unit-test roll-ups, and builds only when named.
+
+When F Prime itself is the top-level CMake project (building the framework), the option is forced `OFF` so that `all`
+builds everything. Projects restore that behavior with `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL=OFF`
+(`default_cmake_options` in `settings.ini`, a `set()` before `find_package(FPrime)`/`add_subdirectory`, or `-D`).
+
 
 ## Adding Custom Targets
 

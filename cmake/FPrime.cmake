@@ -220,9 +220,22 @@ function(fprime_setup_included_code)
     fprime_setup_platform()
     # Add "all" target to top level and a target to match all tests
     fprime_util_metadata_add_build_target("all")
-    if (BUILD_TESTING)
-        fprime_util_metadata_add_test(".*")
+    # Decide whether framework and library modules are excluded from "all". When F Prime is the top-level project
+    # (the framework building itself) everything is the project and nothing is excluded.
+    set(_FP_EXCLUDE_INCLUDED_CODE "${FPRIME_EXCLUDE_LIBRARIES_FROM_ALL}")
+    get_filename_component(_FP_SOURCE_REAL "${CMAKE_SOURCE_DIR}" REALPATH)
+    get_filename_component(_FP_FRAMEWORK_REAL "${FPRIME_FRAMEWORK_PATH}" REALPATH)
+    if (_FP_EXCLUDE_INCLUDED_CODE AND "${_FP_SOURCE_REAL}" STREQUAL "${_FP_FRAMEWORK_REAL}")
+        fprime_cmake_status("[FPRIME] Framework is the top-level project: FPRIME_EXCLUDE_LIBRARIES_FROM_ALL forced OFF")
+        set(_FP_EXCLUDE_INCLUDED_CODE OFF)
     endif()
+    set_property(GLOBAL PROPERTY FPRIME_EXCLUDING_INCLUDED_CODE "${_FP_EXCLUDE_INCLUDED_CODE}")
+    if (BUILD_TESTING AND NOT _FP_EXCLUDE_INCLUDED_CODE)
+        # Every unit test belongs to the project; otherwise ut_add_ctest lists the project's tests individually
+        fprime_util_metadata_add_project_test(".*")
+    endif()
+    # Modules registered while this is set belong to the framework or a library, not to the project
+    set(FPRIME__INTERNAL_INCLUDED_CODE ON)
     set(_FP_CORE_PACKAGES Fpp default Fw Svc Os Drv CFDP Utils)
     foreach (_FP_PACKAGE_DIR IN LISTS _FP_CORE_PACKAGES)
         set(FPRIME_CURRENT_MODULE "${_FP_PACKAGE_DIR}")
@@ -246,6 +259,7 @@ function(fprime_setup_included_code)
     endforeach()
     # Always enable UTs for a project
     set(__FPRIME_NO_UT_GEN__ OFF)
+    unset(FPRIME__INTERNAL_INCLUDED_CODE)
 endfunction(fprime_setup_included_code)
 
 

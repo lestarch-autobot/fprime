@@ -90,6 +90,18 @@ function(fprime_util_metadata_add_test TEST_NAME)
 endfunction()
 
 ####
+# Function `fprime_util_metadata_add_project_test`:
+#
+# Adds a test to the project-level (root of the build cache) metadata, i.e. the tests run by `fprime-util check` at the
+# project root and by `fprime-util check --project`.
+#
+# - **TEST_NAME:** name of the test to add
+####
+function(fprime_util_metadata_add_project_test TEST_NAME)
+    file(APPEND "${CMAKE_BINARY_DIR}/${FPRIME__INTERNAL_UTILITY_TESTS_FILE}" "${TEST_NAME}\n")
+endfunction()
+
+####
 # Function `fprime_util_metadata_set_test_dir`:
 #
 # Sets the CTest test directory for the current build directory. This writes a test-dir.fprime-util file that tells
