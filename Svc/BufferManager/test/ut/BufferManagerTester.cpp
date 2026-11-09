@@ -320,7 +320,7 @@ void BufferManagerTester ::eventThrottling() {
 }
 
 void BufferManagerTester ::payloadIntegrity() {
-    REQUIREMENT("FPRIME-BM-001");
+    COMMENT("Writes over one buffer's full size never disturb another buffer");
 
     this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins());
 

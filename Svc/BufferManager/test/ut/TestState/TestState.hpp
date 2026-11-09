@@ -110,7 +110,7 @@ class BufferManagerTestState {
     bool overlapsHeld(const Fw::Buffer& buffer) const;
 
   private:
-    //! True if bin has a free buffer and is more than one byte larger than the bin before it
+    //! True if bin (1..numBins-1) has a free buffer and is more than one byte larger than the bin before it
     bool hasGapBelow(U16 bin) const;
 
   public:

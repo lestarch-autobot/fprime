@@ -148,6 +148,7 @@ bool BufferManagerTestState::expectedBin(FwSizeType size, U16& bin) const {
 }
 
 bool BufferManagerTestState::hasGapBelow(U16 bin) const {
+    FW_ASSERT(bin > 0 && bin < this->numBins, bin);
     return this->binFree[bin] != 0 && this->binSize[bin] > this->binSize[bin - 1] + 1;
 }
 
