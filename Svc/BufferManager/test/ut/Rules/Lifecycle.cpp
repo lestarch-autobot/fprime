@@ -158,7 +158,7 @@ bool BufferManagerTester::Lifecycle__SizeOverflowAsserts__precondition() const {
 void BufferManagerTester::Lifecycle__SizeOverflowAsserts__action() {
     const FwSizeType maxSize = std::numeric_limits<FwSizeType>::max();
     BufferManagerComponentImpl::BufferBins bins;
-    // bufferSize + sizeof(AllocatedBuffer) wraps
+    // bufferSize plus any per-buffer overhead wraps
     memset(&bins, 0, sizeof(bins));
     bins.bins[0].bufferSize = maxSize;
     bins.bins[0].numBuffers = 1;

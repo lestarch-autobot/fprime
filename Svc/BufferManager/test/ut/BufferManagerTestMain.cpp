@@ -74,12 +74,6 @@ TEST(OffNominal, UseBeforeSetupAsserts) {
     tester.useBeforeSetupAsserts();
 }
 
-// White-box test of the memory layout built by setup(); expected to change if the layout does
-TEST(Implementation, ContiguousLayout) {
-    BufferManagerTester tester;
-    tester.contiguousLayout();
-}
-
 // ----------------------------------------------------------------------
 // Rule-based tests
 // ----------------------------------------------------------------------

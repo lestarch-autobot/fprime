@@ -112,6 +112,11 @@ void BufferManagerTester::BufferReturn__Asserts__action() {
         Fw::Buffer bad(held.getData(), held.getCapacity() + 1, held.getContext());
         ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
     }
+    // Null data with a non-zero size is not the empty buffer and is rejected
+    {
+        Fw::Buffer bad(nullptr, held.getCapacity(), held.getContext());
+        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
+    }
     // Returning the same buffer twice
     this->ruleReturn(index, held);
     ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, held), "Assert: ");
