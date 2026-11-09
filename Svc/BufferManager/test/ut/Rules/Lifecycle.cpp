@@ -15,12 +15,13 @@ namespace Svc {
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::Lifecycle__Setup__precondition() const {
-    return !this->shadow.shadow_everSetup;
+    return !this->shadow.shadow_isSetup;
 }
 
 void BufferManagerTester::Lifecycle__Setup__action() {
     // Copy: configure() below resets the whole shadow, including shadow_bins
     const BufferManagerComponentImpl::BufferBins bins = this->shadow.shadow_bins;
+    const U32 deallocsBefore = this->m_rulesAllocator.getDeallocCount();
     this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins);
     this->shadow.configure(bins);
     this->clearHistory();
@@ -29,7 +30,7 @@ void BufferManagerTester::Lifecycle__Setup__action() {
     ASSERT_EQ(MEM_ID, this->m_rulesAllocator.getId());
     ASSERT_NE(nullptr, this->m_rulesAllocator.getMem());
     ASSERT_GE(this->m_rulesAllocator.getSize(), this->shadow.totalPayloadBytes());
-    ASSERT_EQ(0u, this->m_rulesAllocator.getDeallocCount());
+    ASSERT_EQ(deallocsBefore, this->m_rulesAllocator.getDeallocCount());
 }
 
 // ----------------------------------------------------------------------
@@ -49,6 +50,23 @@ void BufferManagerTester::Lifecycle__Cleanup__action() {
     this->component.cleanup();  // second call must be a no-op
     ASSERT_EQ(before + 1, this->m_rulesAllocator.getDeallocCount());
     ASSERT_EQ(this->m_rulesAllocator.getMem(), this->m_rulesAllocator.getDeallocPtr());
+    this->shadow.shadow_isSetup = false;
+}
+
+// ----------------------------------------------------------------------
+// Lifecycle.CleanupHolding — clean up while buffers are still out; the pool goes away with them
+// ----------------------------------------------------------------------
+
+bool BufferManagerTester::Lifecycle__CleanupHolding__precondition() const {
+    return this->shadow.shadow_isSetup && !this->shadow.shadow_held.empty();
+}
+
+void BufferManagerTester::Lifecycle__CleanupHolding__action() {
+    const U32 before = this->m_rulesAllocator.getDeallocCount();
+    this->component.cleanup();
+    ASSERT_EQ(before + 1, this->m_rulesAllocator.getDeallocCount());
+    ASSERT_EQ(this->m_rulesAllocator.getMem(), this->m_rulesAllocator.getDeallocPtr());
+    this->shadow.dropHeld();
     this->shadow.shadow_isSetup = false;
 }
 
@@ -74,7 +92,7 @@ void BufferManagerTester::Lifecycle__NotSetupAsserts__action() {
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::Lifecycle__BinOrderAsserts__precondition() const {
-    return !this->shadow.shadow_everSetup;
+    return !this->shadow.shadow_isSetup;
 }
 
 void BufferManagerTester::Lifecycle__BinOrderAsserts__action() {
@@ -96,11 +114,45 @@ void BufferManagerTester::Lifecycle__BinOrderAsserts__action() {
 }
 
 // ----------------------------------------------------------------------
+// Lifecycle.EmptyBinsAsserts — a configuration with no buffers is rejected
+// ----------------------------------------------------------------------
+
+bool BufferManagerTester::Lifecycle__EmptyBinsAsserts__precondition() const {
+    return !this->shadow.shadow_isSetup;
+}
+
+void BufferManagerTester::Lifecycle__EmptyBinsAsserts__action() {
+    BufferManagerComponentImpl::BufferBins bins;
+    memset(&bins, 0, sizeof(bins));
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
+    // a size without any buffers is still empty
+    bins.bins[0].bufferSize = BIN0_BUFFER_SIZE;
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
+    // buffers without a size can never serve a request
+    bins.bins[0].bufferSize = 0;
+    bins.bins[0].numBuffers = 1;
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
+}
+
+// ----------------------------------------------------------------------
+// Lifecycle.SetupTwiceAsserts — setting up over a live pool is rejected
+// ----------------------------------------------------------------------
+
+bool BufferManagerTester::Lifecycle__SetupTwiceAsserts__precondition() const {
+    return this->shadow.shadow_isSetup;
+}
+
+void BufferManagerTester::Lifecycle__SetupTwiceAsserts__action() {
+    const BufferManagerComponentImpl::BufferBins bins = this->shadow.shadow_bins;
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
+}
+
+// ----------------------------------------------------------------------
 // Lifecycle.SizeOverflowAsserts — arithmetic that would wrap is rejected
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::Lifecycle__SizeOverflowAsserts__precondition() const {
-    return !this->shadow.shadow_everSetup;
+    return !this->shadow.shadow_isSetup;
 }
 
 void BufferManagerTester::Lifecycle__SizeOverflowAsserts__action() {

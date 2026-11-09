@@ -19,6 +19,7 @@ BufferManagerTestState::BufferManagerTestState()
       shadow_noBuffs(0),
       shadow_emptyBuffs(0),
       shadow_noBuffsEvents(0),
+      shadow_zeroEvents(0),
       shadow_emptyBuffsEvents(0),
       shadow_tlmSent(false),
       shadow_lastTotalBuffs(0),
@@ -32,10 +33,18 @@ BufferManagerTestState::BufferManagerTestState()
 }
 
 void BufferManagerTestState::configure(const BufferManagerComponentImpl::BufferBins& bins) {
-    *this = BufferManagerTestState();
+    // Like setup(), only the per-pool state restarts; lifetime counters, event throttles and the
+    // last telemetry written persist across a re-setup
     this->shadow_bins = bins;
     this->shadow_isSetup = true;
     this->shadow_everSetup = true;
+    this->shadow_numBins = 0;
+    this->shadow_totalBuffs = 0;
+    (void)memset(this->shadow_binSize, 0, sizeof(this->shadow_binSize));
+    (void)memset(this->shadow_binFree, 0, sizeof(this->shadow_binFree));
+    this->shadow_held.clear();
+    this->shadow_currBuffs = 0;
+    this->shadow_highWater = 0;
     for (U16 bin = 0; bin < BUFFERMGR_MAX_NUM_BINS; bin++) {
         if (bins.bins[bin].numBuffers != 0) {
             this->shadow_binSize[this->shadow_numBins] = bins.bins[bin].bufferSize;
@@ -171,6 +180,18 @@ void BufferManagerTestState::recordGet(const Fw::Buffer& buffer, U16 bin, FwSize
     if (this->shadow_currBuffs > this->shadow_highWater) {
         this->shadow_highWater = this->shadow_currBuffs;
     }
+}
+
+void BufferManagerTestState::recordZeroRequest() {
+    this->shadow_noBuffs++;
+    if (this->shadow_zeroEvents < EVENT_THROTTLE) {
+        this->shadow_zeroEvents++;
+    }
+}
+
+void BufferManagerTestState::dropHeld() {
+    this->shadow_held.clear();
+    this->shadow_currBuffs = 0;
 }
 
 void BufferManagerTestState::recordNoBuffer() {

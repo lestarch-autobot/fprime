@@ -85,6 +85,12 @@ class BufferManagerTestState {
     //! Record a failed allocation
     void recordNoBuffer();
 
+    //! Record a rejected zero-sized request (counted in NoBuffs, event throttled)
+    void recordZeroRequest();
+
+    //! Forget every held buffer (the pool they came from was cleaned up underneath them)
+    void dropHeld();
+
     //! Record the return of held buffer at index
     void recordReturn(FwSizeType index);
 
@@ -113,6 +119,7 @@ class BufferManagerTestState {
     U32 shadow_emptyBuffs;  //!< Expected EmptyBuffs telemetry
 
     U32 shadow_noBuffsEvents;     //!< NoBuffsAvailable events emitted so far (throttled)
+    U32 shadow_zeroEvents;        //!< ZeroSizeRequest events emitted so far (throttled)
     U32 shadow_emptyBuffsEvents;  //!< NullEmptyBuffer events emitted so far (throttled)
 
     bool shadow_tlmSent;        //!< True once schedIn has written telemetry

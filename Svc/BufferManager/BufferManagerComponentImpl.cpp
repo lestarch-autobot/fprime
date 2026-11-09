@@ -103,6 +103,12 @@ Fw::Buffer BufferManagerComponentImpl ::bufferGetCallee_handler(const FwIndexTyp
     // make sure component has been set up
     FW_ASSERT(this->m_setup);
     FW_ASSERT(m_buffers != nullptr);
+    // a zero-sized request would consume a slot while reading as empty to the caller; reject it
+    if (size == 0) {
+        this->log_WARNING_HI_ZeroSizeRequest();
+        this->m_noBuffs++;
+        return Fw::Buffer();
+    }
     // find smallest buffer based on size.
     for (U16 buff = 0; buff < this->m_numStructs; buff++) {
         if ((not this->m_buffers[buff].allocated) and (size <= this->m_buffers[buff].size)) {
@@ -129,9 +135,15 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
                                        Fw::MemAllocator& allocator,  //!< memory allocator
                                        const BufferBins& bins        //!< Set of user bins
 ) {
+    // setting up while a pool is live would leak it
+    FW_ASSERT(not this->m_setup);
     this->m_mgrId = mgrId;
     this->m_memId = memId;
     this->m_allocator = &allocator;
+    this->m_cleaned = false;
+    // per-pool statistics restart with the new pool; NoBuffs/EmptyBuffs count over the instance lifetime
+    this->m_currBuffs = 0;
+    this->m_highWater = 0;
     // clear bins
     (void)memset(&this->m_bufferBins, 0, sizeof(this->m_bufferBins));
 
@@ -145,6 +157,8 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     for (U16 bin = 0; bin < BUFFERMGR_MAX_NUM_BINS; bin++) {
         if (this->m_bufferBins.bins[bin].numBuffers) {
             const FwSizeType bufferSize = this->m_bufferBins.bins[bin].bufferSize;
+            // A bin of zero-sized buffers could never serve a request (zero-size requests are rejected)
+            FW_ASSERT(bufferSize > 0, static_cast<FwAssertArgType>(bin));
             // Bins must be ordered by non-decreasing buffer size so the first fit is also the smallest fit
             FW_ASSERT(bufferSize >= previousBinSize, static_cast<FwAssertArgType>(bin),
                       static_cast<FwAssertArgType>(bufferSize), static_cast<FwAssertArgType>(previousBinSize));
@@ -164,6 +178,9 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
             this->m_numStructs = static_cast<U16>(this->m_numStructs + this->m_bufferBins.bins[bin].numBuffers);
         }
     }
+
+    // a pool with no buffers is a configuration error, and would also rely on allocate(0) behavior
+    FW_ASSERT(this->m_numStructs > 0, static_cast<FwAssertArgType>(mgrId), static_cast<FwAssertArgType>(memId));
 
     FwSizeType allocatedSize = memorySize;
     bool recoverable = false;  //!< don't care if it is recoverable since they are a pool of user buffers
