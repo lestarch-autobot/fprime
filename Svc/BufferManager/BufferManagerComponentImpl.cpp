@@ -140,10 +140,15 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     // compute the amount of memory needed
     FwSizeType memorySize = 0;  // track needed memory
     this->m_numStructs = 0;     // size the number of tracking structs
+    FwSizeType previousBinSize = 0;
     // walk through bins and add up the sizes
     for (U16 bin = 0; bin < BUFFERMGR_MAX_NUM_BINS; bin++) {
         if (this->m_bufferBins.bins[bin].numBuffers) {
             const FwSizeType bufferSize = this->m_bufferBins.bins[bin].bufferSize;
+            // Bins must be ordered by non-decreasing buffer size so the first fit is also the smallest fit
+            FW_ASSERT(bufferSize >= previousBinSize, static_cast<FwAssertArgType>(bin),
+                      static_cast<FwAssertArgType>(bufferSize), static_cast<FwAssertArgType>(previousBinSize));
+            previousBinSize = bufferSize;
             const FwSizeType numBuffers = static_cast<FwSizeType>(this->m_bufferBins.bins[bin].numBuffers);
             const FwSizeType perBuffer = bufferSize + static_cast<FwSizeType>(sizeof(AllocatedBuffer));
 

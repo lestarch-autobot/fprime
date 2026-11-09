@@ -56,6 +56,7 @@ module ComCcsdsConfig {
     # Buffer management constants
     module BuffMgr {
         constant frameAccumulatorSize  = 2048
+        # commsBuffSize must be <= commsFileBuffSize: BufferManager asserts on bins not in non-decreasing size order
         constant commsBuffSize         = 2048
         constant commsFileBuffSize     = 3000
         constant commsBuffCount        = 20
