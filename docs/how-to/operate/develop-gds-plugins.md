@@ -39,6 +39,7 @@ category is summarized in the table below.
 |---------------|---------------|--------------------------------------------------------------------------|------------------------------------------------------------------------------|
 | framing       | SELECTION     | Implement a framer/deframer pair to handle serialized data               | [Framing Plugin Reference](../../reference/gds-plugins/framing.md)              |
 | communication | SELECTION     | Implement a communication adapter for flight software communication      | [Communication Plugin Reference](../../reference/gds-plugins/communications.md) |
+| data-transport | SELECTION    | Implement the transport between the GDS pipeline and a ground system     | [Data Transport Plugin Reference](../../reference/gds-plugins/data-transport.md) |
 | data-handler  | FEATURE | Implement custom data item handling (for channels, events, etc)          | [Data Handler Plugin](../../reference/gds-plugins/data-handler.md)              |
 | gds-app       | FEATURE | Implement a new GDS application isolated to a separate process           | [Gds Application Plugin](../../reference/gds-plugins/gds-app.md)                |
 | gds-function  | FEATURE | (Advanced) Implement new GDS functionality with control over the process | [Gds Function Plugin](../../reference/gds-plugins/gds-function.md)              |
