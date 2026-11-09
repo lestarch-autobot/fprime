@@ -90,6 +90,18 @@ function(fprime_util_metadata_add_test TEST_NAME)
 endfunction()
 
 ####
+# Function `fprime_util_metadata_add_project_build_target`:
+#
+# Adds a build target to the project-level (root of the build cache) metadata, i.e. the targets built by
+# `fprime-util build` at the project root, regardless of the directory F Prime is included from.
+#
+# - **BUILD_TARGET:** name of the build target to add
+####
+function(fprime_util_metadata_add_project_build_target BUILD_TARGET)
+    file(APPEND "${CMAKE_BINARY_DIR}/${FPRIME__INTERNAL_UTILITY_BUILD_TARGETS_FILE}" "${BUILD_TARGET}\n")
+endfunction()
+
+####
 # Function `fprime_util_metadata_add_project_test`:
 #
 # Adds a test to the project-level (root of the build cache) metadata, i.e. the tests run by `fprime-util check` at the

@@ -16,7 +16,8 @@ include(fprime-util)
 set(FPRIME__INTERNAL_BASE_CONTROL_SETS "HEADERS" "SOURCES" "DEPENDS" "EXCLUDE_FROM_ALL" "AUTOCODER_INPUTS" "REQUIRES_IMPLEMENTATIONS" "LINK_DEPENDS" CACHE INTERNAL "Base set of control directives for module registration" FORCE)
 
 set(FPRIME__INTERNAL_EMPTY_CPP "${FPRIME_FRAMEWORK_PATH}/cmake/empty.cpp" CACHE INTERNAL "Empty cpp file to attach to targets before autocoding" FORCE)
-set(FPRIME_UNIVERSE_TARGET "universe" CACHE INTERNAL "Target building every registered F Prime module (see FPRIME_EXCLUDE_LIBRARIES_FROM_ALL)" FORCE)
+set(FPRIME_UNIVERSE_TARGET "universe" CACHE STRING "Target building every registered F Prime module (see FPRIME_EXCLUDE_LIBRARIES_FROM_ALL)" FORCE)
+mark_as_advanced(FPRIME_UNIVERSE_TARGET)
 
 ####
 # Function `fprime__internal_add_build_target`:
@@ -216,8 +217,9 @@ endfunction()
 #
 # Places a newly registered target in the `universe` target and, when the target belongs to included code (the
 # framework or a library) and `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL` is in effect, excludes it from `all`. A target that
-# excluded itself explicitly (EXCLUDE_FROM_ALL in its register call) is recorded as FPRIME_EXPLICITLY_EXCLUDED and is
-# not added to `universe`: it builds only when named or depended upon.
+# excluded itself explicitly (EXCLUDE_FROM_ALL in its register call, or inherited from a directory added with
+# EXCLUDE_FROM_ALL) is recorded as FPRIME_EXPLICITLY_EXCLUDED and is not added to `universe`: it builds only when named
+# or depended upon. A unit test so excluded is also skipped by deployment unit-test roll-ups.
 #
 # - **TARGET_NAME:** name of the registered target
 # - **FPRIME_CMAKE_ADD_OPTIONS:** CMake `add_*` options supplied to the registration
@@ -226,7 +228,10 @@ function(fprime__internal_setup_universe TARGET_NAME FPRIME_CMAKE_ADD_OPTIONS)
     if (NOT TARGET "${FPRIME_UNIVERSE_TARGET}")
         add_custom_target("${FPRIME_UNIVERSE_TARGET}")
     endif()
-    if ("EXCLUDE_FROM_ALL" IN_LIST FPRIME_CMAKE_ADD_OPTIONS)
+    # Explicit exclusion: EXCLUDE_FROM_ALL on the register call, or inherited from a directory added with
+    # add_fprime_subdirectory(... EXCLUDE_FROM_ALL). Such targets build only when named or depended upon.
+    get_target_property(FPRIME__INTERNAL_ALREADY_EXCLUDED "${TARGET_NAME}" EXCLUDE_FROM_ALL)
+    if ("EXCLUDE_FROM_ALL" IN_LIST FPRIME_CMAKE_ADD_OPTIONS OR FPRIME__INTERNAL_ALREADY_EXCLUDED)
         set_target_properties("${TARGET_NAME}" PROPERTIES FPRIME_EXPLICITLY_EXCLUDED TRUE)
         return()
     endif()

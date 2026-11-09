@@ -33,7 +33,8 @@ those tests. `fprime-util check --all` runs CTest without a filter, i.e. every t
 also offer `fprime-util build --project` and `check --project` to do the same from any directory of the project.
 
 A module may exclude itself regardless of this option with the `EXCLUDE_FROM_ALL` argument of its `register_fprime_*`
-call; such a module is also left out of `universe` and of deployment unit-test roll-ups, and builds only when named.
+call (or of `add_fprime_subdirectory`); such a module is also left out of `universe` and builds only when named or
+depended upon, and a unit test so excluded is skipped by deployment unit-test roll-ups.
 
 When F Prime itself is the top-level CMake project (building the framework), the option is forced `OFF` so that `all`
 builds everything. Projects restore that behavior with `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL=OFF`
