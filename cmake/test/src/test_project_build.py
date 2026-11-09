@@ -54,9 +54,26 @@ EVERYTHING_BUILD_RESULT = cmake.get_build(
     ["all"],
 )
 
+# Configure-only: unit-test build of the reference project (F Prime added via add_subdirectory) with framework unit
+# tests enabled, to inspect CTest labels and the root test metadata
+PROJECT_UT_CONFIGURE_RESULT = cmake.get_build(
+    "PROJECT_UT_CONFIGURE",
+    settings.REF_APP_PATH,
+    {"BUILD_TESTING": "ON", "FPRIME_ENABLE_FRAMEWORK_UTS": "ON"},
+    [],
+)
+
+# Configure-only: the framework as the top-level project forces the option OFF
+FRAMEWORK_UT_CONFIGURE_RESULT = cmake.get_build(
+    "FRAMEWORK_UT_CONFIGURE",
+    settings.FRAMEWORK_PATH,
+    {"BUILD_TESTING": "ON"},
+    [],
+)
+
 
 def test_project_build_excludes_unused_included_code(PROJECT_BUILD):
-    """'all' builds the deployment and its dependencies but not unrelated framework modules"""
+    """'all' builds the deployment and its dependencies but not unrelated framework modules, which build on demand"""
     cmake.assert_process_success(PROJECT_BUILD)
     library_directory = PROJECT_BUILD["build"] / "lib" / TOOLCHAIN_NAME
     assert (PROJECT_BUILD["build"] / "bin" / TOOLCHAIN_NAME / "TestDeployment").exists()
@@ -66,24 +83,22 @@ def test_project_build_excludes_unused_included_code(PROJECT_BUILD):
     assert not (
         library_directory / UNUSED_FRAMEWORK_LIBRARY
     ).exists(), "Unused framework module built by 'all'"
-
-
-def test_excluded_module_builds_on_demand(PROJECT_BUILD):
-    """An excluded framework module still builds when named directly"""
-    cmake.assert_process_success(PROJECT_BUILD)
+    # The excluded module still builds when named directly (same fixture, so the absence check above runs first)
     return_code, _, _ = cmake.run_make(PROJECT_BUILD["build"], "Svc_Health")
     assert return_code == 0, "Excluded module failed to build on demand"
-    assert (
-        PROJECT_BUILD["build"] / "lib" / TOOLCHAIN_NAME / UNUSED_FRAMEWORK_LIBRARY
-    ).exists()
+    assert (library_directory / UNUSED_FRAMEWORK_LIBRARY).exists()
 
 
-def test_universe_target_exists(PROJECT_BUILD):
-    """The 'universe' target is defined and is a no-op for already-built dependencies of the project"""
+def test_universe_target_covers_excluded_modules(PROJECT_BUILD):
+    """The 'universe' target depends on the excluded framework modules (dry run, no full framework build)"""
     cmake.assert_process_success(PROJECT_BUILD)
-    return_code, stdout, _ = cmake.run_make(PROJECT_BUILD["build"], "help")
-    assert return_code == 0
-    assert any("universe" in line for line in stdout), "'universe' target not defined"
+    return_code, stdout, _ = cmake.subprocess_helper(
+        [cmake.MAKE_CALL, "-n", "universe"], PROJECT_BUILD["build"]
+    )
+    assert return_code == 0, "'universe' target not defined"
+    assert any(
+        "Svc_FileManager" in line for line in stdout
+    ), "'universe' does not build excluded framework modules"
 
 
 def test_option_off_builds_everything(EVERYTHING_BUILD):
@@ -92,3 +107,42 @@ def test_option_off_builds_everything(EVERYTHING_BUILD):
     assert (
         EVERYTHING_BUILD["build"] / "lib" / TOOLCHAIN_NAME / UNUSED_FRAMEWORK_LIBRARY
     ).exists()
+
+
+def test_excluded_unit_tests_labeled(PROJECT_UT_CONFIGURE):
+    """Excluded framework tests carry the fprime_universe label and the root test metadata is not the catch-all"""
+    cmake.assert_process_success(PROJECT_UT_CONFIGURE, errors_ok=True)
+    return_code, labeled, _ = cmake.subprocess_helper(
+        ["ctest", "-N", "-L", "fprime_universe"], PROJECT_UT_CONFIGURE["build"]
+    )
+    assert return_code == 0
+    assert any(
+        "Fw_Types_ut_exe" in line for line in labeled
+    ), "Framework test not labeled fprime_universe"
+    root_tests = (
+        (PROJECT_UT_CONFIGURE["build"] / "tests.fprime-util").read_text().split()
+    )
+    assert ".*" not in root_tests, "Root test metadata still lists every test"
+    assert (
+        "Fw_Types_ut_exe" not in root_tests
+    ), "Framework test listed as a project test"
+
+
+def test_framework_top_level_forces_option_off(FRAMEWORK_UT_CONFIGURE):
+    """When F Prime is the top-level project the option is forced OFF: no labels, catch-all root test metadata"""
+    cmake.assert_process_success(FRAMEWORK_UT_CONFIGURE, errors_ok=True)
+    _, stdout, _ = FRAMEWORK_UT_CONFIGURE["cmake"]
+    assert any(
+        "FPRIME_EXCLUDE_LIBRARIES_FROM_ALL forced OFF" in line for line in stdout
+    )
+    return_code, labeled, _ = cmake.subprocess_helper(
+        ["ctest", "-N", "-L", "fprime_universe"], FRAMEWORK_UT_CONFIGURE["build"]
+    )
+    assert return_code == 0
+    assert any(
+        "Total Tests: 0" in line for line in labeled
+    ), "Framework build labeled its own tests"
+    root_tests = (
+        (FRAMEWORK_UT_CONFIGURE["build"] / "tests.fprime-util").read_text().split()
+    )
+    assert root_tests == [".*"]
