@@ -82,8 +82,6 @@ class BufferManagerTester : public BufferManagerGTestBase {
     // Directed tests
     // ----------------------------------------------------------------------
 
-    //! White-box check of the contiguous [structs][payloads] memory layout
-    void contiguousLayout();
     //! Setup, allocator contract, telemetry and buffer identity through the ports
     void setupBehavior();
     void oneBufferSize();

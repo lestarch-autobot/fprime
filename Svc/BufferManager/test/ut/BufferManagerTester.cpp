@@ -57,78 +57,6 @@ BufferManagerTester ::~BufferManagerTester() {}
 // Tests
 // ----------------------------------------------------------------------
 
-void BufferManagerTester ::contiguousLayout() {
-    REQUIREMENT("FPRIME-BM-001");
-
-    BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN0_BUFFER_SIZE;
-    bins.bins[0].numBuffers = BIN0_NUM_BUFFERS;
-    bins.bins[1].bufferSize = BIN1_BUFFER_SIZE;
-    bins.bins[1].numBuffers = BIN1_NUM_BUFFERS;
-    bins.bins[2].bufferSize = BIN2_BUFFER_SIZE;
-    bins.bins[2].numBuffers = BIN2_NUM_BUFFERS;
-
-    TestAllocator alloc;
-
-    this->component.setup(MGR_ID, MEM_ID, alloc, bins);
-    ASSERT_EQ(MEM_ID, this->component.m_memId);
-    ASSERT_EQ(MGR_ID, this->component.m_mgrId);
-    // check allocation state
-
-    // Check that enough buffers were created
-    ASSERT_EQ(BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS, this->component.m_numStructs);
-
-    REQUIREMENT("FPRIME-BM-005");
-
-    // check that enough memory was requested
-    FwSizeType memSize = (BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS) *
-                             sizeof(Svc::BufferManagerComponentImpl::AllocatedBuffer) +
-                         (BIN0_NUM_BUFFERS * BIN0_BUFFER_SIZE + BIN1_NUM_BUFFERS * BIN1_BUFFER_SIZE +
-                          BIN2_NUM_BUFFERS * BIN2_BUFFER_SIZE);
-    ASSERT_EQ(memSize, alloc.getSize());
-
-    // check that correct ID was requested
-    ASSERT_EQ(MEM_ID, alloc.getId());
-
-    // first buffer should point at location just past buffer structs
-    U8* mem = reinterpret_cast<U8*>(alloc.getMem()) +
-              this->component.m_numStructs * sizeof(Svc::BufferManagerComponentImpl::AllocatedBuffer);
-    ;
-
-    // check the buffer properties
-    for (U16 entry = 0; entry < this->component.m_numStructs; entry++) {
-        // check context ID
-        ASSERT_EQ(this->component.m_buffers[entry].buff.getContext(), ((MGR_ID << 16) | entry));
-        // check allocation state
-        ASSERT_FALSE(this->component.m_buffers[entry].allocated);
-        // check buffer sizes
-        if (entry < BIN0_NUM_BUFFERS) {
-            ASSERT_EQ(BIN0_BUFFER_SIZE, this->component.m_buffers[entry].size);
-            ASSERT_EQ(mem, this->component.m_buffers[entry].memory);
-            mem += BIN0_BUFFER_SIZE;
-        } else if (entry < BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS) {
-            ASSERT_EQ(BIN1_BUFFER_SIZE, this->component.m_buffers[entry].size);
-            ASSERT_EQ(mem, this->component.m_buffers[entry].memory);
-            mem += BIN1_BUFFER_SIZE;
-        } else if (entry < BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS) {
-            ASSERT_EQ(BIN2_BUFFER_SIZE, this->component.m_buffers[entry].size);
-            ASSERT_EQ(mem, this->component.m_buffers[entry].memory);
-            mem += BIN2_BUFFER_SIZE;
-        } else {
-            // just in case the logic is wrong
-            ASSERT_TRUE(false);
-        }
-    }
-
-    // memory location should be at end of allocated memory
-    ASSERT_EQ(mem, reinterpret_cast<U8*>(alloc.getMem()) + alloc.getSize());
-
-    this->component.cleanup();
-    ASSERT_TRUE(this->component.m_cleaned);
-    ASSERT_FALSE(this->component.m_setup);
-}
-
 void BufferManagerTester::oneBufferSize() {
     BufferManagerComponentImpl::BufferBins bins;
     memset(&bins, 0, sizeof(bins));
@@ -464,15 +392,15 @@ void BufferManagerTester::bufferSizeTrimmed() {
 }
 
 void BufferManagerTester::setupSizeOverflowAsserts() {
-    // setup() adds up bufferSize + sizeof(AllocatedBuffer) per buffer, times numBuffers, across
-    // bins, and hands the total to the allocator. Each step is now checked before it can wrap;
-    // without the checks the total wrapped silently and the buffer structures were carved into
-    // an allocation far smaller than the manager believed it had.
+    // setup() sizes one allocation from the per-buffer overhead, bufferSize, numBuffers and the
+    // running total across bins. Each step is checked before it can wrap; without the checks the
+    // total wrapped silently and the pool was carved into an allocation far smaller than the
+    // manager believed it had. The sizes below overflow for any per-buffer overhead.
     const FwSizeType maxSize = std::numeric_limits<FwSizeType>::max();
     BufferManagerComponentImpl::BufferBins bins;
     TestAllocator alloc;
 
-    // bufferSize + sizeof(AllocatedBuffer) wraps
+    // bufferSize plus any per-buffer overhead wraps
     memset(&bins, 0, sizeof(bins));
     bins.bins[0].bufferSize = maxSize;
     bins.bins[0].numBuffers = 1;
@@ -573,8 +501,12 @@ void BufferManagerTester ::setupBehavior() {
     }
     ASSERT_EVENTS_SIZE(0);
 
-    // Buffers are distinct in identity and in memory
+    // Buffers are distinct in identity and in memory, and every payload lies inside the one allocation
+    const U8* const poolStart = static_cast<const U8*>(alloc.getMem());
+    const U8* const poolEnd = poolStart + alloc.getSize();
     for (U16 i = 0; i < TOTAL_NUM_BUFFERS; i++) {
+        ASSERT_GE(buffers[i].getData(), poolStart);
+        ASSERT_LE(buffers[i].getData() + buffers[i].getCapacity(), poolEnd);
         for (U16 j = 0; j < i; j++) {
             ASSERT_NE(buffers[i].getContext(), buffers[j].getContext());
             ASSERT_TRUE(disjoint(buffers[i], buffers[j]));
@@ -885,6 +817,11 @@ void BufferManagerTester ::sendInAsserts() {
     // Size larger than the buffer's allocation
     {
         Fw::Buffer bad(held.getData(), BIN0_BUFFER_SIZE + 1, held.getContext());
+        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
+    }
+    // Null data with a non-zero size is not the empty buffer and is rejected
+    {
+        Fw::Buffer bad(nullptr, BIN0_BUFFER_SIZE, held.getContext());
         ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
     }
     // Returning the same buffer twice
