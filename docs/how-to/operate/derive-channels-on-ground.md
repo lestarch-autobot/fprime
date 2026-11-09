@@ -5,7 +5,7 @@ Ground-derived channels allow you to compute new values from incoming telemetry 
 This guide walks through the process of creating a basic plugin that listens to incoming telemetry and publishes it back to F Prime.
 
 > [!WARNING]
-> Ground-derived channels are only supported when running with the `--no-zmq` option of the GDS. The ZeroMQ backend is fast but cannot allow arbitrary publishers.
+> Ground-derived channels are only supported when running with the `--data-transport-selection tcp` option of the GDS (formerly `--no-zmq`). The ZeroMQ backend is fast but cannot allow arbitrary publishers.
 
 > [!NOTE]
 > **Prerequisite**  
@@ -154,7 +154,7 @@ fprime-merge-dictionary --permissive --output MergedDictionary.json \
 
 **Running With The Merged Dictionary**
 ```
-fprime-gds --dictionary ./MergedDictionary.json --no-zmq
+fprime-gds --dictionary ./MergedDictionary.json --data-transport-selection tcp
 ```
 ---
 
