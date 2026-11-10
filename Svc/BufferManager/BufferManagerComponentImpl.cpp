@@ -56,7 +56,6 @@ void BufferManagerComponentImpl ::cleanup() {
         this->m_cleaned = true;
         // release memory
         this->m_allocator->deallocate(this->m_memId, this->m_memory);
-        this->m_memory = nullptr;
         this->m_setup = false;
     }
 }
@@ -152,7 +151,7 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     this->m_bufferBins = bins;
 
     // compute the amount of memory needed: the buffer payloads first, then the tracking structs, so that
-    // payloads keep the allocation's alignment whatever the struct sizes are
+    // payload offsets depend only on the bin sizes and never on the struct sizes
     FwSizeType payloadBytes = 0;  // track payload memory
     this->m_numStructs = 0;       // size the number of tracking structs
     FwSizeType previousBinSize = 0;
@@ -186,21 +185,27 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     const FwSizeType structAlign = static_cast<FwSizeType>(alignof(AllocatedBuffer));
     FW_ASSERT(payloadBytes <= std::numeric_limits<FwSizeType>::max() - (structAlign - 1));  // round-up safe
     const FwSizeType structOffset = ((payloadBytes + structAlign - 1) / structAlign) * structAlign;
+    // cannot wrap: m_numStructs is bounded by the U16 maximum
     const FwSizeType structBytes = static_cast<FwSizeType>(sizeof(AllocatedBuffer)) * this->m_numStructs;
     FW_ASSERT(structOffset <= std::numeric_limits<FwSizeType>::max() - structBytes);  // total safe
     const FwSizeType memorySize = structOffset + structBytes;
     FwSizeType allocatedSize = memorySize;
     bool recoverable = false;  //!< don't care if it is recoverable since they are a pool of user buffers
 
-    // allocate memory
+    // allocate memory at the allocator's default alignment (alignof(std::max_align_t))
     void* memory = allocator.allocate(memId, allocatedSize, recoverable);
     // make sure the memory returns was non-zero and the size requested
     FW_ASSERT(memory != nullptr && memorySize == allocatedSize, static_cast<FwAssertArgType>(mgrId),
               static_cast<FwAssertArgType>(memId),
               static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
               static_cast<FwAssertArgType>(memorySize), static_cast<FwAssertArgType>(allocatedSize));
+    // the tracking structs are placed at a multiple of their alignment from the base, so the base must be aligned
+    FW_ASSERT((reinterpret_cast<PlatformPointerCastType>(memory) % alignof(AllocatedBuffer)) == 0,
+              static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
+              static_cast<FwAssertArgType>(alignof(AllocatedBuffer)));
     this->m_memory = memory;
-    // buffer payloads are at the beginning of memory, so an aligned allocation yields aligned payloads
+    // buffer payloads start at the beginning of memory: the first is as aligned as the allocation and each
+    // following one is offset by the preceding bin sizes only, never by the tracking structs
     U8* bufferMem = static_cast<U8*>(memory);
     // tracking structs follow the payloads
     this->m_buffers = reinterpret_cast<AllocatedBuffer*>(static_cast<U8*>(memory) + structOffset);

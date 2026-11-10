@@ -156,24 +156,30 @@ bool BufferManagerTester::Lifecycle__SizeOverflowAsserts__precondition() const {
 }
 
 void BufferManagerTester::Lifecycle__SizeOverflowAsserts__action() {
+    // one case per arithmetic guard in setup()
     const FwSizeType maxSize = std::numeric_limits<FwSizeType>::max();
     BufferManagerComponentImpl::BufferBins bins;
-    // bufferSize plus any per-buffer overhead wraps
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize;
-    bins.bins[0].numBuffers = 1;
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
-    // per-buffer size times numBuffers wraps
+    // bufferSize times numBuffers wraps
     memset(&bins, 0, sizeof(bins));
     bins.bins[0].bufferSize = maxSize / 2;
     bins.bins[0].numBuffers = 3;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
-    // the accumulation across bins wraps
+    // the payload total across bins wraps
     memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize / 2;
+    bins.bins[0].bufferSize = maxSize / 2 + 1;
     bins.bins[0].numBuffers = 1;
-    bins.bins[1].bufferSize = maxSize / 2;
+    bins.bins[1].bufferSize = maxSize / 2 + 1;
     bins.bins[1].numBuffers = 1;
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
+    // rounding the payload total up to the tracking structs' alignment wraps
+    memset(&bins, 0, sizeof(bins));
+    bins.bins[0].bufferSize = maxSize;
+    bins.bins[0].numBuffers = 1;
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
+    // the payloads fit but adding the tracking structs wraps (they need more than the 15 bytes left)
+    memset(&bins, 0, sizeof(bins));
+    bins.bins[0].bufferSize = maxSize - 15;
+    bins.bins[0].numBuffers = 1;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
 }
 

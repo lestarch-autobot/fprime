@@ -138,7 +138,7 @@ class BufferManagerComponentImpl final : public BufferManagerComponentBase {
     };
 
     void* m_memory;                 //!< allocation holding the buffer payloads followed by the tracking structs
-    AllocatedBuffer* m_buffers;     //!< pointer to allocated buffer space
+    AllocatedBuffer* m_buffers;     //!< tracking structs, inside m_memory after the payloads
     Fw::MemAllocator* m_allocator;  //!< allocator for memory
     FwEnumStoreType m_memId;        //!< identifier for allocator
     U16 m_numStructs;               //!< number of allocated structs
