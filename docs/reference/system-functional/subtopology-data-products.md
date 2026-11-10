@@ -40,5 +40,5 @@ The subtopology exposes ports for:
 ### Configuration
 
 - Data product directory paths and state file location are configured at setup time.
-- Base IDs, queue sizes, stack sizes, priorities, and CPU affinities via DataProductsConfig.
+- Base IDs, queue sizes, stack sizes, priorities, and CPU affinities via DataProductsConfig. The accumulator's initial drain limit (`BufferAccumulator.initialDrainLimit`, default 1) is set there too, and `QueueSizes.dpWriter` is derived from `BufferAccumulator.maxNumBuffers` plus `dpWriterQueueMargin` so the writer can queue every buffer the accumulator may have in flight — keep that derivation when overriding either constant.
 - Buffer Manager bin sizes and counts are configured for the expected data product sizes.

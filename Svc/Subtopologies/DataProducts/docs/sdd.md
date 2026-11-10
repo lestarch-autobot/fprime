@@ -42,7 +42,7 @@ Every connected `bufferSendIn[N]` requires a connected `deallocBufferSendOut[N]`
 
 * **dpCat**: The data product directory (`DataProductsConfig::Paths::dpDir`) is created at startup and `dpCat.configure()` is called with the directory, state file (`DataProductsConfig::Paths::dpState`), and the subtopology memory allocator.
 * **dpWriter**: `dpWriter.configure()` is called with the data product directory.
-* **dpBufferAccumulator**: The queue is allocated at startup (drain mode `DRAIN`) and deallocated at teardown, sized by `DataProductsConfig::BufferAccumulator::maxNumBuffers`.
+* **dpBufferAccumulator**: The queue is allocated at startup (drain mode `DRAIN`, initial drain limit `DataProductsConfig::BufferAccumulator::initialDrainLimit`, default 1) and deallocated at teardown, sized by `DataProductsConfig::BufferAccumulator::maxNumBuffers`. `QueueSizes.dpWriter` is derived from `maxNumBuffers` plus a margin for the writer's other queued inputs, so the writer can queue every buffer the accumulator may have in flight.
 * **dpBufferManager**: A single buffer bin is set up from `DataProductsConfig::BuffMgr` (buffer size and count); the manager is cleaned up (and `dpCat.shutdown()` called) at teardown.
 
 ### 2.4 Required Inputs for Operation
@@ -99,7 +99,8 @@ Configure the instance properties for the static instances owned by the subtopol
 
 * **Base ID** — Base identifier for the subtopology; component IDs are offset from this base.
 * **Queue sizes / stack sizes / priorities** — For the active instances (`dpCat`, `dpMgr`, `dpWriter`, `dpBufferAccumulator`).
-* **BufferAccumulator** — Allocator ID and maximum number of accumulated buffers.
+* **BufferAccumulator** — Allocator ID, maximum number of accumulated buffers, and initial drain limit (`initialDrainLimit`: number of buffers in flight to `dpWriter` at once; default 1). The drain limit (initial or commanded) is capped at `maxNumBuffers` by the component. `QueueSizes.dpWriter` is derived from `maxNumBuffers + QueueSizes.dpWriterQueueMargin` — the margin is one `schedInInternal` message (`dpWriter`'s sync `schedIn` re-posts its work to the component thread through an internal port) plus an assumed ceiling of 3 concurrently queued `CLEAR_EVENT_THROTTLE` commands — so `dpWriter`'s async `bufferSendIn` queue can always hold every buffer `dpBufferAccumulator` may have in flight; keep that derivation when overriding either constant and raise the margin if more commands are issued concurrently.
+* **Migration for projects that override `DataProductsConfig.fpp`** — add `constant initialDrainLimit = 1` under `module BufferAccumulator` and `constant dpWriterMaxQueuedCommands = 3` and `constant dpWriterQueueMargin = 1 + dpWriterMaxQueuedCommands` under `module QueueSizes`, and derive `dpWriter` from `BufferAccumulator.maxNumBuffers + dpWriterQueueMargin` (same migration as the `CpuAffinities` module).
 * **BuffMgr** — Data product buffer store size, count, and buffer manager ID.
 * **Paths** — Data product directory and catalog state file path.
 
