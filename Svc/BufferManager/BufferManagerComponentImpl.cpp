@@ -204,7 +204,7 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
               static_cast<FwAssertArgType>(memId),
               static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
               static_cast<FwAssertArgType>(memorySize), static_cast<FwAssertArgType>(allocatedSize));
-    // the allocator must honor the requested alignment (Fw::MemAllocator contract: at least as large as requested)
+    // the allocator must honor poolAlign (Fw::MemAllocator contract: at least the alignment asked of it)
     FW_ASSERT((reinterpret_cast<PlatformPointerCastType>(memory) % poolAlign) == 0,
               static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
               static_cast<FwAssertArgType>(poolAlign));

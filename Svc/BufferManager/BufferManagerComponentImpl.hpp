@@ -65,7 +65,8 @@ namespace Svc {
 // Note that a pointer to the Fw::MemAllocator used in setup() is stored for later memory cleanup.
 // The instance of the allocator must persist beyond calling the cleanup() function or the
 // destructor of BufferManager if cleanup() is not called. If a project-specific manual memory
-// allocator is not needed, Fw::MallocAllocator can be used.
+// allocator is not needed, Fw::MallocAllocator can be used when the default alignment suffices: it
+// provides malloc's alignment whatever is requested, so setup() asserts for larger requests.
 
 class BufferManagerComponentImpl final : public BufferManagerComponentBase {
     friend class BufferManagerTester;
@@ -98,10 +99,12 @@ class BufferManagerComponentImpl final : public BufferManagerComponentBase {
                Fw::MemAllocator& allocator,  //!< memory allocator. MUST be persistent for later deallocation.
                                              //!  MUST persist past destructor if cleanup() not called explicitly.
                const BufferBins& bins,       //!< Set of user bins
-               FwSizeType alignment = alignof(std::max_align_t)  //!< Alignment requested from the allocator for
-                                                                 //!  the pool; the first buffer payload starts at
-                                                                 //!  the allocation. Default: the allocator's own
-                                                                 //!  default (maximum alignment defined by C++).
+               FwSizeType alignment = alignof(std::max_align_t)  //!< Pool alignment, a non-zero power of two; the
+                                                                 //!  allocator is asked for at least this (or the
+                                                                 //!  tracking structs' alignment if larger) and the
+                                                                 //!  first buffer payload starts at the allocation.
+                                                                 //!  Default: the allocator's own default (maximum
+                                                                 //!  alignment defined by C++).
     );
 
     void cleanup();  // Free memory prior to end of program if desired. Otherwise,
