@@ -31,6 +31,9 @@ namespace Svc {
 //! contract through it without assuming how many allocations setup() makes or how they are laid out.
 class TestAllocator : public Fw::MemAllocator {
   public:
+    //! Largest request served: anything beyond is refused (nullptr, size 0) as by an allocator out of memory
+    static constexpr FwSizeType MAX_SERVED_SIZE = static_cast<FwSizeType>(1) << 30;
+
     //! One allocate() call and what became of it
     struct Allocation {
         FwEnumStoreType id;        //!< identifier the allocation was requested under
@@ -56,7 +59,13 @@ class TestAllocator : public Fw::MemAllocator {
                    FwSizeType alignment) override {
         Allocation allocation = {identifier, size, size, alignment, nullptr, nullptr, false};
         recoverable = false;
-        allocation.raw = ::malloc(size + alignment);
+        // a request no test can mean (e.g. a size the component let overflow) is refused the way an allocator
+        // out of memory refuses it, so that the component's own check on the result is what fails
+        if ((size > MAX_SERVED_SIZE) || (alignment > MAX_SERVED_SIZE - size)) {
+            allocation.raw = nullptr;
+        } else {
+            allocation.raw = ::malloc(size + alignment);
+        }
         if (allocation.raw == nullptr) {
             size = 0;
             allocation.returnedSize = 0;
