@@ -206,7 +206,7 @@ void DpWriter::performProcessing(Fw::DpContainer& container) {
     // Get the bit mask for the processing types, with the override applied
     const Fw::DpCfg::ProcType::SerialType requestedProcTypes = container.getProcTypes();
     const Fw::DpCfg::ProcType::SerialType procTypes = this->applyProcOverride(requestedProcTypes);
-    const bool overrideApplied = (procTypes != requestedProcTypes);
+    const bool procTypesChanged = (procTypes != requestedProcTypes);
     // Do the processing
     bool did_process = false;
     for (FwIndexType portNum = 0; portNum < NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS; ++portNum) {
@@ -229,11 +229,12 @@ void DpWriter::performProcessing(Fw::DpContainer& container) {
                   static_cast<FwAssertArgType>(buffer.getSize()));
     }
 
-    if (did_process || overrideApplied) {
-        // Record the processing types the container was routed through (the requested types with the
-        // override applied). This must follow the deserializeHeader() above, which reloads the
-        // requested types from the buffer.
-        container.setProcTypes(procTypes);
+    if (did_process || procTypesChanged) {
+        if (procTypesChanged) {
+            // Record the processing types the container was routed through. This must follow the
+            // deserializeHeader() above, which reloads the requested types from the buffer.
+            container.setProcTypes(procTypes);
+        }
 
         // Re-compute and serialize the container header into the buffer
         container.updateHeaderHash();

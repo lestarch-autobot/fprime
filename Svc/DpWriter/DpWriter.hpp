@@ -96,7 +96,7 @@ class DpWriter final : public DpWriterComponentBase {
                                       U32 cmdSeq,                //!< The command sequence number
                                       const Fw::Enabled& state,  //!< ENABLED applies the override; DISABLED restores
                                                                  //!< header-controlled processing
-                                      U8 procTypes  //!< Bit mask of processing types performed while ENABLED
+                                      U8 procTypes  //!< Bit mask of processing types selected while ENABLED
                                       ) final;
 
   private:
@@ -160,7 +160,7 @@ class DpWriter final : public DpWriterComponentBase {
     //! ENABLED replaces the header processing types with m_procOverrideMask; DISABLED leaves them as requested
     Fw::Enabled m_procOverrideState = Fw::Enabled::DISABLED;
 
-    //! The processing types performed on every container while the override is ENABLED
+    //! The processing types selected for every container while the override is ENABLED
     Fw::DpCfg::ProcType::SerialType m_procOverrideMask = 0;
 
     //! The file name prefix for writing DP files

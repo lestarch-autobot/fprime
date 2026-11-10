@@ -15,7 +15,9 @@ configuration file given with --deployment-config, for example:
 
 The command must request PROC_TYPE_ZLIB_DEFLATE processing and result in exactly one data product file
 written by `Svc.DpWriter` within a few seconds. The forced-off test is skipped when no producer is
-configured.
+configured. The producer command is only ever sent while the override forces processing off: in a
+deployment that does not connect the zlib processing port (such as Ref), sending it by hand or from
+another test asserts the flight software (nasa/fprime#6346).
 """
 
 import pytest
@@ -53,6 +55,8 @@ class ProcOverride:
     def __init__(self, fprime_test_api):
         self.api = fprime_test_api
         self.current = self.DEFAULT
+        # Set when a product that needs the override may still be in flight, so teardown must not clear it
+        self.hold = False
 
     def set(self, state, mask):
         """Send SET_PROC_OVERRIDE and verify the OK response, event, and changed telemetry"""
@@ -84,7 +88,12 @@ def proc_override(fprime_test_api):
     """Drive the override from its default and clear it after each test so other tests see default behavior"""
     override = ProcOverride(fprime_test_api)
     yield override
-    override.clear()
+    if override.hold:
+        fprime_test_api.log(
+            "WARNING: leaving the processing override in place; a product that needs it may still be in flight"
+        )
+    else:
+        override.clear()
 
 
 def test_proc_override_set_and_clear(fprime_test_api, proc_override):
@@ -100,6 +109,16 @@ def test_proc_override_rejects_unavailable_ports(fprime_test_api, proc_override)
     fprime_test_api.send_command(
         dp_writer(fprime_test_api, "SET_PROC_OVERRIDE"), ["ENABLED", ALL_BITS_MASK]
     )
+    # A deployment connecting all eight processing ports legitimately accepts every bit
+    try:
+        fprime_test_api.assert_event(
+            dp_writer(fprime_test_api, "ProcOverrideSet"), start=start, timeout=2
+        )
+    except AssertionError:
+        pass
+    else:
+        proc_override.current = ("ENABLED", ALL_BITS_MASK)
+        pytest.skip("deployment connects every processing port; nothing is unavailable")
     invalid = fprime_test_api.assert_event(
         dp_writer(fprime_test_api, "ProcOverrideInvalid"), start=start, timeout=10
     )
@@ -129,10 +148,13 @@ def test_proc_override_forces_processing_off(fprime_test_api, proc_override):
     args = config.get(PRODUCER_ARGS_KEY, [])
     proc_override.set("ENABLED", NO_PROCESSING_MASK)
     start = fprime_test_api.get_event_test_history().size()
+    # Until the product is written, clearing the override would route it to the unconnected port
+    proc_override.hold = True
     fprime_test_api.send_and_assert_command(command, args, max_delay=10)
     written = fprime_test_api.assert_event(
         dp_writer(fprime_test_api, "FileWritten"), start=start, timeout=WRITE_TIMEOUT
     )
+    proc_override.hold = False
     expected_bytes = config.get(PRODUCER_BYTES_KEY)
     if expected_bytes is not None:
         assert written.get_args()[0].val == expected_bytes

@@ -484,7 +484,11 @@ processing types requested in each container header for every data product it wr
 set bit forces that processing on, a clear bit forces it off, and a zero mask shuts all
 processing off. `DISABLED` restores header-controlled processing. This lets an operator
 turn on compression for a whole deployment, or shut processing off, without every
-producing component supporting a per-container setting. The override is
+producing component supporting a per-container setting. An `ENABLED` mask may only
+select processing ports that are connected; any other mask is rejected with a
+`ProcOverrideInvalid` warning. `DpWriter` records the mask it applied in the `ProcTypes`
+field of the written container header, so ground tools show the override mask rather
+than the types the producer requested. The override is
 volatile (it is cleared by a reset) and forced processing runs on the `DpWriter`
 thread for every product, so it lowers write throughput for all producers. See the
 [`Svc::DpWriter` SDD](../../../Svc/DpWriter/docs/sdd.md).

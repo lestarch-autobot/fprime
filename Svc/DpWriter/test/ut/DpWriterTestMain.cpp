@@ -128,19 +128,6 @@ TEST(FileWriteStatus, OK) {
     tester.OK();
 }
 
-TEST(Scenarios, Random) {
-    COMMENT("Random scenario with all rules.");
-    REQUIREMENT("SVC-DPMANAGER-001");
-    REQUIREMENT("SVC-DPMANAGER-002");
-    REQUIREMENT("SVC-DPMANAGER-003");
-    REQUIREMENT("SVC-DPMANAGER-004");
-    REQUIREMENT("SVC-DPMANAGER-005");
-    REQUIREMENT("SVC-DPMANAGER-006");
-    const FwSizeType numSteps = 10000;
-    Scenarios::Random::Tester tester;
-    tester.run(numSteps);
-}
-
 TEST(SET_PROC_OVERRIDE, OK) {
     COMMENT("Set a valid processing override and verify the response, event, and telemetry.");
     REQUIREMENT("SVC-DPWRITER-009");
@@ -161,6 +148,20 @@ TEST(SET_PROC_OVERRIDE, InvalidUnconnected) {
     REQUIREMENT("SVC-DPWRITER-010");
     SET_PROC_OVERRIDE::Tester tester;
     tester.InvalidUnconnected();
+}
+
+TEST(SET_PROC_OVERRIDE, InvalidNonexistent) {
+    COMMENT("Reject a DISABLED override selecting a processing type with no port.");
+    REQUIREMENT("SVC-DPWRITER-010");
+    SET_PROC_OVERRIDE::Tester tester;
+    tester.InvalidNonexistent();
+}
+
+TEST(SET_PROC_OVERRIDE, InvalidKeepsOverride) {
+    COMMENT("Reject an override while one is ENABLED and verify the ENABLED override stays in force.");
+    REQUIREMENT("SVC-DPWRITER-010");
+    SET_PROC_OVERRIDE::Tester tester;
+    tester.InvalidKeepsOverride();
 }
 
 TEST(SET_PROC_OVERRIDE, ForceOn) {
@@ -189,6 +190,19 @@ TEST(SchedIn, OK) {
     REQUIREMENT("SVC-DPMANAGER-006");
     SchedIn::Tester tester;
     tester.OK();
+}
+
+TEST(Scenarios, Random) {
+    COMMENT("Random scenario with all rules.");
+    REQUIREMENT("SVC-DPMANAGER-001");
+    REQUIREMENT("SVC-DPMANAGER-002");
+    REQUIREMENT("SVC-DPMANAGER-003");
+    REQUIREMENT("SVC-DPMANAGER-004");
+    REQUIREMENT("SVC-DPMANAGER-005");
+    REQUIREMENT("SVC-DPMANAGER-006");
+    const FwSizeType numSteps = 10000;
+    Scenarios::Random::Tester tester;
+    tester.run(numSteps);
 }
 
 }  // namespace Svc

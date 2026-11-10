@@ -29,6 +29,12 @@ class Tester {
     //! Reject forcing on the existing processing port that is not connected
     void InvalidUnconnected();
 
+    //! Reject a nonexistent processing type while DISABLED
+    void InvalidNonexistent();
+
+    //! A rejected override leaves the ENABLED override in force
+    void InvalidKeepsOverride();
+
     //! Force processing on for every connected processing port
     void ForceOn();
 

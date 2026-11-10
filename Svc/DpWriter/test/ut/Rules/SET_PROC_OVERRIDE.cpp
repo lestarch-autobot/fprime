@@ -5,6 +5,8 @@
 // ======================================================================
 
 #include "Svc/DpWriter/test/ut/Rules/SET_PROC_OVERRIDE.hpp"
+#include <limits>
+
 #include "STest/Pick/Pick.hpp"
 #include "Svc/DpWriter/test/ut/Rules/Testers.hpp"
 
@@ -77,25 +79,22 @@ void TestState ::action__SET_PROC_OVERRIDE__Invalid() {
         mask = static_cast<U8>(this->abstractState.m_nextProcOverrideMaskOpt.value());
         ASSERT_NE(static_cast<U8>(mask & disallowed), 0);
     } else {
-        // Pick one disallowed bit, then any other bits
+        // Pick one disallowed bit, then any other bits. The state was chosen above so that disallowed != 0
         FwIndexType numDisallowed = 0;
-        for (FwIndexType i = 0; i < DpWriterNumProcPorts; i++) {
+        for (FwIndexType i = 0; i < std::numeric_limits<U8>::digits; i++) {
             if ((disallowed & (1U << i)) != 0) {
                 numDisallowed = static_cast<FwIndexType>(numDisallowed + 1);
             }
         }
+        ASSERT_GT(numDisallowed, 0);
         FwIndexType pick = static_cast<FwIndexType>(STest::Pick::lowerUpper(0, static_cast<U32>(numDisallowed - 1)));
-        for (FwIndexType i = 0; i < DpWriterNumProcPorts; i++) {
+        for (FwIndexType i = 0; i < std::numeric_limits<U8>::digits; i++) {
             if ((disallowed & (1U << i)) != 0) {
                 if (pick == 0) {
                     mask = static_cast<U8>(1U << i);
                 }
                 pick = static_cast<FwIndexType>(pick - 1);
             }
-        }
-        if (mask == 0) {
-            // The disallowed bits are all outside the configured ports
-            mask = static_cast<U8>(1U << DpWriterNumProcPorts);
         }
         mask = static_cast<U8>(mask | static_cast<U8>(STest::Pick::any() & disallowed));
         mask = static_cast<U8>(mask | static_cast<U8>(STest::Pick::any() & allowed));
@@ -125,6 +124,8 @@ namespace SET_PROC_OVERRIDE {
 void Tester ::OK() {
     this->ruleOK.apply(this->testState);
     Testers::schedIn.ruleOK.apply(this->testState);
+    // A second tick with an unchanged override must emit neither channel
+    Testers::schedIn.ruleOK.apply(this->testState);
 }
 
 void Tester ::Invalid() {
@@ -137,6 +138,22 @@ void Tester ::InvalidUnconnected() {
                                                                   1U << AbstractState::NUM_CONNECTED_PROC_PORTS));
     this->ruleInvalid.apply(this->testState);
     Testers::schedIn.ruleOK.apply(this->testState);
+}
+
+void Tester ::InvalidNonexistent() {
+    this->testState.setNextProcOverride(Fw::Enabled::DISABLED,
+                                        static_cast<Fw::DpCfg::ProcType::SerialType>(1U << DpWriterNumProcPorts));
+    this->ruleInvalid.apply(this->testState);
+    Testers::schedIn.ruleOK.apply(this->testState);
+}
+
+void Tester ::InvalidKeepsOverride() {
+    this->ForceOn();
+    this->testState.setNextProcOverride(Fw::Enabled::ENABLED, static_cast<Fw::DpCfg::ProcType::SerialType>(
+                                                                  1U << AbstractState::NUM_CONNECTED_PROC_PORTS));
+    this->ruleInvalid.apply(this->testState);
+    Testers::schedIn.ruleOK.apply(this->testState);
+    Testers::bufferSendIn.ruleOK.apply(this->testState);
 }
 
 void Tester ::ForceOn() {

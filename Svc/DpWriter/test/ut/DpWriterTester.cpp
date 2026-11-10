@@ -100,7 +100,7 @@ void DpWriterTester::checkProcTypes(const Fw::DpContainer& container) {
     // Exactly the recorded processing ports must have been invoked
     U32 expectedNumProcTypes = 0;
     for (FwIndexType i = 0; i < DpWriterNumProcPorts; i++) {
-        if (expectedProcTypes & (1 << i)) {
+        if ((expectedProcTypes & (1U << i)) != 0) {
             ++expectedNumProcTypes;
         }
     }
