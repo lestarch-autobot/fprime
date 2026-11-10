@@ -151,6 +151,7 @@ Buffer manager will assert under the following conditions:
 7. The bins passed to `setup()` contain no buffers.
 8. `setup()` is called while the instance is already set up (call `cleanup()` first).
 9. A bin with a non-zero `numBuffers` has a `bufferSize` of zero.
+10. The allocator returns memory not aligned for the buffer tracking structures.
 
 **Connections**
 

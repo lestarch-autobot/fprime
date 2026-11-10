@@ -96,6 +96,7 @@ class BufferManagerTester : public BufferManagerGTestBase {
     //! Repeated cleanup and destruction release the pool exactly once
     void lifecycle();
     void setupSizeOverflowAsserts();
+    void setupMisalignedAllocatorAsserts();
     //! Bins not ordered by non-decreasing size are rejected
     void setupBinOrderAsserts();
     //! Returned buffers with a bad context, pointer, size, or state assert

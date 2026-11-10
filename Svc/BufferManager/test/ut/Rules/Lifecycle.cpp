@@ -176,7 +176,8 @@ void BufferManagerTester::Lifecycle__SizeOverflowAsserts__action() {
     bins.bins[0].bufferSize = maxSize;
     bins.bins[0].numBuffers = 1;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
-    // the payloads fit but adding the tracking structs wraps (they need more than the 15 bytes left)
+    // the payloads fit but adding the tracking structs wraps: 15 bytes are left, enough for any round-up
+    // to an alignment of at most 16 (alignof(std::max_align_t)) but fewer than one tracking struct needs
     memset(&bins, 0, sizeof(bins));
     bins.bins[0].bufferSize = maxSize - 15;
     bins.bins[0].numBuffers = 1;

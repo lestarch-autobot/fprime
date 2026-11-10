@@ -51,6 +51,7 @@ namespace Svc {
 // 7. The bins passed to setup() contain no buffers at all.
 // 8. setup() is called while the instance is already set up (call cleanup() first).
 // 9. A bin with a non-zero numBuffers has a bufferSize of zero.
+// 10. The allocator returns memory not aligned for the buffer tracking structures.
 //
 // cleanup() does not require every buffer to have been returned: buffers still out become invalid
 //    with the pool they came from and must not be used or returned afterwards. After cleanup(), setup()

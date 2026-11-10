@@ -391,6 +391,33 @@ void BufferManagerTester::bufferSizeTrimmed() {
     this->component.cleanup();
 }
 
+namespace {
+//! An allocator that hands out memory one byte off any alignment, without changing the requested size
+class MisalignedAllocator : public Fw::MemAllocator {
+  public:
+    void* allocate(const FwEnumStoreType identifier,
+                   FwSizeType& size,
+                   bool& recoverable,
+                   FwSizeType alignment) override {
+        this->m_raw = new U8[size + 1];
+        return &this->m_raw[1];
+    }
+    void deallocate(const FwEnumStoreType identifier, void* ptr) override { delete[] this->m_raw; }
+
+  private:
+    U8* m_raw = nullptr;
+};
+}  // namespace
+
+void BufferManagerTester::setupMisalignedAllocatorAsserts() {
+    // setup() places the tracking structs at an aligned offset from the allocation, so the allocation itself
+    // must be aligned for them
+    MisalignedAllocator alloc;
+    BufferManagerComponentImpl::BufferBins bins;
+    defaultBins(bins);
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
+}
+
 void BufferManagerTester::setupSizeOverflowAsserts() {
     // setup() sizes one allocation from bufferSize times numBuffers per bin, the payload total across bins,
     // that total rounded up to the tracking structs' alignment, and the tracking structs themselves. Each
@@ -417,7 +444,8 @@ void BufferManagerTester::setupSizeOverflowAsserts() {
     bins.bins[0].bufferSize = maxSize;
     bins.bins[0].numBuffers = 1;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
-    // the payloads fit but adding the tracking structs wraps (they need more than the 15 bytes left)
+    // the payloads fit but adding the tracking structs wraps: 15 bytes are left, enough for any round-up
+    // to an alignment of at most 16 (alignof(std::max_align_t)) but fewer than one tracking struct needs
     memset(&bins, 0, sizeof(bins));
     bins.bins[0].bufferSize = maxSize - 15;
     bins.bins[0].numBuffers = 1;

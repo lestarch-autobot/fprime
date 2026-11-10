@@ -146,6 +146,7 @@ sequenceDiagram
 * The bins passed to `setup()` contain no buffers.
 * `setup()` is called while the instance is already set up.
 * A bin with a non-zero `numBuffers` has a `bufferSize` of zero.
+* The allocator returns memory not aligned for the buffer tracking structures.
 
 ## 4 Configuration
 
