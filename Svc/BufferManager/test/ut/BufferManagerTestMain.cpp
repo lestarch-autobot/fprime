@@ -1,14 +1,16 @@
 // ----------------------------------------------------------------------
-// TestMain.cpp
+// BufferManagerTestMain.cpp
 // ----------------------------------------------------------------------
 
-#include <cstring>
 #include "BufferManagerTester.hpp"
+#include "Fw/Test/UnitTest.hpp"
+#include "STest/Pick/Pick.hpp"
 #include "STest/Random/Random.hpp"
 #include "STest/Scenario/BoundedScenario.hpp"
 #include "STest/Scenario/RandomScenario.hpp"
 
 using Svc::BufferManagerTester;
+using Svc::BufferManagerTestState;
 
 // ----------------------------------------------------------------------
 // Directed tests
@@ -19,19 +21,19 @@ TEST(Nominal, Setup) {
     tester.setupBehavior();
 }
 
-TEST(Nominal, OneSize) {
+TEST(Nominal, SingleBin) {
     BufferManagerTester tester;
-    tester.oneBufferSize();
+    tester.singleBin();
 }
 
-TEST(Nominal, MultSize) {
+TEST(Nominal, MultipleBins) {
     BufferManagerTester tester;
-    tester.multBuffSize();
+    tester.multipleBins();
 }
 
-TEST(Nominal, BufferSizeTrimmed) {
+TEST(Nominal, TrimmedReturn) {
     BufferManagerTester tester;
-    tester.bufferSizeTrimmed();
+    tester.trimmedReturn();
 }
 
 TEST(Nominal, BufferSizeSelection) {
@@ -79,6 +81,9 @@ TEST(OffNominal, UseBeforeSetupAsserts) {
 // ----------------------------------------------------------------------
 
 namespace {
+//! Steps per random scenario: enough for every bin of the small tables to be exhausted and refilled many times
+const U32 RANDOM_STEPS = 10000;
+
 //! Every rule, so the scenario tests share one declaration
 struct Rules {
     BufferManagerTester::Lifecycle__Setup setup;
@@ -100,20 +105,21 @@ struct Rules {
     BufferManagerTester::Sched__Telemetry sched;
 };
 
-//! Apply the port and lifecycle rules at random for numSteps steps against an already set up tester
-void runRandom(BufferManagerTester& tester, Rules& r, const U32 numSteps) {
+//! Apply every non-asserting rule at random against an already set up tester. The *Asserts rules fork a
+//! process per ASSERT_DEATH and run only in the directed sequences below.
+void runRandom(BufferManagerTester& tester, Rules& r) {
     STest::Rule<BufferManagerTester>* rules[] = {&r.setup, &r.cleanup, &r.cleanupHolding, &r.get,   &r.between, &r.zero,
                                                  &r.none,  &r.ret,     &r.trimmed,        &r.empty, &r.sched};
     STest::RandomScenario<BufferManagerTester> random("Random Rules", rules, FW_NUM_ARRAY_ELEMENTS(rules));
-    STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, numSteps);
-    const U32 ran = bounded.run(tester);
-    printf("Ran %u steps.\n", ran);
-    ASSERT_EQ(numSteps, ran);
+    STest::BoundedScenario<BufferManagerTester> bounded("Bounded Random Rules Scenario", random, RANDOM_STEPS);
+    ASSERT_EQ(RANDOM_STEPS, bounded.run(tester));
 }
 }  // namespace
 
 // Setup: allocator contract, telemetry before any request, every buffer obtainable, release on cleanup
 TEST(Rules, Setup) {
+    REQUIREMENT("FPRIME-BM-001");
+    REQUIREMENT("FPRIME-BM-005");
     BufferManagerTester tester;
     Rules r;
     tester.setupRulesDefault();
@@ -126,7 +132,10 @@ TEST(Rules, Setup) {
 }
 
 // Exhaust a single bin, check telemetry, return everything in random order, return an empty buffer
-TEST(Rules, OneSize) {
+TEST(Rules, SingleBin) {
+    REQUIREMENT("FPRIME-BM-003");
+    REQUIREMENT("FPRIME-BM-004");
+    REQUIREMENT("FPRIME-BM-006");
     BufferManagerTester tester;
     Rules r;
     tester.setupRulesOneBin();
@@ -136,7 +145,7 @@ TEST(Rules, OneSize) {
     }
     r.none.apply(tester);
     r.sched.apply(tester);
-    while (!tester.shadow.shadow_held.empty()) {
+    while (!tester.shadow.held.empty()) {
         r.ret.apply(tester);
     }
     r.empty.apply(tester);
@@ -145,7 +154,12 @@ TEST(Rules, OneSize) {
 }
 
 // Exhaust three bins with random sizes, then drain them with full and trimmed returns
-TEST(Rules, MultSize) {
+TEST(Rules, MultipleBins) {
+    REQUIREMENT("FPRIME-BM-001");
+    REQUIREMENT("FPRIME-BM-002");
+    REQUIREMENT("FPRIME-BM-003");
+    REQUIREMENT("FPRIME-BM-004");
+    REQUIREMENT("FPRIME-BM-007");
     BufferManagerTester tester;
     Rules r;
     tester.setupRulesDefault();
@@ -154,7 +168,7 @@ TEST(Rules, MultSize) {
     }
     r.none.apply(tester);
     r.sched.apply(tester);
-    while (!tester.shadow.shadow_held.empty()) {
+    while (!tester.shadow.held.empty()) {
         if (STest::Pick::lowerUpper(0, 1) == 0) {
             r.ret.apply(tester);
         } else {
@@ -168,6 +182,9 @@ TEST(Rules, MultSize) {
 
 // Bin selection: between-bin sizes, over-max with everything free, size 0, spill-over and reuse
 TEST(Rules, BufferSizeSelection) {
+    REQUIREMENT("FPRIME-BM-002");
+    REQUIREMENT("FPRIME-BM-003");
+    REQUIREMENT("FPRIME-BM-009");
     BufferManagerTester tester;
     Rules r;
     tester.setupRulesDefault();
@@ -190,11 +207,14 @@ TEST(Rules, BufferSizeSelection) {
 
 // Events throttle while the counters keep counting
 TEST(Rules, EventThrottling) {
+    REQUIREMENT("FPRIME-BM-003");
+    REQUIREMENT("FPRIME-BM-004");
+    REQUIREMENT("FPRIME-BM-009");
     BufferManagerTester tester;
     Rules r;
     tester.setupRulesOneBuffer();
     r.get.apply(tester);
-    for (U32 i = 0; i < Svc::BufferManagerTestState::EVENT_THROTTLE + 2; i++) {
+    for (U32 i = 0; i < BufferManagerTestState::EVENT_THROTTLE + 2; i++) {
         r.none.apply(tester);
         r.empty.apply(tester);
         r.zero.apply(tester);
@@ -206,6 +226,8 @@ TEST(Rules, EventThrottling) {
 // Use before setup, single-buffer pool, setup over a live pool, idempotent cleanup, use after
 // cleanup, then setup/cleanup cycles (one with a buffer still out) whose telemetry restarts per pool
 TEST(Rules, Lifecycle) {
+    REQUIREMENT("FPRIME-BM-011");
+    REQUIREMENT("FPRIME-BM-012");
     BufferManagerTester tester;
     Rules r;
     r.notSetupAsserts.apply(tester);
@@ -226,28 +248,23 @@ TEST(Rules, Lifecycle) {
     r.cleanup.apply(tester);
 }
 
-// setup() rejects misordered bins and wrapping sizes, then accepts equal sizes and gaps
+// setup() rejects misordered bins, wrapping sizes and empty configurations, then accepts equal sizes and gaps
 TEST(Rules, SetupAsserts) {
+    REQUIREMENT("FPRIME-BM-008");
+    REQUIREMENT("FPRIME-BM-010");
     BufferManagerTester tester;
     Rules r;
     r.binOrderAsserts.apply(tester);
     r.sizeOverflowAsserts.apply(tester);
     r.emptyBinsAsserts.apply(tester);
-    Svc::BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = Svc::BufferManagerTester::BIN0_BUFFER_SIZE;
-    bins.bins[0].numBuffers = 1;
-    bins.bins[1].bufferSize = Svc::BufferManagerTester::BIN0_BUFFER_SIZE;
-    bins.bins[1].numBuffers = 1;
-    bins.bins[3].bufferSize = Svc::BufferManagerTester::BIN1_BUFFER_SIZE;
-    bins.bins[3].numBuffers = 1;
-    tester.setupRules(bins);
+    tester.setupRulesEqualAndGapped();
     r.get.apply(tester);
     tester.teardownRules();
 }
 
 // bufferSendIn rejects a corrupt or foreign buffer and a double return
 TEST(Rules, SendInAsserts) {
+    COMMENT("bufferSendIn asserts on a buffer that is not one it handed out (SDD 3.6.2)");
     BufferManagerTester tester;
     Rules r;
     tester.setupRulesDefault();
@@ -256,21 +273,39 @@ TEST(Rules, SendInAsserts) {
     tester.teardownRules();
 }
 
-// Randomized test against the three-bin configuration
+// Randomized test against the three-bin configuration: every port and lifecycle behavior interleaved
 TEST(Rules, Random) {
+    REQUIREMENT("FPRIME-BM-001");
+    REQUIREMENT("FPRIME-BM-002");
+    REQUIREMENT("FPRIME-BM-003");
+    REQUIREMENT("FPRIME-BM-004");
+    REQUIREMENT("FPRIME-BM-005");
+    REQUIREMENT("FPRIME-BM-006");
+    REQUIREMENT("FPRIME-BM-007");
+    REQUIREMENT("FPRIME-BM-009");
+    REQUIREMENT("FPRIME-BM-012");
     BufferManagerTester tester;
     Rules r;
     tester.setupRulesDefault();
-    runRandom(tester, r, 10000);
+    runRandom(tester, r);
     tester.teardownRules();
 }
 
-// Randomized test against a random bin configuration
+// Randomized test against a random bin configuration: the same mix over an arbitrary legal table
 TEST(Rules, RandomBins) {
+    REQUIREMENT("FPRIME-BM-001");
+    REQUIREMENT("FPRIME-BM-002");
+    REQUIREMENT("FPRIME-BM-003");
+    REQUIREMENT("FPRIME-BM-004");
+    REQUIREMENT("FPRIME-BM-005");
+    REQUIREMENT("FPRIME-BM-006");
+    REQUIREMENT("FPRIME-BM-007");
+    REQUIREMENT("FPRIME-BM-009");
+    REQUIREMENT("FPRIME-BM-012");
     BufferManagerTester tester;
     Rules r;
     tester.setupRulesRandom();
-    runRandom(tester, r, 10000);
+    runRandom(tester, r);
     tester.teardownRules();
 }
 

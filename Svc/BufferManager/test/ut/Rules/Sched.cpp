@@ -9,11 +9,11 @@
 namespace Svc {
 
 // ----------------------------------------------------------------------
-// Sched.Telemetry
+// Sched.Telemetry — every channel is written on the first call and then only when its value changed
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::Sched__Telemetry__precondition() const {
-    return this->shadow.shadow_isSetup;
+    return this->shadow.isSetup;
 }
 
 void BufferManagerTester::Sched__Telemetry__action() {
@@ -21,52 +21,46 @@ void BufferManagerTester::Sched__Telemetry__action() {
 
     this->invoke_to_schedIn(0, 0);
 
-    // Channels are "update on change": written on the first call and then only when the value differs
-    const bool first = !this->shadow.shadow_tlmSent;
+    const bool first = !this->shadow.tlmSent;
     U32 expected = 0;
-    if (first || this->shadow.shadow_lastTotalBuffs != this->shadow.shadow_totalBuffs) {
+    if (first || this->shadow.lastTotalBuffs != this->shadow.totalBuffs) {
         ASSERT_TLM_TotalBuffs_SIZE(1);
-        ASSERT_TLM_TotalBuffs(0, this->shadow.shadow_totalBuffs);
+        ASSERT_TLM_TotalBuffs(0, this->shadow.totalBuffs);
         expected++;
     } else {
         ASSERT_TLM_TotalBuffs_SIZE(0);
     }
-    if (first || this->shadow.shadow_lastCurrBuffs != this->shadow.shadow_currBuffs) {
+    if (first || this->shadow.lastCurrBuffs != this->shadow.currBuffs) {
         ASSERT_TLM_CurrBuffs_SIZE(1);
-        ASSERT_TLM_CurrBuffs(0, this->shadow.shadow_currBuffs);
+        ASSERT_TLM_CurrBuffs(0, this->shadow.currBuffs);
         expected++;
     } else {
         ASSERT_TLM_CurrBuffs_SIZE(0);
     }
-    if (first || this->shadow.shadow_lastHighWater != this->shadow.shadow_highWater) {
+    if (first || this->shadow.lastHighWater != this->shadow.highWater) {
         ASSERT_TLM_HiBuffs_SIZE(1);
-        ASSERT_TLM_HiBuffs(0, this->shadow.shadow_highWater);
+        ASSERT_TLM_HiBuffs(0, this->shadow.highWater);
         expected++;
     } else {
         ASSERT_TLM_HiBuffs_SIZE(0);
     }
-    if (first || this->shadow.shadow_lastNoBuffs != this->shadow.shadow_noBuffs) {
+    if (first || this->shadow.lastNoBuffs != this->shadow.noBuffs) {
         ASSERT_TLM_NoBuffs_SIZE(1);
-        ASSERT_TLM_NoBuffs(0, this->shadow.shadow_noBuffs);
+        ASSERT_TLM_NoBuffs(0, this->shadow.noBuffs);
         expected++;
     } else {
         ASSERT_TLM_NoBuffs_SIZE(0);
     }
-    if (first || this->shadow.shadow_lastEmptyBuffs != this->shadow.shadow_emptyBuffs) {
+    if (first || this->shadow.lastEmptyBuffs != this->shadow.emptyBuffs) {
         ASSERT_TLM_EmptyBuffs_SIZE(1);
-        ASSERT_TLM_EmptyBuffs(0, this->shadow.shadow_emptyBuffs);
+        ASSERT_TLM_EmptyBuffs(0, this->shadow.emptyBuffs);
         expected++;
     } else {
         ASSERT_TLM_EmptyBuffs_SIZE(0);
     }
     ASSERT_TLM_SIZE(expected);
 
-    this->shadow.shadow_tlmSent = true;
-    this->shadow.shadow_lastTotalBuffs = this->shadow.shadow_totalBuffs;
-    this->shadow.shadow_lastCurrBuffs = this->shadow.shadow_currBuffs;
-    this->shadow.shadow_lastHighWater = this->shadow.shadow_highWater;
-    this->shadow.shadow_lastNoBuffs = this->shadow.shadow_noBuffs;
-    this->shadow.shadow_lastEmptyBuffs = this->shadow.shadow_emptyBuffs;
+    this->shadow.recordTelemetry();
 }
 
 }  // namespace Svc

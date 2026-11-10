@@ -13,11 +13,10 @@ namespace Svc {
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::BufferGet__Ok__precondition() const {
-    return this->shadow.shadow_isSetup && this->shadow.anyFree();
+    return this->shadow.isSetup && this->shadow.anyFree();
 }
 
 void BufferManagerTester::BufferGet__Ok__action() {
-    this->clearHistory();
     this->ruleGet(this->shadow.pickServableSize());
 }
 
@@ -26,11 +25,10 @@ void BufferManagerTester::BufferGet__Ok__action() {
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::BufferGet__Between__precondition() const {
-    return this->shadow.shadow_isSetup && this->shadow.pickBetweenBinSize() != 0;
+    return this->shadow.isSetup && this->shadow.hasBetweenBinSize();
 }
 
 void BufferManagerTester::BufferGet__Between__action() {
-    this->clearHistory();
     this->ruleGet(this->shadow.pickBetweenBinSize());
 }
 
@@ -39,7 +37,7 @@ void BufferManagerTester::BufferGet__Between__action() {
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::BufferGet__Zero__precondition() const {
-    return this->shadow.shadow_isSetup;
+    return this->shadow.isSetup;
 }
 
 void BufferManagerTester::BufferGet__Zero__action() {
@@ -50,7 +48,7 @@ void BufferManagerTester::BufferGet__Zero__action() {
     ASSERT_EQ(nullptr, zero.getData());
     ASSERT_EQ(0u, zero.getSize());
 
-    const U32 eventsBefore = this->shadow.shadow_zeroEvents;
+    const U32 eventsBefore = this->shadow.zeroEvents;
     this->shadow.recordZeroRequest();
     if (eventsBefore < BufferManagerTestState::EVENT_THROTTLE) {
         ASSERT_EVENTS_SIZE(1);
@@ -61,11 +59,11 @@ void BufferManagerTester::BufferGet__Zero__action() {
 }
 
 // ----------------------------------------------------------------------
-// BufferGet.NoneAvailable
+// BufferGet.NoneAvailable — a size no free buffer can hold
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::BufferGet__NoneAvailable__precondition() const {
-    return this->shadow.shadow_isSetup;
+    return this->shadow.isSetup;
 }
 
 void BufferManagerTester::BufferGet__NoneAvailable__action() {
@@ -80,7 +78,7 @@ void BufferManagerTester::BufferGet__NoneAvailable__action() {
     ASSERT_EQ(nullptr, buffer.getData());
     ASSERT_EQ(0u, buffer.getSize());
 
-    const U32 eventsBefore = this->shadow.shadow_noBuffsEvents;
+    const U32 eventsBefore = this->shadow.noBuffsEvents;
     this->shadow.recordNoBuffer();
     if (eventsBefore < BufferManagerTestState::EVENT_THROTTLE) {
         ASSERT_EVENTS_SIZE(1);

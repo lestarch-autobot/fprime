@@ -1,5 +1,5 @@
 // ======================================================================
-// \title  BufferManager.hpp
+// \title  BufferManagerTester.cpp
 // \author tcanham
 // \brief  cpp file for BufferManager test harness implementation class
 //
@@ -11,34 +11,40 @@
 // ======================================================================
 
 #include "BufferManagerTester.hpp"
-#include <Fw/Test/UnitTest.hpp>
-#include <Fw/Types/MallocAllocator.hpp>
-#include <cstdlib>
-#include <limits>
+#include <algorithm>
+#include <cstring>
+#include <utility>
+#include "Fw/Test/UnitTest.hpp"
+#include "STest/Pick/Pick.hpp"
 
-#define INSTANCE 0
-#define MAX_HISTORY_SIZE 100
-
-// Bin buffer sizes/numbers
-
-// Other constants
+namespace {
+//! Instance number given to the component under test
+const FwEnumStoreType INSTANCE = 0;
+//! Depth of the port, event and telemetry histories
+const U32 MAX_HISTORY_SIZE = 100;
 
 //! True if the memory ranges of two buffers do not overlap
-static bool disjoint(const Fw::Buffer& a, const Fw::Buffer& b) {
+bool disjoint(const Fw::Buffer& a, const Fw::Buffer& b) {
     return (a.getData() + a.getCapacity() <= b.getData()) || (b.getData() + b.getCapacity() <= a.getData());
 }
+}  // namespace
 
 namespace Svc {
 
 const FwEnumStoreType BufferManagerTester::MEM_ID;
 const U16 BufferManagerTester::MGR_ID;
 const FwSizeType BufferManagerTester::ANY_REQUEST_SIZE;
+const U32 BufferManagerTester::NUM_TLM_CHANNELS;
+constexpr const char* BufferManagerTester::UUT_ASSERT;
 const Fw::Buffer::SizeType BufferManagerTester::BIN0_BUFFER_SIZE;
 const U16 BufferManagerTester::BIN0_NUM_BUFFERS;
 const Fw::Buffer::SizeType BufferManagerTester::BIN1_BUFFER_SIZE;
 const U16 BufferManagerTester::BIN1_NUM_BUFFERS;
 const Fw::Buffer::SizeType BufferManagerTester::BIN2_BUFFER_SIZE;
 const U16 BufferManagerTester::BIN2_NUM_BUFFERS;
+const U16 BufferManagerTester::NUM_BINS;
+constexpr Fw::Buffer::SizeType BufferManagerTester::BIN_SIZES[];
+constexpr U16 BufferManagerTester::BIN_COUNTS[];
 const U16 BufferManagerTester::TOTAL_NUM_BUFFERS;
 
 // ----------------------------------------------------------------------
@@ -54,434 +60,21 @@ BufferManagerTester ::BufferManagerTester()
 BufferManagerTester ::~BufferManagerTester() {}
 
 // ----------------------------------------------------------------------
-// Tests
-// ----------------------------------------------------------------------
-
-void BufferManagerTester::oneBufferSize() {
-    BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN1_BUFFER_SIZE;
-    bins.bins[0].numBuffers = BIN1_NUM_BUFFERS;
-
-    TestAllocator alloc;
-
-    this->component.setup(MGR_ID, MEM_ID, alloc, bins);
-
-    Fw::Buffer buffs[BIN1_NUM_BUFFERS];
-
-    for (U16 b = 0; b < BIN1_NUM_BUFFERS; b++) {
-        // Get the buffers
-        buffs[b] = this->invoke_to_bufferGetCallee(0, BIN1_BUFFER_SIZE);
-        // check allocation state
-        ASSERT_TRUE(this->component.m_buffers[b].allocated);
-        // check stats
-        ASSERT_EQ(b + 1, this->component.m_currBuffs);
-        // check stats
-        ASSERT_EQ(b + 1, this->component.m_highWater);
-    }
-
-    // should send back empty buffer
-    Fw::Buffer noBuff = this->invoke_to_bufferGetCallee(0, BIN1_BUFFER_SIZE);
-    ASSERT_EQ(1, this->component.m_noBuffs);
-    ASSERT_EVENTS_NoBuffsAvailable_SIZE(1);
-    ASSERT_EVENTS_NoBuffsAvailable(0, BIN1_BUFFER_SIZE);
-
-    // check telemetry
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_SIZE(5);
-    ASSERT_TLM_TotalBuffs_SIZE(1);
-    ASSERT_TLM_TotalBuffs(0, BIN1_NUM_BUFFERS);
-    ASSERT_TLM_CurrBuffs_SIZE(1);
-    ASSERT_TLM_CurrBuffs(0, BIN1_NUM_BUFFERS);
-    ASSERT_TLM_HiBuffs_SIZE(1);
-    ASSERT_TLM_HiBuffs(0, BIN1_NUM_BUFFERS);
-    ASSERT_TLM_NoBuffs_SIZE(1);
-    ASSERT_TLM_NoBuffs(0, 1);
-    ASSERT_TLM_EmptyBuffs_SIZE(1);
-    ASSERT_TLM_EmptyBuffs(0, 0);
-
-    // clear histories
-    this->clearHistory();
-
-    REQUIREMENT("FPRIME-BM-006");
-
-    // randomly return buffers
-    bool returned[BIN1_NUM_BUFFERS] = {false};
-
-    for (U16 b = 0; b < BIN1_NUM_BUFFERS; b++) {
-        U16 entry;
-        while (true) {
-            entry = STest::Pick::lowerUpper(0, BIN1_NUM_BUFFERS - 1);
-            if (not returned[entry]) {
-                returned[entry] = true;
-                break;
-            }
-        }
-        // return the buffer
-        printf("Returning buffer %d\n", entry);
-        this->invoke_to_bufferSendIn(0, buffs[entry]);
-        // check allocation state
-        ASSERT_FALSE(this->component.m_buffers[entry].allocated);
-        ASSERT_EQ(BIN1_NUM_BUFFERS - b - 1, this->component.m_currBuffs);
-        ASSERT_EQ(BIN1_NUM_BUFFERS, this->component.m_highWater);
-    }
-
-    // should reject empty buffer
-    this->invoke_to_bufferSendIn(0, noBuff);
-    ASSERT_EQ(1, this->component.m_emptyBuffs);
-    ASSERT_EVENTS_NullEmptyBuffer_SIZE(1);
-
-    // check telemetry
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_SIZE(2);
-    // No total buffs or no buffs since only on update
-    ASSERT_TLM_CurrBuffs_SIZE(1);
-    ASSERT_TLM_CurrBuffs(0, 0);
-    ASSERT_TLM_NoBuffs_SIZE(0);
-    ASSERT_TLM_EmptyBuffs_SIZE(1);
-    ASSERT_TLM_EmptyBuffs(0, 1);
-
-    // all buffers should be deallocated
-    for (U16 b = 0; b < this->component.m_numStructs; b++) {
-        ASSERT_FALSE(this->component.m_buffers[b].allocated);
-    }
-
-    // cleanup BufferManager memory
-    this->component.cleanup();
-}
-
-void BufferManagerTester::multBuffSize() {
-    BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN0_BUFFER_SIZE;
-    bins.bins[0].numBuffers = BIN0_NUM_BUFFERS;
-    bins.bins[1].bufferSize = BIN1_BUFFER_SIZE;
-    bins.bins[1].numBuffers = BIN1_NUM_BUFFERS;
-    bins.bins[2].bufferSize = BIN2_BUFFER_SIZE;
-    bins.bins[2].numBuffers = BIN2_NUM_BUFFERS;
-
-    TestAllocator alloc;
-
-    this->component.setup(MGR_ID, MEM_ID, alloc, bins);
-
-    Fw::Buffer buffs[BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS];
-
-    REQUIREMENT("FPRIME-BM-002");
-
-    // BufferManager should be able to provide the whole pool worth of buffers
-    // for a requested size smaller than the smallest bin.
-
-    for (U16 b = 0; b < BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS; b++) {
-        // Get the buffers
-        buffs[b] = this->invoke_to_bufferGetCallee(0, BIN0_BUFFER_SIZE);
-        // check allocation state
-        ASSERT_TRUE(this->component.m_buffers[b].allocated);
-        // check stats
-        ASSERT_EQ(b + 1, this->component.m_currBuffs);
-        // check stats
-        ASSERT_EQ(b + 1, this->component.m_highWater);
-    }
-
-    REQUIREMENT("FPRIME-BM-003");
-
-    // should send back empty buffer
-    Fw::Buffer noBuff = this->invoke_to_bufferGetCallee(0, BIN1_BUFFER_SIZE);
-    ASSERT_EQ(1, this->component.m_noBuffs);
-    ASSERT_EVENTS_NoBuffsAvailable_SIZE(1);
-    ASSERT_EVENTS_NoBuffsAvailable(0, BIN1_BUFFER_SIZE);
-
-    // check telemetry
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_SIZE(5);
-    ASSERT_TLM_TotalBuffs_SIZE(1);
-    ASSERT_TLM_TotalBuffs(0, BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS);
-    ASSERT_TLM_CurrBuffs_SIZE(1);
-    ASSERT_TLM_CurrBuffs(0, BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS);
-    ASSERT_TLM_HiBuffs_SIZE(1);
-    ASSERT_TLM_HiBuffs(0, BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS);
-    ASSERT_TLM_NoBuffs_SIZE(1);
-    ASSERT_TLM_NoBuffs(0, 1);
-    ASSERT_TLM_EmptyBuffs_SIZE(1);
-    ASSERT_TLM_EmptyBuffs(0, 0);
-
-    // clear histories
-    this->clearHistory();
-
-    for (U16 b = 0; b < BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS; b++) {
-        // return the buffer
-        this->invoke_to_bufferSendIn(0, buffs[b]);
-        // check allocation state
-        ASSERT_FALSE(this->component.m_buffers[b].allocated);
-        ASSERT_EQ(BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS - b - 1, this->component.m_currBuffs);
-        ASSERT_EQ(BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS, this->component.m_highWater);
-    }
-
-    REQUIREMENT("FPRIME-BM-004");
-
-    // should reject empty buffer
-    this->invoke_to_bufferSendIn(0, noBuff);
-    ASSERT_EQ(1, this->component.m_emptyBuffs);
-    ASSERT_EVENTS_NullEmptyBuffer_SIZE(1);
-
-    // check telemetry
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_SIZE(2);
-    // No total buffs or no buffs since only on update
-    ASSERT_TLM_CurrBuffs_SIZE(1);
-    ASSERT_TLM_CurrBuffs(0, 0);
-    ASSERT_TLM_NoBuffs_SIZE(0);
-    ASSERT_TLM_EmptyBuffs_SIZE(1);
-    ASSERT_TLM_EmptyBuffs(0, 1);
-
-    // clear histories
-    this->clearHistory();
-
-    // all buffers should be deallocated
-    for (U16 b = 0; b < this->component.m_numStructs; b++) {
-        ASSERT_FALSE(this->component.m_buffers[b].allocated);
-    }
-
-    // clear histories
-    this->clearEvents();
-
-    // BufferManager should be able to provide the BIN1 and BIN2 worth of buffers
-    // for a requested size just smaller than the BIN1 size
-
-    for (U16 b = 0; b < BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS; b++) {
-        // Get the buffers
-        buffs[b] = this->invoke_to_bufferGetCallee(0, BIN1_BUFFER_SIZE);
-        // check allocation state - should be allocating from bin 1
-        ASSERT_TRUE(this->component.m_buffers[b + BIN0_NUM_BUFFERS].allocated);
-        // check stats
-        ASSERT_EQ(b + 1, this->component.m_currBuffs);
-    }
-
-    // should send back empty buffer
-    noBuff = this->invoke_to_bufferGetCallee(0, BIN1_BUFFER_SIZE);
-    ASSERT_EQ(2, this->component.m_noBuffs);
-    ASSERT_EVENTS_NoBuffsAvailable_SIZE(1);
-    ASSERT_EVENTS_NoBuffsAvailable(0, BIN1_BUFFER_SIZE);
-
-    // check telemetry
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_SIZE(2);
-    ASSERT_TLM_TotalBuffs_SIZE(0);
-    ASSERT_TLM_CurrBuffs_SIZE(1);
-    ASSERT_TLM_CurrBuffs(0, BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS);
-    ASSERT_TLM_NoBuffs_SIZE(1);
-    ASSERT_TLM_NoBuffs(0, 2);
-    ASSERT_TLM_EmptyBuffs_SIZE(0);
-
-    // clear histories
-    this->clearHistory();
-
-    for (U16 b = 0; b < BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS; b++) {
-        // return the buffer
-        this->invoke_to_bufferSendIn(0, buffs[b]);
-        // check allocation state - should be freeing from bin 1
-        ASSERT_FALSE(this->component.m_buffers[b + BIN0_NUM_BUFFERS].allocated);
-        ASSERT_EQ(BIN1_NUM_BUFFERS + BIN2_NUM_BUFFERS - b - 1, this->component.m_currBuffs);
-    }
-
-    // should reject empty buffer
-    this->invoke_to_bufferSendIn(0, noBuff);
-    ASSERT_EQ(2, this->component.m_emptyBuffs);
-    ASSERT_EVENTS_NullEmptyBuffer_SIZE(1);
-
-    // check telemetry
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_SIZE(2);
-    // No total buffs or no buffs since only on update
-    ASSERT_TLM_CurrBuffs_SIZE(1);
-    ASSERT_TLM_CurrBuffs(0, 0);
-    ASSERT_TLM_NoBuffs_SIZE(0);
-    ASSERT_TLM_EmptyBuffs_SIZE(1);
-    ASSERT_TLM_EmptyBuffs(0, 2);
-
-    // clear histories
-    this->clearHistory();
-
-    // all buffers should be deallocated
-    for (U16 b = 0; b < this->component.m_numStructs; b++) {
-        ASSERT_FALSE(this->component.m_buffers[b].allocated);
-    }
-
-    // BufferManager should be able to provide the BIN2 worth of buffers
-    // for a requested size just smaller than the BIN2 size
-
-    for (U16 b = 0; b < BIN2_NUM_BUFFERS; b++) {
-        // Get the buffers
-        buffs[b] = this->invoke_to_bufferGetCallee(0, BIN2_BUFFER_SIZE);
-        // check allocation state - should be allocating from bin 1
-        ASSERT_TRUE(this->component.m_buffers[b + BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS].allocated);
-        // check stats
-        ASSERT_EQ(b + 1, this->component.m_currBuffs);
-    }
-
-    // should send back empty buffer
-    noBuff = this->invoke_to_bufferGetCallee(0, BIN2_BUFFER_SIZE);
-    ASSERT_EQ(3, this->component.m_noBuffs);
-    ASSERT_EVENTS_NoBuffsAvailable_SIZE(1);
-    ASSERT_EVENTS_NoBuffsAvailable(0, BIN2_BUFFER_SIZE);
-
-    // check telemetry
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_SIZE(2);
-    ASSERT_TLM_TotalBuffs_SIZE(0);
-    ASSERT_TLM_CurrBuffs_SIZE(1);
-    ASSERT_TLM_CurrBuffs(0, BIN2_NUM_BUFFERS);
-    ASSERT_TLM_NoBuffs_SIZE(1);
-    ASSERT_TLM_NoBuffs(0, 3);
-    ASSERT_TLM_EmptyBuffs_SIZE(0);
-
-    // clear histories
-    this->clearHistory();
-
-    for (U16 b = 0; b < BIN2_NUM_BUFFERS; b++) {
-        // return the buffer
-        this->invoke_to_bufferSendIn(0, buffs[b]);
-        // check allocation state - should be freeing from bin 1
-        ASSERT_FALSE(this->component.m_buffers[b + BIN0_NUM_BUFFERS + BIN1_NUM_BUFFERS].allocated);
-        ASSERT_EQ(BIN2_NUM_BUFFERS - b - 1, this->component.m_currBuffs);
-    }
-
-    // should reject empty buffer
-    this->invoke_to_bufferSendIn(0, noBuff);
-    ASSERT_EQ(3, this->component.m_emptyBuffs);
-    ASSERT_EVENTS_NullEmptyBuffer_SIZE(1);
-
-    // check telemetry
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_SIZE(2);
-    // No total buffs or no buffs since only on update
-    ASSERT_TLM_CurrBuffs_SIZE(1);
-    ASSERT_TLM_CurrBuffs(0, 0);
-    ASSERT_TLM_NoBuffs_SIZE(0);
-    ASSERT_TLM_EmptyBuffs_SIZE(1);
-    ASSERT_TLM_EmptyBuffs(0, 3);
-
-    // all buffers should be deallocated
-    for (U16 b = 0; b < this->component.m_numStructs; b++) {
-        ASSERT_FALSE(this->component.m_buffers[b].allocated);
-    }
-
-    // cleanup BufferManager memory
-    this->component.cleanup();
-}
-
-void BufferManagerTester::bufferSizeTrimmed() {
-    REQUIREMENT("FPRIME-BM-007");
-
-    BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN1_BUFFER_SIZE;
-    bins.bins[0].numBuffers = 1;
-
-    TestAllocator alloc;
-    this->component.setup(MGR_ID, MEM_ID, alloc, bins);
-
-    const Fw::Buffer::SizeType requestedSize = BIN1_BUFFER_SIZE - 1;
-    Fw::Buffer buffer = this->invoke_to_bufferGetCallee(0, requestedSize);
-    ASSERT_TRUE(buffer.isValid());
-    ASSERT_EQ(requestedSize, buffer.getSize());
-
-    this->invoke_to_bufferSendIn(0, buffer);
-    ASSERT_FALSE(this->component.m_buffers[0].allocated);
-
-    this->component.cleanup();
-}
-
-void BufferManagerTester::setupSizeOverflowAsserts() {
-    // setup() sizes one allocation from the per-buffer overhead, bufferSize, numBuffers and the
-    // running total across bins. Each step is checked before it can wrap; without the checks the
-    // total wrapped silently and the pool was carved into an allocation far smaller than the
-    // manager believed it had. The sizes below overflow for any per-buffer overhead.
-    const FwSizeType maxSize = std::numeric_limits<FwSizeType>::max();
-    BufferManagerComponentImpl::BufferBins bins;
-    TestAllocator alloc;
-
-    // bufferSize plus any per-buffer overhead wraps
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize;
-    bins.bins[0].numBuffers = 1;
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
-
-    // per-buffer size times numBuffers wraps
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize / 2;
-    bins.bins[0].numBuffers = 3;
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
-
-    // the running total across bins wraps
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize / 2;
-    bins.bins[0].numBuffers = 1;
-    bins.bins[1].bufferSize = maxSize / 2;
-    bins.bins[1].numBuffers = 1;
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
-}
-
-// ----------------------------------------------------------------------
-// Test helpers
-// ----------------------------------------------------------------------
-
-void BufferManagerTester ::defaultBins(BufferManagerComponentImpl::BufferBins& bins) {
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN0_BUFFER_SIZE;
-    bins.bins[0].numBuffers = BIN0_NUM_BUFFERS;
-    bins.bins[1].bufferSize = BIN1_BUFFER_SIZE;
-    bins.bins[1].numBuffers = BIN1_NUM_BUFFERS;
-    bins.bins[2].bufferSize = BIN2_BUFFER_SIZE;
-    bins.bins[2].numBuffers = BIN2_NUM_BUFFERS;
-}
-
-Fw::Buffer BufferManagerTester ::getBuffer(FwSizeType size, FwSizeType expectedCapacity) {
-    Fw::Buffer buffer = this->invoke_to_bufferGetCallee(0, size);
-    EXPECT_NE(nullptr, buffer.getData());
-    EXPECT_EQ(size, buffer.getSize());
-    EXPECT_EQ(expectedCapacity, buffer.getCapacity());
-    EXPECT_EQ(static_cast<U32>(MGR_ID), buffer.getContext() >> 16);
-    return buffer;
-}
-
-void BufferManagerTester ::getNoBuffer(FwSizeType size) {
-    this->clearEvents();
-    Fw::Buffer buffer = this->invoke_to_bufferGetCallee(0, size);
-    ASSERT_FALSE(buffer.isValid());
-    ASSERT_EQ(nullptr, buffer.getData());
-    ASSERT_EQ(0u, buffer.getSize());
-    ASSERT_EVENTS_NoBuffsAvailable_SIZE(1);
-    ASSERT_EVENTS_NoBuffsAvailable(0, size);
-}
-
-void BufferManagerTester ::returnBuffer(Fw::Buffer& buffer) {
-    this->clearEvents();
-    this->invoke_to_bufferSendIn(0, buffer);
-    ASSERT_EVENTS_SIZE(0);
-}
-
-// ----------------------------------------------------------------------
-// Directed tests observing the component only through its ports
+// Directed tests
 // ----------------------------------------------------------------------
 
 void BufferManagerTester ::setupBehavior() {
     REQUIREMENT("FPRIME-BM-001");
     REQUIREMENT("FPRIME-BM-005");
 
-    BufferManagerComponentImpl::BufferBins bins;
-    this->defaultBins(bins);
-    TestAllocator alloc;
-    this->component.setup(MGR_ID, MEM_ID, alloc, bins);
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins());
 
-    // One allocation, with the configured identifier, large enough for every payload
-    ASSERT_EQ(MEM_ID, alloc.getId());
-    ASSERT_NE(nullptr, alloc.getMem());
-    ASSERT_GE(alloc.getSize(), BIN0_NUM_BUFFERS * BIN0_BUFFER_SIZE + BIN1_NUM_BUFFERS * BIN1_BUFFER_SIZE +
-                                   BIN2_NUM_BUFFERS * BIN2_BUFFER_SIZE);
+    // The pool was requested from the supplied allocator under the configured identifier
+    ASSERT_EQ(MEM_ID, this->m_allocator.getId());
+    ASSERT_NE(nullptr, this->m_allocator.getMem());
 
     // Telemetry before any request
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_SIZE(5);
+    this->checkTelemetry(NUM_TLM_CHANNELS);
     ASSERT_TLM_TotalBuffs(0, TOTAL_NUM_BUFFERS);
     ASSERT_TLM_CurrBuffs(0, 0);
     ASSERT_TLM_HiBuffs(0, 0);
@@ -489,24 +82,11 @@ void BufferManagerTester ::setupBehavior() {
     ASSERT_TLM_EmptyBuffs(0, 0);
 
     // Every configured buffer can be obtained with the capacity of its bin
-    const Fw::Buffer::SizeType sizes[] = {BIN0_BUFFER_SIZE, BIN1_BUFFER_SIZE, BIN2_BUFFER_SIZE};
-    const U16 counts[] = {BIN0_NUM_BUFFERS, BIN1_NUM_BUFFERS, BIN2_NUM_BUFFERS};
     Fw::Buffer buffers[TOTAL_NUM_BUFFERS];
-    U16 index = 0;
-    for (U16 bin = 0; bin < FW_NUM_ARRAY_ELEMENTS(sizes); bin++) {
-        for (U16 entry = 0; entry < counts[bin]; entry++) {
-            buffers[index] = this->getBuffer(sizes[bin], sizes[bin]);
-            index++;
-        }
-    }
-    ASSERT_EVENTS_SIZE(0);
+    this->getAllBuffers(buffers);
 
-    // Buffers are distinct in identity and in memory, and every payload lies inside the one allocation
-    const U8* const poolStart = static_cast<const U8*>(alloc.getMem());
-    const U8* const poolEnd = poolStart + alloc.getSize();
+    // Buffers are distinct in identity and in memory
     for (U16 i = 0; i < TOTAL_NUM_BUFFERS; i++) {
-        ASSERT_GE(buffers[i].getData(), poolStart);
-        ASSERT_LE(buffers[i].getData() + buffers[i].getCapacity(), poolEnd);
         for (U16 j = 0; j < i; j++) {
             ASSERT_NE(buffers[i].getContext(), buffers[j].getContext());
             ASSERT_TRUE(disjoint(buffers[i], buffers[j]));
@@ -520,20 +100,119 @@ void BufferManagerTester ::setupBehavior() {
         this->returnBuffer(buffers[i]);
     }
 
-    // Cleanup releases the single allocation through the same allocator
+    // Cleanup releases what was allocated, through the same allocator
     this->component.cleanup();
-    ASSERT_EQ(1u, alloc.getDeallocCount());
-    ASSERT_EQ(alloc.getMem(), alloc.getDeallocPtr());
+    ASSERT_EQ(1u, this->m_allocator.getDeallocCount());
+    ASSERT_EQ(this->m_allocator.getMem(), this->m_allocator.getDeallocPtr());
+}
+
+void BufferManagerTester ::singleBin() {
+    REQUIREMENT("FPRIME-BM-006");
+
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, oneBin(BIN1_BUFFER_SIZE, BIN1_NUM_BUFFERS));
+
+    // Every buffer of the bin can be obtained, then the bin is exhausted
+    Fw::Buffer buffers[BIN1_NUM_BUFFERS];
+    for (U16 b = 0; b < BIN1_NUM_BUFFERS; b++) {
+        buffers[b] = this->getBuffer(BIN1_BUFFER_SIZE, BIN1_BUFFER_SIZE);
+    }
+    this->getNoBuffer(BIN1_BUFFER_SIZE);
+    this->checkTelemetry(NUM_TLM_CHANNELS);
+    ASSERT_TLM_TotalBuffs(0, BIN1_NUM_BUFFERS);
+    ASSERT_TLM_CurrBuffs(0, BIN1_NUM_BUFFERS);
+    ASSERT_TLM_HiBuffs(0, BIN1_NUM_BUFFERS);
+    ASSERT_TLM_NoBuffs(0, 1);
+    ASSERT_TLM_EmptyBuffs(0, 0);
+
+    // Buffers are accepted back in any order: Fisher-Yates shuffle of the return order
+    U16 order[BIN1_NUM_BUFFERS];
+    for (U16 b = 0; b < BIN1_NUM_BUFFERS; b++) {
+        order[b] = b;
+    }
+    for (U16 remaining = BIN1_NUM_BUFFERS; remaining > 1; remaining--) {
+        const U16 pick = static_cast<U16>(STest::Pick::lowerUpper(0, remaining - 1));
+        std::swap(order[remaining - 1], order[pick]);
+    }
+    for (U16 b = 0; b < BIN1_NUM_BUFFERS; b++) {
+        this->returnBuffer(buffers[order[b]]);
+    }
+    // An empty buffer (what a failed request returns) is rejected with a warning
+    Fw::Buffer empty;
+    this->returnEmptyBuffer(empty);
+    // Update on change: only CurrBuffs and EmptyBuffs moved
+    this->checkTelemetry(2);
+    ASSERT_TLM_CurrBuffs(0, 0);
+    ASSERT_TLM_EmptyBuffs(0, 1);
+
+    // Every buffer is available again
+    for (U16 b = 0; b < BIN1_NUM_BUFFERS; b++) {
+        buffers[b] = this->getBuffer(BIN1_BUFFER_SIZE, BIN1_BUFFER_SIZE);
+    }
+    for (U16 b = 0; b < BIN1_NUM_BUFFERS; b++) {
+        this->returnBuffer(buffers[b]);
+    }
+    this->component.cleanup();
+}
+
+void BufferManagerTester ::multipleBins() {
+    REQUIREMENT("FPRIME-BM-002");
+    REQUIREMENT("FPRIME-BM-003");
+    REQUIREMENT("FPRIME-BM-004");
+
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins());
+
+    // Requests of one bin's size drain that bin and then every larger bin, smallest first; the bins
+    // below it cannot serve them
+    for (U16 first = 0; first < NUM_BINS; first++) {
+        Fw::Buffer buffers[TOTAL_NUM_BUFFERS];
+        U16 obtained = 0;
+        for (U16 bin = first; bin < NUM_BINS; bin++) {
+            for (U16 entry = 0; entry < BIN_COUNTS[bin]; entry++) {
+                buffers[obtained] = this->getBuffer(BIN_SIZES[first], BIN_SIZES[bin]);
+                obtained++;
+            }
+        }
+        this->getNoBuffer(BIN_SIZES[first]);
+        // First pass writes every channel; later passes only CurrBuffs and NoBuffs change
+        this->checkTelemetry((first == 0) ? NUM_TLM_CHANNELS : 2);
+        ASSERT_TLM_CurrBuffs(0, obtained);
+        ASSERT_TLM_NoBuffs(0, first + 1);
+        if (first == 0) {
+            ASSERT_TLM_TotalBuffs(0, TOTAL_NUM_BUFFERS);
+            ASSERT_TLM_HiBuffs(0, TOTAL_NUM_BUFFERS);
+        }
+
+        for (U16 i = 0; i < obtained; i++) {
+            this->returnBuffer(buffers[i]);
+        }
+        Fw::Buffer empty;
+        this->returnEmptyBuffer(empty);
+        this->checkTelemetry(2);
+        ASSERT_TLM_CurrBuffs(0, 0);
+        ASSERT_TLM_EmptyBuffs(0, first + 1);
+    }
+    this->component.cleanup();
+}
+
+void BufferManagerTester ::trimmedReturn() {
+    REQUIREMENT("FPRIME-BM-007");
+
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, oneBin(BIN1_BUFFER_SIZE, 1));
+
+    // The size is trimmed to the request while the capacity stays the bin's
+    Fw::Buffer buffer = this->getBuffer(BIN1_BUFFER_SIZE - 1, BIN1_BUFFER_SIZE);
+    this->returnBuffer(buffer);
+    // A trimmed buffer goes back to its slot: the only buffer is available again at full size
+    buffer = this->getBuffer(BIN1_BUFFER_SIZE, BIN1_BUFFER_SIZE);
+    this->returnBuffer(buffer);
+    this->component.cleanup();
 }
 
 void BufferManagerTester ::bufferSizeSelection() {
     REQUIREMENT("FPRIME-BM-002");
     REQUIREMENT("FPRIME-BM-003");
 
-    BufferManagerComponentImpl::BufferBins bins;
-    this->defaultBins(bins);
-    TestAllocator alloc;
-    this->component.setup(MGR_ID, MEM_ID, alloc, bins);
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins());
 
     // A request between two bin sizes is served by the next larger bin
     Fw::Buffer between = this->getBuffer(BIN0_BUFFER_SIZE + 1, BIN1_BUFFER_SIZE);
@@ -543,12 +222,13 @@ void BufferManagerTester ::bufferSizeSelection() {
     this->getNoBuffer(BIN2_BUFFER_SIZE + 1);
 
     // Exact bin sizes are served from their own bin
-    Fw::Buffer exact0 = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
-    Fw::Buffer exact1 = this->getBuffer(BIN1_BUFFER_SIZE, BIN1_BUFFER_SIZE);
-    Fw::Buffer exact2 = this->getBuffer(BIN2_BUFFER_SIZE, BIN2_BUFFER_SIZE);
-    this->returnBuffer(exact0);
-    this->returnBuffer(exact1);
-    this->returnBuffer(exact2);
+    Fw::Buffer exact[NUM_BINS];
+    for (U16 bin = 0; bin < NUM_BINS; bin++) {
+        exact[bin] = this->getBuffer(BIN_SIZES[bin], BIN_SIZES[bin]);
+    }
+    for (U16 bin = 0; bin < NUM_BINS; bin++) {
+        this->returnBuffer(exact[bin]);
+    }
 
     // Once the smallest bin is exhausted a small request spills into the next bin
     Fw::Buffer small[BIN0_NUM_BUFFERS];
@@ -566,11 +246,12 @@ void BufferManagerTester ::bufferSizeSelection() {
     }
     this->returnBuffer(spilled);
 
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_SIZE(5);
+    // The most buffers out at once: one per bin, or the small bin plus the one that spilled
+    const U32 peak = std::max<U32>(NUM_BINS, BIN0_NUM_BUFFERS + 1);
+    this->checkTelemetry(NUM_TLM_CHANNELS);
     ASSERT_TLM_TotalBuffs(0, TOTAL_NUM_BUFFERS);
     ASSERT_TLM_CurrBuffs(0, 0);
-    ASSERT_TLM_HiBuffs(0, 3);
+    ASSERT_TLM_HiBuffs(0, peak);
     ASSERT_TLM_NoBuffs(0, 1);
     ASSERT_TLM_EmptyBuffs(0, 0);
 
@@ -582,16 +263,11 @@ void BufferManagerTester ::bufferSizeSelection() {
     ASSERT_EQ(nullptr, zero.getData());
     ASSERT_EVENTS_SIZE(1);
     ASSERT_EVENTS_ZeroSizeRequest_SIZE(1);
-    this->invoke_to_schedIn(0, 0);
-    // Telemetry is update-on-change: only NoBuffs moved (1 -> 2), nothing was allocated
-    ASSERT_TLM_SIZE(1);
-    ASSERT_TLM_NoBuffs_SIZE(1);
+    // Update on change: only NoBuffs moved (1 -> 2), nothing was allocated
+    this->checkTelemetry(1);
     ASSERT_TLM_NoBuffs(0, 2);
     // and handing the empty result back is the ordinary empty-buffer warning
-    this->clearHistory();
-    this->invoke_to_bufferSendIn(0, zero);
-    ASSERT_EVENTS_SIZE(1);
-    ASSERT_EVENTS_NullEmptyBuffer_SIZE(1);
+    this->returnEmptyBuffer(zero);
 
     this->component.cleanup();
 }
@@ -599,19 +275,15 @@ void BufferManagerTester ::bufferSizeSelection() {
 void BufferManagerTester ::eventThrottling() {
     REQUIREMENT("FPRIME-BM-003");
     REQUIREMENT("FPRIME-BM-004");
+    REQUIREMENT("FPRIME-BM-009");
 
-    BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN0_BUFFER_SIZE;
-    bins.bins[0].numBuffers = 1;
-    TestAllocator alloc;
-    this->component.setup(MGR_ID, MEM_ID, alloc, bins);
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, oneBin(BIN0_BUFFER_SIZE, 1));
 
-    const U32 REQUESTS = BufferManagerTestState::EVENT_THROTTLE + 2;
+    const U32 requests = BufferManagerTestState::EVENT_THROTTLE + 2;
     Fw::Buffer only = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
 
     // Failed requests are reported until the event throttles
-    for (U32 i = 0; i < REQUESTS; i++) {
+    for (U32 i = 0; i < requests; i++) {
         Fw::Buffer none = this->invoke_to_bufferGetCallee(0, BIN0_BUFFER_SIZE);
         ASSERT_FALSE(none.isValid());
     }
@@ -621,47 +293,39 @@ void BufferManagerTester ::eventThrottling() {
     }
 
     // Empty returns are reported until the event throttles
-    for (U32 i = 0; i < REQUESTS; i++) {
+    for (U32 i = 0; i < requests; i++) {
         Fw::Buffer empty;
         this->invoke_to_bufferSendIn(0, empty);
     }
     ASSERT_EVENTS_NullEmptyBuffer_SIZE(BufferManagerTestState::EVENT_THROTTLE);
 
     // Counters keep counting past the throttle
-    this->invoke_to_schedIn(0, 0);
-    ASSERT_TLM_NoBuffs(0, REQUESTS);
-    ASSERT_TLM_EmptyBuffs(0, REQUESTS);
+    this->checkTelemetry(NUM_TLM_CHANNELS);
+    ASSERT_TLM_NoBuffs(0, requests);
+    ASSERT_TLM_EmptyBuffs(0, requests);
 
     this->returnBuffer(only);
 
-    // ZeroSizeRequest throttles the same way
+    // ZeroSizeRequest throttles the same way, and each rejection still counts in NoBuffs
     this->clearHistory();
-    for (U32 i = 0; i < BufferManagerComponentImpl::EVENTID_ZEROSIZEREQUEST_THROTTLE + 2; i++) {
+    for (U32 i = 0; i < requests; i++) {
         Fw::Buffer zero = this->invoke_to_bufferGetCallee(0, 0);
         ASSERT_FALSE(zero.isValid());
     }
-    ASSERT_EVENTS_ZeroSizeRequest_SIZE(BufferManagerComponentImpl::EVENTID_ZEROSIZEREQUEST_THROTTLE);
+    ASSERT_EVENTS_ZeroSizeRequest_SIZE(BufferManagerTestState::EVENT_THROTTLE);
+    this->checkTelemetry(2);  // CurrBuffs (the return) and NoBuffs moved
+    ASSERT_TLM_CurrBuffs(0, 0);
+    ASSERT_TLM_NoBuffs(0, 2 * requests);
     this->component.cleanup();
 }
 
 void BufferManagerTester ::payloadIntegrity() {
-    REQUIREMENT("FPRIME-BM-001");
+    COMMENT("Writes over one buffer's full size never disturb another buffer");
 
-    BufferManagerComponentImpl::BufferBins bins;
-    this->defaultBins(bins);
-    TestAllocator alloc;
-    this->component.setup(MGR_ID, MEM_ID, alloc, bins);
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins());
 
-    const Fw::Buffer::SizeType sizes[] = {BIN0_BUFFER_SIZE, BIN1_BUFFER_SIZE, BIN2_BUFFER_SIZE};
-    const U16 counts[] = {BIN0_NUM_BUFFERS, BIN1_NUM_BUFFERS, BIN2_NUM_BUFFERS};
     Fw::Buffer buffers[TOTAL_NUM_BUFFERS];
-    U16 index = 0;
-    for (U16 bin = 0; bin < FW_NUM_ARRAY_ELEMENTS(sizes); bin++) {
-        for (U16 entry = 0; entry < counts[bin]; entry++) {
-            buffers[index] = this->getBuffer(sizes[bin], sizes[bin]);
-            index++;
-        }
-    }
+    this->getAllBuffers(buffers);
 
     // Fill every buffer with its own pattern over its full size
     for (U16 i = 0; i < TOTAL_NUM_BUFFERS; i++) {
@@ -681,56 +345,43 @@ void BufferManagerTester ::payloadIntegrity() {
 }
 
 void BufferManagerTester ::lifecycle() {
-    BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN0_BUFFER_SIZE;
-    bins.bins[0].numBuffers = 1;
+    const BufferManagerComponentImpl::BufferBins bins = oneBin(BIN0_BUFFER_SIZE, 1);
 
     // A single-buffer pool works, and cleanup() releases the pool exactly once however often it is called
     {
-        TestAllocator alloc;
-        this->component.setup(MGR_ID, MEM_ID, alloc, bins);
+        this->component.setup(MGR_ID, MEM_ID, this->m_allocator, bins);
         Fw::Buffer only = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
         this->getNoBuffer(BIN0_BUFFER_SIZE);
         this->returnBuffer(only);
         this->component.cleanup();
         this->component.cleanup();
-        ASSERT_EQ(1u, alloc.getDeallocCount());
-        ASSERT_EQ(alloc.getMem(), alloc.getDeallocPtr());
+        ASSERT_EQ(1u, this->m_allocator.getDeallocCount());
+        ASSERT_EQ(this->m_allocator.getMem(), this->m_allocator.getDeallocPtr());
         // The ports reject use after cleanup
-        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferGetCallee(0, BIN0_BUFFER_SIZE), "Assert: ");
-        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, only), "Assert: ");
+        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferGetCallee(0, BIN0_BUFFER_SIZE), UUT_ASSERT);
+        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, only), UUT_ASSERT);
 
         // setup() after cleanup() yields a pool that cleanup() releases
         REQUIREMENT("FPRIME-BM-012");
         TestAllocator other;
         this->component.setup(MGR_ID, MEM_ID, other, bins);
-        this->clearHistory();
-        this->invoke_to_schedIn(0, 0);
+        this->checkTelemetry(NUM_TLM_CHANNELS);
         ASSERT_TLM_HiBuffs(0, 0);  // the high-water mark restarted with the new pool
         Fw::Buffer again = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
         // ... and setting up over a live pool asserts
         REQUIREMENT("FPRIME-BM-011");
-        ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
+        this->expectSetupDeath(bins);
         this->returnBuffer(again);
         this->component.cleanup();
         // the second pool goes back to the allocator it came from
-        ASSERT_EQ(1u, alloc.getDeallocCount());
+        ASSERT_EQ(1u, this->m_allocator.getDeallocCount());
         ASSERT_EQ(1u, other.getDeallocCount());
         ASSERT_EQ(other.getMem(), other.getDeallocPtr());
     }
 
-    // A configuration with no buffers asserts
+    // A configuration with no buffers, or with zero-sized buffers, asserts
     REQUIREMENT("FPRIME-BM-010");
-    {
-        TestAllocator alloc;
-        BufferManagerComponentImpl::BufferBins empty;
-        memset(&empty, 0, sizeof(empty));
-        ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, empty), "Assert: ");
-        // ... and so does a bin of zero-sized buffers
-        empty.bins[0].numBuffers = 1;
-        ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, empty), "Assert: ");
-    }
+    this->Lifecycle__EmptyBinsAsserts__action();
 
     // Destruction without an explicit cleanup() still releases the pool
     {
@@ -745,97 +396,33 @@ void BufferManagerTester ::lifecycle() {
     }
 }
 
+void BufferManagerTester ::setupSizeOverflowAsserts() {
+    COMMENT("setup() checks each step of its pool-size arithmetic before it can wrap");
+    this->Lifecycle__SizeOverflowAsserts__action();
+}
+
 void BufferManagerTester ::setupBinOrderAsserts() {
     REQUIREMENT("FPRIME-BM-008");
-
-    TestAllocator alloc;
-    BufferManagerComponentImpl::BufferBins bins;
-
-    // Descending sizes are rejected
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN1_BUFFER_SIZE;
-    bins.bins[0].numBuffers = 1;
-    bins.bins[1].bufferSize = BIN0_BUFFER_SIZE;
-    bins.bins[1].numBuffers = 1;
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
-
-    // An empty bin between them does not hide the descending pair
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN1_BUFFER_SIZE;
-    bins.bins[0].numBuffers = 1;
-    bins.bins[2].bufferSize = BIN0_BUFFER_SIZE;
-    bins.bins[2].numBuffers = 1;
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
+    this->Lifecycle__BinOrderAsserts__action();
 
     // Equal sizes and empty bins between ascending bins are accepted
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN0_BUFFER_SIZE;
-    bins.bins[0].numBuffers = 1;
-    bins.bins[1].bufferSize = BIN0_BUFFER_SIZE;
-    bins.bins[1].numBuffers = 1;
-    bins.bins[3].bufferSize = BIN1_BUFFER_SIZE;
-    bins.bins[3].numBuffers = 1;
-    this->component.setup(MGR_ID, MEM_ID, alloc, bins);
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, equalAndGappedBins());
     Fw::Buffer buffer = this->getBuffer(BIN1_BUFFER_SIZE, BIN1_BUFFER_SIZE);
     this->returnBuffer(buffer);
     this->component.cleanup();
 }
 
 void BufferManagerTester ::sendInAsserts() {
-    BufferManagerComponentImpl::BufferBins bins;
-    this->defaultBins(bins);
-    TestAllocator alloc;
-    this->component.setup(MGR_ID, MEM_ID, alloc, bins);
-
-    Fw::Buffer held = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
-    const U32 id = held.getContext() & 0xFFFF;
-    U8 foreign[BIN0_BUFFER_SIZE] = {};
-
-    // Wrong manager ID
-    {
-        Fw::Buffer bad = held;
-        bad.setContext(((static_cast<U32>(MGR_ID) + 1) << 16) | id);
-        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
-    }
-    // Buffer ID beyond the pool
-    {
-        Fw::Buffer bad = held;
-        bad.setContext((static_cast<U32>(MGR_ID) << 16) | TOTAL_NUM_BUFFERS);
-        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
-    }
-    // Buffer ID of a buffer that was never handed out
-    {
-        Fw::Buffer bad(held.getData(), held.getSize(),
-                       (static_cast<U32>(MGR_ID) << 16) | ((id + 1) % TOTAL_NUM_BUFFERS));
-        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
-    }
-    // Pointer outside the buffer's own memory
-    {
-        Fw::Buffer bad(foreign, BIN0_BUFFER_SIZE, held.getContext());
-        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
-    }
-    // Size larger than the buffer's allocation
-    {
-        Fw::Buffer bad(held.getData(), BIN0_BUFFER_SIZE + 1, held.getContext());
-        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
-    }
-    // Null data with a non-zero size is not the empty buffer and is rejected
-    {
-        Fw::Buffer bad(nullptr, BIN0_BUFFER_SIZE, held.getContext());
-        ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, bad), "Assert: ");
-    }
-    // Returning the same buffer twice
-    this->returnBuffer(held);
-    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, held), "Assert: ");
-
-    this->component.cleanup();
+    COMMENT("bufferSendIn asserts on a buffer that is not one it handed out (SDD 3.6.2)");
+    this->setupRulesDefault();
+    this->BufferGet__Ok__action();
+    this->BufferReturn__Asserts__action();
+    this->teardownRules();
 }
 
 void BufferManagerTester ::useBeforeSetupAsserts() {
-    Fw::Buffer empty;
-    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferGetCallee(0, BIN0_BUFFER_SIZE), "Assert: ");
-    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, empty), "Assert: ");
-    ASSERT_DEATH_IF_SUPPORTED(this->component.cleanup(), "Assert: ");
+    COMMENT("The ports and cleanup() assert before setup()");
+    this->Lifecycle__NotSetupAsserts__action();
 }
 
 // ----------------------------------------------------------------------
@@ -843,35 +430,30 @@ void BufferManagerTester ::useBeforeSetupAsserts() {
 // ----------------------------------------------------------------------
 
 void BufferManagerTester ::setupRules(const BufferManagerComponentImpl::BufferBins& bins) {
-    this->shadow.shadow_bins = bins;
+    this->shadow.stageBins(bins);
     this->Lifecycle__Setup__action();
 }
 
 void BufferManagerTester ::setupRulesOneBuffer() {
-    BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN0_BUFFER_SIZE;
-    bins.bins[0].numBuffers = 1;
-    this->setupRules(bins);
+    this->setupRules(oneBin(BIN0_BUFFER_SIZE, 1));
 }
 
 void BufferManagerTester ::setupRulesOneBin() {
-    BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = BIN1_BUFFER_SIZE;
-    bins.bins[0].numBuffers = BIN1_NUM_BUFFERS;
-    this->setupRules(bins);
+    this->setupRules(oneBin(BIN1_BUFFER_SIZE, BIN1_NUM_BUFFERS));
 }
 
 void BufferManagerTester ::setupRulesDefault() {
-    BufferManagerComponentImpl::BufferBins bins;
-    this->defaultBins(bins);
-    this->setupRules(bins);
+    this->setupRules(defaultBins());
+}
+
+void BufferManagerTester ::setupRulesEqualAndGapped() {
+    this->setupRules(equalAndGappedBins());
 }
 
 void BufferManagerTester ::setupRulesRandom() {
-    BufferManagerComponentImpl::BufferBins bins;
-    memset(&bins, 0, sizeof(bins));
+    // Small tables (at most 4 bins of at most 5 buffers, sizes stepping by at most 32) so that exhaustion,
+    // spill-over and between-bin sizes all occur often within a scenario
+    BufferManagerComponentImpl::BufferBins bins = {};
     const U16 numBins = static_cast<U16>(STest::Pick::lowerUpper(1, 4));
     FwSizeType size = 0;
     for (U16 bin = 0; bin < numBins; bin++) {
@@ -885,12 +467,110 @@ void BufferManagerTester ::setupRulesRandom() {
 
 void BufferManagerTester ::teardownRules() {
     // A random scenario may end with the pool already cleaned up by a lifecycle rule
-    if (this->shadow.shadow_isSetup) {
+    if (this->shadow.isSetup) {
         this->Lifecycle__Cleanup__action();
     }
 }
 
+// ----------------------------------------------------------------------
+// Bin table builders
+// ----------------------------------------------------------------------
+
+BufferManagerComponentImpl::BufferBins BufferManagerTester ::defaultBins() {
+    BufferManagerComponentImpl::BufferBins bins = {};
+    for (U16 bin = 0; bin < NUM_BINS; bin++) {
+        bins.bins[bin].bufferSize = BIN_SIZES[bin];
+        bins.bins[bin].numBuffers = BIN_COUNTS[bin];
+    }
+    return bins;
+}
+
+BufferManagerComponentImpl::BufferBins BufferManagerTester ::oneBin(Fw::Buffer::SizeType size, U16 count) {
+    BufferManagerComponentImpl::BufferBins bins = {};
+    bins.bins[0].bufferSize = size;
+    bins.bins[0].numBuffers = count;
+    return bins;
+}
+
+BufferManagerComponentImpl::BufferBins BufferManagerTester ::twoBins(Fw::Buffer::SizeType size0,
+                                                                     U16 count0,
+                                                                     U16 index1,
+                                                                     Fw::Buffer::SizeType size1,
+                                                                     U16 count1) {
+    BufferManagerComponentImpl::BufferBins bins = oneBin(size0, count0);
+    bins.bins[index1].bufferSize = size1;
+    bins.bins[index1].numBuffers = count1;
+    return bins;
+}
+
+BufferManagerComponentImpl::BufferBins BufferManagerTester ::equalAndGappedBins() {
+    BufferManagerComponentImpl::BufferBins bins = twoBins(BIN0_BUFFER_SIZE, 1, 1, BIN0_BUFFER_SIZE, 1);
+    bins.bins[3].bufferSize = BIN1_BUFFER_SIZE;
+    bins.bins[3].numBuffers = 1;
+    return bins;
+}
+
+// ----------------------------------------------------------------------
+// Port helpers
+// ----------------------------------------------------------------------
+
+Fw::Buffer BufferManagerTester ::getBuffer(FwSizeType size, FwSizeType expectedCapacity) {
+    this->clearHistory();
+    Fw::Buffer buffer = this->invoke_to_bufferGetCallee(0, size);
+    EXPECT_NE(nullptr, buffer.getData());
+    EXPECT_EQ(size, buffer.getSize());
+    EXPECT_EQ(expectedCapacity, buffer.getCapacity());
+    EXPECT_EQ(static_cast<U32>(MGR_ID), BufferManagerTestState::managerIdOf(buffer));
+    ASSERT_EVENTS_SIZE(0);
+    return buffer;
+}
+
+void BufferManagerTester ::getAllBuffers(Fw::Buffer (&buffers)[TOTAL_NUM_BUFFERS]) {
+    U16 index = 0;
+    for (U16 bin = 0; bin < NUM_BINS; bin++) {
+        for (U16 entry = 0; entry < BIN_COUNTS[bin]; entry++) {
+            buffers[index] = this->getBuffer(BIN_SIZES[bin], BIN_SIZES[bin]);
+            index++;
+        }
+    }
+}
+
+void BufferManagerTester ::getNoBuffer(FwSizeType size) {
+    this->clearHistory();
+    Fw::Buffer buffer = this->invoke_to_bufferGetCallee(0, size);
+    ASSERT_FALSE(buffer.isValid());
+    ASSERT_EQ(nullptr, buffer.getData());
+    ASSERT_EQ(0u, buffer.getSize());
+    ASSERT_EVENTS_SIZE(1);
+    ASSERT_EVENTS_NoBuffsAvailable_SIZE(1);
+    ASSERT_EVENTS_NoBuffsAvailable(0, size);
+}
+
+void BufferManagerTester ::returnBuffer(Fw::Buffer& buffer) {
+    this->clearHistory();
+    this->invoke_to_bufferSendIn(0, buffer);
+    ASSERT_EVENTS_SIZE(0);
+}
+
+void BufferManagerTester ::returnEmptyBuffer(Fw::Buffer& empty) {
+    this->clearHistory();
+    this->invoke_to_bufferSendIn(0, empty);
+    ASSERT_EVENTS_SIZE(1);
+    ASSERT_EVENTS_NullEmptyBuffer_SIZE(1);
+}
+
+void BufferManagerTester ::checkTelemetry(U32 expectedChannels) {
+    this->clearHistory();
+    this->invoke_to_schedIn(0, 0);
+    ASSERT_TLM_SIZE(expectedChannels);
+}
+
+void BufferManagerTester ::expectSetupDeath(const BufferManagerComponentImpl::BufferBins& bins) {
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_allocator, bins), UUT_ASSERT);
+}
+
 void BufferManagerTester ::ruleGet(FwSizeType size) {
+    this->clearHistory();
     U16 bin = 0;
     ASSERT_TRUE(this->shadow.expectedBin(size, bin));
 
@@ -898,8 +578,8 @@ void BufferManagerTester ::ruleGet(FwSizeType size) {
 
     ASSERT_NE(nullptr, buffer.getData());
     ASSERT_EQ(size, buffer.getSize());
-    ASSERT_EQ(this->shadow.shadow_binSize[bin], buffer.getCapacity());
-    ASSERT_EQ(static_cast<U32>(MGR_ID), buffer.getContext() >> 16);
+    ASSERT_EQ(this->shadow.binSize[bin], buffer.getCapacity());
+    ASSERT_EQ(static_cast<U32>(MGR_ID), BufferManagerTestState::managerIdOf(buffer));
     ASSERT_FALSE(this->shadow.overlapsHeld(buffer));
     ASSERT_EVENTS_SIZE(0);
 
@@ -910,7 +590,8 @@ void BufferManagerTester ::ruleGet(FwSizeType size) {
 }
 
 void BufferManagerTester ::ruleReturn(FwSizeType index, Fw::Buffer& buffer) {
-    const BufferManagerTestState::HeldBuffer& held = this->shadow.shadow_held[index];
+    this->clearHistory();
+    const BufferManagerTestState::HeldBuffer& held = this->shadow.held[index];
     for (FwSizeType k = 0; k < held.requested; k++) {
         ASSERT_EQ(held.pattern, held.buffer.getData()[k]);
     }
@@ -922,45 +603,22 @@ void BufferManagerTester ::ruleReturn(FwSizeType index, Fw::Buffer& buffer) {
 }
 
 // ----------------------------------------------------------------------
-// Helper methods
+// Harness wiring
 // ----------------------------------------------------------------------
 
 void BufferManagerTester ::connectPorts() {
-    // bufferSendIn
     this->connect_to_bufferSendIn(0, this->component.get_bufferSendIn_InputPort(0));
-
-    // bufferGetCallee
     this->connect_to_bufferGetCallee(0, this->component.get_bufferGetCallee_InputPort(0));
-
-    // timeCaller
-    this->component.set_timeCaller_OutputPort(0, this->get_from_timeCaller(0));
-
-    // eventOut
-    this->component.set_eventOut_OutputPort(0, this->get_from_eventOut(0));
-
-    // textEventOut
-    this->component.set_textEventOut_OutputPort(0, this->get_from_textEventOut(0));
-
-    // tlmOut
-    this->component.set_tlmOut_OutputPort(0, this->get_from_tlmOut(0));
-
-    // schedIn
     this->connect_to_schedIn(0, this->component.get_schedIn_InputPort(0));
+    this->component.set_timeCaller_OutputPort(0, this->get_from_timeCaller(0));
+    this->component.set_eventOut_OutputPort(0, this->get_from_eventOut(0));
+    this->component.set_textEventOut_OutputPort(0, this->get_from_textEventOut(0));
+    this->component.set_tlmOut_OutputPort(0, this->get_from_tlmOut(0));
 }
 
 void BufferManagerTester ::initComponents() {
     this->init();
     this->component.init(INSTANCE);
-}
-
-void BufferManagerTester::textLogIn(const FwEventIdType id,          //!< The event ID
-                                    const Fw::Time& timeTag,         //!< The time
-                                    const Fw::LogSeverity severity,  //!< The severity
-                                    const Fw::TextLogString& text    //!< The event string
-) {
-    TextLogEntry e = {id, timeTag, severity, text};
-
-    printTextLogHistoryEntry(e, stdout);
 }
 
 }  // end namespace Svc
