@@ -13,6 +13,8 @@ The F Prime GDS ships two built-in data transports:
 
 `--no-zmq` remains available for one release as a deprecated alias of `--data-transport-selection tcp`.
 
+A third transport, `yamcs` (`--yamcs-url URL`), is built in while the `fprime-gds[yamcs]` extra is installed and will move to the `fprime-yamcs` package. The pytest option `--use-yamcs` remains for one release as a deprecated alias of `--data-transport-selection yamcs`.
+
 ## Usage
 
 The selected plugin class is installed as `StandardPipeline.transport_implementation` and is constructed with the values of its own command line arguments. Every GDS entry point that builds a pipeline accepts the selection:
@@ -30,9 +32,9 @@ The selection may also be set in a GDS configuration file like any other pipelin
 - `get_connection_uri(client, **arguments)` is called with `client=True` for pipeline clients (GUI, `fprime-cli`, the test API) and `client=False` for the process that owns the transport (`fprime-gds`); `client` is therefore a reserved name that transport arguments must not use. The returned URI is passed to `connect()`.
 - A transport that decodes ground-system data itself (rather than forwarding raw F Prime frames) may define `set_pipeline_references(dictionaries, channel_decoder, event_decoder)`; `StandardPipeline.setup()` then hands it the dictionaries and decoders and registers it as the command consumer.
 
-- The transport runs inside the pipeline process (GUI, CLI, or test). `send()` is called from the pipeline's thread; incoming data must be delivered through `data_callback()` (push) or returned from `recv()` (pull, driven by the pipeline's receive thread).
+- The transport runs inside the pipeline process (GUI, CLI, or test). The pipeline hands outgoing bytes to `data_callback()`, which calls `send()`. Incoming data is delivered to the registered consumers with `send_to_all()` (push), or returned from `recv()` when subclassing `ThreadedTransportClient`, whose receive thread forwards it.
 - The transport speaks the ground system's protocol, not the deployment's: the plugin receives fully encoded F Prime command bytes and must emit `ChData`/`EventData` objects (or raw F Prime records for the pipeline's decoders), as the built-in clients do.
-- `fprime-gds` only launches the threaded TCP server for `tcp`, and the communication process (`fprime-comm-bridge`) and the deployment binary only for `zmq` and `tcp`; with any other transport it prints a warning and expects the ground system to hold the link to the deployment already.
+- `fprime-gds` launches the threaded TCP server only for `tcp`, and the communication process only for `zmq` and `tcp`. With any other transport it skips the communication process (with a warning unless `--communication-selection none`) and launches the deployment binary only when explicit application arguments are supplied; the ground system is expected to hold the link to the deployment already.
 
 ## Required Interface
 
@@ -76,7 +78,7 @@ class ExampleGroundSystemClient(TransportClient):
         return ground_url
 
     def connect(self, connection_uri=None, incoming_routing=None, outgoing_routing=None):
-        """Open the connection to the ground system and start delivering data to data_callback()"""
+        """Open the connection to the ground system and start delivering incoming data with send_to_all()"""
 
     def disconnect(self):
         """Close the connection"""
