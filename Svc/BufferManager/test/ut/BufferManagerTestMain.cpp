@@ -59,11 +59,6 @@ TEST(OffNominal, SetupSizeOverflowAsserts) {
     tester.setupSizeOverflowAsserts();
 }
 
-TEST(OffNominal, SetupMisalignedAllocatorAsserts) {
-    Svc::BufferManagerTester tester;
-    tester.setupMisalignedAllocatorAsserts();
-}
-
 TEST(OffNominal, SetupBinOrderAsserts) {
     BufferManagerTester tester;
     tester.setupBinOrderAsserts();

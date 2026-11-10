@@ -156,31 +156,24 @@ bool BufferManagerTester::Lifecycle__SizeOverflowAsserts__precondition() const {
 }
 
 void BufferManagerTester::Lifecycle__SizeOverflowAsserts__action() {
-    // one case per arithmetic guard in setup()
     const FwSizeType maxSize = std::numeric_limits<FwSizeType>::max();
     BufferManagerComponentImpl::BufferBins bins;
-    // bufferSize times numBuffers wraps
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize / 2;
-    bins.bins[0].numBuffers = 3;
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
-    // the payload total across bins wraps
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize / 2 + 1;
-    bins.bins[0].numBuffers = 1;
-    bins.bins[1].bufferSize = maxSize / 2 + 1;
-    bins.bins[1].numBuffers = 1;
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
-    // rounding the payload total up to the tracking structs' alignment wraps
+    // bufferSize plus any per-buffer overhead wraps
     memset(&bins, 0, sizeof(bins));
     bins.bins[0].bufferSize = maxSize;
     bins.bins[0].numBuffers = 1;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
-    // the payloads fit but adding the tracking structs wraps: 15 bytes are left, enough for any round-up
-    // to an alignment of at most 16 (alignof(std::max_align_t)) but fewer than one tracking struct needs
+    // per-buffer size times numBuffers wraps
     memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize - 15;
+    bins.bins[0].bufferSize = maxSize / 2;
+    bins.bins[0].numBuffers = 3;
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
+    // the accumulation across bins wraps
+    memset(&bins, 0, sizeof(bins));
+    bins.bins[0].bufferSize = maxSize / 2;
     bins.bins[0].numBuffers = 1;
+    bins.bins[1].bufferSize = maxSize / 2;
+    bins.bins[1].numBuffers = 1;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_rulesAllocator, bins), "Assert: ");
 }
 

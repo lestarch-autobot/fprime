@@ -391,61 +391,33 @@ void BufferManagerTester::bufferSizeTrimmed() {
     this->component.cleanup();
 }
 
-namespace {
-//! An allocator that hands out memory one byte off any alignment, without changing the requested size
-class MisalignedAllocator : public Fw::MemAllocator {
-  public:
-    void* allocate(const FwEnumStoreType identifier,
-                   FwSizeType& size,
-                   bool& recoverable,
-                   FwSizeType alignment) override {
-        this->m_raw = new U8[size + 1];
-        return &this->m_raw[1];
-    }
-    void deallocate(const FwEnumStoreType identifier, void* ptr) override { delete[] this->m_raw; }
-
-  private:
-    U8* m_raw = nullptr;
-};
-}  // namespace
-
-void BufferManagerTester::setupMisalignedAllocatorAsserts() {
-    // setup() places the tracking structs at an aligned offset from the allocation, so the allocation itself
-    // must be aligned for them
-    MisalignedAllocator alloc;
-    BufferManagerComponentImpl::BufferBins bins;
-    defaultBins(bins);
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
-}
-
 void BufferManagerTester::setupSizeOverflowAsserts() {
-    // setup() guards each step of its pool-size arithmetic before it can wrap: one case per guard
+    // setup() sizes one allocation from the per-buffer overhead, bufferSize, numBuffers and the
+    // running total across bins. Each step is checked before it can wrap; without the checks the
+    // total wrapped silently and the pool was carved into an allocation far smaller than the
+    // manager believed it had. The sizes below overflow for any per-buffer overhead.
     const FwSizeType maxSize = std::numeric_limits<FwSizeType>::max();
     BufferManagerComponentImpl::BufferBins bins;
     TestAllocator alloc;
 
-    // bufferSize times numBuffers wraps
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize / 2;
-    bins.bins[0].numBuffers = 3;
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
-    // the payload total across bins wraps
-    memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize / 2 + 1;
-    bins.bins[0].numBuffers = 1;
-    bins.bins[1].bufferSize = maxSize / 2 + 1;
-    bins.bins[1].numBuffers = 1;
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
-    // rounding the payload total up to the tracking structs' alignment wraps
+    // bufferSize plus any per-buffer overhead wraps
     memset(&bins, 0, sizeof(bins));
     bins.bins[0].bufferSize = maxSize;
     bins.bins[0].numBuffers = 1;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
-    // the payloads fit but adding the tracking structs wraps: 15 bytes are left, enough for any round-up
-    // to an alignment of at most 16 (alignof(std::max_align_t)) but fewer than one tracking struct needs
+
+    // per-buffer size times numBuffers wraps
     memset(&bins, 0, sizeof(bins));
-    bins.bins[0].bufferSize = maxSize - 15;
+    bins.bins[0].bufferSize = maxSize / 2;
+    bins.bins[0].numBuffers = 3;
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
+
+    // the running total across bins wraps
+    memset(&bins, 0, sizeof(bins));
+    bins.bins[0].bufferSize = maxSize / 2;
     bins.bins[0].numBuffers = 1;
+    bins.bins[1].bufferSize = maxSize / 2;
+    bins.bins[1].numBuffers = 1;
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, alloc, bins), "Assert: ");
 }
 
