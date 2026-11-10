@@ -9,18 +9,18 @@ The F Prime GDS ships two built-in data transports:
 | Name  | Class                                                      | Arguments                             | Notes                                       |
 |-------|------------------------------------------------------------|---------------------------------------|---------------------------------------------|
 | `zmq` | `fprime_gds.common.zmq_transport.ZmqClient`                | `--zmq-transport serverInUrl serverOutUrl` | Default. Connects to the ZeroMQ comm process |
-| `tcp` | `fprime_gds.common.transport.ThreadedTCPSocketClient`      | `--tts-addr ADDR --tts-port PORT`     | Connects to the threaded TCP server (`fprime-gds` launches it for this selection) |
+| `threaded-tcp-server` | `fprime_gds.common.transport.ThreadedTCPSocketClient`      | `--tts-addr ADDR --tts-port PORT`     | Connects to the threaded TCP server (`fprime-gds` launches it for this selection) |
 
-`--no-zmq` remains available for one release as a deprecated alias of `--data-transport-selection tcp`.
+`--no-zmq` remains available for one release as a deprecated alias of `--data-transport-selection threaded-tcp-server`.
 
-A third transport, `yamcs` (`--yamcs-url URL`), is built in while the `fprime-gds[yamcs]` extra is installed and will move to the `fprime-yamcs` package. The pytest option `--use-yamcs` remains for one release as a deprecated alias of `--data-transport-selection yamcs`.
+Other ground systems provide their own data transport plugins; for example the `fprime-yamcs` package provides `yamcs` (`--yamcs-url URL`). The pytest option `--use-yamcs` remains for one release as a deprecated alias of `--data-transport-selection yamcs` and reports `pip install fprime-yamcs` when that plugin is not installed.
 
 ## Usage
 
 The selected plugin class is installed as `StandardPipeline.transport_implementation` and is constructed with the values of its own command line arguments. Every GDS entry point that builds a pipeline accepts the selection:
 
 ```bash
-fprime-gds --dictionary <dictionary> --data-transport-selection tcp --tts-port 50050
+fprime-gds --dictionary <dictionary> --data-transport-selection threaded-tcp-server --tts-port 50050
 fprime-cli channels --dictionary <dictionary> --data-transport-selection zmq
 pytest test/int --dictionary <dictionary> --data-transport-selection <name> <plugin arguments>
 ```
@@ -34,7 +34,7 @@ The selection may also be set in a GDS configuration file like any other pipelin
 
 - The transport runs inside the pipeline process (GUI, CLI, or test). The pipeline hands outgoing bytes to `data_callback()`, which calls `send()`. Incoming data is delivered to the registered consumers with `send_to_all()` (push), or returned from `recv()` when subclassing `ThreadedTransportClient`, whose receive thread forwards it.
 - The transport speaks the ground system's protocol, not the deployment's: the plugin receives fully encoded F Prime command bytes and must emit `ChData`/`EventData` objects (or raw F Prime records for the pipeline's decoders), as the built-in clients do.
-- `fprime-gds` launches the threaded TCP server only for `tcp`, and the communication process only for `zmq` and `tcp`. With any other transport it skips the communication process (with a warning unless `--communication-selection none`) and launches the deployment binary only when explicit application arguments are supplied; the ground system is expected to hold the link to the deployment already.
+- `fprime-gds` launches the threaded TCP server only for `threaded-tcp-server`, and the communication process only for `zmq` and `threaded-tcp-server`. With any other transport it skips the communication process (with a warning unless `--communication-selection none`) and launches the deployment binary only when explicit application arguments are supplied; the ground system is expected to hold the link to the deployment already.
 
 ## Required Interface
 
