@@ -30,11 +30,16 @@ class BufferAccumulatorTester;
 namespace Errors {
 class BufferAccumulatorTester;
 }
+namespace DrainLimit {
+class BufferAccumulatorTester;
+}
+
 class BufferAccumulator final : public BufferAccumulatorComponentBase {
     friend class BufferAccumulatorTester;
     friend class Svc::Accumulate::BufferAccumulatorTester;
     friend class Svc::Drain::BufferAccumulatorTester;
     friend class Svc::Errors::BufferAccumulatorTester;
+    friend class Svc::DrainLimit::BufferAccumulatorTester;
 
   private:
     // ----------------------------------------------------------------------
