@@ -115,7 +115,7 @@ By default, the GDS runs on the local machine and uses the following local addre
 
 - **127.0.0.1:5000**: Hosts the HTML frontend. The browser connects here to access the GUI.
 - **0.0.0.0:50000**: The default communication interface port. The embedded system connects here.
-- **0.0.0.0:50050**: An internal port used for transporting GDS data. Communication and HTML endpoints internally connect here.
+- **Internal transport**: ZeroMQ IPC sockets by default (`--zmq-transport serverInUrl serverOutUrl`), or a TCP server on **0.0.0.0:50050** when the `tcp` data transport is selected (`--data-transport-selection tcp`). The communication process and the HTML endpoints connect to the GDS pipeline through this [data transport plugin](../../reference/gds-plugins/data-transport.md).
 
 If a user wishes to change the IP address and port used to allow the embedded system to connect to the GDS, the user
 should specify the `--ip-address ADDRESS` and `--ip-port PORT` flag. **Note:** These options are only available when
@@ -125,11 +125,12 @@ using the default IP connector.
 $ fprime-gds --ip-address 8.8.8.8 --ip-port 12345
 ```
 
-If you need to change the IP or port of the internal server, you can do so by passing the `--tts-addr IP_ADDRESS` and
-`--tts-port TTS_PORT` options, respectively. This allows the user to avoid collisions with other ports.
+If you use the `tcp` data transport and need to change the IP or port of its internal server, pass the
+`--tts-addr IP_ADDRESS` and `--tts-port TTS_PORT` options, respectively. This allows the user to avoid collisions with
+other ports.
 
 ```bash
-$ fprime-gds --tts-addr 8.8.8.8 --tts-port 12345
+$ fprime-gds --data-transport-selection tcp --tts-addr 8.8.8.8 --tts-port 12345
 ```
 
 Changing the port used by the UI is done using the flask configuration by setting the `ADDRESS` and `PORT` settings in
