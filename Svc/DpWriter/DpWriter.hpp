@@ -94,9 +94,9 @@ class DpWriter final : public DpWriterComponentBase {
     //! Set the processing override applied to every data product container
     void SET_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode,       //!< The opcode
                                       U32 cmdSeq,                //!< The command sequence number
-                                      const Fw::Enabled& state,  //!< ENABLED forces the processing types on;
-                                                                 //!< DISABLED forces them off
-                                      U8 procTypes               //!< Bit mask of processing types to force; zero clears
+                                      const Fw::Enabled& state,  //!< ENABLED applies the override; DISABLED restores
+                                                                 //!< header-controlled processing
+                                      U8 procTypes  //!< Bit mask of processing types performed while ENABLED
                                       ) final;
 
   private:
@@ -111,7 +111,7 @@ class DpWriter final : public DpWriterComponentBase {
     );
 
     //! Apply the processing override to the processing types requested by a container
-    //! \return The processing types to perform
+    //! \return The processing types to perform: the override mask when ENABLED, else the requested types
     Fw::DpCfg::ProcType::SerialType applyProcOverride(
         Fw::DpCfg::ProcType::SerialType procTypes  //!< The requested processing types
     ) const;
@@ -157,10 +157,10 @@ class DpWriter final : public DpWriterComponentBase {
     //! True while a schedInInternal message is on the queue
     std::atomic<bool> m_schedInQueued{false};
 
-    //! ENABLED forces the override processing types on; DISABLED forces them off
+    //! ENABLED replaces the header processing types with m_procOverrideMask; DISABLED leaves them as requested
     Fw::Enabled m_procOverrideState = Fw::Enabled::DISABLED;
 
-    //! The processing types forced by the override; zero means no override
+    //! The processing types performed on every container while the override is ENABLED
     Fw::DpCfg::ProcType::SerialType m_procOverrideMask = 0;
 
     //! The file name prefix for writing DP files

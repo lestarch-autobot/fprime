@@ -63,8 +63,8 @@ module Svc {
 
     @ Set the processing override applied to every data product container
     async command SET_PROC_OVERRIDE(
-                    $state: Fw.Enabled @< ENABLED forces the processing types on; DISABLED forces them off
-                    procTypes: U8 @< Bit mask of Fw.DpCfg.ProcType values to force; zero clears the override
+                    $state: Fw.Enabled @< ENABLED applies the override; DISABLED restores header-controlled processing
+                    procTypes: U8 @< Bit mask of Fw.DpCfg.ProcType values performed on every container while ENABLED, replacing the header value
                   )
 
     # ----------------------------------------------------------------------
@@ -144,8 +144,8 @@ module Svc {
 
     @ The processing override was set
     event ProcOverrideSet(
-                           $state: Fw.Enabled @< ENABLED forces the processing types on; DISABLED forces them off
-                           procTypes: U8 @< The bit mask of processing types forced
+                           $state: Fw.Enabled @< ENABLED applies the override; DISABLED restores header-controlled processing
+                           procTypes: U8 @< The bit mask of processing types performed while ENABLED
                          ) \
       severity activity high \
       format "Processing override set: {} processing types {x}"
@@ -186,10 +186,10 @@ module Svc {
     @ The number of errors
     telemetry NumErrors: U32 update on change
 
-    @ The processing override state: ENABLED forces processing types on; DISABLED forces them off
+    @ The processing override state: ENABLED replaces the header processing types with ProcOverrideMask
     telemetry ProcOverrideState: Fw.Enabled update on change
 
-    @ The bit mask of processing types forced by the processing override; zero means no override
+    @ The bit mask of processing types performed on every container while the override is ENABLED
     telemetry ProcOverrideMask: U8 update on change
 
   }

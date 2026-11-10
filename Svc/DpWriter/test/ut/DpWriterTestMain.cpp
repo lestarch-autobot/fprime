@@ -164,21 +164,21 @@ TEST(SET_PROC_OVERRIDE, InvalidUnconnected) {
 }
 
 TEST(SET_PROC_OVERRIDE, ForceOn) {
-    COMMENT("Force processing on and verify every connected processing port is invoked and recorded.");
+    COMMENT("Enable an override selecting every connected processing port and verify each is invoked and recorded.");
     REQUIREMENT("SVC-DPWRITER-009");
     SET_PROC_OVERRIDE::Tester tester;
     tester.ForceOn();
 }
 
 TEST(SET_PROC_OVERRIDE, ForceOff) {
-    COMMENT("Force processing off and verify no processing port is invoked and the header is cleared.");
+    COMMENT("Enable an empty override and verify no processing port is invoked and the header is cleared.");
     REQUIREMENT("SVC-DPWRITER-009");
     SET_PROC_OVERRIDE::Tester tester;
     tester.ForceOff();
 }
 
 TEST(SET_PROC_OVERRIDE, Clear) {
-    COMMENT("Clear the override and verify header-controlled processing resumes.");
+    COMMENT("Disable the override and verify header-controlled processing resumes regardless of the mask.");
     REQUIREMENT("SVC-DPWRITER-009");
     SET_PROC_OVERRIDE::Tester tester;
     tester.Clear();

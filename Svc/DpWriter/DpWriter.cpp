@@ -160,8 +160,8 @@ void DpWriter::CLEAR_EVENT_THROTTLE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq) 
 }
 
 void DpWriter::SET_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, const Fw::Enabled& state, U8 procTypes) {
-    // Compute the processing types that may be forced in the requested state
-    // Forcing processing on requires a connected processing port
+    // Compute the processing types the command may select in the requested state: every configured
+    // processing port when DISABLED (the mask is stored but not applied), only connected ports when ENABLED
     Fw::DpCfg::ProcType::SerialType allowed = 0;
     for (FwIndexType portNum = 0; portNum < NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS; ++portNum) {
         if ((state != Fw::Enabled::ENABLED) || this->isConnected_procBufferSendOut_OutputPort(portNum)) {
@@ -197,14 +197,7 @@ Fw::Success::T DpWriter::deserializePacketHeader(Fw::Buffer& buffer, Fw::DpConta
 }
 
 Fw::DpCfg::ProcType::SerialType DpWriter::applyProcOverride(Fw::DpCfg::ProcType::SerialType procTypes) const {
-    Fw::DpCfg::ProcType::SerialType result = procTypes;
-    if (this->m_procOverrideState == Fw::Enabled::ENABLED) {
-        result = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes | this->m_procOverrideMask);
-    } else {
-        result = static_cast<Fw::DpCfg::ProcType::SerialType>(
-            procTypes & static_cast<Fw::DpCfg::ProcType::SerialType>(~this->m_procOverrideMask));
-    }
-    return result;
+    return (this->m_procOverrideState == Fw::Enabled::ENABLED) ? this->m_procOverrideMask : procTypes;
 }
 
 void DpWriter::performProcessing(Fw::DpContainer& container) {

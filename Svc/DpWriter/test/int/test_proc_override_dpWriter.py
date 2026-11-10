@@ -1,8 +1,10 @@
 """test_proc_override_dpWriter.py:
 
-Reusable integration tests for the DpWriter processing override (SVC-DPWRITER-009, -010, -011): the
-SET_PROC_OVERRIDE command forces processing types on or off for every data product, rejects masks that
-select a nonexistent or unconnected processing port, and reports the override in events and telemetry.
+Reusable integration tests for the DpWriter processing override (SVC-DPWRITER-009, -010, -011): while
+ENABLED, the SET_PROC_OVERRIDE mask replaces the processing types requested by every data product (a
+clear bit forces that processing off); DISABLED restores header-controlled processing. Masks that
+select a nonexistent or unconnected processing port are rejected, and the override is reported in
+events and telemetry.
 
 Producing a data product is deployment specific, so the producer command is read from the deployment
 configuration file given with --deployment-config, for example:
@@ -22,8 +24,11 @@ PRODUCER_COMMAND_KEY = "Svc.DpWriter.producer.command"
 PRODUCER_ARGS_KEY = "Svc.DpWriter.producer.args"
 PRODUCER_BYTES_KEY = "Svc.DpWriter.producer.bytes"
 
-# Bit of Fw.DpCfg.ProcType.PROC_TYPE_ZLIB_DEFLATE, the processing port the override tests force off
+# Bit of Fw.DpCfg.ProcType.PROC_TYPE_ZLIB_DEFLATE, the processing type the producer requests
 ZLIB_DEFLATE_MASK = 0x01
+
+# An ENABLED override with no bits set forces every processing type off
+NO_PROCESSING_MASK = 0x00
 
 # A mask selecting every bit: it is rejected unless a deployment connects all eight processing ports
 ALL_BITS_MASK = 0xFF
@@ -83,8 +88,8 @@ def proc_override(fprime_test_api):
 
 
 def test_proc_override_set_and_clear(fprime_test_api, proc_override):
-    """Each state is accepted, forcing a type off is accepted even when its port is unconnected, and a zero mask clears it"""
-    proc_override.set("ENABLED", 0)
+    """An empty ENABLED override is accepted, a DISABLED mask is accepted even when its port is unconnected, and DISABLED clears it"""
+    proc_override.set("ENABLED", NO_PROCESSING_MASK)
     proc_override.set("DISABLED", ZLIB_DEFLATE_MASK)
     proc_override.clear()
 
@@ -122,7 +127,7 @@ def test_proc_override_forces_processing_off(fprime_test_api, proc_override):
     if not command:
         pytest.skip(f"{PRODUCER_COMMAND_KEY} not set in the deployment configuration")
     args = config.get(PRODUCER_ARGS_KEY, [])
-    proc_override.set("DISABLED", ZLIB_DEFLATE_MASK)
+    proc_override.set("ENABLED", NO_PROCESSING_MASK)
     start = fprime_test_api.get_event_test_history().size()
     fprime_test_api.send_and_assert_command(command, args, max_delay=10)
     written = fprime_test_api.assert_event(

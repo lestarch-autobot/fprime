@@ -144,12 +144,13 @@ void Tester ::ForceOn() {
 }
 
 void Tester ::ForceOff() {
-    this->overrideThenWrite(Fw::Enabled::DISABLED, AbstractState::getAllProcMask());
+    this->overrideThenWrite(Fw::Enabled::ENABLED, 0);
 }
 
 void Tester ::Clear() {
-    this->ForceOff();
-    this->overrideThenWrite(Fw::Enabled::ENABLED, 0);
+    this->ForceOn();
+    // A DISABLED override restores header-controlled processing whatever mask it carries
+    this->overrideThenWrite(Fw::Enabled::DISABLED, AbstractState::getAllProcMask());
 }
 
 void Tester ::overrideThenWrite(Fw::Enabled::T state, Fw::DpCfg::ProcType::SerialType mask) {

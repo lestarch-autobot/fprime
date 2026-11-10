@@ -478,11 +478,13 @@ For on-board lossless compression of data products, see
 [`Svc::DpZLibCompressor`](../../../Svc/DpZLibCompressor/docs/sdd.md).
 
 **Overriding processing from the ground:**
-`Svc::DpWriter` provides the `SET_PROC_OVERRIDE` command, which forces a bit mask of
-processing types on (`ENABLED`) or off (`DISABLED`) for every data product it writes,
-regardless of the processing types requested in each container header. This lets an
-operator turn on compression for a whole deployment, or shut processing off, without
-every producing component supporting a per-container setting. The override is
+`Svc::DpWriter` provides the `SET_PROC_OVERRIDE` command, which takes an override state
+and a bit mask of processing types. While the override is `ENABLED`, the mask replaces the
+processing types requested in each container header for every data product it writes: a
+set bit forces that processing on, a clear bit forces it off, and a zero mask shuts all
+processing off. `DISABLED` restores header-controlled processing. This lets an operator
+turn on compression for a whole deployment, or shut processing off, without every
+producing component supporting a per-container setting. The override is
 volatile (it is cleared by a reset) and forced processing runs on the `DpWriter`
 thread for every product, so it lowers write throughput for all producers. See the
 [`Svc::DpWriter` SDD](../../../Svc/DpWriter/docs/sdd.md).

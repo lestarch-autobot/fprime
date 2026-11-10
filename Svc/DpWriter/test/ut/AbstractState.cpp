@@ -96,14 +96,7 @@ Fw::DpCfg::ProcType::SerialType AbstractState::getAllowedProcMask(const Fw::Enab
 }
 
 Fw::DpCfg::ProcType::SerialType AbstractState::applyProcOverride(Fw::DpCfg::ProcType::SerialType procTypes) const {
-    Fw::DpCfg::ProcType::SerialType result = procTypes;
-    if (this->m_modelProcOverrideState == Fw::Enabled::ENABLED) {
-        result = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes | this->m_modelProcOverrideMask);
-    } else {
-        result = static_cast<Fw::DpCfg::ProcType::SerialType>(
-            procTypes & static_cast<Fw::DpCfg::ProcType::SerialType>(~this->m_modelProcOverrideMask));
-    }
-    return result;
+    return (this->m_modelProcOverrideState == Fw::Enabled::ENABLED) ? this->m_modelProcOverrideMask : procTypes;
 }
 
 }  // namespace Svc
