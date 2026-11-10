@@ -92,6 +92,9 @@ class AbstractState {
     //! \return The bit mask
     static Fw::DpCfg::ProcType::SerialType getAllProcMask();
 
+    //! Whether some bit of the U8 mask has no processing port
+    static bool hasUnconfiguredProcBit();
+
     //! Get the mask with the low numBits bits set
     static Fw::DpCfg::ProcType::SerialType getLowBitsMask(FwIndexType numBits  //!< The number of bits
     );

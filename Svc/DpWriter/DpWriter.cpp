@@ -161,25 +161,26 @@ void DpWriter::CLEAR_EVENT_THROTTLE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq) 
 
 void DpWriter::SET_PROC_OVERRIDE_STATE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, const Fw::Enabled& state) {
     this->m_procOverrideState = state;
-    this->log_ACTIVITY_HI_ProcOverrideSet(this->m_procOverrideState, static_cast<U8>(this->m_procOverrideMask));
+    this->log_ACTIVITY_HI_ProcOverrideStateSet(this->m_procOverrideState, static_cast<U8>(this->m_procOverrideMask));
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
 }
 
 void DpWriter::ADD_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, const Fw::DpCfg::ProcType& procType) {
-    this->setProcOverrideMask(opCode, cmdSeq,
-                              static_cast<Fw::DpCfg::ProcType::SerialType>(
-                                  this->m_procOverrideMask | static_cast<Fw::DpCfg::ProcType::SerialType>(procType.e)));
+    const Fw::DpCfg::ProcType::SerialType bits = static_cast<Fw::DpCfg::ProcType::SerialType>(procType.e);
+    const Fw::DpCfg::ProcType::SerialType mask =
+        static_cast<Fw::DpCfg::ProcType::SerialType>(this->m_procOverrideMask | bits);
+    this->handleProcOverrideMaskCmd(opCode, cmdSeq, mask);
 }
 
 void DpWriter::REMOVE_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, const Fw::DpCfg::ProcType& procType) {
-    this->setProcOverrideMask(
-        opCode, cmdSeq,
-        static_cast<Fw::DpCfg::ProcType::SerialType>(this->m_procOverrideMask &
-                                                     static_cast<Fw::DpCfg::ProcType::SerialType>(~procType.e)));
+    const Fw::DpCfg::ProcType::SerialType bits = static_cast<Fw::DpCfg::ProcType::SerialType>(procType.e);
+    const Fw::DpCfg::ProcType::SerialType mask = static_cast<Fw::DpCfg::ProcType::SerialType>(
+        this->m_procOverrideMask & static_cast<Fw::DpCfg::ProcType::SerialType>(~bits));
+    this->handleProcOverrideMaskCmd(opCode, cmdSeq, mask);
 }
 
 void DpWriter::SET_PROC_OVERRIDE_MASK_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, U8 procTypes) {
-    this->setProcOverrideMask(opCode, cmdSeq, static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes));
+    this->handleProcOverrideMaskCmd(opCode, cmdSeq, static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes));
 }
 
 // ----------------------------------------------------------------------
@@ -197,19 +198,15 @@ Fw::Success::T DpWriter::deserializePacketHeader(Fw::Buffer& buffer, Fw::DpConta
     return status;
 }
 
-void DpWriter::setProcOverrideMask(FwOpcodeType opCode, U32 cmdSeq, Fw::DpCfg::ProcType::SerialType procTypes) {
-    // Every configured processing port has a bit in the mask; bits beyond the configured ports have no port
-    Fw::DpCfg::ProcType::SerialType configured = 0;
-    for (FwIndexType portNum = 0; portNum < NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS; ++portNum) {
-        configured = static_cast<Fw::DpCfg::ProcType::SerialType>(configured | (1U << portNum));
-    }
+void DpWriter::handleProcOverrideMaskCmd(FwOpcodeType opCode, U32 cmdSeq, Fw::DpCfg::ProcType::SerialType procTypes) {
     Fw::CmdResponse response = Fw::CmdResponse::OK;
-    if ((procTypes & static_cast<Fw::DpCfg::ProcType::SerialType>(~configured)) != 0) {
-        this->log_WARNING_LO_ProcOverrideInvalid(static_cast<U8>(procTypes), static_cast<U8>(configured));
+    if ((procTypes & static_cast<Fw::DpCfg::ProcType::SerialType>(~DPWRITER_CONFIGURED_PROC_MASK)) != 0) {
+        this->log_WARNING_LO_ProcOverrideInvalid(static_cast<U8>(procTypes),
+                                                 static_cast<U8>(DPWRITER_CONFIGURED_PROC_MASK));
         response = Fw::CmdResponse::VALIDATION_ERROR;
     } else {
         this->m_procOverrideMask = procTypes;
-        this->log_ACTIVITY_HI_ProcOverrideSet(this->m_procOverrideState, static_cast<U8>(this->m_procOverrideMask));
+        this->log_ACTIVITY_HI_ProcOverrideMaskSet(this->m_procOverrideState, static_cast<U8>(this->m_procOverrideMask));
     }
     this->cmdResponse_out(opCode, cmdSeq, response);
 }
@@ -249,7 +246,7 @@ void DpWriter::performProcessing(Fw::DpContainer& container) {
 
     if (did_process || procTypesChanged) {
         if (procTypesChanged) {
-            // Record the processing types the container was routed through. This must follow the
+            // Record the effective processing types. This must follow the
             // deserializeHeader() above, which reloads the requested types from the buffer.
             container.setProcTypes(procTypes);
         }

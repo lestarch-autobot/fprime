@@ -33,9 +33,12 @@ class DpWriter final : public DpWriterComponentBase {
     static_assert(DpWriter::NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS <=
                       std::numeric_limits<Fw::DpCfg::ProcType::SerialType>::digits,
                   "Every processing port must have a bit in the ProcType bit mask");
-    static_assert(
-        DpWriter::NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS <= std::numeric_limits<U8>::digits,
-        "SET_PROC_OVERRIDE_MASK, ProcOverrideSet, ProcOverrideInvalid, and ProcOverrideMask carry the mask as U8");
+    static_assert(DpWriter::NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS <= std::numeric_limits<U8>::digits,
+                  "SET_PROC_OVERRIDE_MASK, the override events, and ProcOverrideMask carry the mask as U8");
+
+    //! Bit mask with one bit set per configured processing port; the static assertions above keep it within U8
+    static constexpr Fw::DpCfg::ProcType::SerialType DPWRITER_CONFIGURED_PROC_MASK =
+        static_cast<Fw::DpCfg::ProcType::SerialType>((1U << DpWriter::NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS) - 1U);
 
   public:
     // ----------------------------------------------------------------------
@@ -98,18 +101,24 @@ class DpWriter final : public DpWriterComponentBase {
                                             const Fw::Enabled& state  //!< ENABLED applies the override mask
                                             ) final;
 
+    //! Handler implementation for command ADD_PROC_OVERRIDE
+    //!
     //! Add a processing type to the processing override mask
     void ADD_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode,                 //!< The opcode
                                       U32 cmdSeq,                          //!< The command sequence number
                                       const Fw::DpCfg::ProcType& procType  //!< The processing type to add
                                       ) final;
 
+    //! Handler implementation for command REMOVE_PROC_OVERRIDE
+    //!
     //! Remove a processing type from the processing override mask
     void REMOVE_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode,                 //!< The opcode
                                          U32 cmdSeq,                          //!< The command sequence number
                                          const Fw::DpCfg::ProcType& procType  //!< The processing type to remove
                                          ) final;
 
+    //! Handler implementation for command SET_PROC_OVERRIDE_MASK
+    //!
     //! Set the processing override mask directly
     void SET_PROC_OVERRIDE_MASK_cmdHandler(FwOpcodeType opCode,  //!< The opcode
                                            U32 cmdSeq,           //!< The command sequence number
@@ -128,9 +137,9 @@ class DpWriter final : public DpWriterComponentBase {
     );
 
     //! Validate and store a new processing override mask, emit the event, and send the command response
-    void setProcOverrideMask(FwOpcodeType opCode,                       //!< The opcode
-                             U32 cmdSeq,                                //!< The command sequence number
-                             Fw::DpCfg::ProcType::SerialType procTypes  //!< The requested mask
+    void handleProcOverrideMaskCmd(FwOpcodeType opCode,                       //!< The opcode
+                                   U32 cmdSeq,                                //!< The command sequence number
+                                   Fw::DpCfg::ProcType::SerialType procTypes  //!< The requested mask
     );
 
     //! Apply the processing override to the processing types requested by a container
@@ -139,7 +148,8 @@ class DpWriter final : public DpWriterComponentBase {
         Fw::DpCfg::ProcType::SerialType procTypes  //!< The requested processing types
     ) const;
 
-    //! Perform processing on a packet buffer
+    //! Perform processing on a packet buffer: apply the processing override, route the buffer
+    //! through the selected processing ports, and record the effective processing types in the header
     void performProcessing(Fw::DpContainer& container  //!< The container
     );
 

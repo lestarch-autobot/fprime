@@ -31,6 +31,9 @@ static_assert(FW_NUM_ARRAY_ELEMENTS(PROC_TYPES) == Fw::DpCfg::ProcType::NUM_CONS
               "PROC_TYPES must list every Fw::DpCfg::ProcType constant");
 
 //! Pick a processing type whose bits all have a processing port
+//! ADD/REMOVE_PROC_OVERRIDE share DpWriter::handleProcOverrideMaskCmd with SET_PROC_OVERRIDE_MASK, so their
+//! rejection path is exercised by ProcOverride::MaskInvalid; under the default configuration every ProcType
+//! constant has a port, so no ADD/REMOVE can be rejected
 Fw::DpCfg::ProcType::T pickProcType() {
     Fw::DpCfg::ProcType::T result = Fw::DpCfg::ProcType::PROC_TYPE_NONE;
     const Fw::DpCfg::ProcType::SerialType configured = Svc::AbstractState::getAllProcMask();
@@ -47,6 +50,20 @@ Fw::DpCfg::ProcType::T pickProcType() {
 }
 
 }  // namespace
+
+// ----------------------------------------------------------------------
+// Helpers
+// ----------------------------------------------------------------------
+
+void TestState ::checkProcOverrideMaskAccepted(FwOpcodeType opCode, U32 cmdSeq, Fw::DpCfg::ProcType::SerialType mask) {
+    ASSERT_CMD_RESPONSE_SIZE(1);
+    ASSERT_CMD_RESPONSE(0, opCode, cmdSeq, Fw::CmdResponse::OK);
+    ASSERT_EVENTS_SIZE(1);
+    ASSERT_EVENTS_ProcOverrideMaskSet_SIZE(1);
+    ASSERT_EVENTS_ProcOverrideMaskSet(0, this->abstractState.m_modelProcOverrideState, static_cast<U8>(mask));
+    this->abstractState.m_modelProcOverrideMask = mask;
+    this->abstractState.m_ProcOverrideMask.value = static_cast<U8>(mask);
+}
 
 // ----------------------------------------------------------------------
 // Rule definitions
@@ -66,8 +83,8 @@ void TestState ::action__ProcOverride__State() {
     ASSERT_CMD_RESPONSE_SIZE(1);
     ASSERT_CMD_RESPONSE(0, DpWriterTester::getOpCodeSetProcOverrideState(), cmdSeq, Fw::CmdResponse::OK);
     ASSERT_EVENTS_SIZE(1);
-    ASSERT_EVENTS_ProcOverrideSet_SIZE(1);
-    ASSERT_EVENTS_ProcOverrideSet(0, state, static_cast<U8>(this->abstractState.m_modelProcOverrideMask));
+    ASSERT_EVENTS_ProcOverrideStateSet_SIZE(1);
+    ASSERT_EVENTS_ProcOverrideStateSet(0, state, static_cast<U8>(this->abstractState.m_modelProcOverrideMask));
     this->abstractState.m_modelProcOverrideState = state;
     this->abstractState.m_ProcOverrideState.value = state.e;
 }
@@ -84,18 +101,11 @@ void TestState ::action__ProcOverride__MaskOK() {
     const U32 cmdSeq = STest::Pick::any();
     this->sendCmd_SET_PROC_OVERRIDE_MASK(0, cmdSeq, static_cast<U8>(mask));
     this->doDispatch();
-    ASSERT_CMD_RESPONSE_SIZE(1);
-    ASSERT_CMD_RESPONSE(0, DpWriterTester::getOpCodeSetProcOverrideMask(), cmdSeq, Fw::CmdResponse::OK);
-    ASSERT_EVENTS_SIZE(1);
-    ASSERT_EVENTS_ProcOverrideSet_SIZE(1);
-    ASSERT_EVENTS_ProcOverrideSet(0, this->abstractState.m_modelProcOverrideState, static_cast<U8>(mask));
-    this->abstractState.m_modelProcOverrideMask = mask;
-    this->abstractState.m_ProcOverrideMask.value = static_cast<U8>(mask);
+    this->checkProcOverrideMaskAccepted(DpWriterTester::getOpCodeSetProcOverrideMask(), cmdSeq, mask);
 }
 
 bool TestState ::precondition__ProcOverride__MaskInvalid() const {
-    // Some bit of the U8 mask must have no processing port
-    return static_cast<U8>(~AbstractState::getAllProcMask()) != 0;
+    return AbstractState::hasUnconfiguredProcBit();
 }
 
 void TestState ::action__ProcOverride__MaskInvalid() {
@@ -107,24 +117,10 @@ void TestState ::action__ProcOverride__MaskInvalid() {
         mask = static_cast<U8>(this->abstractState.m_nextProcOverrideMaskOpt.value());
         ASSERT_NE(static_cast<U8>(mask & unconfigured), 0);
     } else {
-        // Pick one unconfigured bit, then any other bits
-        FwIndexType numUnconfigured = 0;
-        for (FwIndexType i = 0; i < std::numeric_limits<U8>::digits; i++) {
-            if ((unconfigured & (1U << i)) != 0) {
-                numUnconfigured = static_cast<FwIndexType>(numUnconfigured + 1);
-            }
-        }
-        ASSERT_GT(numUnconfigured, 0);
-        FwIndexType pick = static_cast<FwIndexType>(STest::Pick::lowerUpper(0, static_cast<U32>(numUnconfigured - 1)));
-        for (FwIndexType i = 0; i < std::numeric_limits<U8>::digits; i++) {
-            if ((unconfigured & (1U << i)) != 0) {
-                if (pick == 0) {
-                    mask = static_cast<U8>(1U << i);
-                }
-                pick = static_cast<FwIndexType>(pick - 1);
-            }
-        }
-        mask = static_cast<U8>(mask | static_cast<U8>(STest::Pick::any()));
+        // Pick one bit at or above the configured port count (unconfigured bits are contiguous), then any other bits
+        const U32 bit = STest::Pick::lowerUpper(static_cast<U32>(DpWriterNumProcPorts),
+                                                static_cast<U32>(std::numeric_limits<U8>::digits - 1));
+        mask = static_cast<U8>((1U << bit) | static_cast<U8>(STest::Pick::any()));
     }
     this->abstractState.m_nextProcOverrideMaskOpt.reset();
     const U32 cmdSeq = STest::Pick::any();
@@ -151,13 +147,7 @@ void TestState ::action__ProcOverride__Add() {
     const U32 cmdSeq = STest::Pick::any();
     this->sendCmd_ADD_PROC_OVERRIDE(0, cmdSeq, procType);
     this->doDispatch();
-    ASSERT_CMD_RESPONSE_SIZE(1);
-    ASSERT_CMD_RESPONSE(0, DpWriterTester::getOpCodeAddProcOverride(), cmdSeq, Fw::CmdResponse::OK);
-    ASSERT_EVENTS_SIZE(1);
-    ASSERT_EVENTS_ProcOverrideSet_SIZE(1);
-    ASSERT_EVENTS_ProcOverrideSet(0, this->abstractState.m_modelProcOverrideState, static_cast<U8>(mask));
-    this->abstractState.m_modelProcOverrideMask = mask;
-    this->abstractState.m_ProcOverrideMask.value = static_cast<U8>(mask);
+    this->checkProcOverrideMaskAccepted(DpWriterTester::getOpCodeAddProcOverride(), cmdSeq, mask);
 }
 
 bool TestState ::precondition__ProcOverride__Remove() const {
@@ -174,13 +164,7 @@ void TestState ::action__ProcOverride__Remove() {
     const U32 cmdSeq = STest::Pick::any();
     this->sendCmd_REMOVE_PROC_OVERRIDE(0, cmdSeq, procType);
     this->doDispatch();
-    ASSERT_CMD_RESPONSE_SIZE(1);
-    ASSERT_CMD_RESPONSE(0, DpWriterTester::getOpCodeRemoveProcOverride(), cmdSeq, Fw::CmdResponse::OK);
-    ASSERT_EVENTS_SIZE(1);
-    ASSERT_EVENTS_ProcOverrideSet_SIZE(1);
-    ASSERT_EVENTS_ProcOverrideSet(0, this->abstractState.m_modelProcOverrideState, static_cast<U8>(mask));
-    this->abstractState.m_modelProcOverrideMask = mask;
-    this->abstractState.m_ProcOverrideMask.value = static_cast<U8>(mask);
+    this->checkProcOverrideMaskAccepted(DpWriterTester::getOpCodeRemoveProcOverride(), cmdSeq, mask);
 }
 
 namespace ProcOverride {
@@ -202,13 +186,23 @@ void Tester ::MaskOK() {
 }
 
 void Tester ::MaskInvalid() {
+    if (!AbstractState::hasUnconfiguredProcBit()) {
+        // Every U8 bit has a processing port: no mask can be invalid in this configuration
+        return;
+    }
     this->ruleMaskInvalid.apply(this->testState);
     Testers::schedIn.ruleOK.apply(this->testState);
 }
 
 void Tester ::MaskInvalidKeepsMask() {
+    if (!AbstractState::hasUnconfiguredProcBit()) {
+        return;
+    }
+    const U8 unconfigured = static_cast<U8>(~AbstractState::getAllProcMask());
     this->ForceOn();
-    this->testState.setNextProcOverrideMask(static_cast<Fw::DpCfg::ProcType::SerialType>(1U << DpWriterNumProcPorts));
+    // The lowest unconfigured bit, computed in U8 so that it cannot truncate to zero
+    this->testState.setNextProcOverrideMask(
+        static_cast<Fw::DpCfg::ProcType::SerialType>(unconfigured & static_cast<U8>(-unconfigured)));
     this->ruleMaskInvalid.apply(this->testState);
     Testers::schedIn.ruleOK.apply(this->testState);
     Testers::bufferSendIn.ruleOK.apply(this->testState);

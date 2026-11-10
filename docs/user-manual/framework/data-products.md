@@ -494,7 +494,10 @@ connected is not checked (see [nasa/fprime#6346](https://github.com/nasa/fprime/
 field of the written container header, so ground tools show the override mask rather
 than the types the producer requested. The override is
 volatile (it is cleared by a reset) and forced processing runs on the `DpWriter`
-thread for every product, so it lowers write throughput for all producers. See the
+thread for every product, so it lowers write throughput for all producers. Because the
+mask is `0x00` after every reset, send the mask command(s) before
+`SET_PROC_OVERRIDE_STATE ENABLED`; enabling alone re-applies an empty mask and shuts all
+processing off for every product until the mask is re-sent. See the
 [`Svc::DpWriter` SDD](../../../Svc/DpWriter/docs/sdd.md).
 
 **Processing data products:**

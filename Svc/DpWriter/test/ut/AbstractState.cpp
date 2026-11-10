@@ -83,6 +83,10 @@ Fw::DpCfg::ProcType::SerialType AbstractState::getLowBitsMask(FwIndexType numBit
     return mask;
 }
 
+bool AbstractState::hasUnconfiguredProcBit() {
+    return static_cast<U8>(~getAllProcMask()) != 0;
+}
+
 Fw::DpCfg::ProcType::SerialType AbstractState::getAllProcMask() {
     return getLowBitsMask(DpWriterNumProcPorts);
 }

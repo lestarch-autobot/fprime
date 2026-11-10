@@ -38,12 +38,12 @@ Rules::FileOpenStatus::Error fileOpenStatusError;
 Rules::FileOpenStatus::OK fileOpenStatusOK;
 Rules::FileWriteStatus::Error fileWriteStatusError;
 Rules::FileWriteStatus::OK fileWriteStatusOK;
-Rules::SchedIn::OK schedInOK;
 Rules::ProcOverride::State procOverrideState;
 Rules::ProcOverride::MaskOK procOverrideMaskOK;
 Rules::ProcOverride::MaskInvalid procOverrideMaskInvalid;
 Rules::ProcOverride::Add procOverrideAdd;
 Rules::ProcOverride::Remove procOverrideRemove;
+Rules::SchedIn::OK schedInOK;
 
 // ----------------------------------------------------------------------
 // Tests
@@ -64,12 +64,12 @@ void Tester ::run(U32 maxNumSteps) {
                                        &fileOpenStatusOK,
                                        &fileWriteStatusError,
                                        &fileWriteStatusOK,
-                                       &schedInOK,
                                        &procOverrideState,
                                        &procOverrideMaskOK,
                                        &procOverrideMaskInvalid,
                                        &procOverrideAdd,
-                                       &procOverrideRemove};
+                                       &procOverrideRemove,
+                                       &schedInOK};
     STest::RandomScenario<TestState> scenario("RandomScenario", rules,
                                               sizeof(rules) / sizeof(STest::RandomScenario<TestState>*));
     STest::BoundedScenario<TestState> boundedScenario("BoundedRandomScenario", scenario, maxNumSteps);

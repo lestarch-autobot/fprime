@@ -156,13 +156,21 @@ module Svc {
       format "Error {} while writing {} of {} bytes to {}" \
       throttle 10
 
-    @ The processing override was set
-    event ProcOverrideSet(
-                           $state: Fw.Enabled @< ENABLED replaces the header processing types with the mask; DISABLED restores header-controlled processing
-                           procTypes: U8 @< The bit mask of processing types selected while ENABLED
-                         ) \
+    @ The processing override state was set
+    event ProcOverrideStateSet(
+                                $state: Fw.Enabled @< ENABLED replaces the header processing types with the mask; DISABLED restores header-controlled processing
+                                procTypes: U8 @< The bit mask of processing types selected while ENABLED
+                              ) \
       severity activity high \
-      format "Processing override set: {} processing types {x}"
+      format "Processing override state set: {} processing types {x}"
+
+    @ The processing override mask was set
+    event ProcOverrideMaskSet(
+                               $state: Fw.Enabled @< The override state the mask applies under
+                               procTypes: U8 @< The new bit mask of processing types selected while ENABLED
+                             ) \
+      severity activity high \
+      format "Processing override mask set: {} processing types {x}"
 
     @ A processing override mask was rejected
     event ProcOverrideInvalid(
