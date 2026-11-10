@@ -14,6 +14,7 @@
 #define BufferManager_HPP
 
 #include <Fw/Types/MemAllocator.hpp>
+#include <cstddef>
 #include "Svc/BufferManager/BufferManagerComponentAc.hpp"
 #include "config/BufferManagerComponentImplCfg.hpp"
 
@@ -51,7 +52,9 @@ namespace Svc {
 // 7. The bins passed to setup() contain no buffers at all.
 // 8. setup() is called while the instance is already set up (call cleanup() first).
 // 9. A bin with a non-zero numBuffers has a bufferSize of zero.
-// 10. The allocator returns memory not aligned for the buffer tracking structures.
+// 10. The alignment passed to setup() is zero or not a power of two.
+// 11. The allocator returns memory not aligned as requested (the requested alignment, or that of the buffer
+//     tracking structures if larger).
 //
 // cleanup() does not require every buffer to have been returned: buffers still out become invalid
 //    with the pool they came from and must not be used or returned afterwards. After cleanup(), setup()
@@ -94,7 +97,11 @@ class BufferManagerComponentImpl final : public BufferManagerComponentBase {
                FwEnumStoreType memID,        //!< Memory segment identifier
                Fw::MemAllocator& allocator,  //!< memory allocator. MUST be persistent for later deallocation.
                                              //!  MUST persist past destructor if cleanup() not called explicitly.
-               const BufferBins& bins        //!< Set of user bins
+               const BufferBins& bins,       //!< Set of user bins
+               FwSizeType alignment = alignof(std::max_align_t)  //!< Alignment requested from the allocator for
+                                                                 //!  the pool; the first buffer payload starts at
+                                                                 //!  the allocation. Default: the allocator's own
+                                                                 //!  default (maximum alignment defined by C++).
     );
 
     void cleanup();  // Free memory prior to end of program if desired. Otherwise,

@@ -146,7 +146,8 @@ sequenceDiagram
 * The bins passed to `setup()` contain no buffers.
 * `setup()` is called while the instance is already set up.
 * A bin with a non-zero `numBuffers` has a `bufferSize` of zero.
-* The allocator returns memory not aligned for the buffer tracking structures.
+* The alignment passed to `setup()` is zero or not a power of two.
+* The allocator returns memory not aligned as requested (the requested alignment, or that of the buffer tracking structures if larger).
 
 ## 4 Configuration
 
@@ -168,8 +169,9 @@ To configure an instance of `BufferManager`, the following needs to be supplied 
 - `memID`: ID passed to the memory allocator
 - `allocator`: An `Fw::MemAllocator` instance
 - `bins`: A `BufferBins` structure defining the buffer pools (size and number). This is defined by the user, as demonstrated below.
+- `alignment` (optional): The alignment requested from the allocator for the pool, a non-zero power of two. Defaults to `alignof(std::max_align_t)`, the same default as `Fw::MemAllocator::allocate()`.
 
-The `setup` method configures the buffer bins, allocates memory for all buffers, and initializes the buffer tracking structures. The single allocation holds the buffer payloads first, packed in bin order, followed by the tracking structures: the first payload starts at the allocation's address and each later payload is offset by the preceding buffer sizes only, so payload alignment depends on the allocator's alignment and the configured buffer sizes, never on the tracking structure size.
+The `setup` method configures the buffer bins, allocates memory for all buffers, and initializes the buffer tracking structures. The single allocation is requested at `alignment` (or the alignment of the tracking structures, if that is larger) and holds the buffer payloads first, packed in bin order, followed by the tracking structures: the first payload starts at the allocation's address, so it has the requested alignment, and each later payload is offset by the preceding buffer sizes only, so its alignment depends on the configured buffer sizes and never on the tracking structure size. `setup()` asserts if the allocator returns memory that does not honor the requested alignment; `Fw::MallocAllocator` ignores the alignment argument and provides `malloc`'s alignment only.
 
 ### 4.3 Buffer Bins Configuration
 
