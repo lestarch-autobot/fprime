@@ -27,16 +27,6 @@ const U32 MAX_HISTORY_SIZE = 100;
 bool disjoint(const Fw::Buffer& a, const Fw::Buffer& b) {
     return (a.getData() + a.getCapacity() <= b.getData()) || (b.getData() + b.getCapacity() <= a.getData());
 }
-
-//! True if value is a non-zero power of two
-bool isPowerOfTwo(FwSizeType value) {
-    return (value != 0) && ((value & (value - 1)) == 0);
-}
-
-//! True if the buffer's data starts on a multiple of alignment
-bool isAligned(const Fw::Buffer& buffer, FwSizeType alignment) {
-    return (reinterpret_cast<PlatformPointerCastType>(buffer.getData()) % alignment) == 0;
-}
 }  // namespace
 
 namespace Svc {
@@ -123,25 +113,38 @@ void BufferManagerTester ::setupBehavior() {
 
 void BufferManagerTester ::setupAlignment() {
     REQUIREMENT("FPRIME-BM-005");
-    COMMENT("The alignment given to setup() reaches the allocator and the first buffer handed out has it");
+    COMMENT("The alignment given to setup() reaches the allocator and the first buffer payload has it (SDD 4.2)");
 
-    const FwSizeType alignments[] = {MIN_ALIGNMENT, DEFAULT_ALIGNMENT, ABOVE_DEFAULT_ALIGNMENT,
-                                     4 * ABOVE_DEFAULT_ALIGNMENT};
+    const FwSizeType alignments[] = {MIN_ALIGNMENT,  // below anything setup() places in the pool: the request is raised
+                                     DEFAULT_ALIGNMENT,             // the default, given explicitly
+                                     ABOVE_DEFAULT_ALIGNMENT,       // stricter than the default: passed on as is
+                                     4 * ABOVE_DEFAULT_ALIGNMENT};  // well above: still passed on as is
     for (FwSizeType alignment : alignments) {
         this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins(), alignment);
 
         // The allocator is asked for a power of two no looser than the alignment given; a request at or above
         // the allocator default (which nothing setup() places in the pool exceeds) is passed on as is
-        ASSERT_TRUE(isPowerOfTwo(this->m_allocator.getAlignment()));
+        ASSERT_TRUE(BufferManagerTestState::isPowerOfTwo(this->m_allocator.getAlignment()));
         ASSERT_GE(this->m_allocator.getAlignment(), alignment);
         if (alignment >= DEFAULT_ALIGNMENT) {
             ASSERT_EQ(alignment, this->m_allocator.getAlignment());
         }
 
-        // The first buffer of a fresh pool, served from the smallest bin, has the alignment given
-        Fw::Buffer first = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
-        ASSERT_TRUE(isAligned(first, alignment));
-        this->returnBuffer(first);
+        // The first payload starts at the allocation, so one buffer of the smallest bin sits at the memory
+        // the allocator returned and has the alignment given (whichever order the bin hands them out)
+        Fw::Buffer smallest[BIN0_NUM_BUFFERS];
+        U16 atBase = 0;
+        for (U16 b = 0; b < BIN0_NUM_BUFFERS; b++) {
+            smallest[b] = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
+            if (smallest[b].getData() == this->m_allocator.getMem()) {
+                ASSERT_TRUE(BufferManagerTestState::isAligned(smallest[b], alignment));
+                atBase++;
+            }
+        }
+        ASSERT_EQ(1, atBase);
+        for (U16 b = 0; b < BIN0_NUM_BUFFERS; b++) {
+            this->returnBuffer(smallest[b]);
+        }
         this->component.cleanup();
     }
 }
@@ -629,10 +632,9 @@ void BufferManagerTester ::ruleGet(FwSizeType size) {
     ASSERT_EQ(static_cast<U32>(MGR_ID), BufferManagerTestState::managerIdOf(buffer));
     ASSERT_FALSE(this->shadow.overlapsHeld(buffer));
     ASSERT_EVENTS_SIZE(0);
-    // With every buffer free, a request the smallest bin serves gets the first buffer of the pool, which has the
-    // alignment the pool was set up with
-    if ((this->shadow.currBuffs == 0) && (bin == 0)) {
-        ASSERT_TRUE(isAligned(buffer, this->shadow.alignment));
+    // The first payload starts at the allocation and so has the alignment the pool was set up with
+    if (buffer.getData() == this->m_allocator.getMem()) {
+        ASSERT_TRUE(BufferManagerTestState::isAligned(buffer, this->shadow.alignment));
     }
 
     // Stamp the payload so a later return can detect cross-talk between buffers

@@ -36,7 +36,13 @@ class TestAllocator : public Fw::MemAllocator {
         this->m_reqId = identifier;
         this->m_reqSize = size;
         this->m_reqAlignment = alignment;
+        recoverable = false;
         this->m_raw = ::malloc(size + alignment);
+        if (this->m_raw == nullptr) {
+            size = 0;
+            this->m_mem = nullptr;
+            return nullptr;
+        }
         PlatformPointerCastType address = reinterpret_cast<PlatformPointerCastType>(this->m_raw);
         address = (address + alignment - 1) & ~static_cast<PlatformPointerCastType>(alignment - 1);
         this->m_mem = reinterpret_cast<void*>(address + (this->m_misaligned ? 1 : 0));
@@ -82,7 +88,7 @@ class BufferManagerTester : public BufferManagerGTestBase {
     static constexpr const char* UUT_ASSERT = "Assert: ";
     //! The pool alignment setup() uses when none is given: Fw::MemAllocator::allocate()'s own default
     static const FwSizeType DEFAULT_ALIGNMENT = alignof(std::max_align_t);
-    //! A pool alignment stricter than any allocator default
+    //! A pool alignment stricter than the allocator default
     static const FwSizeType ABOVE_DEFAULT_ALIGNMENT = 4 * DEFAULT_ALIGNMENT;
     //! The loosest pool alignment, below that of anything setup() places in the pool
     static const FwSizeType MIN_ALIGNMENT = 1;

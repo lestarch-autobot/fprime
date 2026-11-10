@@ -9,6 +9,7 @@
 #ifndef Svc_BufferManagerTestState_HPP
 #define Svc_BufferManagerTestState_HPP
 
+#include <cstddef>
 #include <vector>
 #include "Fw/Buffer/Buffer.hpp"
 #include "Svc/BufferManager/BufferManagerComponentImpl.hpp"
@@ -37,6 +38,11 @@ class BufferManagerTestState {
     static U32 contextOf(U16 mgrId, U32 bufferId);
     static U32 managerIdOf(const Fw::Buffer& buffer);
     static U32 bufferIdOf(const Fw::Buffer& buffer);
+
+    //! True if value is a non-zero power of two (what setup() accepts as an alignment)
+    static bool isPowerOfTwo(FwSizeType value);
+    //! True if the buffer's data starts on a multiple of alignment
+    static bool isAligned(const Fw::Buffer& buffer, FwSizeType alignment);
 
   public:
     // ----------------------------------------------------------------------
@@ -119,7 +125,8 @@ class BufferManagerTestState {
     // ----------------------------------------------------------------------
 
     BufferManagerComponentImpl::BufferBins table = {};  //!< Bin table staged for the next setup()
-    FwSizeType alignment = 0;                           //!< Pool alignment staged for the next setup()
+    FwSizeType alignment = alignof(std::max_align_t);   //!< Pool alignment staged for the next setup() (setup()'s
+                                                        //!< own default until stageBins() says otherwise)
     bool isSetup = false;                               //!< True between setup() and cleanup()
     bool everSetup = false;                             //!< True once setup() has been called
 

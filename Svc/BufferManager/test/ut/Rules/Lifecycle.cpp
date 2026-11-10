@@ -24,11 +24,14 @@ void BufferManagerTester::Lifecycle__Setup__action() {
     this->clearHistory();
 
     // The pool was requested from the configured allocator under the configured identifier, at a power-of-two
-    // alignment no looser than the one staged; nothing was released
+    // alignment no looser than the one staged (exactly it from the allocator default up); nothing was released
     ASSERT_EQ(MEM_ID, this->m_allocator.getId());
     ASSERT_NE(nullptr, this->m_allocator.getMem());
-    ASSERT_EQ(0u, this->m_allocator.getAlignment() & (this->m_allocator.getAlignment() - 1));
+    ASSERT_TRUE(BufferManagerTestState::isPowerOfTwo(this->m_allocator.getAlignment()));
     ASSERT_GE(this->m_allocator.getAlignment(), this->shadow.alignment);
+    if (this->shadow.alignment >= DEFAULT_ALIGNMENT) {
+        ASSERT_EQ(this->shadow.alignment, this->m_allocator.getAlignment());
+    }
     ASSERT_EQ(deallocsBefore, this->m_allocator.getDeallocCount());
 }
 
@@ -140,9 +143,9 @@ bool BufferManagerTester::Lifecycle__AlignmentAsserts__precondition() const {
 }
 
 void BufferManagerTester::Lifecycle__AlignmentAsserts__action() {
-    this->expectSetupDeath(defaultBins(), 0);
-    this->expectSetupDeath(defaultBins(), 3);
-    this->expectSetupDeath(defaultBins(), ABOVE_DEFAULT_ALIGNMENT + 1);
+    this->expectSetupDeath(defaultBins(), 0);                            // zero
+    this->expectSetupDeath(defaultBins(), 3);                            // not a power of two
+    this->expectSetupDeath(defaultBins(), ABOVE_DEFAULT_ALIGNMENT + 1);  // one past a power of two
     // An allocator that does not honor the alignment (even the default) is caught before the pool is used
     this->m_allocator.setMisaligned(true);
     this->expectSetupDeath(defaultBins());

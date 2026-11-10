@@ -26,6 +26,15 @@ U32 BufferManagerTestState::bufferIdOf(const Fw::Buffer& buffer) {
     return buffer.getContext() & CONTEXT_ID_MASK;
 }
 
+bool BufferManagerTestState::isPowerOfTwo(FwSizeType value) {
+    return (value != 0) && ((value & (value - 1)) == 0);
+}
+
+bool BufferManagerTestState::isAligned(const Fw::Buffer& buffer, FwSizeType alignment) {
+    FW_ASSERT(isPowerOfTwo(alignment), static_cast<FwAssertArgType>(alignment));
+    return (reinterpret_cast<PlatformPointerCastType>(buffer.getData()) % alignment) == 0;
+}
+
 // ----------------------------------------------------------------------
 // Updates mirroring component actions
 // ----------------------------------------------------------------------
