@@ -167,7 +167,7 @@ To configure an instance of `BufferManager`, the following needs to be supplied 
 - `allocator`: An `Fw::MemAllocator` instance
 - `bins`: A `BufferBins` structure defining the buffer pools (size and number). This is defined by the user, as demonstrated below.
 
-The `setup` method configures the buffer bins, allocates memory for all buffers, and initializes the buffer tracking structures.
+The `setup` method configures the buffer bins, allocates memory for all buffers, and initializes the buffer tracking structures. The single allocation holds the buffer payloads first, packed in bin order, followed by the tracking structures, so payloads keep whatever alignment the allocator gave the allocation regardless of the tracking structure size.
 
 ### 4.3 Buffer Bins Configuration
 

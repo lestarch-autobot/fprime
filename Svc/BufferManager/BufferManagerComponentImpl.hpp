@@ -137,6 +137,7 @@ class BufferManagerComponentImpl final : public BufferManagerComponentBase {
         bool allocated;             //!< this buffer has been allocated
     };
 
+    void* m_memory;                 //!< allocation holding the buffer payloads followed by the tracking structs
     AllocatedBuffer* m_buffers;     //!< pointer to allocated buffer space
     Fw::MemAllocator* m_allocator;  //!< allocator for memory
     FwEnumStoreType m_memId;        //!< identifier for allocator
