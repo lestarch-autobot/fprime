@@ -64,6 +64,9 @@ class BufferAccumulatorTester : public Svc::BufferAccumulatorTester {
     //! With the window full, BA_DrainBuffers does not report a stall until a return arrives (REQ-BA-DL-013)
     void StallAtLimit(void);
 
+    //! A fill arriving in DRAIN mode is sent while the window has room
+    void FillWhileOutstanding(void);
+
   private:
     // ----------------------------------------------------------------------
     // Helpers

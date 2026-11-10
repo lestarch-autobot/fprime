@@ -30,6 +30,8 @@ void BufferAccumulatorTester ::DefaultLimit() {
     ASSERT_TLM_BA_DrainLimit(0, 1u);
     ASSERT_TLM_BA_NumOutstandingBuffers_SIZE(1);
     ASSERT_TLM_BA_NumOutstandingBuffers(0, 0u);
+    ASSERT_TLM_BA_NumQueuedBuffers_SIZE(1);
+    ASSERT_TLM_BA_NumQueuedBuffers(0, 0u);
 
     // Limit 1: one buffer in flight, the next waits for the return
     this->fill(2);
@@ -141,8 +143,8 @@ void BufferAccumulatorTester ::SetLimitInvalid() {
     ASSERT_EVENTS_BA_DrainLimitSet_SIZE(0);
     ASSERT_TLM_BA_DrainLimit_SIZE(0);
 
-    // The limit is still 1: a second buffer waits for the first to return
-    this->fill(2);
+    // The limit is still 1: the other buffers wait for the first to return
+    this->fill(3);
     ASSERT_from_bufferSendOutDrain_SIZE(1);
     ASSERT_from_bufferSendOutDrain(0, this->m_buffers[0]);
 
@@ -158,6 +160,11 @@ void BufferAccumulatorTester ::SetLimitInvalid() {
     ASSERT_TLM_BA_DrainLimit_SIZE(0);
     this->returnBuffer(0);
     ASSERT_from_bufferSendOutDrain_SIZE(1);
+    // Back in DRAIN with two queued, exactly one goes out: the limit is still 1
+    this->sendCmd_BA_SetMode(0, 0, BufferAccumulator_OpState::DRAIN);
+    this->doDispatch();
+    ASSERT_from_bufferSendOutDrain_SIZE(2);
+    ASSERT_EQ(1u, this->lastQueued());
 }
 
 void BufferAccumulatorTester ::WindowedDrain() {
@@ -184,6 +191,10 @@ void BufferAccumulatorTester ::WindowedDrain() {
     }
     ASSERT_EQ(0u, this->lastOutstanding());
     ASSERT_EQ(0u, this->lastQueued());
+    // Written on net change only: 0->3 on entering DRAIN, nothing for the seven returns that re-send, then 2, 1, 0
+    ASSERT_TLM_BA_NumOutstandingBuffers_SIZE(4);
+    ASSERT_TLM_BA_NumOutstandingBuffers(0, limit);
+    ASSERT_TLM_BA_NumOutstandingBuffers(3, 0u);
 }
 
 void BufferAccumulatorTester ::WindowedPartialDrain() {
@@ -250,13 +261,26 @@ void BufferAccumulatorTester ::SetLimitDuringPartialDrain() {
     ASSERT_from_bufferSendOutDrain_SIZE(1);
     ASSERT_CMD_RESPONSE_SIZE(1);
 
+    // Rejected mid-drain too: the limit stays 1, nothing more goes out and the command still pends (REQ-BA-DL-005)
+    this->sendCmd_BA_SetDrainLimit(0, 0, MAX_NUM_BUFFERS + 1);
+    this->doDispatch();
+    ASSERT_CMD_RESPONSE_SIZE(2);
+    ASSERT_CMD_RESPONSE(1, BufferAccumulator::OPCODE_BA_SETDRAINLIMIT, 0, Fw::CmdResponse::VALIDATION_ERROR);
+    ASSERT_EVENTS_BA_InvalidDrainLimit_SIZE(1);
+    ASSERT_EVENTS_BA_InvalidDrainLimit(0, MAX_NUM_BUFFERS + 1, MAX_NUM_BUFFERS);
+    ASSERT_from_bufferSendOutDrain_SIZE(1);
+
     // Raising the limit mid-drain sends the rest and completes the command
     this->sendCmd_BA_SetDrainLimit(0, 0, numToDrain);
     this->doDispatch();
     ASSERT_from_bufferSendOutDrain_SIZE(numToDrain);
-    ASSERT_CMD_RESPONSE_SIZE(3);
-    ASSERT_CMD_RESPONSE(1, BufferAccumulator::OPCODE_BA_SETDRAINLIMIT, 0, Fw::CmdResponse::OK);
-    ASSERT_CMD_RESPONSE(2, BufferAccumulator::OPCODE_BA_DRAINBUFFERS, 0, Fw::CmdResponse::OK);
+    ASSERT_CMD_RESPONSE_SIZE(4);
+    ASSERT_CMD_RESPONSE(2, BufferAccumulator::OPCODE_BA_SETDRAINLIMIT, 0, Fw::CmdResponse::OK);
+    ASSERT_CMD_RESPONSE(3, BufferAccumulator::OPCODE_BA_DRAINBUFFERS, 0, Fw::CmdResponse::OK);
+    ASSERT_EVENTS_BA_DrainLimitSet_SIZE(1);
+    ASSERT_EVENTS_BA_DrainLimitSet(0, numToDrain);
+    ASSERT_TLM_BA_DrainLimit_SIZE(1);
+    ASSERT_TLM_BA_DrainLimit(0, numToDrain);
     ASSERT_EVENTS_BA_PartialDrainDone_SIZE(1);
     ASSERT_EVENTS_BA_PartialDrainDone(0, numToDrain);
     ASSERT_EQ(numToDrain, this->lastOutstanding());
@@ -371,6 +395,31 @@ void BufferAccumulatorTester ::StallAtLimit() {
     ASSERT_CMD_RESPONSE_SIZE(2);
     ASSERT_CMD_RESPONSE(1, BufferAccumulator::OPCODE_BA_DRAINBUFFERS, 0, Fw::CmdResponse::OK);
     ASSERT_EVENTS_BA_DrainStalled_SIZE(1);
+}
+
+void BufferAccumulatorTester ::FillWhileOutstanding() {
+    // DRAIN mode, limit 3: each arrival goes straight out while the window has room (REQ-BA-DL-006)
+    const U32 limit = 3;
+    this->allocate(BufferAccumulator_OpState::DRAIN, limit);
+    for (U32 i = 0; i < limit + 1; ++i) {
+        this->m_buffers[i] = Fw::Buffer(this->m_data, sizeof(this->m_data), i);
+        this->invoke_to_bufferSendInFill(0, this->m_buffers[i]);
+        this->doDispatch();
+        // The fourth arrival finds the window full and waits in the FIFO
+        ASSERT_from_bufferSendOutDrain_SIZE(FW_MIN(i + 1, limit));
+        ASSERT_EQ(FW_MIN(i + 1, limit), this->lastOutstanding());
+    }
+    ASSERT_EQ(1u, this->lastQueued());
+    for (U32 i = 0; i < limit; ++i) {
+        ASSERT_from_bufferSendOutDrain(i, this->m_buffers[i]);
+    }
+
+    // A return reopens the window and the queued buffer goes out
+    this->returnBuffer(0);
+    ASSERT_from_bufferSendOutDrain_SIZE(limit + 1);
+    ASSERT_from_bufferSendOutDrain(limit, this->m_buffers[limit]);
+    ASSERT_EQ(limit, this->lastOutstanding());
+    ASSERT_EQ(0u, this->lastQueued());
 }
 
 // ----------------------------------------------------------------------

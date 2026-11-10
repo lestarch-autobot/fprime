@@ -128,6 +128,11 @@ TEST(TestDrainLimit, StallAtLimit) {
     tester.StallAtLimit();
 }
 
+TEST(TestDrainLimit, FillWhileOutstanding) {
+    Svc::DrainLimit::BufferAccumulatorTester tester(false);
+    tester.FillWhileOutstanding();
+}
+
 // ----------------------------------------------------------------------
 // Test Health
 // ----------------------------------------------------------------------

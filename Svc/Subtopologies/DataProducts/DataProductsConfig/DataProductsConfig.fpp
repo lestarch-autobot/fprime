@@ -7,8 +7,10 @@ module DataProductsConfig {
         constant dpMgr  = 10
         @ dpBufferAccumulator may have up to BufferAccumulator.maxNumBuffers buffers in flight to dpWriter at once (BA_SetDrainLimit is capped there); this queue must hold all of them plus dpWriter's other queued inputs (dpWriterQueueMargin)
         constant dpWriter   = BufferAccumulator.maxNumBuffers + dpWriterQueueMargin
-        @ Messages other than buffers that can be pending on dpWriter's queue at once: 1 schedIn tick (re-posted via the internal schedInInternal port) + an assumed ceiling of 3 concurrently queued commands (dpWriter has one async command, CLEAR_EVENT_THROTTLE; CmdDispatcher does not bound in-flight commands per component - projects issuing more concurrently must raise this margin)
-        constant dpWriterQueueMargin = 4
+        @ Assumed ceiling of concurrently queued commands on dpWriter (it has one async command, CLEAR_EVENT_THROTTLE; CmdDispatcher does not bound in-flight commands per component - projects issuing more concurrently must raise this)
+        constant dpWriterMaxQueuedCommands = 3
+        @ Messages other than buffers that can be pending on dpWriter's queue at once: 1 schedIn tick (re-posted via the internal schedInInternal port) + dpWriterMaxQueuedCommands
+        constant dpWriterQueueMargin = 1 + dpWriterMaxQueuedCommands
         constant dpBufferAccumulator = 10
         constant dpBufferManager   = 10
     }

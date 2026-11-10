@@ -40,4 +40,6 @@ The Buffer Logger writes incoming buffers to files on the file system. It is typ
 
 - If the Buffer Manager runs out of available buffers in the requested size bin, it returns an empty (invalid) buffer. The requesting component must check validity before use.
 - The Buffer Accumulator reports a warning when its queue is full and a buffer must be dropped.
+- The Buffer Accumulator warns (`BA_UnexpectedReturn`) when a buffer is returned while none is outstanding; the buffer is still forwarded to its owner.
+- Drained buffers that are never returned stay counted as outstanding (`BA_NumOutstandingBuffers`); once the count reaches the drain limit the accumulator stops sending until buffers return or the limit is raised. There is no timeout or reset command.
 - Buffers that are never returned consume pool capacity. The Buffer Manager tracks outstanding allocations via telemetry.

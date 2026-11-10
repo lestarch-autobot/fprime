@@ -132,7 +132,7 @@ class BufferAccumulator final : public BufferAccumulatorComponentBase {
     //! Return allocated queue. Should be done during shutdown
     void deallocateQueue(Fw::MemAllocator& allocator);
 
-    //! Report the initial drain limit and outstanding count once the ports are connected
+    //! Report the initial drain limit, outstanding count and queue depth once the ports are connected
     void preamble() override;
 
   private:
