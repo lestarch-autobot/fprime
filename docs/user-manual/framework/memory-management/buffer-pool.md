@@ -151,7 +151,8 @@ Buffer manager will assert under the following conditions:
 7. The bins passed to `setup()` contain no buffers.
 8. `setup()` is called while the instance is already set up (call `cleanup()` first).
 9. A bin with a non-zero `numBuffers` has a `bufferSize` of zero.
-10. The allocator returns memory not aligned for the buffer tracking structures.
+10. The alignment passed to `setup()` is zero or not a power of two.
+11. The allocator returns memory not aligned as requested (the requested alignment, or that of the buffer tracking structures if larger).
 
 **Connections**
 
@@ -178,7 +179,9 @@ When using Svc.BufferManager the `Svc::BufferManagerComponentImpl.setup()` metho
 ID, a buffer id, an implementation of [Fw::MemAllocator](../../../reference/api/cpp/html/class_fw_1_1_mem_allocator.html) used to
 allocate memory for the sub-allocations, and a
 [Svc::BufferManagerComponentImpl::BufferBins](../../../reference/api/cpp/html/struct_svc_1_1_buffer_manager_component_impl_1_1_buffer_bin.html)
-struct configuring the sub allocations.
+struct configuring the sub allocations. An optional fifth argument, `alignment`, is the alignment requested from the
+allocator for the pool (a non-zero power of two); it defaults to `alignof(std::max_align_t)`, the same default as
+`Fw::MemAllocator::allocate()`, and the first buffer payload starts at the allocation's address.
 
 The Svc::BufferManagerComponentImpl::BufferBins is a table specifying N buffers of M size per bin. Up to MAX_NUM_BINS
 bins can be specified. The table is copied when setup() is called, so it does not need to be retained after the call.
@@ -195,7 +198,7 @@ The rules for specifying bins:
 4. A single bin can be specified if a single size is needed. 
    
 > [!NOTE]
-> a pointer to the Fw::MemAllocator used in setup() is stored for later memory cleanup. The instance of the allocator must persist beyond calling the cleanup() function or the destructor of BufferManager if cleanup() is not called. If a project-specific manual memory allocator is not needed, Fw::MallocAllocator can be used to supply heap allocated memory. cleanup() does not require every buffer to have been returned, but buffers still out become invalid with the pool. After cleanup(), setup() may be called again; the new pool is released by the next cleanup(), and `CurrBuffs`/`HiBuffs` restart with it.
+> a pointer to the Fw::MemAllocator used in setup() is stored for later memory cleanup. The instance of the allocator must persist beyond calling the cleanup() function or the destructor of BufferManager if cleanup() is not called. If a project-specific manual memory allocator is not needed, Fw::MallocAllocator can be used to supply heap allocated memory; it provides `malloc()`'s alignment whatever `alignment` is requested (see its documentation), so `setup()` asserts if a larger alignment is passed with it. cleanup() does not require every buffer to have been returned, but buffers still out become invalid with the pool. After cleanup(), setup() may be called again; the new pool is released by the next cleanup(), and `CurrBuffs`/`HiBuffs` restart with it.
 
 **Example Setup of Svc.BufferManager in a Topology.cpp**
 ```c++

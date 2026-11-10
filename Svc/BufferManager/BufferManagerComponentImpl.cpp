@@ -134,10 +134,13 @@ Fw::Buffer BufferManagerComponentImpl ::bufferGetCallee_handler(const FwIndexTyp
 void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manager ID
                                        FwEnumStoreType memId,        //!< Memory segment identifier
                                        Fw::MemAllocator& allocator,  //!< memory allocator
-                                       const BufferBins& bins        //!< Set of user bins
+                                       const BufferBins& bins,       //!< Set of user bins
+                                       FwSizeType alignment          //!< Alignment requested for the pool
 ) {
     // setting up while a pool is live would leak it
     FW_ASSERT(not this->m_setup);
+    // alignments are non-zero powers of two
+    FW_ASSERT((alignment != 0) && ((alignment & (alignment - 1)) == 0), static_cast<FwAssertArgType>(alignment));
     this->m_mgrId = mgrId;
     this->m_memId = memId;
     this->m_allocator = &allocator;
@@ -192,19 +195,21 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     FwSizeType allocatedSize = memorySize;
     bool recoverable = false;  //!< don't care if it is recoverable since they are a pool of user buffers
 
-    // allocate memory at the allocator's default alignment (alignof(std::max_align_t))
-    void* memory = allocator.allocate(memId, allocatedSize, recoverable);
+    // the pool must be aligned as requested and, since the tracking structs sit at a multiple of their own
+    // alignment from the base, at least as strictly as they need
+    const FwSizeType poolAlign = (alignment > structAlign) ? alignment : structAlign;
+    void* memory = allocator.allocate(memId, allocatedSize, recoverable, poolAlign);
     // make sure the memory returns was non-zero and the size requested
     FW_ASSERT(memory != nullptr && memorySize == allocatedSize, static_cast<FwAssertArgType>(mgrId),
               static_cast<FwAssertArgType>(memId),
               static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
               static_cast<FwAssertArgType>(memorySize), static_cast<FwAssertArgType>(allocatedSize));
-    // the tracking structs are placed at a multiple of their alignment from the base, so the base must be aligned
-    FW_ASSERT((reinterpret_cast<PlatformPointerCastType>(memory) % structAlign) == 0,
+    // the allocator must honor poolAlign (Fw::MemAllocator contract: at least the alignment asked of it)
+    FW_ASSERT((reinterpret_cast<PlatformPointerCastType>(memory) % poolAlign) == 0,
               static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
-              static_cast<FwAssertArgType>(structAlign));
+              static_cast<FwAssertArgType>(poolAlign));
     this->m_memory = memory;
-    // buffer payloads start at the beginning of memory: the first is as aligned as the allocation and each
+    // buffer payloads start at the beginning of memory: the first is aligned as requested and each
     // following one is offset by the preceding bin sizes only, never by the tracking structs
     U8* bufferMem = static_cast<U8*>(memory);
     // tracking structs follow the payloads

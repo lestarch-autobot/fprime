@@ -13,15 +13,19 @@
 #ifndef Svc_BufferManagerTester_HPP
 #define Svc_BufferManagerTester_HPP
 
+#include <cstddef>
+#include <cstdlib>
 #include "BufferManagerGTestBase.hpp"
-#include "Fw/Types/MallocAllocator.hpp"
+#include "Fw/Types/MemAllocator.hpp"
 #include "Svc/BufferManager/BufferManagerComponentImpl.hpp"
 #include "Svc/BufferManager/test/ut/TestState/TestState.hpp"
 #include "TestUtils/RuleBasedTesting.hpp"
 
 namespace Svc {
 
-//! Instrumented allocator recording the latest allocation and every deallocation
+//! Instrumented allocator recording the latest allocation request and every deallocation. It honors any
+//! power-of-two alignment (over-allocating and aligning within), so the alignment setup() asks for is observable
+//! both as the request and in the memory handed back; setMisaligned() makes it break the alignment contract.
 class TestAllocator : public Fw::MemAllocator {
   public:
     ~TestAllocator() override = default;
@@ -31,24 +35,40 @@ class TestAllocator : public Fw::MemAllocator {
                    FwSizeType alignment) override {
         this->m_reqId = identifier;
         this->m_reqSize = size;
-        this->m_mem = this->m_alloc.allocate(identifier, size, recoverable, alignment);
+        this->m_reqAlignment = alignment;
+        recoverable = false;
+        this->m_raw = ::malloc(size + alignment);
+        if (this->m_raw == nullptr) {
+            size = 0;
+            this->m_mem = nullptr;
+            return nullptr;
+        }
+        PlatformPointerCastType address = reinterpret_cast<PlatformPointerCastType>(this->m_raw);
+        address = (address + alignment - 1) & ~static_cast<PlatformPointerCastType>(alignment - 1);
+        this->m_mem = reinterpret_cast<void*>(address + (this->m_misaligned ? 1 : 0));
         return this->m_mem;
     }
     void deallocate(const FwEnumStoreType identifier, void* ptr) override {
         this->m_deallocCount++;
         this->m_deallocPtr = ptr;
-        this->m_alloc.deallocate(identifier, ptr);
+        ::free(this->m_raw);
+        this->m_raw = nullptr;
     }
+    //! Hand back memory one byte past the aligned address: an allocator that does not honor the alignment
+    void setMisaligned(bool misaligned) { this->m_misaligned = misaligned; }
     FwEnumStoreType getId() const { return this->m_reqId; }
     FwSizeType getSize() const { return this->m_reqSize; }
+    FwSizeType getAlignment() const { return this->m_reqAlignment; }
     void* getMem() const { return this->m_mem; }
     U32 getDeallocCount() const { return this->m_deallocCount; }
     void* getDeallocPtr() const { return this->m_deallocPtr; }
 
   private:
-    Fw::MallocAllocator m_alloc;
+    void* m_raw = nullptr;  //!< The malloc() block the aligned memory lies in
+    bool m_misaligned = false;
     FwEnumStoreType m_reqId = 0;
     FwSizeType m_reqSize = 0;
+    FwSizeType m_reqAlignment = 0;
     void* m_mem = nullptr;
     U32 m_deallocCount = 0;
     void* m_deallocPtr = nullptr;
@@ -66,6 +86,12 @@ class BufferManagerTester : public BufferManagerGTestBase {
     static const U32 NUM_TLM_CHANNELS = 5;
     //! Regex every FW_ASSERT death prints (nothing in the Tester asserts inside a death statement)
     static constexpr const char* UUT_ASSERT = "Assert: ";
+    //! The pool alignment setup() uses when none is given: Fw::MemAllocator::allocate()'s own default
+    static const FwSizeType DEFAULT_ALIGNMENT = alignof(std::max_align_t);
+    //! A pool alignment stricter than the allocator default
+    static const FwSizeType ABOVE_DEFAULT_ALIGNMENT = 4 * DEFAULT_ALIGNMENT;
+    //! The loosest pool alignment, below that of anything setup() places in the pool
+    static const FwSizeType MIN_ALIGNMENT = 1;
 
     //! The three-bin test configuration (see defaultBins())
     static const Fw::Buffer::SizeType BIN0_BUFFER_SIZE = 10;
@@ -90,6 +116,8 @@ class BufferManagerTester : public BufferManagerGTestBase {
 
     //! Setup, allocator contract, telemetry and buffer identity through the ports
     void setupBehavior();
+    //! The alignment given to setup() reaches the allocator and the first buffer handed out has it
+    void setupAlignment();
     //! A single bin: exhaustion, return in any order, every buffer available again
     void singleBin();
     //! Three bins: requests of each bin's size drain that bin and the larger ones in order
@@ -109,6 +137,8 @@ class BufferManagerTester : public BufferManagerGTestBase {
     void setupSizeOverflowAsserts();
     //! Bins not ordered by non-decreasing size are rejected; equal sizes and gaps are accepted
     void setupBinOrderAsserts();
+    //! Alignments that are zero or not a power of two, and an allocator that does not honor the alignment, assert
+    void setupAlignmentAsserts();
     //! Returned buffers with a bad context, pointer, size, or state assert
     void sendInAsserts();
     //! Port use and cleanup before setup() assert
@@ -119,8 +149,8 @@ class BufferManagerTester : public BufferManagerGTestBase {
     // Rule-based testing
     // ----------------------------------------------------------------------
 
-    //! Stage bins for the Lifecycle.Setup rule and apply it
-    void setupRules(const BufferManagerComponentImpl::BufferBins& bins);
+    //! Stage bins (and the pool alignment to request) for the Lifecycle.Setup rule and apply it
+    void setupRules(const BufferManagerComponentImpl::BufferBins& bins, FwSizeType alignment = DEFAULT_ALIGNMENT);
     //! Stage a single bin of one buffer and set up
     void setupRulesOneBuffer();
     //! Stage a single bin and set up
@@ -129,7 +159,7 @@ class BufferManagerTester : public BufferManagerGTestBase {
     void setupRulesDefault();
     //! Stage two equal-size bins, an empty bin, then a larger bin (a legal irregular table) and set up
     void setupRulesEqualAndGapped();
-    //! Stage a random number of random, non-decreasing bins and set up
+    //! Stage a random number of random, non-decreasing bins and a random pool alignment, and set up
     void setupRulesRandom();
     //! Return every held buffer and clean up the component (Lifecycle.Cleanup)
     void teardownRules();
@@ -141,6 +171,7 @@ class BufferManagerTester : public BufferManagerGTestBase {
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, NotSetupAsserts);
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, BinOrderAsserts);
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, SizeOverflowAsserts);
+    FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, AlignmentAsserts);
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, EmptyBinsAsserts);
     FW_RBT_DEFINE_RULE(BufferManagerTester, Lifecycle, SetupTwiceAsserts);
     //! Rules for the bufferGetCallee port
@@ -203,8 +234,8 @@ class BufferManagerTester : public BufferManagerGTestBase {
     void returnEmptyBuffer(Fw::Buffer& empty);
     //! Run schedIn and check how many channels it wrote; the values are checked by the caller
     void checkTelemetry(U32 expectedChannels);
-    //! setup() with the given table must assert
-    void expectSetupDeath(const BufferManagerComponentImpl::BufferBins& bins);
+    //! setup() with the given table (and pool alignment) must assert
+    void expectSetupDeath(const BufferManagerComponentImpl::BufferBins& bins, FwSizeType alignment = DEFAULT_ALIGNMENT);
     //! Request a buffer expected to be served from the shadow's bin and record it (shared by the BufferGet rules)
     void ruleGet(FwSizeType size);
     //! Hand back held buffer index after checking its pattern and record it (shared by the BufferReturn rules)
