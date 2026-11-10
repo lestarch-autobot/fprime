@@ -30,12 +30,16 @@ class BufferAccumulatorTester;
 namespace Errors {
 class BufferAccumulatorTester;
 }
+namespace DrainLimit {
+class BufferAccumulatorTester;
+}
 
 class BufferAccumulator final : public BufferAccumulatorComponentBase {
     friend class BufferAccumulatorTester;
     friend class Svc::Accumulate::BufferAccumulatorTester;
     friend class Svc::Drain::BufferAccumulatorTester;
     friend class Svc::Errors::BufferAccumulatorTester;
+    friend class Svc::DrainLimit::BufferAccumulatorTester;
 
   private:
     // ----------------------------------------------------------------------
@@ -119,11 +123,15 @@ class BufferAccumulator final : public BufferAccumulatorComponentBase {
         FwEnumStoreType identifier,
         Fw::MemAllocator& allocator,
         FwSizeType maxNumBuffers,  //!< The maximum number of buffers
-        BufferAccumulator_OpState initialMode = BufferAccumulator_OpState::ACCUMULATE  //!< The initial operating mode
+        BufferAccumulator_OpState initialMode = BufferAccumulator_OpState::ACCUMULATE,  //!< The initial operating mode
+        U32 initialDrainLimit = 1  //!< The initial drain limit (1 .. maxNumBuffers)
     );
 
     //! Return allocated queue. Should be done during shutdown
     void deallocateQueue(Fw::MemAllocator& allocator);
+
+    //! Report the initial drain limit and outstanding count once the ports are connected
+    void preamble() override;
 
   private:
     // ----------------------------------------------------------------------
@@ -165,13 +173,30 @@ class BufferAccumulator final : public BufferAccumulatorComponentBase {
                                     U32 numToDrain,
                                     const BufferAccumulator_BlockMode& blockMode);
 
+    //! Implementation for BA_SetDrainLimit command handler
+    //! Set the maximum number of drained buffers that may be outstanding at once
+    void BA_SetDrainLimit_cmdHandler(const FwOpcodeType opCode,  //!< The opcode
+                                     const U32 cmdSeq,           //!< The command sequence number
+                                     U32 maxOutstanding          //!< The new drain limit
+    );
+
   private:
     // ----------------------------------------------------------------------
     // Private helper methods
     // ----------------------------------------------------------------------
 
-    //! Send a stored buffer
-    void sendStoredBuffer();
+    //! Whether buffers are to be sent downstream: DRAIN mode, or a partial drain in progress
+    bool isDraining() const;
+
+    //! Send stored buffers, oldest first, while draining and the outstanding count is below the
+    //! drain limit; completes a partial drain whose target has been reached.
+    //! reportStall: emit BA_DrainStalled if a partial drain would send but the FIFO is empty
+    void drain(bool reportStall);
+
+    //! Write the queue depth and the outstanding count, each only when it changed
+    void reportCounts(FwSizeType queuedBefore,  //!< The queue depth at handler entry
+                      U32 outstandingBefore     //!< The outstanding count at handler entry
+    );
 
   private:
     // ----------------------------------------------------------------------
@@ -187,12 +212,14 @@ class BufferAccumulator final : public BufferAccumulatorComponentBase {
     //! The FIFO queue of buffers
     ArrayFIFOBuffer m_bufferQueue;
 
-    //! Whether to send a buffer to the downstream client
-    bool m_send;
+    //! The maximum number of drained buffers that may be outstanding at once
+    U32 m_drainLimit;
 
-    //! If we are switched to ACCUMULATE then back to DRAIN, whether we were
-    //! waiting on a buffer
-    bool m_waitForBuffer;
+    //! The number of drained buffers sent and not yet returned
+    U32 m_numOutstanding;
+
+    //! Whether BA_UnexpectedReturn has been emitted since the last expected return
+    bool m_unexpectedReturnReported;
 
     //! The number of QueueFull warnings sent since the last successful enqueue
     //! operation

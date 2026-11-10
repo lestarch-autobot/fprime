@@ -11,6 +11,7 @@
     "Svc.DpCatalog": "DataProducts.dpCat",
     "Svc.DpManager": "DataProducts.dpMgr",
     "Svc.DpWriter": "DataProducts.dpWriter",
+    "Svc.BufferAccumulator": "DataProducts.dpBufferAccumulator",
     "Svc.Health": "CdhCore.health",
     "Svc.DpCatalog.producer.command": "Ref.dpDemo.Dp",
     "Svc.DpCatalog.producer.args": [

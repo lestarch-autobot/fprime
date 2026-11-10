@@ -55,7 +55,8 @@ module DataProducts{
                 DataProductsConfig::BufferAccumulator::allocatorId,
                 DataProducts::Allocation::memAllocator,
                 DataProductsConfig::BufferAccumulator::maxNumBuffers,
-                Svc::BufferAccumulator_OpState::DRAIN
+                Svc::BufferAccumulator_OpState::DRAIN,
+                DataProductsConfig::BufferAccumulator::initialDrainLimit
             );
         """
         phase Fpp.ToCpp.Phases.tearDownComponents """

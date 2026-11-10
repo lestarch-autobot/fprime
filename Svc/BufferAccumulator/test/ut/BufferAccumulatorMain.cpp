@@ -13,6 +13,7 @@
 #include "Accumulate.hpp"
 #include "BufferAccumulatorTester.hpp"
 #include "Drain.hpp"
+#include "DrainLimit.hpp"
 #include "Errors.hpp"
 #include "Health.hpp"
 
@@ -61,6 +62,70 @@ TEST(TestPartialDrain, OK) {
 TEST(TestPartialDrain, NoBlock) {
     Svc::Drain::BufferAccumulatorTester tester;
     tester.PartialDrainNoBlock();
+}
+
+// ----------------------------------------------------------------------
+// Test DrainLimit
+// ----------------------------------------------------------------------
+
+TEST(TestDrainLimit, DefaultLimit) {
+    Svc::DrainLimit::BufferAccumulatorTester tester(false);
+    tester.DefaultLimit();
+}
+
+TEST(TestDrainLimit, InitialLimit) {
+    Svc::DrainLimit::BufferAccumulatorTester tester(false);
+    tester.InitialLimit();
+}
+
+TEST(TestDrainLimit, InitialLimitInvalid) {
+    Svc::DrainLimit::BufferAccumulatorTester tester(false);
+    tester.InitialLimitInvalid();
+}
+
+TEST(TestDrainLimit, SetLimitOK) {
+    Svc::DrainLimit::BufferAccumulatorTester tester;
+    tester.SetLimitOK();
+}
+
+TEST(TestDrainLimit, SetLimitInvalid) {
+    Svc::DrainLimit::BufferAccumulatorTester tester;
+    tester.SetLimitInvalid();
+}
+
+TEST(TestDrainLimit, WindowedDrain) {
+    Svc::DrainLimit::BufferAccumulatorTester tester(false);
+    tester.WindowedDrain();
+}
+
+TEST(TestDrainLimit, WindowedPartialDrain) {
+    Svc::DrainLimit::BufferAccumulatorTester tester(false);
+    tester.WindowedPartialDrain();
+}
+
+TEST(TestDrainLimit, SetLimitDuringPartialDrain) {
+    Svc::DrainLimit::BufferAccumulatorTester tester;
+    tester.SetLimitDuringPartialDrain();
+}
+
+TEST(TestDrainLimit, LowerLimitBelowOutstanding) {
+    Svc::DrainLimit::BufferAccumulatorTester tester(false);
+    tester.LowerLimitBelowOutstanding();
+}
+
+TEST(TestDrainLimit, UnexpectedReturn) {
+    Svc::DrainLimit::BufferAccumulatorTester tester;
+    tester.UnexpectedReturn();
+}
+
+TEST(TestDrainLimit, AccumulateMidFlight) {
+    Svc::DrainLimit::BufferAccumulatorTester tester(false);
+    tester.AccumulateMidFlight();
+}
+
+TEST(TestDrainLimit, StallAtLimit) {
+    Svc::DrainLimit::BufferAccumulatorTester tester;
+    tester.StallAtLimit();
 }
 
 // ----------------------------------------------------------------------
