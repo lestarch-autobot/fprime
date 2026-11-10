@@ -51,11 +51,16 @@ module DataProducts{
         cpu DataProductsConfig.CpuAffinities.dpBufferAccumulator \
     {
         phase Fpp.ToCpp.Phases.configComponents """
+            static_assert(static_cast<FwSizeType>(DataProductsConfig::QueueSizes::dpWriter) >=
+                              static_cast<FwSizeType>(DataProductsConfig::BufferAccumulator::maxNumBuffers) +
+                                  static_cast<FwSizeType>(DataProductsConfig::QueueSizes::dpWriterQueueMargin),
+                          "DataProductsConfig.QueueSizes.dpWriter must hold maxNumBuffers in-flight buffers plus dpWriterQueueMargin");
             DataProducts::dpBufferAccumulator.allocateQueue(
                 DataProductsConfig::BufferAccumulator::allocatorId,
                 DataProducts::Allocation::memAllocator,
                 DataProductsConfig::BufferAccumulator::maxNumBuffers,
-                Svc::BufferAccumulator_OpState::DRAIN
+                Svc::BufferAccumulator_OpState::DRAIN,
+                DataProductsConfig::BufferAccumulator::initialDrainLimit
             );
         """
         phase Fpp.ToCpp.Phases.tearDownComponents """
