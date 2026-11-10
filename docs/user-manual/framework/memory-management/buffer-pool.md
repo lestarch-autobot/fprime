@@ -152,7 +152,8 @@ Buffer manager will assert under the following conditions:
 8. `setup()` is called while the instance is already set up (call `cleanup()` first).
 9. A bin with a non-zero `numBuffers` has a `bufferSize` of zero.
 10. The alignment passed to `setup()` is zero or not a power of two.
-11. The allocator returns memory not aligned as requested (the requested alignment, or that of the buffer tracking structures if larger).
+11. The allocator returns memory not aligned as requested: the aggregated pool at the requested alignment (or that of the buffer tracking structures if larger); in `INDIVIDUAL_ALLOCATION` each payload at the requested alignment and the tracking structures at their own.
+12. The allocator returns no memory, or less than requested, for any allocation.
 
 **Connections**
 
@@ -180,8 +181,17 @@ ID, a buffer id, an implementation of [Fw::MemAllocator](../../../reference/api/
 allocate memory for the sub-allocations, and a
 [Svc::BufferManagerComponentImpl::BufferBins](../../../reference/api/cpp/html/struct_svc_1_1_buffer_manager_component_impl_1_1_buffer_bin.html)
 struct configuring the sub allocations. An optional fifth argument, `alignment`, is the alignment requested from the
-allocator for the pool (a non-zero power of two); it defaults to `alignof(std::max_align_t)`, the same default as
-`Fw::MemAllocator::allocate()`, and the first buffer payload starts at the allocation's address.
+allocator for the buffer payloads (a non-zero power of two); it defaults to `alignof(std::max_align_t)`, the same
+default as `Fw::MemAllocator::allocate()`. An optional sixth argument, `allocationMode`, selects how the pool is
+obtained from the allocator:
+
+- `Svc::BufferManagerComponentImpl::SINGLE_AGGREGATED_ALLOCATION` (the default): one `allocate()` call for the whole
+  pool, the buffer payloads packed in bin order followed by the tracking structures, requested at `alignment` (or the
+  tracking structures' alignment if larger); the first buffer payload starts at the allocation's address.
+- `Svc::BufferManagerComponentImpl::INDIVIDUAL_ALLOCATION`: one `allocate()` call for the tracking structures, then
+  one per buffer payload at `alignment`, so every payload has the requested alignment. Use this with allocators that
+  place, align or guard each buffer separately. All calls use the same memory identifier, and `cleanup()` releases
+  every allocation.
 
 The Svc::BufferManagerComponentImpl::BufferBins is a table specifying N buffers of M size per bin. Up to MAX_NUM_BINS
 bins can be specified. The table is copied when setup() is called, so it does not need to be retained after the call.
