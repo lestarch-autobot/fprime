@@ -23,6 +23,7 @@ FPRIME-BM-009 | `BufferManager` shall return an empty buffer and issue a warning
 FPRIME-BM-010 | `BufferManager` shall assert during setup if the bins contain no buffers, or if a non-empty bin has a buffer size of zero|A pool with no buffers is a configuration error (and allocating zero bytes has allocator-dependent results); a bin of zero-sized buffers can never serve a request|Test|
 FPRIME-BM-011 | `BufferManager` shall assert if `setup()` is called while already set up|Setting up over a live pool would leak it|Test|
 FPRIME-BM-012 | `BufferManager` shall support `setup()` after `cleanup()`: the new pool shall be released by the next `cleanup()` and the current and high-water buffer counts shall restart at zero|Re-initialization must not leak the new pool or attribute the old pool's usage to it|Test|
+FPRIME-BM-013 | `BufferManager` shall obtain the pool in the allocation mode given to `setup()`: as a single aggregated allocation, or as one allocation for the tracking structures and one allocation per buffer payload at the requested alignment, every allocation under the configured memory identifier and released by `cleanup()`|Allocators that place, align or guard each buffer separately need each buffer requested on its own|Test|
 
 ## 3 Design
 
@@ -69,8 +70,9 @@ Name | Type | Kind | Purpose
 
 `BufferManager` maintains the following state:
 
-* *m_memory*: The single allocation obtained in `setup()`: the buffer payloads followed by the tracking structures; released by `cleanup()`.
-* *m_buffers*: The tracking structures, one per buffer in the pool, inside *m_memory* after the payloads.
+* *m_allocationMode*: The `AllocationMode` given to `setup()` (`SINGLE_AGGREGATED_ALLOCATION` or `INDIVIDUAL_ALLOCATION`), which decides how the pool was obtained and so how `cleanup()` releases it.
+* *m_memory*: In `SINGLE_AGGREGATED_ALLOCATION`, the single allocation obtained in `setup()`: the buffer payloads followed by the tracking structures. In `INDIVIDUAL_ALLOCATION`, the allocation holding the tracking structures; each payload is its own allocation, recorded in its tracking structure. All released by `cleanup()`.
+* *m_buffers*: The tracking structures, one per buffer in the pool, inside *m_memory* (after the payloads when aggregated).
 * *m_currBuffs*, *m_highWater*: The number of buffers currently allocated and the most ever allocated from the current pool (`CurrBuffs`, `HiBuffs`).
 * *m_noBuffs*, *m_emptyBuffs*: The number of requests that could not return a buffer (including zero-size requests) and the number of empty buffers returned (`NoBuffs`, `EmptyBuffs`).
 
@@ -147,7 +149,8 @@ sequenceDiagram
 * `setup()` is called while the instance is already set up.
 * A bin with a non-zero `numBuffers` has a `bufferSize` of zero.
 * The alignment passed to `setup()` is zero or not a power of two.
-* The allocator returns memory not aligned as requested (the requested alignment, or that of the buffer tracking structures if larger).
+* The allocator returns memory not aligned as requested: the aggregated pool at the requested alignment (or that of the buffer tracking structures if larger); in `INDIVIDUAL_ALLOCATION` each payload at the requested alignment and the tracking structures at their own alignment.
+* The allocator returns no memory, or less than requested, for any allocation.
 
 ## 4 Configuration
 
@@ -169,9 +172,13 @@ To configure an instance of `BufferManager`, the following needs to be supplied 
 - `memID`: ID passed to the memory allocator
 - `allocator`: An `Fw::MemAllocator` instance
 - `bins`: A `BufferBins` structure defining the buffer pools (size and number). This is defined by the user, as demonstrated below.
-- `alignment` (optional): The alignment requested from the allocator for the pool, a non-zero power of two. Defaults to `alignof(std::max_align_t)`, the same default as `Fw::MemAllocator::allocate()`.
+- `alignment` (optional): The alignment requested from the allocator for the buffer payloads, a non-zero power of two. Defaults to `alignof(std::max_align_t)`, the same default as `Fw::MemAllocator::allocate()`.
+- `allocationMode` (optional): How the pool is obtained from the allocator, a `BufferManagerComponentImpl::AllocationMode`: `SINGLE_AGGREGATED_ALLOCATION` (the default) or `INDIVIDUAL_ALLOCATION`.
 
-The `setup` method configures the buffer bins, allocates memory for all buffers, and initializes the buffer tracking structures. The single allocation holds the buffer payloads first, packed in bin order, followed by the tracking structures. It is requested from the allocator at `alignment`, or at the alignment of the tracking structures if that is larger, and `setup()` asserts if the returned memory does not honor that alignment; see the allocator's documentation for the alignments it honors (`Fw::MallocAllocator`, for example, provides `malloc`'s alignment whatever is requested). The first payload starts at the allocation's address, so it has the requested alignment. Each later payload is offset by the preceding buffer sizes only, so its alignment depends on the configured buffer sizes and never on the tracking structure size.
+The `setup` method configures the buffer bins, allocates memory for all buffers, and initializes the buffer tracking structures. Every allocation is requested under `memID`, `setup()` asserts if the allocator returns no memory, less than requested, or memory not aligned as requested, and `cleanup()` releases every allocation; see the allocator's documentation for the alignments it honors (`Fw::MallocAllocator`, for example, provides `malloc`'s alignment whatever is requested). The allocation mode decides how the memory is requested:
+
+- `SINGLE_AGGREGATED_ALLOCATION`: one allocation holds the buffer payloads first, packed in bin order, followed by the tracking structures. It is requested at `alignment`, or at the alignment of the tracking structures if that is larger. The first payload starts at the allocation's address, so it has the requested alignment. Each later payload is offset by the preceding buffer sizes only, so its alignment depends on the configured buffer sizes and never on the tracking structure size.
+- `INDIVIDUAL_ALLOCATION`: one allocation holds the tracking structures, requested at their own alignment, and then each buffer payload is requested in its own allocation at `alignment`, in bin order, so every payload has the requested alignment. The tracking structures are obtained first because each payload allocation is recorded in its tracking structure as it is obtained. This mode suits allocators that place, align or guard each buffer separately; the `Fw::MemAllocator` contract allows one entity to call `allocate()` several times under the same identifier.
 
 ### 4.3 Buffer Bins Configuration
 

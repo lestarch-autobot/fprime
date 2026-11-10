@@ -42,6 +42,13 @@ namespace Svc {
 //    buffer. If an empty buffer is returned to the BufferManager instance, a warning event
 //    will be issued but no other action will be taken.
 //
+// setup() takes an AllocationMode selecting how the pool is obtained from the allocator:
+// SINGLE_AGGREGATED_ALLOCATION (the default) makes one allocate() call for the buffer payloads, packed in
+//    bin order, followed by the tracking structs; INDIVIDUAL_ALLOCATION makes one allocate() call for the
+//    tracking structs and then one per buffer payload, each at the requested alignment, for allocators that
+//    place or guard each buffer separately. Every allocation is made under the same memory identifier and
+//    released by cleanup().
+//
 // Buffer manager will assert under the following conditions:
 // 1. A returned buffer has the incorrect manager ID.
 // 2. A returned buffer has an incorrect buffer ID.
@@ -53,8 +60,10 @@ namespace Svc {
 // 8. setup() is called while the instance is already set up (call cleanup() first).
 // 9. A bin with a non-zero numBuffers has a bufferSize of zero.
 // 10. The alignment passed to setup() is zero or not a power of two.
-// 11. The allocator returns memory not aligned as requested (the requested alignment, or that of the buffer
-//     tracking structures if larger).
+// 11. The allocator returns memory not aligned as requested: the aggregated pool at the requested alignment (or
+//     that of the buffer tracking structures if larger); in INDIVIDUAL_ALLOCATION each payload at the requested
+//     alignment and the tracking structures at their own.
+// 12. The allocator returns no memory, or less than requested, for any allocation.
 //
 // cleanup() does not require every buffer to have been returned: buffers still out become invalid
 //    with the pool they came from and must not be used or returned afterwards. After cleanup(), setup()
@@ -92,6 +101,12 @@ class BufferManagerComponentImpl final : public BufferManagerComponentBase {
         BufferBin bins[BUFFERMGR_MAX_NUM_BINS];  //!< set of bins to define buffers
     };
 
+    //! How setup() obtains the pool from the allocator
+    enum AllocationMode {
+        SINGLE_AGGREGATED_ALLOCATION,  //!< One allocate(): the payloads packed in bin order, then the tracking structs
+        INDIVIDUAL_ALLOCATION  //!< One allocate() for the tracking structs, then one per payload at the alignment
+    };
+
     //! set up configuration
 
     void setup(U16 mgrID,                    //!< ID of manager for buffer checking
@@ -99,12 +114,16 @@ class BufferManagerComponentImpl final : public BufferManagerComponentBase {
                Fw::MemAllocator& allocator,  //!< memory allocator. MUST be persistent for later deallocation.
                                              //!  MUST persist past destructor if cleanup() not called explicitly.
                const BufferBins& bins,       //!< Set of user bins
-               FwSizeType alignment = alignof(std::max_align_t)  //!< Pool alignment, a non-zero power of two; the
-                                                                 //!  allocator is asked for at least this (or the
-                                                                 //!  tracking structs' alignment if larger) and the
-                                                                 //!  first buffer payload starts at the allocation.
-                                                                 //!  Default: the allocator's own default (maximum
-                                                                 //!  alignment defined by C++).
+               FwSizeType alignment = alignof(std::max_align_t),  //!< Payload alignment, a non-zero power of two.
+                                                                  //!  SINGLE_AGGREGATED_ALLOCATION: the pool is
+                                                                  //!  requested at least at this (or the tracking
+                                                                  //!  structs' alignment if larger) and the first
+                                                                  //!  payload starts at it. INDIVIDUAL_ALLOCATION:
+                                                                  //!  every payload is requested at it. Default:
+                                                                  //!  the allocator's own default (maximum
+                                                                  //!  alignment defined by C++).
+               AllocationMode allocationMode = SINGLE_AGGREGATED_ALLOCATION  //!< How the pool is obtained from
+                                                                             //!  the allocator
     );
 
     void cleanup();  // Free memory prior to end of program if desired. Otherwise,
@@ -135,6 +154,21 @@ class BufferManagerComponentImpl final : public BufferManagerComponentBase {
                          U32 context                /*!< The call order*/
     );
 
+    // ----------------------------------------------------------------------
+    // Allocation regimes, called by setup() once the bins are validated and counted
+    // ----------------------------------------------------------------------
+
+    //! Request size bytes at alignment from the allocator and assert the result (non-null, size and alignment honored)
+    void* checkedAllocate(Fw::MemAllocator& allocator, FwSizeType size, FwSizeType alignment);
+
+    //! SINGLE_AGGREGATED_ALLOCATION: one allocation holding the payloads (payloadBytes, packed in bin order) followed
+    //! by the tracking structs; sets m_memory, m_buffers and each struct's payload memory and size
+    void allocateAggregated(Fw::MemAllocator& allocator, FwSizeType alignment, FwSizeType payloadBytes);
+
+    //! INDIVIDUAL_ALLOCATION: one allocation for the tracking structs, then one per payload at alignment; sets
+    //! m_memory, m_buffers and each struct's payload memory and size
+    void allocateIndividual(Fw::MemAllocator& allocator, FwSizeType alignment);
+
     bool m_setup;    //!< flag to indicate component has been setup
     bool m_cleaned;  //!< flag to indicate memory has been cleaned up
     U16 m_mgrId;     //!< stored manager ID for buffer checking
@@ -148,11 +182,13 @@ class BufferManagerComponentImpl final : public BufferManagerComponentBase {
         bool allocated;             //!< this buffer has been allocated
     };
 
-    void* m_memory;                 //!< allocation holding the buffer payloads followed by the tracking structs
-    AllocatedBuffer* m_buffers;     //!< tracking structs, inside m_memory after the payloads
-    Fw::MemAllocator* m_allocator;  //!< allocator for memory
-    FwEnumStoreType m_memId;        //!< identifier for allocator
-    U16 m_numStructs;               //!< number of allocated structs
+    void* m_memory;                   //!< the aggregated allocation (payloads then tracking structs), or in
+                                      //!< INDIVIDUAL_ALLOCATION the tracking structs' allocation
+    AllocatedBuffer* m_buffers;       //!< tracking structs, inside m_memory (after the payloads when aggregated)
+    Fw::MemAllocator* m_allocator;    //!< allocator for memory
+    FwEnumStoreType m_memId;          //!< identifier for allocator
+    U16 m_numStructs;                 //!< number of allocated structs
+    AllocationMode m_allocationMode;  //!< how the current pool was obtained, hence how cleanup() releases it
 
     // stats
     U32 m_highWater;   //!< high watermark for allocations

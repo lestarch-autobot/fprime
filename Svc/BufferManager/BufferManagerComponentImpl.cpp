@@ -33,6 +33,7 @@ BufferManagerComponentImpl ::BufferManagerComponentImpl(const char* const compNa
       m_allocator(nullptr),
       m_memId(0),
       m_numStructs(0),
+      m_allocationMode(SINGLE_AGGREGATED_ALLOCATION),
       m_highWater(0),
       m_currBuffs(0),
       m_noBuffs(0),
@@ -54,7 +55,13 @@ void BufferManagerComponentImpl ::cleanup() {
             this->m_buffers[entry].buff.~Buffer();
         }
         this->m_cleaned = true;
-        // release memory
+        // release memory: each payload allocation (recorded in the tracking structs, so before them) when
+        // individually allocated, then the allocation holding the tracking structs (the whole pool when aggregated)
+        if (this->m_allocationMode == INDIVIDUAL_ALLOCATION) {
+            for (U16 entry = 0; entry < this->m_numStructs; entry++) {
+                this->m_allocator->deallocate(this->m_memId, this->m_buffers[entry].memory);
+            }
+        }
         this->m_allocator->deallocate(this->m_memId, this->m_memory);
         this->m_setup = false;
     }
@@ -131,11 +138,12 @@ Fw::Buffer BufferManagerComponentImpl ::bufferGetCallee_handler(const FwIndexTyp
     return Fw::Buffer();
 }
 
-void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manager ID
-                                       FwEnumStoreType memId,        //!< Memory segment identifier
-                                       Fw::MemAllocator& allocator,  //!< memory allocator
-                                       const BufferBins& bins,       //!< Set of user bins
-                                       FwSizeType alignment          //!< Alignment requested for the pool
+void BufferManagerComponentImpl::setup(U16 mgrId,                     //!< manager ID
+                                       FwEnumStoreType memId,         //!< Memory segment identifier
+                                       Fw::MemAllocator& allocator,   //!< memory allocator
+                                       const BufferBins& bins,        //!< Set of user bins
+                                       FwSizeType alignment,          //!< Alignment requested for the payloads
+                                       AllocationMode allocationMode  //!< How the pool is obtained
 ) {
     // setting up while a pool is live would leak it
     FW_ASSERT(not this->m_setup);
@@ -144,6 +152,7 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     this->m_mgrId = mgrId;
     this->m_memId = memId;
     this->m_allocator = &allocator;
+    this->m_allocationMode = allocationMode;
     this->m_cleaned = false;
     // per-pool statistics restart with the new pool; NoBuffs/EmptyBuffs count over the instance lifetime
     this->m_currBuffs = 0;
@@ -184,6 +193,46 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     // a pool with no buffers is a configuration error, and would also rely on allocate(0) behavior
     FW_ASSERT(this->m_numStructs > 0, static_cast<FwAssertArgType>(mgrId), static_cast<FwAssertArgType>(memId));
 
+    // obtain the memory in the configured regime: each sets m_memory, m_buffers and every struct's payload
+    if (allocationMode == INDIVIDUAL_ALLOCATION) {
+        this->allocateIndividual(allocator, alignment);
+    } else {
+        FW_ASSERT(allocationMode == SINGLE_AGGREGATED_ALLOCATION, static_cast<FwAssertArgType>(allocationMode));
+        this->allocateAggregated(allocator, alignment, payloadBytes);
+    }
+
+    // walk through entries and construct the Fw::Buffer over each payload
+    for (U16 currStruct = 0; currStruct < this->m_numStructs; currStruct++) {
+        // placement new for Fw::Buffer instance. We don't need the new() return value,
+        // because we know where the Fw::Buffer instance is
+        U32 context = (static_cast<U32>(this->m_mgrId) << 16) | static_cast<U32>(currStruct);
+        (void)new (&this->m_buffers[currStruct].buff)
+            Fw::Buffer(this->m_buffers[currStruct].memory, this->m_buffers[currStruct].size, context);
+        this->m_buffers[currStruct].allocated = false;
+    }
+    // indicate setup is done
+    this->m_setup = true;
+}
+
+void* BufferManagerComponentImpl ::checkedAllocate(Fw::MemAllocator& allocator, FwSizeType size, FwSizeType alignment) {
+    FwSizeType allocatedSize = size;
+    bool recoverable = false;  // don't care if it is recoverable since they are a pool of user buffers
+    void* memory = allocator.allocate(this->m_memId, allocatedSize, recoverable, alignment);
+    // make sure the memory returned was non-null and the size requested
+    FW_ASSERT(memory != nullptr && size == allocatedSize, static_cast<FwAssertArgType>(this->m_mgrId),
+              static_cast<FwAssertArgType>(this->m_memId),
+              static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
+              static_cast<FwAssertArgType>(size), static_cast<FwAssertArgType>(allocatedSize));
+    // the allocator must honor the alignment (Fw::MemAllocator contract: at least the alignment asked of it)
+    FW_ASSERT((reinterpret_cast<PlatformPointerCastType>(memory) % alignment) == 0,
+              static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
+              static_cast<FwAssertArgType>(alignment));
+    return memory;
+}
+
+void BufferManagerComponentImpl ::allocateAggregated(Fw::MemAllocator& allocator,
+                                                     FwSizeType alignment,
+                                                     FwSizeType payloadBytes) {
     // the tracking structs follow the payloads at the next boundary they can be aligned on
     const FwSizeType structAlign = static_cast<FwSizeType>(alignof(AllocatedBuffer));
     FW_ASSERT(payloadBytes <= std::numeric_limits<FwSizeType>::max() - (structAlign - 1));  // round-up safe
@@ -192,22 +241,11 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     const FwSizeType structBytes = static_cast<FwSizeType>(sizeof(AllocatedBuffer)) * this->m_numStructs;
     FW_ASSERT(structOffset <= std::numeric_limits<FwSizeType>::max() - structBytes);  // total safe
     const FwSizeType memorySize = structOffset + structBytes;
-    FwSizeType allocatedSize = memorySize;
-    bool recoverable = false;  //!< don't care if it is recoverable since they are a pool of user buffers
 
     // the pool must be aligned as requested and, since the tracking structs sit at a multiple of their own
     // alignment from the base, at least as strictly as they need
     const FwSizeType poolAlign = (alignment > structAlign) ? alignment : structAlign;
-    void* memory = allocator.allocate(memId, allocatedSize, recoverable, poolAlign);
-    // make sure the memory returns was non-zero and the size requested
-    FW_ASSERT(memory != nullptr && memorySize == allocatedSize, static_cast<FwAssertArgType>(mgrId),
-              static_cast<FwAssertArgType>(memId),
-              static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
-              static_cast<FwAssertArgType>(memorySize), static_cast<FwAssertArgType>(allocatedSize));
-    // the allocator must honor poolAlign (Fw::MemAllocator contract: at least the alignment asked of it)
-    FW_ASSERT((reinterpret_cast<PlatformPointerCastType>(memory) % poolAlign) == 0,
-              static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
-              static_cast<FwAssertArgType>(poolAlign));
+    void* memory = this->checkedAllocate(allocator, memorySize, poolAlign);
     this->m_memory = memory;
     // buffer payloads start at the beginning of memory: the first is aligned as requested and each
     // following one is offset by the preceding bin sizes only, never by the tracking structs
@@ -215,17 +253,11 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     // tracking structs follow the payloads
     this->m_buffers = reinterpret_cast<AllocatedBuffer*>(static_cast<U8*>(memory) + structOffset);
 
-    // walk through entries and initialize them
+    // walk through entries and hand each its payload
     U16 currStruct = 0;
     for (U16 bin = 0; bin < BUFFERMGR_MAX_NUM_BINS; bin++) {
         if (this->m_bufferBins.bins[bin].numBuffers) {
             for (U16 binEntry = 0; binEntry < this->m_bufferBins.bins[bin].numBuffers; binEntry++) {
-                // placement new for Fw::Buffer instance. We don't need the new() return value,
-                // because we know where the Fw::Buffer instance is
-                U32 context = (static_cast<U32>(this->m_mgrId) << 16) | static_cast<U32>(currStruct);
-                (void)new (&this->m_buffers[currStruct].buff)
-                    Fw::Buffer(bufferMem, this->m_bufferBins.bins[bin].bufferSize, context);
-                this->m_buffers[currStruct].allocated = false;
                 this->m_buffers[currStruct].memory = bufferMem;
                 this->m_buffers[currStruct].size = this->m_bufferBins.bins[bin].bufferSize;
                 bufferMem += this->m_bufferBins.bins[bin].bufferSize;
@@ -237,15 +269,40 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
     // check that the initiation pointer made it to the end of the payload space
     U8* const CURR_PTR = bufferMem;
     U8* const END_PTR = static_cast<U8*>(memory) + payloadBytes;
-    FW_ASSERT(CURR_PTR == END_PTR, static_cast<FwAssertArgType>(mgrId), static_cast<FwAssertArgType>(memId),
+    FW_ASSERT(CURR_PTR == END_PTR, static_cast<FwAssertArgType>(this->m_mgrId),
+              static_cast<FwAssertArgType>(this->m_memId),
               static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(CURR_PTR)),
               static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(END_PTR)));
     // secondary init verification
-    FW_ASSERT(currStruct == this->m_numStructs, static_cast<FwAssertArgType>(mgrId),
-              static_cast<FwAssertArgType>(memId), static_cast<FwAssertArgType>(currStruct),
+    FW_ASSERT(currStruct == this->m_numStructs, static_cast<FwAssertArgType>(this->m_mgrId),
+              static_cast<FwAssertArgType>(this->m_memId), static_cast<FwAssertArgType>(currStruct),
               static_cast<FwAssertArgType>(this->m_numStructs));
-    // indicate setup is done
-    this->m_setup = true;
+}
+
+void BufferManagerComponentImpl ::allocateIndividual(Fw::MemAllocator& allocator, FwSizeType alignment) {
+    // the tracking structs come first: each payload allocation is recorded in its struct as it is obtained
+    // (cannot wrap: m_numStructs is bounded by the U16 maximum)
+    const FwSizeType structBytes = static_cast<FwSizeType>(sizeof(AllocatedBuffer)) * this->m_numStructs;
+    this->m_memory = this->checkedAllocate(allocator, structBytes, static_cast<FwSizeType>(alignof(AllocatedBuffer)));
+    this->m_buffers = static_cast<AllocatedBuffer*>(this->m_memory);
+
+    // one allocation per payload, each at the requested alignment
+    U16 currStruct = 0;
+    for (U16 bin = 0; bin < BUFFERMGR_MAX_NUM_BINS; bin++) {
+        if (this->m_bufferBins.bins[bin].numBuffers) {
+            const FwSizeType bufferSize = this->m_bufferBins.bins[bin].bufferSize;
+            for (U16 binEntry = 0; binEntry < this->m_bufferBins.bins[bin].numBuffers; binEntry++) {
+                this->m_buffers[currStruct].memory =
+                    static_cast<U8*>(this->checkedAllocate(allocator, bufferSize, alignment));
+                this->m_buffers[currStruct].size = bufferSize;
+                currStruct++;
+            }
+        }
+    }
+    // secondary init verification
+    FW_ASSERT(currStruct == this->m_numStructs, static_cast<FwAssertArgType>(this->m_mgrId),
+              static_cast<FwAssertArgType>(this->m_memId), static_cast<FwAssertArgType>(currStruct),
+              static_cast<FwAssertArgType>(this->m_numStructs));
 }
 
 void BufferManagerComponentImpl ::schedIn_handler(const FwIndexType portNum, U32 context) {
