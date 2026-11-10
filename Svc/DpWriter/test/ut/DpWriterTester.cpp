@@ -93,15 +93,23 @@ void DpWriterTester::constructDpFileName(FwDpIdType id, const Fw::Time& timeTag,
 }
 
 void DpWriterTester::checkProcTypes(const Fw::DpContainer& container) {
+    // The header must record the requested processing types with the override applied
+    const Fw::DpCfg::ProcType::SerialType expectedProcTypes =
+        this->abstractState.applyProcOverride(this->abstractState.m_requestedProcTypes);
+    ASSERT_EQ(container.getProcTypes(), expectedProcTypes);
+    // Exactly the recorded processing ports must have been invoked
     U32 expectedNumProcTypes = 0;
-    const Fw::DpCfg::ProcType::SerialType procTypes = container.getProcTypes();
-    for (FwIndexType i = 0; i < Fw::DpCfg::ProcType::NUM_CONSTANTS; i++) {
-        if (procTypes & (1 << i)) {
+    for (FwIndexType i = 0; i < DpWriterNumProcPorts; i++) {
+        if ((expectedProcTypes & (1U << i)) != 0) {
             ++expectedNumProcTypes;
         }
     }
     ASSERT_from_procBufferSendOut_SIZE(expectedNumProcTypes);
     ASSERT_EQ(container.getProcTypes(), this->abstractState.m_procTypes);
+    // The header hash must cover the recorded processing types
+    Utils::HashBuffer storedHash;
+    Utils::HashBuffer computedHash;
+    ASSERT_EQ(Fw::Success::SUCCESS, container.checkHeaderHash(storedHash, computedHash));
 }
 
 void DpWriterTester::checkTelemetry() {
@@ -110,6 +118,8 @@ void DpWriterTester::checkTelemetry() {
     TESTER_CHECK_CHANNEL(NumSuccessfulWrites);
     TESTER_CHECK_CHANNEL(NumFailedWrites);
     TESTER_CHECK_CHANNEL(NumErrors);
+    TESTER_CHECK_CHANNEL(ProcOverrideState);
+    TESTER_CHECK_CHANNEL(ProcOverrideMask);
 }
 
 void DpWriterTester::doDispatch() {

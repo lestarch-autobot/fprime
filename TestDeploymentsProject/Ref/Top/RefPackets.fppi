@@ -209,6 +209,8 @@ telemetry packets RefPackets {
     DataProducts.dpWriter.NumSuccessfulWrites
     DataProducts.dpWriter.NumFailedWrites
     DataProducts.dpWriter.NumErrors
+    DataProducts.dpWriter.ProcOverrideState
+    DataProducts.dpWriter.ProcOverrideMask
 
     DataProducts.dpBufferAccumulator.BA_NumQueuedBuffers
 

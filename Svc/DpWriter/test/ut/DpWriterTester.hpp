@@ -151,6 +151,20 @@ class DpWriterTester : public DpWriterGTestBase {
     //! Get the OPCODE_CLEAR_EVENT_THROTTLE value
     static FwOpcodeType getOpCodeClearEventThrottle() { return DpWriterComponentBase::OPCODE_CLEAR_EVENT_THROTTLE; }
 
+    //! Get the OPCODE_SET_PROC_OVERRIDE_STATE value
+    static FwOpcodeType getOpCodeSetProcOverrideState() {
+        return DpWriterComponentBase::OPCODE_SET_PROC_OVERRIDE_STATE;
+    }
+
+    //! Get the OPCODE_ADD_PROC_OVERRIDE value
+    static FwOpcodeType getOpCodeAddProcOverride() { return DpWriterComponentBase::OPCODE_ADD_PROC_OVERRIDE; }
+
+    //! Get the OPCODE_REMOVE_PROC_OVERRIDE value
+    static FwOpcodeType getOpCodeRemoveProcOverride() { return DpWriterComponentBase::OPCODE_REMOVE_PROC_OVERRIDE; }
+
+    //! Get the OPCODE_SET_PROC_OVERRIDE_MASK value
+    static FwOpcodeType getOpCodeSetProcOverrideMask() { return DpWriterComponentBase::OPCODE_SET_PROC_OVERRIDE_MASK; }
+
     //! Get the m_BufferTooSmallForDataThrottle value
     FwIndexType getBufferTooSmallForDataThrottleCount();
 

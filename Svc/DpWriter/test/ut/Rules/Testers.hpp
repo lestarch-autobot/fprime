@@ -16,6 +16,7 @@
 #include "Svc/DpWriter/test/ut/Rules/CLEAR_EVENT_THROTTLE.hpp"
 #include "Svc/DpWriter/test/ut/Rules/FileOpenStatus.hpp"
 #include "Svc/DpWriter/test/ut/Rules/FileWriteStatus.hpp"
+#include "Svc/DpWriter/test/ut/Rules/ProcOverride.hpp"
 #include "Svc/DpWriter/test/ut/Rules/SchedIn.hpp"
 
 namespace Svc {

@@ -40,6 +40,11 @@ class TestState : public DpWriterTester {
     TEST_STATE_DEF_RULE(FileOpenStatus, OK)
     TEST_STATE_DEF_RULE(FileWriteStatus, Error)
     TEST_STATE_DEF_RULE(FileWriteStatus, OK)
+    TEST_STATE_DEF_RULE(ProcOverride, State)
+    TEST_STATE_DEF_RULE(ProcOverride, MaskOK)
+    TEST_STATE_DEF_RULE(ProcOverride, MaskInvalid)
+    TEST_STATE_DEF_RULE(ProcOverride, Add)
+    TEST_STATE_DEF_RULE(ProcOverride, Remove)
     TEST_STATE_DEF_RULE(SchedIn, OK)
 
   public:
@@ -52,6 +57,35 @@ class TestState : public DpWriterTester {
 
     //! Test that all fused routing ports preserve the input port index
     void testRoutingPorts();
+
+  public:
+    // ----------------------------------------------------------------------
+    // Test steering
+    // ----------------------------------------------------------------------
+
+    //! Check the response and ProcOverrideMaskSet event of an accepted mask command, then update the model
+    void checkProcOverrideMaskAccepted(FwOpcodeType opCode,                       //!< The expected opcode
+                                       U32 cmdSeq,                                //!< The command sequence number
+                                       Fw::DpCfg::ProcType::SerialType procTypes  //!< The expected new mask
+    );
+
+    //! Steer the next ProcOverride::State rule to request a specific state
+    void setNextProcOverrideState(Fw::Enabled::T state  //!< The override state to request
+    ) {
+        this->abstractState.m_nextProcOverrideStateOpt = state;
+    }
+
+    //! Steer the next ProcOverride::MaskOK or MaskInvalid rule to request a specific mask
+    void setNextProcOverrideMask(Fw::DpCfg::ProcType::SerialType procTypes  //!< The override mask to request
+    ) {
+        this->abstractState.m_nextProcOverrideMaskOpt = procTypes;
+    }
+
+    //! Steer the next ProcOverride::Add or Remove rule to request a specific processing type
+    void setNextProcType(Fw::DpCfg::ProcType::T procType  //!< The processing type to request
+    ) {
+        this->abstractState.m_nextProcTypeOpt = procType;
+    }
 };
 
 }  // namespace Svc

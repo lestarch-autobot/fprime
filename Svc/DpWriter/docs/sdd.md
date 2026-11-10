@@ -16,7 +16,7 @@ before reaching `DpWriter`.
 
 1. For each buffer _B_ received in step 1:
 
-   1. Perform any requested processing, such as data compression, on _B_.
+   1. Perform any selected processing, such as data compression, on _B_.
 
    1. Write _B_ to disk.
 
@@ -31,12 +31,15 @@ Requirement | Description | Rationale | Verification Method
 ----------- | ----------- | ----------| -------------------
 SVC-DPWRITER-001 | `Svc::DpWriter` shall provide an array of ports for receiving `Fw::Buffer` objects pointing to filled data product containers. | The purpose of `DpWriter` is to write the data products to disk. The array permits the fusion of multiple logical writer components with separate routing paths into a single component. This fusion increases resource efficiency (it requires fewer component instances and threads), but it restricts concurrency by forcing sequential execution of all routing paths on the same thread. The component allows developers to manage this tradeoff. | Unit Test
 SVC-DPWRITER-002 | `Svc::DpWriter` shall provide an array of ports for sending `Fw::Buffer` objects for processing. | This requirement supports downstream processing of the data in the buffer. | Unit Test
-SVC-DPWRITER-003 | On receiving a data product container _C_, `Svc::DpWriter` shall use the processing type field of the header of _C_ to select zero or more processing ports to invoke, in port order. | The processing type field is a bit mask. A one in bit `2^n` in the bit mask selects port index `n`. | Unit Test
-SVC-DPWRITER-004 | On receiving an `Fw::Buffer` _B_, and after performing any requested processing on _B_, `Svc::DpWriter` shall write _B_ to disk. | The purpose of `DpWriter` is to write data products to the disk. | Unit Test
+SVC-DPWRITER-003 | On receiving a data product container _C_, `Svc::DpWriter` shall use the processing type field of the header of _C_, as modified by the processing override (SVC-DPWRITER-009), to select zero or more processing ports to invoke, in port order. | The processing type field is a bit mask. A one in bit `2^n` in the bit mask selects port index `n`. | Unit Test
+SVC-DPWRITER-004 | On receiving an `Fw::Buffer` _B_, and after performing any selected processing on _B_, `Svc::DpWriter` shall write _B_ to disk. | The purpose of `DpWriter` is to write data products to the disk. | Unit Test
 SVC-DPWRITER-005 | `Svc::DpWriter` shall provide an array of ports for notifying other components that data products have been written. A notification shall use the same routing port index as the corresponding input buffer. | The notification output allows `Svc::DpCatalog` or a similar component to update a data product catalog in real time. It is possible to notify a single instance of `Svc::DpCatalog` of all outputs, by connecting all the output ports of `Svc::DpWriter` to that component. It is also possible to notify different components via the different output ports. The array preserves symmetry across the port behaviors of this component (input, buffer return, and notification). | Unit Test
 SVC-DPWRITER-006 | `Svc::DpWriter` shall provide telemetry that reports the number of buffers received, the number of data products written, the number of bytes written, the number of failed writes, and the number of errors. | This requirement establishes the telemetry interface for the component. | Unit test
-SVC-DPWRITER-007 | On receiving an `Fw::Buffer` _B_, and after performing any requested processing on _B_, `Svc::DpWriter` shall re-parse the container header and shrink the size of the product. | Allows processing interfaces to compress data products and communicate that compressed state back to `Svc::DpWriter`. | Unit Test
+SVC-DPWRITER-007 | On receiving an `Fw::Buffer` _B_, and after performing any selected processing on _B_, `Svc::DpWriter` shall re-parse the container header and shrink the size of the product. | Allows processing interfaces to compress data products and communicate that compressed state back to `Svc::DpWriter`. | Unit Test
 SVC-DPWRITER-008 | `Svc::DpWriter` shall return each valid received buffer on the `deallocBufferSendOut` port whose index matches the `bufferSendIn` port that received it. | Matching send and return paths allows a `DpWriter` instance to route buffers back toward the correct allocator. | Unit Test
+SVC-DPWRITER-009 | `Svc::DpWriter` shall provide commands that enable or disable a processing override and that set its bit mask of processing types, by adding one `Fw::DpCfg::ProcType` value, removing one, or setting the mask directly. While the override is `ENABLED`, the processing types in the mask, and only those, shall be selected for every received container in place of the types requested in its header. While it is `DISABLED`, the processing types requested in the header of each container shall be selected. | Processing such as compression is safe to apply to any data product, and operators need to turn it on or off for a whole deployment without every producing component supporting a per-container setting. The state says whether the override is in effect; the mask says which processing is selected while it is, so a set bit forces a type on and a clear bit forces it off. Add/remove commands edit one named type at a time for routine operations; the raw mask command sets the whole mask in one step. | Unit Test
+SVC-DPWRITER-010 | `Svc::DpWriter` shall reject, with a validation error and a warning event, a processing override mask that selects a processing type with no configured processing port, leaving the mask unchanged. | A bit above the configured number of processing ports can never select a port, so the command is a ground error. Whether a configured port is connected is a topology property and is not checked here (see [nasa/fprime#6346](https://github.com/nasa/fprime/issues/6346)). | Unit Test
+SVC-DPWRITER-011 | `Svc::DpWriter` shall record in the header of each written data product the effective processing types (the override mask while the override is `ENABLED`, otherwise the processing types requested in the header, unchanged) and shall report the current processing override state and mask in telemetry. | The data product file records which processing ports the product was sent to, and operators can confirm the override in effect. A processor that declines to process (for example `Svc::DpCompressProc` with `ENABLE = DISABLED`) leaves its bit set. | Unit Test
 
 ## 3. Design
 
@@ -76,8 +79,14 @@ The `bufferSendIn`, `dpWrittenOut`, and `deallocBufferSendOut` arrays form match
 | `m_numSuccessfulWrites` | `U32` | The number of successful writes |
 | `m_numFailedWrites` | `U32` | The number of failed writes |
 | `m_numErrors` | `U32` | The number of errors |
+| `m_procOverrideState` | `Fw::Enabled` | `ENABLED` replaces the header processing types of every container with `m_procOverrideMask`; `DISABLED` leaves them as requested. Initially `DISABLED`. |
+| `m_procOverrideMask` | `Fw::DpCfg::ProcType::SerialType` | The processing types selected while the override is `ENABLED`. Initially zero. |
 
 The component also retains its configured file-name prefix in `m_dpFileNamePrefix`.
+
+The override state is read and written only on the component thread (the
+four override commands and `bufferSendIn` are all asynchronous), so no lock is
+needed.
 
 ### 3.4. Compile-Time Setup
 
@@ -85,15 +94,24 @@ The component also retains its configured file-name prefix in `m_dpFileNamePrefi
    specifies the number of matched input, notification, and buffer-return routing paths.
    Its default value is five, matching the default `DpManagerNumPorts` configuration.
    Projects can override this value to fit their topology. All routing paths share one
-   message queue with `schedIn` and the asynchronous `CLEAR_EVENT_THROTTLE` command.
+   message queue with `schedIn` and the asynchronous `CLEAR_EVENT_THROTTLE` and
+   processing override commands.
    Size the queue for the sum of the maximum queued buffers across all connected paths,
-   plus the maximum pending scheduler ticks and commands. If at most one tick and one
-   command can be pending, reserve at least two additional slots; deployments permitting
-   larger bursts must reserve more. A full queue asserts.
+   plus the maximum pending scheduler ticks and commands. Reserve one slot per command that
+   may be queued back-to-back: configuring the override normally enqueues at least two
+   (`SET_PROC_OVERRIDE_MASK` or `ADD_PROC_OVERRIDE`/`REMOVE_PROC_OVERRIDE`, then
+   `SET_PROC_OVERRIDE_STATE`), so reserve at least one tick plus two command slots;
+   deployments permitting larger bursts must reserve more. A full queue asserts.
 
 1. The configuration constant [`DpWriterNumProcPorts`](../../../default/config/AcConstants.fpp)
    specifies the number of ports for connecting components that perform
-   processing.
+   processing. It must not exceed the bit width of `Fw::DpCfg::ProcType`, nor 8
+   (the `U8` mask carried by `SET_PROC_OVERRIDE_MASK`, the override events,
+   and `ProcOverrideMask`); a static assertion fails the build otherwise.
+   `ADD_PROC_OVERRIDE` and `REMOVE_PROC_OVERRIDE` can select only the bits that
+   have a named value in [`Fw.DpCfg.ProcType`](../../../default/config/DpCfg.fpp)
+   (three by default); a port whose bit has no enum value is reachable only
+   through `SET_PROC_OVERRIDE_MASK` unless the project extends the enum.
 
 1. The configuration [`DP_FILENAME_FORMAT`](../../../default/config/DpCfg.hpp)
    specifies the file name format.
@@ -139,16 +157,26 @@ It does the following:
 1. If the previous steps succeeded, then
 
    1. Read the `ProcType` field out of the container header stored in the
-      memory pointed to by `B`. Let the resulting bit mask be `M`.
+      memory pointed to by `B`. Let the resulting bit mask be `R`.
+
+   1. Apply the processing override to `R` to obtain the effective bit
+      mask `M`: if `m_procOverrideState` is `ENABLED`, `M` is
+      `m_procOverrideMask`; otherwise `M` is `R`.
 
    1. Visit the port numbers of `procBufferSendOut` in order.
       For each port number `P`, if `P` is set in `M`, then invoke
       `procBufferSendOut` at port number `P`, passing in `B`.
       This step updates the memory pointed to by `B` in place.
 
-   1. Re-parse the container header pointed to by `B`. If necessary,
-      shrink the size of the `B` buffer to be consistent with the data
-      size in the updated container header.
+   1. If any port was invoked, re-parse the container header pointed to
+      by `B`.
+
+   1. If any port was invoked or `M` differs from `R`, then: if `M`
+      differs from `R`, record `M` (the effective processing types) in the
+      `ProcType` field of the container header;
+      recompute the header hash; serialize the header into `B`; and if
+      necessary shrink the size of the `B` buffer to be consistent with the
+      data size in the updated container header.
 
    1. Write `B` to a file, using the format described in the [**File
       Format**](#file_format) section. For the time stamp, use the time
@@ -158,6 +186,72 @@ It does the following:
    file name, priority, and file size out on `dpWrittenOut[N]`.
 
 1. If `B` is valid, then send `B` on `deallocBufferSendOut[N]`.
+
+### 3.7. Command Handlers
+
+#### 3.7.1. CLEAR_EVENT_THROTTLE
+
+This handler clears the throttling of all throttled events and returns a
+command response of `OK`.
+
+#### 3.7.2. SET_PROC_OVERRIDE_STATE
+
+This handler receives a state `S` (`ENABLED` or `DISABLED`). It stores `S` in
+`m_procOverrideState`, emits the `ProcOverrideStateSet` event with the state and
+the current mask, and returns a command response of `OK`. The new state
+applies to every container received afterwards.
+
+#### 3.7.3. ADD_PROC_OVERRIDE
+
+This handler receives a processing type `T` (an `Fw.DpCfg.ProcType` value).
+It computes `M` = `m_procOverrideMask` with the bits of `T` set and applies
+the mask update described in [Section 3.7.6](#mask_update). `PROC_TYPE_NONE`
+has no bits, so adding or removing it leaves the mask unchanged and is
+reported as `OK`; use `SET_PROC_OVERRIDE_MASK` with `0x00` to clear the mask.
+
+#### 3.7.4. REMOVE_PROC_OVERRIDE
+
+This handler receives a processing type `T`. It computes `M` =
+`m_procOverrideMask` with the bits of `T` cleared and applies the mask update
+described in [Section 3.7.6](#mask_update).
+
+#### 3.7.5. SET_PROC_OVERRIDE_MASK
+
+This handler receives a processing type bit mask `M` and applies the mask
+update described in [Section 3.7.6](#mask_update).
+
+<a name="mask_update"></a>
+#### 3.7.6. Mask Update
+
+Given a requested mask `M`:
+
+1. Compute the configured bit mask `A`: bit `P` is set in `A` for each port
+   number `P` of `procBufferSendOut`. Bits at or above the number of
+   processing ports are never set in `A`. Whether a port is connected is not
+   checked.
+
+1. If `M` has any bit set that is not set in `A`, emit the
+   `ProcOverrideInvalid` warning event and return a command response of
+   `VALIDATION_ERROR`, leaving the mask unchanged.
+
+1. Otherwise store `M` in `m_procOverrideMask`, emit the `ProcOverrideMaskSet`
+   event with the current state and `M`, and return a command response of
+   `OK`. The new mask applies to every container received afterwards.
+
+While the state is `ENABLED`, the mask replaces the processing types requested
+in the header of every container: a set bit forces that processing type on and
+a clear bit forces it off, so `ENABLED` with a mask of `0x00` shuts all
+processing off. `DISABLED` restores header-controlled processing; the mask is
+retained and reported in telemetry but not applied, so it can be edited before
+the override is enabled. The override is held in volatile component state: it
+is `DISABLED`/`0x00` at startup and must be commanded again after a reset.
+While `ENABLED`, every received container is routed through the selected
+processing ports on the `DpWriter` thread before it is written, which lowers
+the write throughput for all producers; a processor that declines to process
+(for example `Svc::DpCompressProc` with `ENABLE = DISABLED`) leaves the
+forced bit set in the header of an unprocessed product. Selecting a processing
+type whose port is configured but not connected in the topology is not
+rejected (see [nasa/fprime#6346](https://github.com/nasa/fprime/issues/6346)).
 
 <a name="file_format"></a>
 ## 4. File Format
@@ -193,6 +287,10 @@ Typically it is a directory path prefix.
 | Kind | Name | Description |
 |------|------|-------------|
 | `async` | `CLEAR_EVENT_THROTTLE` | Clear event throttling |
+| `async` | `SET_PROC_OVERRIDE_STATE` | Enable or disable the processing override: while `ENABLED`, the override mask replaces the processing types requested in each container header; `DISABLED` restores header-controlled processing |
+| `async` | `ADD_PROC_OVERRIDE` | Add an `Fw.DpCfg.ProcType` value to the processing override mask |
+| `async` | `REMOVE_PROC_OVERRIDE` | Remove an `Fw.DpCfg.ProcType` value from the processing override mask |
+| `async` | `SET_PROC_OVERRIDE_MASK` | Set the processing override mask (`U8`, bits of `Fw.DpCfg.ProcType`) directly |
 
 ### 5.2. Telemetry
 
@@ -203,6 +301,8 @@ Typically it is a directory path prefix.
 | `NumSuccessfulWrites` | `U32` | The number of successful writes |
 | `NumFailedWrites` | `U32` | The number of failed writes |
 | `NumErrors` | `U32` | The number of errors |
+| `ProcOverrideState` | `Fw.Enabled` | The processing override state: `ENABLED` replaces the header processing types with `ProcOverrideMask` |
+| `ProcOverrideMask` | `U8` | The bit mask of processing types selected for every container while the override is `ENABLED` |
 
 ### 5.3. Events
 
@@ -217,6 +317,9 @@ Typically it is a directory path prefix.
 | `FileOpenError` | `warning high` | An error occurred when opening a file |
 | `FileWriteError` | `warning high` | An error occurred when writing to a file |
 | `FileWritten` | `activity low` | A data product file was written |
+| `ProcOverrideStateSet` | `activity high` | The processing override state was set (reports the state and the current mask) |
+| `ProcOverrideMaskSet` | `activity high` | The processing override mask was set (reports the current state and the new mask) |
+| `ProcOverrideInvalid` | `warning low` | A processing override mask was rejected because it selected a processing type with no configured processing port |
 
 ## 6. Example Uses
 

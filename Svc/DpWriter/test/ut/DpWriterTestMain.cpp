@@ -128,6 +128,85 @@ TEST(FileWriteStatus, OK) {
     tester.OK();
 }
 
+TEST(ProcOverride, State) {
+    COMMENT("Set the override state and verify the response, event, and update-on-change telemetry.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    REQUIREMENT("SVC-DPWRITER-011");
+    ProcOverride::Tester tester;
+    tester.State();
+}
+
+TEST(ProcOverride, MaskOK) {
+    COMMENT("Set a valid override mask and verify the response, event, and telemetry.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    REQUIREMENT("SVC-DPWRITER-011");
+    ProcOverride::Tester tester;
+    tester.MaskOK();
+}
+
+TEST(ProcOverride, MaskInvalid) {
+    COMMENT("Reject a mask that selects a processing type with no processing port.");
+    REQUIREMENT("SVC-DPWRITER-010");
+    ProcOverride::Tester tester;
+    tester.MaskInvalid();
+}
+
+TEST(ProcOverride, MaskInvalidKeepsMask) {
+    COMMENT("Reject a mask while an override is ENABLED and verify the override stays in force.");
+    REQUIREMENT("SVC-DPWRITER-010");
+    ProcOverride::Tester tester;
+    tester.MaskInvalidKeepsMask();
+}
+
+TEST(ProcOverride, Add) {
+    COMMENT("Add a processing type to the mask; adding it again changes nothing.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    ProcOverride::Tester tester;
+    tester.Add();
+}
+
+TEST(ProcOverride, Remove) {
+    COMMENT("Remove a processing type from the mask; removing an absent type changes nothing.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    ProcOverride::Tester tester;
+    tester.Remove();
+}
+
+TEST(ProcOverride, ForceOn) {
+    COMMENT("Enable an override selecting every processing port and verify each is invoked and recorded.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    ProcOverride::Tester tester;
+    tester.ForceOn();
+}
+
+TEST(ProcOverride, ForceOff) {
+    COMMENT("Enable an empty override and verify no processing port is invoked and the header is cleared.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    ProcOverride::Tester tester;
+    tester.ForceOff();
+}
+
+TEST(ProcOverride, Clear) {
+    COMMENT("Disable the override and verify header-controlled processing resumes regardless of the mask.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    ProcOverride::Tester tester;
+    tester.Clear();
+}
+
+TEST(ProcOverride, AddThenEnable) {
+    COMMENT("Edit the mask while DISABLED (not applied), then enable it and verify it is applied.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    ProcOverride::Tester tester;
+    tester.AddThenEnable();
+}
+
+TEST(SchedIn, OK) {
+    COMMENT("Invoke schedIn with nominal input.");
+    REQUIREMENT("SVC-DPMANAGER-006");
+    SchedIn::Tester tester;
+    tester.OK();
+}
+
 TEST(Scenarios, Random) {
     COMMENT("Random scenario with all rules.");
     REQUIREMENT("SVC-DPMANAGER-001");
@@ -139,13 +218,6 @@ TEST(Scenarios, Random) {
     const FwSizeType numSteps = 10000;
     Scenarios::Random::Tester tester;
     tester.run(numSteps);
-}
-
-TEST(SchedIn, OK) {
-    COMMENT("Invoke schedIn with nominal input.");
-    REQUIREMENT("SVC-DPMANAGER-006");
-    SchedIn::Tester tester;
-    tester.OK();
 }
 
 }  // namespace Svc

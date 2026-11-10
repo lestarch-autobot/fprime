@@ -46,7 +46,7 @@ The Data Product Catalog manages the inventory and downlink of stored data produ
 
 - Data product directories are project-specific and configured at deployment time.
 - Container IDs, priorities, and record definitions are specified in FPP models.
-- Processing types (e.g., compression) are configurable via a bit mask in the container header.
+- Processing types (e.g., compression) are configurable via a bit mask in the container header, and the Data Product Writer's processing override commands (`SET_PROC_OVERRIDE_STATE`, `ADD_PROC_OVERRIDE`, `REMOVE_PROC_OVERRIDE`, `SET_PROC_OVERRIDE_MASK`) can force processing types on or off for every product it writes.
 - User-configurable header data provides a fixed-size area for mission-specific metadata.
 
 ### Off Nominal

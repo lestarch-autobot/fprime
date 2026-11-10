@@ -20,6 +20,7 @@
 #include "STest/Pick/Pick.hpp"
 #include "Svc/DpWriter/DpWriter.hpp"
 #include "TestUtils/OnChangeChannel.hpp"
+#include "config/FppConstantsAc.hpp"
 
 namespace Svc {
 
@@ -51,7 +52,15 @@ class AbstractState {
           m_NumFailedWrites(0),
           m_NumSuccessfulWrites(0),
           m_NumErrors(0),
+          m_ProcOverrideState(Fw::Enabled::DISABLED),
+          m_ProcOverrideMask(0),
           m_procTypes(0),
+          m_requestedProcTypes(0),
+          m_modelProcOverrideState(Fw::Enabled::DISABLED),
+          m_modelProcOverrideMask(0),
+          m_nextProcOverrideStateOpt(),
+          m_nextProcOverrideMaskOpt(),
+          m_nextProcTypeOpt(),
           m_procShrinkDataSizeOpt(),
           m_dpWrittenOutPortNumOpt(),
           m_deallocBufferSendOutPortNumOpt() {}
@@ -78,6 +87,23 @@ class AbstractState {
     //! Get a data product buffer backed by bufferData
     //! \return The buffer
     Fw::Buffer getDpBufferWithProc(Fw::DpCfg::ProcType::SerialType procTypes);
+
+    //! Get the bit mask selecting every processing port
+    //! \return The bit mask
+    static Fw::DpCfg::ProcType::SerialType getAllProcMask();
+
+    //! Whether some bit of the U8 mask has no processing port
+    static bool hasUnconfiguredProcBit();
+
+    //! Get the mask with the low numBits bits set
+    static Fw::DpCfg::ProcType::SerialType getLowBitsMask(FwIndexType numBits  //!< The number of bits
+    );
+
+    //! Apply the modeled processing override to requested processing types
+    //! \return The processing types expected to be performed
+    Fw::DpCfg::ProcType::SerialType applyProcOverride(
+        Fw::DpCfg::ProcType::SerialType procTypes  //!< The requested processing types
+    ) const;
 
   private:
     // ----------------------------------------------------------------------
@@ -134,8 +160,32 @@ class AbstractState {
     //! Data for write results
     U8 m_writeResultData[MAX_BUFFER_SIZE] = {};
 
+    //! The processing override state channel
+    TestUtils::OnChangeChannel<Fw::Enabled::T> m_ProcOverrideState;
+
+    //! The processing override mask channel
+    TestUtils::OnChangeChannel<U8> m_ProcOverrideMask;
+
     //! Bit mask for processing out port calls
     Fw::DpCfg::ProcType::SerialType m_procTypes;
+
+    //! The processing types requested in the header of the last generated buffer
+    Fw::DpCfg::ProcType::SerialType m_requestedProcTypes;
+
+    //! The modeled processing override state
+    Fw::Enabled m_modelProcOverrideState;
+
+    //! The modeled processing override mask
+    Fw::DpCfg::ProcType::SerialType m_modelProcOverrideMask;
+
+    //! The state to request in the next ProcOverride::State rule, if any
+    Fw::Optional<Fw::Enabled::T> m_nextProcOverrideStateOpt;
+
+    //! The mask to request in the next ProcOverride::MaskOK or MaskInvalid rule, if any
+    Fw::Optional<Fw::DpCfg::ProcType::SerialType> m_nextProcOverrideMaskOpt;
+
+    //! The processing type to request in the next ProcOverride::Add or Remove rule, if any
+    Fw::Optional<Fw::DpCfg::ProcType::T> m_nextProcTypeOpt;
 
     Fw::Optional<FwSizeType> m_procShrinkDataSizeOpt;
 

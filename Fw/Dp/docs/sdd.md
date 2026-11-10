@@ -68,7 +68,7 @@ The data product header has the following format.
 |`Id`|`FwDpIdType`|`sizeof(FwDpIdType)`|The container ID. This is a system-global ID (component-local ID + component base ID)|
 |`Priority`|`FwDpPriorityType`|`sizeof(FwDpPriorityType)`|The container priority|
 |`TimeTag`|`Fw::Time`|`Fw::Time::SERIALIZED_SIZE`|The time tag associated with the container|
-|`ProcTypes`|`Fw::DpCfg::ProcType::SerialType`|`sizeof(Fw::DpCfg::ProcType::SerialType)`|The processing types, represented as a bit mask|
+|`ProcTypes`|`Fw::DpCfg::ProcType::SerialType`|`sizeof(Fw::DpCfg::ProcType::SerialType)`|The processing types, represented as a bit mask. The producer sets the requested types; `Svc::DpWriter` rewrites the field with its override mask when its processing override changes them|
 |`UserData`|`Header::UserData`|`DpCfg::CONTAINER_USER_DATA_SIZE`|User-configurable data|
 |`DpState`|`DpState`|`DpState::SERIALIZED_SIZE`|The data product state
 |`DataSize`|`FwSizeType`|`sizeof(FwSizeStoreType)`|The size of the data payload in bytes|

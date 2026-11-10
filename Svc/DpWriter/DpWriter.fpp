@@ -61,6 +61,26 @@ module Svc {
     @ Clear event throttling
     async command CLEAR_EVENT_THROTTLE
 
+    @ Enable or disable the processing override applied to every data product container
+    async command SET_PROC_OVERRIDE_STATE(
+                    $state: Fw.Enabled @< ENABLED replaces the header processing types with the override mask; DISABLED restores header-controlled processing
+                  )
+
+    @ Add a processing type to the processing override mask
+    async command ADD_PROC_OVERRIDE(
+                    procType: Fw.DpCfg.ProcType @< The processing type to add
+                  )
+
+    @ Remove a processing type from the processing override mask
+    async command REMOVE_PROC_OVERRIDE(
+                    procType: Fw.DpCfg.ProcType @< The processing type to remove
+                  )
+
+    @ Set the processing override mask directly
+    async command SET_PROC_OVERRIDE_MASK(
+                    procTypes: U8 @< Bit mask of Fw.DpCfg.ProcType values selected for every container while the override is ENABLED
+                  )
+
     # ----------------------------------------------------------------------
     # Events
     # ----------------------------------------------------------------------
@@ -136,6 +156,30 @@ module Svc {
       format "Error {} while writing {} of {} bytes to {}" \
       throttle 10
 
+    @ The processing override state was set
+    event ProcOverrideStateSet(
+                                $state: Fw.Enabled @< ENABLED replaces the header processing types with the mask; DISABLED restores header-controlled processing
+                                procTypes: U8 @< The bit mask of processing types selected while ENABLED
+                              ) \
+      severity activity high \
+      format "Processing override state set: {} processing types {x}"
+
+    @ The processing override mask was set
+    event ProcOverrideMaskSet(
+                               $state: Fw.Enabled @< The override state the mask applies under
+                               procTypes: U8 @< The new bit mask of processing types selected while ENABLED
+                             ) \
+      severity activity high \
+      format "Processing override mask set: {} processing types {x}"
+
+    @ A processing override mask was rejected
+    event ProcOverrideInvalid(
+                               procTypes: U8 @< The requested bit mask of processing types
+                               allowed: U8 @< The bit mask of processing types that have a processing port
+                             ) \
+      severity warning low \
+      format "Processing override rejected: processing types {x} exceed configured {x}"
+
     @ File written
     event FileWritten(
                        bytes: U32 @< The number of bytes written
@@ -162,6 +206,12 @@ module Svc {
 
     @ The number of errors
     telemetry NumErrors: U32 update on change
+
+    @ The processing override state: ENABLED replaces the header processing types with ProcOverrideMask
+    telemetry ProcOverrideState: Fw.Enabled update on change
+
+    @ The bit mask of processing types selected for every container while the override is ENABLED
+    telemetry ProcOverrideMask: U8 update on change
 
   }
 

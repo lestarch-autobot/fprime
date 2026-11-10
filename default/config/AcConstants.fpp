@@ -48,7 +48,7 @@ constant DpManagerNumPorts = 5
 @ Size of data product routing port arrays for DpWriter
 constant DpWriterNumPorts = 5
 
-@ Size of processing port array for DpWriter
+@ Size of processing port array for DpWriter (at most 8, and at most the bit width of Fw.DpCfg.ProcType)
 constant DpWriterNumProcPorts = 5
 
 @ The size of a file name string

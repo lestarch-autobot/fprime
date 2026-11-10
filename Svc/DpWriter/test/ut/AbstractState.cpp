@@ -58,6 +58,7 @@ Fw::Buffer AbstractState::getDpBufferWithProc(Fw::DpCfg::ProcType::SerialType pr
     container.setTimeTag(Fw::Time(seconds, microseconds));
     // Update the processing types
     container.setProcTypes(procTypes);
+    this->m_requestedProcTypes = procTypes;
     // Update the data size
     container.setDataSize(dataSize);
     // Serialize the header and update the header hash
@@ -72,6 +73,26 @@ Fw::Buffer AbstractState::getDpBufferWithProc(Fw::DpCfg::ProcType::SerialType pr
     }
     // Return the buffer
     return buffer;
+}
+
+Fw::DpCfg::ProcType::SerialType AbstractState::getLowBitsMask(FwIndexType numBits) {
+    Fw::DpCfg::ProcType::SerialType mask = 0;
+    for (FwIndexType i = 0; i < numBits; i++) {
+        mask = static_cast<Fw::DpCfg::ProcType::SerialType>(mask | (1U << i));
+    }
+    return mask;
+}
+
+bool AbstractState::hasUnconfiguredProcBit() {
+    return static_cast<U8>(~getAllProcMask()) != 0;
+}
+
+Fw::DpCfg::ProcType::SerialType AbstractState::getAllProcMask() {
+    return getLowBitsMask(DpWriterNumProcPorts);
+}
+
+Fw::DpCfg::ProcType::SerialType AbstractState::applyProcOverride(Fw::DpCfg::ProcType::SerialType procTypes) const {
+    return (this->m_modelProcOverrideState == Fw::Enabled::ENABLED) ? this->m_modelProcOverrideMask : procTypes;
 }
 
 }  // namespace Svc

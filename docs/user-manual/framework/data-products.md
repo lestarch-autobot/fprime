@@ -477,5 +477,28 @@ For on-board lossless compression of data products, see
 [`Svc::DpCompressProc`](../../../Svc/DpCompressProc/docs/sdd.md) and
 [`Svc::DpZLibCompressor`](../../../Svc/DpZLibCompressor/docs/sdd.md).
 
+**Overriding processing from the ground:**
+`Svc::DpWriter` provides a processing override: a state and a bit mask of processing
+types. `SET_PROC_OVERRIDE_STATE` enables or disables it; `ADD_PROC_OVERRIDE` and
+`REMOVE_PROC_OVERRIDE` edit one `Fw.DpCfg.ProcType` value in the mask, and
+`SET_PROC_OVERRIDE_MASK` sets the raw mask. While the override is `ENABLED`, the mask
+replaces the processing types requested in each container header for every data product
+it writes: a set bit forces that processing on, a clear bit forces it off, and a zero mask
+shuts all processing off. `DISABLED` restores header-controlled processing (the mask is
+kept, so it can be edited before enabling). This lets an operator turn on compression for
+a whole deployment, or shut processing off, without every producing component supporting
+a per-container setting. A mask selecting a processing type with no configured processing
+port is rejected with a `ProcOverrideInvalid` warning; whether a configured port is
+connected is not checked (see [nasa/fprime#6346](https://github.com/nasa/fprime/issues/6346)).
+`DpWriter` records the mask it applied in the `ProcTypes`
+field of the written container header, so ground tools show the override mask rather
+than the types the producer requested. The override is
+volatile (it is cleared by a reset) and forced processing runs on the `DpWriter`
+thread for every product, so it lowers write throughput for all producers. Because the
+mask is `0x00` after every reset, send the mask command(s) before
+`SET_PROC_OVERRIDE_STATE ENABLED`; enabling alone re-applies an empty mask and shuts all
+processing off for every product until the mask is re-sent. See the
+[`Svc::DpWriter` SDD](../../../Svc/DpWriter/docs/sdd.md).
+
 **Processing data products:**
 Data product binary files (typically with the `.fdp` extension) can be decoded on the ground with the `fprime-dp` command, which is a CLI tool shipped with the F Prime GDS. See `fprime-dp decode -h` for options on how to use the tool.
