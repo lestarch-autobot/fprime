@@ -10,6 +10,7 @@
 #include <config/DpCfg.hpp>
 
 #include <atomic>
+#include <limits>
 
 #include "Fw/Dp/DpContainer.hpp"
 #include "Fw/Types/FileNameString.hpp"
@@ -29,6 +30,9 @@ class DpWriter final : public DpWriterComponentBase {
                   "Number of dp written out ports must equal DpWriterNumPorts");
     static_assert(DpWriter::NUM_DEALLOCBUFFERSENDOUT_OUTPUT_PORTS == static_cast<FwSizeType>(DpWriterNumPorts),
                   "Number of dealloc buffer send out ports must equal DpWriterNumPorts");
+    static_assert(DpWriter::NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS <=
+                      std::numeric_limits<Fw::DpCfg::ProcType::SerialType>::digits,
+                  "Every processing port must have a bit in the ProcType bit mask");
 
   public:
     // ----------------------------------------------------------------------
@@ -83,6 +87,16 @@ class DpWriter final : public DpWriterComponentBase {
                                          U32 cmdSeq            //!< The command sequence number
                                          ) final;
 
+    //! Handler implementation for command SET_PROC_OVERRIDE
+    //!
+    //! Set the processing override applied to every data product container
+    void SET_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode,       //!< The opcode
+                                      U32 cmdSeq,                //!< The command sequence number
+                                      const Fw::Enabled& state,  //!< ENABLED forces the processing types on;
+                                                                 //!< DISABLED forces them off
+                                      U8 procTypes               //!< Bit mask of processing types to force; zero clears
+                                      ) final;
+
   private:
     // ----------------------------------------------------------------------
     // Private helper functions
@@ -93,6 +107,12 @@ class DpWriter final : public DpWriterComponentBase {
     Fw::Success::T deserializePacketHeader(Fw::Buffer& buffer,         //!< The packet buffer
                                            Fw::DpContainer& container  //!< The container
     );
+
+    //! Apply the processing override to the processing types requested by a container
+    //! \return The processing types to perform
+    Fw::DpCfg::ProcType::SerialType applyProcOverride(
+        Fw::DpCfg::ProcType::SerialType procTypes  //!< The requested processing types
+    ) const;
 
     //! Perform processing on a packet buffer
     void performProcessing(Fw::DpContainer& container  //!< The container
@@ -134,6 +154,12 @@ class DpWriter final : public DpWriterComponentBase {
 
     //! True while a schedInInternal message is on the queue
     std::atomic<bool> m_schedInQueued{false};
+
+    //! ENABLED forces the override processing types on; DISABLED forces them off
+    Fw::Enabled m_procOverrideState = Fw::Enabled::DISABLED;
+
+    //! The processing types forced by the override; zero means no override
+    Fw::DpCfg::ProcType::SerialType m_procOverrideMask = 0;
 
     //! The file name prefix for writing DP files
     //! The precise meaning depends on the DP format string

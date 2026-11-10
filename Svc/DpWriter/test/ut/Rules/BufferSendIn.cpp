@@ -108,7 +108,10 @@ void TestState ::action__BufferSendIn__OKProcShrink() {
     Fw::Buffer buffer = this->abstractState.getDpBufferWithProc(1);
     // Instruct the proc handler to shrink the buffer
     this->abstractState.m_procShrinkDataSizeOpt = shrink_data_size;
-    const FwSizeType exp_buffer_size = Fw::DpContainer::MIN_PACKET_SIZE + shrink_data_size;
+    // The buffer shrinks only if the override leaves some processing in place
+    const bool processed = (this->abstractState.applyProcOverride(1) != 0);
+    const FwSizeType exp_buffer_size =
+        processed ? (Fw::DpContainer::MIN_PACKET_SIZE + shrink_data_size) : buffer.getSize();
     // Send the buffer
     this->invoke_to_bufferSendIn(0, buffer);
     this->doDispatch();
@@ -398,7 +401,8 @@ void TestState ::action__BufferSendIn__FileOpenError() {
     }
     // Verify no file output
     ASSERT_EQ(fileData.pointer, 0);
-    // Verify port output
+    // Verify port output: processing ran before the open, so re-read the header
+    ASSERT_EQ(container.deserializeHeader(), Fw::FW_SERIALIZE_OK);
     this->checkProcTypes(container);
     ASSERT_from_dpWrittenOut_SIZE(0);
     ASSERT_from_deallocBufferSendOut_SIZE(1);
@@ -455,6 +459,8 @@ void TestState ::action__BufferSendIn__FileWriteError() {
         ASSERT_EVENTS_SIZE(0);
     }
     // Verify port output
+    // Processing ran before the write, so re-read the header
+    ASSERT_EQ(container.deserializeHeader(), Fw::FW_SERIALIZE_OK);
     this->checkProcTypes(container);
     ASSERT_from_dpWrittenOut_SIZE(0);
     ASSERT_from_deallocBufferSendOut_SIZE(1);

@@ -93,15 +93,23 @@ void DpWriterTester::constructDpFileName(FwDpIdType id, const Fw::Time& timeTag,
 }
 
 void DpWriterTester::checkProcTypes(const Fw::DpContainer& container) {
+    // The header must record the requested processing types with the override applied
+    const Fw::DpCfg::ProcType::SerialType expectedProcTypes =
+        this->abstractState.applyProcOverride(this->abstractState.m_requestedProcTypes);
+    ASSERT_EQ(container.getProcTypes(), expectedProcTypes);
+    // Exactly the recorded processing ports must have been invoked
     U32 expectedNumProcTypes = 0;
-    const Fw::DpCfg::ProcType::SerialType procTypes = container.getProcTypes();
-    for (FwIndexType i = 0; i < Fw::DpCfg::ProcType::NUM_CONSTANTS; i++) {
-        if (procTypes & (1 << i)) {
+    for (FwIndexType i = 0; i < DpWriterNumProcPorts; i++) {
+        if (expectedProcTypes & (1 << i)) {
             ++expectedNumProcTypes;
         }
     }
     ASSERT_from_procBufferSendOut_SIZE(expectedNumProcTypes);
     ASSERT_EQ(container.getProcTypes(), this->abstractState.m_procTypes);
+    // The header hash must cover the recorded processing types
+    Utils::HashBuffer storedHash;
+    Utils::HashBuffer computedHash;
+    ASSERT_EQ(Fw::Success::SUCCESS, container.checkHeaderHash(storedHash, computedHash));
 }
 
 void DpWriterTester::checkTelemetry() {
@@ -110,6 +118,48 @@ void DpWriterTester::checkTelemetry() {
     TESTER_CHECK_CHANNEL(NumSuccessfulWrites);
     TESTER_CHECK_CHANNEL(NumFailedWrites);
     TESTER_CHECK_CHANNEL(NumErrors);
+    TESTER_CHECK_CHANNEL(ProcOverrideState);
+    TESTER_CHECK_CHANNEL(ProcOverrideMask);
+}
+
+// ----------------------------------------------------------------------
+// Private helper functions
+// ----------------------------------------------------------------------
+
+void DpWriterTester::connectPorts() {
+    // Connect special input ports
+    this->connect_to_cmdIn(0, this->component.get_cmdIn_InputPort(0));
+
+    // Connect special output ports
+    this->component.set_cmdRegIn_OutputPort(0, this->get_from_cmdRegIn(0));
+    this->component.set_cmdResponseOut_OutputPort(0, this->get_from_cmdResponseOut(0));
+    this->component.set_eventOut_OutputPort(0, this->get_from_eventOut(0));
+#if FW_ENABLE_TEXT_LOGGING == 1
+    this->component.set_textEventOut_OutputPort(0, this->get_from_textEventOut(0));
+#endif
+    this->component.set_timeGetOut_OutputPort(0, this->get_from_timeGetOut(0));
+    this->component.set_tlmOut_OutputPort(0, this->get_from_tlmOut(0));
+
+    // Connect typed input ports
+    for (FwIndexType i = 0; i < DpWriterNumPorts; i++) {
+        this->connect_to_bufferSendIn(i, this->component.get_bufferSendIn_InputPort(i));
+    }
+    this->connect_to_schedIn(0, this->component.get_schedIn_InputPort(0));
+
+    // Connect typed output ports
+    for (FwIndexType i = 0; i < DpWriterNumPorts; i++) {
+        this->component.set_deallocBufferSendOut_OutputPort(i, this->get_from_deallocBufferSendOut(i));
+        this->component.set_dpWrittenOut_OutputPort(i, this->get_from_dpWrittenOut(i));
+    }
+    // Leave the last processing port unconnected to exercise override validation
+    for (FwIndexType i = 0; i < AbstractState::NUM_CONNECTED_PROC_PORTS; i++) {
+        this->component.set_procBufferSendOut_OutputPort(i, this->get_from_procBufferSendOut(i));
+    }
+}
+
+void DpWriterTester::initComponents() {
+    this->init();
+    this->component.init(DpWriterTester::TEST_INSTANCE_QUEUE_DEPTH, DpWriterTester::TEST_INSTANCE_ID);
 }
 
 void DpWriterTester::doDispatch() {

@@ -16,6 +16,7 @@
 #include "Svc/DpWriter/test/ut/Rules/CLEAR_EVENT_THROTTLE.hpp"
 #include "Svc/DpWriter/test/ut/Rules/FileOpenStatus.hpp"
 #include "Svc/DpWriter/test/ut/Rules/FileWriteStatus.hpp"
+#include "Svc/DpWriter/test/ut/Rules/SET_PROC_OVERRIDE.hpp"
 #include "Svc/DpWriter/test/ut/Rules/SchedIn.hpp"
 
 namespace Svc {
@@ -31,6 +32,8 @@ extern FileOpenStatus::Tester fileOpenStatus;
 extern FileWriteStatus::Tester fileWriteStatus;
 
 extern SchedIn::Tester schedIn;
+
+extern SET_PROC_OVERRIDE::Tester setProcOverride;
 
 }  // namespace Testers
 

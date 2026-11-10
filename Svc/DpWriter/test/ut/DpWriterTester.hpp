@@ -151,6 +151,9 @@ class DpWriterTester : public DpWriterGTestBase {
     //! Get the OPCODE_CLEAR_EVENT_THROTTLE value
     static FwOpcodeType getOpCodeClearEventThrottle() { return DpWriterComponentBase::OPCODE_CLEAR_EVENT_THROTTLE; }
 
+    //! Get the OPCODE_SET_PROC_OVERRIDE value
+    static FwOpcodeType getOpCodeSetProcOverride() { return DpWriterComponentBase::OPCODE_SET_PROC_OVERRIDE; }
+
     //! Get the m_BufferTooSmallForDataThrottle value
     FwIndexType getBufferTooSmallForDataThrottleCount();
 

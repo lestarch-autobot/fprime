@@ -477,5 +477,13 @@ For on-board lossless compression of data products, see
 [`Svc::DpCompressProc`](../../../Svc/DpCompressProc/docs/sdd.md) and
 [`Svc::DpZLibCompressor`](../../../Svc/DpZLibCompressor/docs/sdd.md).
 
+**Overriding processing from the ground:**
+`Svc::DpWriter` provides the `SET_PROC_OVERRIDE` command, which forces a bit mask of
+processing types on (`ENABLED`) or off (`DISABLED`) for every data product it writes,
+regardless of the processing types requested in each container header. This lets an
+operator turn on compression for a whole deployment, or shut processing off, without
+every producing component supporting a per-container setting. See the
+[`Svc::DpWriter` SDD](../../../Svc/DpWriter/docs/sdd.md).
+
 **Processing data products:**
 Data product binary files (typically with the `.fdp` extension) can be decoded on the ground with the `fprime-dp` command, which is a CLI tool shipped with the F Prime GDS. See `fprime-dp decode -h` for options on how to use the tool.

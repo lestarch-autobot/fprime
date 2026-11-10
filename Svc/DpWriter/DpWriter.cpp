@@ -135,6 +135,8 @@ void DpWriter::schedInInternal_internalInterfaceHandler() {
     this->tlmWrite_NumSuccessfulWrites(this->m_numSuccessfulWrites);
     this->tlmWrite_NumFailedWrites(this->m_numFailedWrites);
     this->tlmWrite_NumErrors(this->m_numErrors);
+    this->tlmWrite_ProcOverrideState(this->m_procOverrideState);
+    this->tlmWrite_ProcOverrideMask(static_cast<U8>(this->m_procOverrideMask));
 }
 
 // ----------------------------------------------------------------------
@@ -157,6 +159,27 @@ void DpWriter::CLEAR_EVENT_THROTTLE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq) 
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
 }
 
+void DpWriter::SET_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, const Fw::Enabled& state, U8 procTypes) {
+    // Compute the processing types that may be forced in the requested state
+    // Forcing processing on requires a connected processing port
+    Fw::DpCfg::ProcType::SerialType allowed = 0;
+    for (FwIndexType portNum = 0; portNum < NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS; ++portNum) {
+        if ((state != Fw::Enabled::ENABLED) || this->isConnected_procBufferSendOut_OutputPort(portNum)) {
+            allowed = static_cast<Fw::DpCfg::ProcType::SerialType>(allowed | (1 << portNum));
+        }
+    }
+    const Fw::DpCfg::ProcType::SerialType mask = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes);
+    if ((mask & static_cast<Fw::DpCfg::ProcType::SerialType>(~allowed)) != 0) {
+        this->log_WARNING_LO_ProcOverrideInvalid(state, procTypes, static_cast<U8>(allowed));
+        this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::VALIDATION_ERROR);
+        return;
+    }
+    this->m_procOverrideState = state;
+    this->m_procOverrideMask = mask;
+    this->log_ACTIVITY_HI_ProcOverrideSet(state, procTypes);
+    this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
+}
+
 // ----------------------------------------------------------------------
 // Private helper functions
 // ----------------------------------------------------------------------
@@ -172,11 +195,24 @@ Fw::Success::T DpWriter::deserializePacketHeader(Fw::Buffer& buffer, Fw::DpConta
     return status;
 }
 
+Fw::DpCfg::ProcType::SerialType DpWriter::applyProcOverride(Fw::DpCfg::ProcType::SerialType procTypes) const {
+    Fw::DpCfg::ProcType::SerialType result = procTypes;
+    if (this->m_procOverrideState == Fw::Enabled::ENABLED) {
+        result = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes | this->m_procOverrideMask);
+    } else {
+        result = static_cast<Fw::DpCfg::ProcType::SerialType>(
+            procTypes & static_cast<Fw::DpCfg::ProcType::SerialType>(~this->m_procOverrideMask));
+    }
+    return result;
+}
+
 void DpWriter::performProcessing(Fw::DpContainer& container) {
     // Get the buffer
     Fw::Buffer buffer = container.getBuffer();
-    // Get the bit mask for the processing types
-    const Fw::DpCfg::ProcType::SerialType procTypes = container.getProcTypes();
+    // Get the bit mask for the processing types, with the override applied
+    const Fw::DpCfg::ProcType::SerialType requestedProcTypes = container.getProcTypes();
+    const Fw::DpCfg::ProcType::SerialType procTypes = this->applyProcOverride(requestedProcTypes);
+    const bool overrideApplied = (procTypes != requestedProcTypes);
     // Do the processing
     bool did_process = false;
     for (FwIndexType portNum = 0; portNum < NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS; ++portNum) {
@@ -197,6 +233,11 @@ void DpWriter::performProcessing(Fw::DpContainer& container) {
         FW_ASSERT(container.getPacketSize() <= buffer.getSize(),
                   static_cast<FwAssertArgType>(container.getPacketSize()),
                   static_cast<FwAssertArgType>(buffer.getSize()));
+    }
+
+    if (did_process || overrideApplied) {
+        // Record the processing types actually performed
+        container.setProcTypes(procTypes);
 
         // Re-compute and serialize the container header into the buffer
         container.updateHeaderHash();

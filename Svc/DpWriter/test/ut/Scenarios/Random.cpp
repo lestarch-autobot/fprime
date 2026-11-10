@@ -39,6 +39,8 @@ Rules::FileOpenStatus::OK fileOpenStatusOK;
 Rules::FileWriteStatus::Error fileWriteStatusError;
 Rules::FileWriteStatus::OK fileWriteStatusOK;
 Rules::SchedIn::OK schedInOK;
+Rules::SET_PROC_OVERRIDE::Invalid setProcOverrideInvalid;
+Rules::SET_PROC_OVERRIDE::OK setProcOverrideOK;
 
 // ----------------------------------------------------------------------
 // Tests
@@ -59,7 +61,9 @@ void Tester ::run(U32 maxNumSteps) {
                                        &fileOpenStatusOK,
                                        &fileWriteStatusError,
                                        &fileWriteStatusOK,
-                                       &schedInOK};
+                                       &schedInOK,
+                                       &setProcOverrideInvalid,
+                                       &setProcOverrideOK};
     STest::RandomScenario<TestState> scenario("RandomScenario", rules,
                                               sizeof(rules) / sizeof(STest::RandomScenario<TestState>*));
     STest::BoundedScenario<TestState> boundedScenario("BoundedRandomScenario", scenario, maxNumSteps);

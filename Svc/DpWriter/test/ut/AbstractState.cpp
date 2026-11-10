@@ -25,7 +25,7 @@ namespace Svc {
 //! \return The buffer
 Fw::Buffer AbstractState::getDpBuffer() {
     Fw::DpCfg::ProcType::SerialType procTypes = 0;
-    for (FwIndexType i = 0; i < Fw::DpCfg::ProcType::NUM_CONSTANTS; i++) {
+    for (FwIndexType i = 0; (i < Fw::DpCfg::ProcType::NUM_CONSTANTS) && (i < NUM_CONNECTED_PROC_PORTS); i++) {
         const bool selector = static_cast<bool>(STest::Pick::lowerUpper(0, 1));
         if (selector) {
             procTypes = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes | (1 << i));
@@ -58,6 +58,7 @@ Fw::Buffer AbstractState::getDpBufferWithProc(Fw::DpCfg::ProcType::SerialType pr
     container.setTimeTag(Fw::Time(seconds, microseconds));
     // Update the processing types
     container.setProcTypes(procTypes);
+    this->m_requestedProcTypes = procTypes;
     // Update the data size
     container.setDataSize(dataSize);
     // Serialize the header and update the header hash
@@ -72,6 +73,37 @@ Fw::Buffer AbstractState::getDpBufferWithProc(Fw::DpCfg::ProcType::SerialType pr
     }
     // Return the buffer
     return buffer;
+}
+
+Fw::DpCfg::ProcType::SerialType AbstractState::getAllProcMask() {
+    Fw::DpCfg::ProcType::SerialType mask = 0;
+    for (FwIndexType i = 0; i < DpWriterNumProcPorts; i++) {
+        mask = static_cast<Fw::DpCfg::ProcType::SerialType>(mask | (1 << i));
+    }
+    return mask;
+}
+
+Fw::DpCfg::ProcType::SerialType AbstractState::getConnectedProcMask() {
+    Fw::DpCfg::ProcType::SerialType mask = 0;
+    for (FwIndexType i = 0; i < NUM_CONNECTED_PROC_PORTS; i++) {
+        mask = static_cast<Fw::DpCfg::ProcType::SerialType>(mask | (1 << i));
+    }
+    return mask;
+}
+
+Fw::DpCfg::ProcType::SerialType AbstractState::getAllowedProcMask(const Fw::Enabled& state) {
+    return (state == Fw::Enabled::ENABLED) ? getConnectedProcMask() : getAllProcMask();
+}
+
+Fw::DpCfg::ProcType::SerialType AbstractState::applyProcOverride(Fw::DpCfg::ProcType::SerialType procTypes) const {
+    Fw::DpCfg::ProcType::SerialType result = procTypes;
+    if (this->m_procOverrideState == Fw::Enabled::ENABLED) {
+        result = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes | this->m_procOverrideMask);
+    } else {
+        result = static_cast<Fw::DpCfg::ProcType::SerialType>(
+            procTypes & static_cast<Fw::DpCfg::ProcType::SerialType>(~this->m_procOverrideMask));
+    }
+    return result;
 }
 
 }  // namespace Svc

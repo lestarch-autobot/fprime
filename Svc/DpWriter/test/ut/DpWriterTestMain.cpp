@@ -141,6 +141,42 @@ TEST(Scenarios, Random) {
     tester.run(numSteps);
 }
 
+TEST(SET_PROC_OVERRIDE, OK) {
+    COMMENT("Set a valid processing override and verify the response, event, and telemetry.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    REQUIREMENT("SVC-DPWRITER-011");
+    SET_PROC_OVERRIDE::Tester tester;
+    tester.OK();
+}
+
+TEST(SET_PROC_OVERRIDE, Invalid) {
+    COMMENT("Reject a processing override that selects an unconnected or nonexistent processing port.");
+    REQUIREMENT("SVC-DPWRITER-010");
+    SET_PROC_OVERRIDE::Tester tester;
+    tester.Invalid();
+}
+
+TEST(SET_PROC_OVERRIDE, ForceOn) {
+    COMMENT("Force processing on and verify every connected processing port is invoked and recorded.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    SET_PROC_OVERRIDE::Tester tester;
+    tester.ForceOn();
+}
+
+TEST(SET_PROC_OVERRIDE, ForceOff) {
+    COMMENT("Force processing off and verify no processing port is invoked and the header is cleared.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    SET_PROC_OVERRIDE::Tester tester;
+    tester.ForceOff();
+}
+
+TEST(SET_PROC_OVERRIDE, Clear) {
+    COMMENT("Clear the override and verify header-controlled processing resumes.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    SET_PROC_OVERRIDE::Tester tester;
+    tester.Clear();
+}
+
 TEST(SchedIn, OK) {
     COMMENT("Invoke schedIn with nominal input.");
     REQUIREMENT("SVC-DPMANAGER-006");

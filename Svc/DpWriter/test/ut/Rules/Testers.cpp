@@ -23,6 +23,8 @@ FileWriteStatus::Tester fileWriteStatus;
 
 SchedIn::Tester schedIn;
 
+SET_PROC_OVERRIDE::Tester setProcOverride;
+
 }  // namespace Testers
 
 }  // namespace Svc

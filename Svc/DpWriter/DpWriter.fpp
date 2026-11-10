@@ -61,6 +61,12 @@ module Svc {
     @ Clear event throttling
     async command CLEAR_EVENT_THROTTLE
 
+    @ Set the processing override applied to every data product container
+    async command SET_PROC_OVERRIDE(
+                    $state: Fw.Enabled @< ENABLED forces the processing types on; DISABLED forces them off
+                    procTypes: U8 @< Bit mask of Fw.DpCfg.ProcType values to force; zero clears the override
+                  )
+
     # ----------------------------------------------------------------------
     # Events
     # ----------------------------------------------------------------------
@@ -136,6 +142,23 @@ module Svc {
       format "Error {} while writing {} of {} bytes to {}" \
       throttle 10
 
+    @ The processing override was set
+    event ProcOverrideSet(
+                           $state: Fw.Enabled @< ENABLED forces the processing types on; DISABLED forces them off
+                           procTypes: U8 @< The bit mask of processing types forced
+                         ) \
+      severity activity high \
+      format "Processing override set: {} processing types {x}"
+
+    @ The processing override was rejected
+    event ProcOverrideInvalid(
+                               $state: Fw.Enabled @< The requested state
+                               procTypes: U8 @< The requested bit mask of processing types
+                               allowed: U8 @< The bit mask of processing types accepted for the requested state
+                             ) \
+      severity warning low \
+      format "Processing override rejected: {} processing types {x} exceed allowed {x}"
+
     @ File written
     event FileWritten(
                        bytes: U32 @< The number of bytes written
@@ -162,6 +185,12 @@ module Svc {
 
     @ The number of errors
     telemetry NumErrors: U32 update on change
+
+    @ The processing override state: ENABLED forces processing types on; DISABLED forces them off
+    telemetry ProcOverrideState: Fw.Enabled update on change
+
+    @ The bit mask of processing types forced by the processing override; zero means no override
+    telemetry ProcOverrideMask: U8 update on change
 
   }
 

@@ -41,6 +41,8 @@ class TestState : public DpWriterTester {
     TEST_STATE_DEF_RULE(FileWriteStatus, Error)
     TEST_STATE_DEF_RULE(FileWriteStatus, OK)
     TEST_STATE_DEF_RULE(SchedIn, OK)
+    TEST_STATE_DEF_RULE(SET_PROC_OVERRIDE, Invalid)
+    TEST_STATE_DEF_RULE(SET_PROC_OVERRIDE, OK)
 
   public:
     // ----------------------------------------------------------------------
@@ -52,6 +54,19 @@ class TestState : public DpWriterTester {
 
     //! Test that all fused routing ports preserve the input port index
     void testRoutingPorts();
+
+  public:
+    // ----------------------------------------------------------------------
+    // Test steering
+    // ----------------------------------------------------------------------
+
+    //! Steer the next SET_PROC_OVERRIDE OK rule to request a specific override
+    void setNextProcOverride(Fw::Enabled::T state,                      //!< The override state to request
+                             Fw::DpCfg::ProcType::SerialType procTypes  //!< The override mask to request
+    ) {
+        this->abstractState.m_nextProcOverrideStateOpt = state;
+        this->abstractState.m_nextProcOverrideMaskOpt = procTypes;
+    }
 };
 
 }  // namespace Svc
