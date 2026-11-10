@@ -21,6 +21,11 @@ TEST(Nominal, Setup) {
     tester.setupBehavior();
 }
 
+TEST(Nominal, Alignment) {
+    BufferManagerTester tester;
+    tester.setupAlignment();
+}
+
 TEST(Nominal, SingleBin) {
     BufferManagerTester tester;
     tester.singleBin();
@@ -66,6 +71,11 @@ TEST(OffNominal, SetupBinOrderAsserts) {
     tester.setupBinOrderAsserts();
 }
 
+TEST(OffNominal, SetupAlignmentAsserts) {
+    BufferManagerTester tester;
+    tester.setupAlignmentAsserts();
+}
+
 TEST(OffNominal, SendInAsserts) {
     BufferManagerTester tester;
     tester.sendInAsserts();
@@ -92,6 +102,7 @@ struct Rules {
     BufferManagerTester::Lifecycle__NotSetupAsserts notSetupAsserts;
     BufferManagerTester::Lifecycle__BinOrderAsserts binOrderAsserts;
     BufferManagerTester::Lifecycle__SizeOverflowAsserts sizeOverflowAsserts;
+    BufferManagerTester::Lifecycle__AlignmentAsserts alignmentAsserts;
     BufferManagerTester::Lifecycle__EmptyBinsAsserts emptyBinsAsserts;
     BufferManagerTester::Lifecycle__SetupTwiceAsserts setupTwiceAsserts;
     BufferManagerTester::BufferGet__Ok get;
@@ -248,7 +259,8 @@ TEST(Rules, Lifecycle) {
     r.cleanup.apply(tester);
 }
 
-// setup() rejects misordered bins, wrapping sizes and empty configurations, then accepts equal sizes and gaps
+// setup() rejects misordered bins, wrapping sizes, empty configurations, bad alignments and misaligned memory,
+// then accepts equal sizes and gaps
 TEST(Rules, SetupAsserts) {
     REQUIREMENT("FPRIME-BM-008");
     REQUIREMENT("FPRIME-BM-010");
@@ -257,6 +269,7 @@ TEST(Rules, SetupAsserts) {
     r.binOrderAsserts.apply(tester);
     r.sizeOverflowAsserts.apply(tester);
     r.emptyBinsAsserts.apply(tester);
+    r.alignmentAsserts.apply(tester);
     tester.setupRulesEqualAndGapped();
     r.get.apply(tester);
     tester.teardownRules();

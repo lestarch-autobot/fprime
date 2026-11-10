@@ -19,13 +19,16 @@ bool BufferManagerTester::Lifecycle__Setup__precondition() const {
 
 void BufferManagerTester::Lifecycle__Setup__action() {
     const U32 deallocsBefore = this->m_allocator.getDeallocCount();
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, this->shadow.table);
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, this->shadow.table, this->shadow.alignment);
     this->shadow.configure();
     this->clearHistory();
 
-    // The pool was requested from the configured allocator under the configured identifier; nothing was released
+    // The pool was requested from the configured allocator under the configured identifier, at a power-of-two
+    // alignment no looser than the one staged; nothing was released
     ASSERT_EQ(MEM_ID, this->m_allocator.getId());
     ASSERT_NE(nullptr, this->m_allocator.getMem());
+    ASSERT_EQ(0u, this->m_allocator.getAlignment() & (this->m_allocator.getAlignment() - 1));
+    ASSERT_GE(this->m_allocator.getAlignment(), this->shadow.alignment);
     ASSERT_EQ(deallocsBefore, this->m_allocator.getDeallocCount());
 }
 
@@ -125,6 +128,25 @@ bool BufferManagerTester::Lifecycle__SetupTwiceAsserts__precondition() const {
 
 void BufferManagerTester::Lifecycle__SetupTwiceAsserts__action() {
     this->expectSetupDeath(this->shadow.table);
+}
+
+// ----------------------------------------------------------------------
+// Lifecycle.AlignmentAsserts — an alignment that is zero or not a power of two is rejected, and so is memory the
+// allocator hands back without the alignment asked of it
+// ----------------------------------------------------------------------
+
+bool BufferManagerTester::Lifecycle__AlignmentAsserts__precondition() const {
+    return !this->shadow.isSetup;
+}
+
+void BufferManagerTester::Lifecycle__AlignmentAsserts__action() {
+    this->expectSetupDeath(defaultBins(), 0);
+    this->expectSetupDeath(defaultBins(), 3);
+    this->expectSetupDeath(defaultBins(), ABOVE_DEFAULT_ALIGNMENT + 1);
+    // An allocator that does not honor the alignment (even the default) is caught before the pool is used
+    this->m_allocator.setMisaligned(true);
+    this->expectSetupDeath(defaultBins());
+    this->m_allocator.setMisaligned(false);
 }
 
 // ----------------------------------------------------------------------

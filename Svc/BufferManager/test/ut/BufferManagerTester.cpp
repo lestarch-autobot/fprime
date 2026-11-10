@@ -27,6 +27,16 @@ const U32 MAX_HISTORY_SIZE = 100;
 bool disjoint(const Fw::Buffer& a, const Fw::Buffer& b) {
     return (a.getData() + a.getCapacity() <= b.getData()) || (b.getData() + b.getCapacity() <= a.getData());
 }
+
+//! True if value is a non-zero power of two
+bool isPowerOfTwo(FwSizeType value) {
+    return (value != 0) && ((value & (value - 1)) == 0);
+}
+
+//! True if the buffer's data starts on a multiple of alignment
+bool isAligned(const Fw::Buffer& buffer, FwSizeType alignment) {
+    return (reinterpret_cast<PlatformPointerCastType>(buffer.getData()) % alignment) == 0;
+}
 }  // namespace
 
 namespace Svc {
@@ -36,6 +46,9 @@ const U16 BufferManagerTester::MGR_ID;
 const FwSizeType BufferManagerTester::ANY_REQUEST_SIZE;
 const U32 BufferManagerTester::NUM_TLM_CHANNELS;
 constexpr const char* BufferManagerTester::UUT_ASSERT;
+const FwSizeType BufferManagerTester::DEFAULT_ALIGNMENT;
+const FwSizeType BufferManagerTester::ABOVE_DEFAULT_ALIGNMENT;
+const FwSizeType BufferManagerTester::MIN_ALIGNMENT;
 const Fw::Buffer::SizeType BufferManagerTester::BIN0_BUFFER_SIZE;
 const U16 BufferManagerTester::BIN0_NUM_BUFFERS;
 const Fw::Buffer::SizeType BufferManagerTester::BIN1_BUFFER_SIZE;
@@ -69,9 +82,11 @@ void BufferManagerTester ::setupBehavior() {
 
     this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins());
 
-    // The pool was requested from the supplied allocator under the configured identifier
+    // The pool was requested from the supplied allocator under the configured identifier, at the allocator's
+    // own default alignment when setup() is given none
     ASSERT_EQ(MEM_ID, this->m_allocator.getId());
     ASSERT_NE(nullptr, this->m_allocator.getMem());
+    ASSERT_EQ(DEFAULT_ALIGNMENT, this->m_allocator.getAlignment());
 
     // Telemetry before any request
     this->checkTelemetry(NUM_TLM_CHANNELS);
@@ -104,6 +119,31 @@ void BufferManagerTester ::setupBehavior() {
     this->component.cleanup();
     ASSERT_EQ(1u, this->m_allocator.getDeallocCount());
     ASSERT_EQ(this->m_allocator.getMem(), this->m_allocator.getDeallocPtr());
+}
+
+void BufferManagerTester ::setupAlignment() {
+    REQUIREMENT("FPRIME-BM-005");
+    COMMENT("The alignment given to setup() reaches the allocator and the first buffer handed out has it");
+
+    const FwSizeType alignments[] = {MIN_ALIGNMENT, DEFAULT_ALIGNMENT, ABOVE_DEFAULT_ALIGNMENT,
+                                     4 * ABOVE_DEFAULT_ALIGNMENT};
+    for (FwSizeType alignment : alignments) {
+        this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins(), alignment);
+
+        // The allocator is asked for a power of two no looser than the alignment given; a request at or above
+        // the allocator default (which nothing setup() places in the pool exceeds) is passed on as is
+        ASSERT_TRUE(isPowerOfTwo(this->m_allocator.getAlignment()));
+        ASSERT_GE(this->m_allocator.getAlignment(), alignment);
+        if (alignment >= DEFAULT_ALIGNMENT) {
+            ASSERT_EQ(alignment, this->m_allocator.getAlignment());
+        }
+
+        // The first buffer of a fresh pool, served from the smallest bin, has the alignment given
+        Fw::Buffer first = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
+        ASSERT_TRUE(isAligned(first, alignment));
+        this->returnBuffer(first);
+        this->component.cleanup();
+    }
 }
 
 void BufferManagerTester ::singleBin() {
@@ -412,6 +452,11 @@ void BufferManagerTester ::setupBinOrderAsserts() {
     this->component.cleanup();
 }
 
+void BufferManagerTester ::setupAlignmentAsserts() {
+    COMMENT("setup() rejects an alignment that is zero or not a power of two, and memory not aligned as asked");
+    this->Lifecycle__AlignmentAsserts__action();
+}
+
 void BufferManagerTester ::sendInAsserts() {
     COMMENT("bufferSendIn asserts on a buffer that is not one it handed out (SDD 3.6.2)");
     this->setupRulesDefault();
@@ -429,8 +474,8 @@ void BufferManagerTester ::useBeforeSetupAsserts() {
 // Rule-based testing setup
 // ----------------------------------------------------------------------
 
-void BufferManagerTester ::setupRules(const BufferManagerComponentImpl::BufferBins& bins) {
-    this->shadow.stageBins(bins);
+void BufferManagerTester ::setupRules(const BufferManagerComponentImpl::BufferBins& bins, FwSizeType alignment) {
+    this->shadow.stageBins(bins, alignment);
     this->Lifecycle__Setup__action();
 }
 
@@ -462,7 +507,9 @@ void BufferManagerTester ::setupRulesRandom() {
         bins.bins[bin].bufferSize = size;
         bins.bins[bin].numBuffers = static_cast<U16>(STest::Pick::lowerUpper(1, 5));
     }
-    this->setupRules(bins);
+    // Any power of two from a single byte up to a page
+    const FwSizeType alignment = static_cast<FwSizeType>(1) << STest::Pick::lowerUpper(0, 12);
+    this->setupRules(bins, alignment);
 }
 
 void BufferManagerTester ::teardownRules() {
@@ -565,8 +612,8 @@ void BufferManagerTester ::checkTelemetry(U32 expectedChannels) {
     ASSERT_TLM_SIZE(expectedChannels);
 }
 
-void BufferManagerTester ::expectSetupDeath(const BufferManagerComponentImpl::BufferBins& bins) {
-    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_allocator, bins), UUT_ASSERT);
+void BufferManagerTester ::expectSetupDeath(const BufferManagerComponentImpl::BufferBins& bins, FwSizeType alignment) {
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_allocator, bins, alignment), UUT_ASSERT);
 }
 
 void BufferManagerTester ::ruleGet(FwSizeType size) {
@@ -582,6 +629,11 @@ void BufferManagerTester ::ruleGet(FwSizeType size) {
     ASSERT_EQ(static_cast<U32>(MGR_ID), BufferManagerTestState::managerIdOf(buffer));
     ASSERT_FALSE(this->shadow.overlapsHeld(buffer));
     ASSERT_EVENTS_SIZE(0);
+    // With every buffer free, a request the smallest bin serves gets the first buffer of the pool, which has the
+    // alignment the pool was set up with
+    if ((this->shadow.currBuffs == 0) && (bin == 0)) {
+        ASSERT_TRUE(isAligned(buffer, this->shadow.alignment));
+    }
 
     // Stamp the payload so a later return can detect cross-talk between buffers
     const U8 pattern = static_cast<U8>(STest::Pick::lowerUpper(1, 255));

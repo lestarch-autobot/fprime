@@ -30,8 +30,9 @@ U32 BufferManagerTestState::bufferIdOf(const Fw::Buffer& buffer) {
 // Updates mirroring component actions
 // ----------------------------------------------------------------------
 
-void BufferManagerTestState::stageBins(const BufferManagerComponentImpl::BufferBins& bins) {
+void BufferManagerTestState::stageBins(const BufferManagerComponentImpl::BufferBins& bins, FwSizeType poolAlignment) {
     this->table = bins;
+    this->alignment = poolAlignment;
 }
 
 void BufferManagerTestState::configure() {

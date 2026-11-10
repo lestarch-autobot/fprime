@@ -43,8 +43,8 @@ class BufferManagerTestState {
     // Updates mirroring component actions
     // ----------------------------------------------------------------------
 
-    //! Stage the bin table the next setup() will use
-    void stageBins(const BufferManagerComponentImpl::BufferBins& bins);
+    //! Stage the bin table and the pool alignment the next setup() will use
+    void stageBins(const BufferManagerComponentImpl::BufferBins& bins, FwSizeType poolAlignment);
 
     //! Mirror setup() with the staged bins: the per-pool state restarts while the lifetime counters, event
     //! throttles and last telemetry written persist
@@ -119,6 +119,7 @@ class BufferManagerTestState {
     // ----------------------------------------------------------------------
 
     BufferManagerComponentImpl::BufferBins table = {};  //!< Bin table staged for the next setup()
+    FwSizeType alignment = 0;                           //!< Pool alignment staged for the next setup()
     bool isSetup = false;                               //!< True between setup() and cleanup()
     bool everSetup = false;                             //!< True once setup() has been called
 
