@@ -50,7 +50,6 @@ void BufferAccumulatorTester ::OK() {
 
 void BufferAccumulatorTester ::InitialMode() {
     this->component.m_mode = BufferAccumulator_OpState::ACCUMULATE;
-    this->component.m_send = false;
 
     Fw::MallocAllocator allocator;
     this->component.allocateQueue(0, allocator, MAX_NUM_BUFFERS, BufferAccumulator_OpState::DRAIN);

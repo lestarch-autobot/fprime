@@ -20,3 +20,9 @@ async command BA_DrainBuffers(
                                blockMode: BlockMode
                              ) \
   opcode 0x01
+
+@ Set the drain limit: the maximum number of drained buffers that may be outstanding (sent on bufferSendOutDrain and not yet returned on bufferSendInReturn) at once. Applies to DRAIN mode and to BA_DrainBuffers. Accepted in any mode; 0 and values above the queue depth (maxNumBuffers given to allocateQueue) are rejected. The consumer connected to bufferSendOutDrain must be able to queue maxNumBuffers buffers in addition to its other concurrent queued inputs.
+async command BA_SetDrainLimit(
+                                maxOutstanding: U32 @< The new drain limit; 1 .. maxNumBuffers
+                              ) \
+  opcode 0x02

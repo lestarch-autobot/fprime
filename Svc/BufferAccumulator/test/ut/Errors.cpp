@@ -43,7 +43,7 @@ void BufferAccumulatorTester ::PartialDrain() {
     ASSERT_EVENTS_BA_DrainStalled_SIZE(1);
     ASSERT_EVENTS_BA_DrainStalled(0, 0u, 10u);
     ASSERT_EVENTS_BA_PartialDrainDone_SIZE(0);  // partial drain not done
-    ASSERT_EQ(true, this->component.m_send);
+    ASSERT_EQ(0u, this->component.m_numOutstanding);
     ASSERT_EQ(0u, this->component.m_numDrained);
     ASSERT_EQ(10u, this->component.m_numToDrain);
 
@@ -54,7 +54,7 @@ void BufferAccumulatorTester ::PartialDrain() {
     ASSERT_EVENTS_BA_PartialDrainDone_SIZE(0);  // partial drain not done
     ASSERT_EQ(BufferAccumulator_OpState::ACCUMULATE, this->component.m_mode.e);
     ASSERT_FROM_PORT_HISTORY_SIZE(0);
-    ASSERT_EQ(true, this->component.m_send);
+    ASSERT_EQ(0u, this->component.m_numOutstanding);
     ASSERT_EQ(0u, this->component.m_numDrained);
     ASSERT_EQ(10u, this->component.m_numToDrain);
 }

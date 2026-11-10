@@ -30,7 +30,6 @@ class BufferAccumulatorTester;
 namespace Errors {
 class BufferAccumulatorTester;
 }
-
 class BufferAccumulator final : public BufferAccumulatorComponentBase {
     friend class BufferAccumulatorTester;
     friend class Svc::Accumulate::BufferAccumulatorTester;
@@ -114,16 +113,22 @@ class BufferAccumulator final : public BufferAccumulatorComponentBase {
     // ----------------------------------------------------------------------
 
     //! Give the class a memory buffer. Should be called after constructor
-    //! and init, but before task is spawned.
+    //! and init, but before task is spawned. Asserts unless
+    //! 1 <= initialDrainLimit <= maxNumBuffers; the consumer connected to
+    //! bufferSendOutDrain must be able to queue maxNumBuffers buffers at once.
     void allocateQueue(
         FwEnumStoreType identifier,
         Fw::MemAllocator& allocator,
         FwSizeType maxNumBuffers,  //!< The maximum number of buffers
-        BufferAccumulator_OpState initialMode = BufferAccumulator_OpState::ACCUMULATE  //!< The initial operating mode
+        BufferAccumulator_OpState initialMode = BufferAccumulator_OpState::ACCUMULATE,  //!< The initial operating mode
+        U32 initialDrainLimit = 1  //!< The initial drain limit (1 .. maxNumBuffers)
     );
 
     //! Return allocated queue. Should be done during shutdown
     void deallocateQueue(Fw::MemAllocator& allocator);
+
+    //! Report the initial drain limit, outstanding count and queue depth once the ports are connected
+    void preamble() override;
 
   private:
     // ----------------------------------------------------------------------
@@ -165,13 +170,32 @@ class BufferAccumulator final : public BufferAccumulatorComponentBase {
                                     U32 numToDrain,
                                     const BufferAccumulator_BlockMode& blockMode);
 
+    //! Implementation for BA_SetDrainLimit command handler
+    //! Set the maximum number of drained buffers that may be outstanding at once
+    void BA_SetDrainLimit_cmdHandler(const FwOpcodeType opCode,  //!< The opcode
+                                     const U32 cmdSeq,           //!< The command sequence number
+                                     U32 maxOutstanding          //!< The new drain limit
+    );
+
   private:
     // ----------------------------------------------------------------------
     // Private helper methods
     // ----------------------------------------------------------------------
 
-    //! Send a stored buffer
-    void sendStoredBuffer();
+    //! Whether buffers are to be sent downstream: DRAIN mode, or a partial drain in progress
+    bool isDraining() const;
+
+    //! Send stored buffers, oldest first, while draining and the outstanding count is below the
+    //! drain limit; completes a partial drain whose target has been reached.
+    //! reportStall: emit BA_DrainStalled if a partial drain would send but the FIFO is empty
+    void drain(bool reportStall);
+
+    //! Write the queue depth (on a fill, while draining, or when it changed) and the outstanding count (when it
+    //! changed)
+    void reportCounts(FwSizeType queuedBefore,  //!< The queue depth at handler entry
+                      U32 outstandingBefore,    //!< The outstanding count at handler entry
+                      bool isFill               //!< Whether the caller is the fill handler
+    );
 
   private:
     // ----------------------------------------------------------------------
@@ -187,12 +211,14 @@ class BufferAccumulator final : public BufferAccumulatorComponentBase {
     //! The FIFO queue of buffers
     ArrayFIFOBuffer m_bufferQueue;
 
-    //! Whether to send a buffer to the downstream client
-    bool m_send;
+    //! The maximum number of drained buffers that may be outstanding at once
+    U32 m_drainLimit;
 
-    //! If we are switched to ACCUMULATE then back to DRAIN, whether we were
-    //! waiting on a buffer
-    bool m_waitForBuffer;
+    //! The number of drained buffers sent and not yet returned
+    U32 m_numOutstanding;
+
+    //! Whether BA_UnexpectedReturn has been emitted since the last expected return
+    bool m_unexpectedReturnReported;
 
     //! The number of QueueFull warnings sent since the last successful enqueue
     //! operation

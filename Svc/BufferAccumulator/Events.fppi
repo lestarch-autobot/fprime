@@ -50,3 +50,26 @@ event BA_NonBlockDrain(
   severity warning low \
   id 0x06 \
   format "Only have {}; requested drain of {}"
+
+@ BA_SetDrainLimit accepted; the drain limit is now maxOutstanding
+event BA_DrainLimitSet(
+                        maxOutstanding: U32 @< The new drain limit
+                      ) \
+  severity activity high \
+  id 0x07 \
+  format "Drain limit set to {}"
+
+@ BA_SetDrainLimit rejected: the requested drain limit is 0 or exceeds the queue depth; the drain limit is unchanged
+event BA_InvalidDrainLimit(
+                            maxOutstanding: U32 @< The rejected value
+                            maxAllowed: U32 @< The largest accepted value (the queue depth, maxNumBuffers)
+                          ) \
+  severity warning high \
+  id 0x08 \
+  format "Invalid drain limit {}; must be in 1..{}"
+
+@ A buffer arrived on bufferSendInReturn while no drained buffers were outstanding; it was forwarded on bufferSendOutReturn. To avoid uncontrolled sending of events, this event occurs only when the previous returned buffer did not also arrive with no buffers outstanding.
+event BA_UnexpectedReturn \
+  severity warning high \
+  id 0x09 \
+  format "Buffer returned with no buffers outstanding"
