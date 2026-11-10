@@ -419,10 +419,7 @@ void BufferManagerTester::setupMisalignedAllocatorAsserts() {
 }
 
 void BufferManagerTester::setupSizeOverflowAsserts() {
-    // setup() sizes one allocation from bufferSize times numBuffers per bin, the payload total across bins,
-    // that total rounded up to the tracking structs' alignment, and the tracking structs themselves. Each
-    // step is checked before it can wrap; without the checks the total wrapped silently and the pool was
-    // carved into an allocation far smaller than the manager believed it had. One case per guard below.
+    // setup() guards each step of its pool-size arithmetic before it can wrap: one case per guard
     const FwSizeType maxSize = std::numeric_limits<FwSizeType>::max();
     BufferManagerComponentImpl::BufferBins bins;
     TestAllocator alloc;

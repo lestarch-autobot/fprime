@@ -200,9 +200,9 @@ void BufferManagerComponentImpl::setup(U16 mgrId,                    //!< manage
               static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
               static_cast<FwAssertArgType>(memorySize), static_cast<FwAssertArgType>(allocatedSize));
     // the tracking structs are placed at a multiple of their alignment from the base, so the base must be aligned
-    FW_ASSERT((reinterpret_cast<PlatformPointerCastType>(memory) % alignof(AllocatedBuffer)) == 0,
+    FW_ASSERT((reinterpret_cast<PlatformPointerCastType>(memory) % structAlign) == 0,
               static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(memory)),
-              static_cast<FwAssertArgType>(alignof(AllocatedBuffer)));
+              static_cast<FwAssertArgType>(structAlign));
     this->m_memory = memory;
     // buffer payloads start at the beginning of memory: the first is as aligned as the allocation and each
     // following one is offset by the preceding bin sizes only, never by the tracking structs
