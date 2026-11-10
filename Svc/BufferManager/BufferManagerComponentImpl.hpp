@@ -51,6 +51,7 @@ namespace Svc {
 // 7. The bins passed to setup() contain no buffers at all.
 // 8. setup() is called while the instance is already set up (call cleanup() first).
 // 9. A bin with a non-zero numBuffers has a bufferSize of zero.
+// 10. The allocator returns memory not aligned for the buffer tracking structures.
 //
 // cleanup() does not require every buffer to have been returned: buffers still out become invalid
 //    with the pool they came from and must not be used or returned afterwards. After cleanup(), setup()
@@ -137,7 +138,8 @@ class BufferManagerComponentImpl final : public BufferManagerComponentBase {
         bool allocated;             //!< this buffer has been allocated
     };
 
-    AllocatedBuffer* m_buffers;     //!< pointer to allocated buffer space
+    void* m_memory;                 //!< allocation holding the buffer payloads followed by the tracking structs
+    AllocatedBuffer* m_buffers;     //!< tracking structs, inside m_memory after the payloads
     Fw::MemAllocator* m_allocator;  //!< allocator for memory
     FwEnumStoreType m_memId;        //!< identifier for allocator
     U16 m_numStructs;               //!< number of allocated structs

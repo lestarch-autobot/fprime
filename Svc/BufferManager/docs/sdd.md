@@ -69,7 +69,8 @@ Name | Type | Kind | Purpose
 
 `BufferManager` maintains the following state:
 
-* *m_buffers*: A set of buffers to allocate to users.
+* *m_memory*: The single allocation obtained in `setup()`: the buffer payloads followed by the tracking structures; released by `cleanup()`.
+* *m_buffers*: The tracking structures, one per buffer in the pool, inside *m_memory* after the payloads.
 * *m_currBuffs*, *m_highWater*: The number of buffers currently allocated and the most ever allocated from the current pool (`CurrBuffs`, `HiBuffs`).
 * *m_noBuffs*, *m_emptyBuffs*: The number of requests that could not return a buffer (including zero-size requests) and the number of empty buffers returned (`NoBuffs`, `EmptyBuffs`).
 
@@ -145,6 +146,7 @@ sequenceDiagram
 * The bins passed to `setup()` contain no buffers.
 * `setup()` is called while the instance is already set up.
 * A bin with a non-zero `numBuffers` has a `bufferSize` of zero.
+* The allocator returns memory not aligned for the buffer tracking structures.
 
 ## 4 Configuration
 
@@ -167,7 +169,7 @@ To configure an instance of `BufferManager`, the following needs to be supplied 
 - `allocator`: An `Fw::MemAllocator` instance
 - `bins`: A `BufferBins` structure defining the buffer pools (size and number). This is defined by the user, as demonstrated below.
 
-The `setup` method configures the buffer bins, allocates memory for all buffers, and initializes the buffer tracking structures.
+The `setup` method configures the buffer bins, allocates memory for all buffers, and initializes the buffer tracking structures. The single allocation holds the buffer payloads first, packed in bin order, followed by the tracking structures: the first payload starts at the allocation's address and each later payload is offset by the preceding buffer sizes only, so payload alignment depends on the allocator's alignment and the configured buffer sizes, never on the tracking structure size.
 
 ### 4.3 Buffer Bins Configuration
 
