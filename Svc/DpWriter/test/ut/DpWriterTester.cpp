@@ -126,6 +126,8 @@ void DpWriterTester::checkTelemetry() {
 // Private helper functions
 // ----------------------------------------------------------------------
 
+// connectPorts() and initComponents() are hand-written in place of UT_AUTO_HELPERS so that the last
+// processing port stays unconnected; keep them in sync with DpWriter.fpp
 void DpWriterTester::connectPorts() {
     // Connect special input ports
     this->connect_to_cmdIn(0, this->component.get_cmdIn_InputPort(0));

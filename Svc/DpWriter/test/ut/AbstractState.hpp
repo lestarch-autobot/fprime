@@ -60,8 +60,8 @@ class AbstractState {
           m_ProcOverrideMask(0),
           m_procTypes(0),
           m_requestedProcTypes(0),
-          m_procOverrideState(Fw::Enabled::DISABLED),
-          m_procOverrideMask(0),
+          m_modelProcOverrideState(Fw::Enabled::DISABLED),
+          m_modelProcOverrideMask(0),
           m_nextProcOverrideStateOpt(),
           m_nextProcOverrideMaskOpt(),
           m_procShrinkDataSizeOpt(),
@@ -94,6 +94,10 @@ class AbstractState {
     //! Get the bit mask selecting every processing port
     //! \return The bit mask
     static Fw::DpCfg::ProcType::SerialType getAllProcMask();
+
+    //! Get the mask with the low numBits bits set
+    static Fw::DpCfg::ProcType::SerialType getLowBitsMask(FwIndexType numBits  //!< The number of bits
+    );
 
     //! Get the bit mask selecting every connected processing port
     //! \return The bit mask
@@ -178,10 +182,10 @@ class AbstractState {
     Fw::DpCfg::ProcType::SerialType m_requestedProcTypes;
 
     //! The modeled processing override state
-    Fw::Enabled m_procOverrideState;
+    Fw::Enabled m_modelProcOverrideState;
 
     //! The modeled processing override mask
-    Fw::DpCfg::ProcType::SerialType m_procOverrideMask;
+    Fw::DpCfg::ProcType::SerialType m_modelProcOverrideMask;
 
     //! The state to request in the next SET_PROC_OVERRIDE OK rule, if any
     Fw::Optional<Fw::Enabled::T> m_nextProcOverrideStateOpt;

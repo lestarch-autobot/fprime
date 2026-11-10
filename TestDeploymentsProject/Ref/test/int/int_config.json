@@ -23,5 +23,6 @@
         "IMMEDIATE",
         10,
         "PROC_TYPE_ZLIB_DEFLATE"
-    ]
+    ],
+    "Svc.DpWriter.producer.bytes": 1535
 }

@@ -16,7 +16,7 @@ before reaching `DpWriter`.
 
 1. For each buffer _B_ received in step 1:
 
-   1. Perform any requested processing, such as data compression, on _B_.
+   1. Perform any selected processing, such as data compression, on _B_.
 
    1. Write _B_ to disk.
 
@@ -31,15 +31,15 @@ Requirement | Description | Rationale | Verification Method
 ----------- | ----------- | ----------| -------------------
 SVC-DPWRITER-001 | `Svc::DpWriter` shall provide an array of ports for receiving `Fw::Buffer` objects pointing to filled data product containers. | The purpose of `DpWriter` is to write the data products to disk. The array permits the fusion of multiple logical writer components with separate routing paths into a single component. This fusion increases resource efficiency (it requires fewer component instances and threads), but it restricts concurrency by forcing sequential execution of all routing paths on the same thread. The component allows developers to manage this tradeoff. | Unit Test
 SVC-DPWRITER-002 | `Svc::DpWriter` shall provide an array of ports for sending `Fw::Buffer` objects for processing. | This requirement supports downstream processing of the data in the buffer. | Unit Test
-SVC-DPWRITER-003 | On receiving a data product container _C_, `Svc::DpWriter` shall use the processing type field of the header of _C_ to select zero or more processing ports to invoke, in port order. | The processing type field is a bit mask. A one in bit `2^n` in the bit mask selects port index `n`. | Unit Test
-SVC-DPWRITER-004 | On receiving an `Fw::Buffer` _B_, and after performing any requested processing on _B_, `Svc::DpWriter` shall write _B_ to disk. | The purpose of `DpWriter` is to write data products to the disk. | Unit Test
+SVC-DPWRITER-003 | On receiving a data product container _C_, `Svc::DpWriter` shall use the processing type field of the header of _C_, as modified by the processing override (SVC-DPWRITER-009), to select zero or more processing ports to invoke, in port order. | The processing type field is a bit mask. A one in bit `2^n` in the bit mask selects port index `n`. | Unit Test
+SVC-DPWRITER-004 | On receiving an `Fw::Buffer` _B_, and after performing any selected processing on _B_, `Svc::DpWriter` shall write _B_ to disk. | The purpose of `DpWriter` is to write data products to the disk. | Unit Test
 SVC-DPWRITER-005 | `Svc::DpWriter` shall provide an array of ports for notifying other components that data products have been written. A notification shall use the same routing port index as the corresponding input buffer. | The notification output allows `Svc::DpCatalog` or a similar component to update a data product catalog in real time. It is possible to notify a single instance of `Svc::DpCatalog` of all outputs, by connecting all the output ports of `Svc::DpWriter` to that component. It is also possible to notify different components via the different output ports. The array preserves symmetry across the port behaviors of this component (input, buffer return, and notification). | Unit Test
 SVC-DPWRITER-006 | `Svc::DpWriter` shall provide telemetry that reports the number of buffers received, the number of data products written, the number of bytes written, the number of failed writes, and the number of errors. | This requirement establishes the telemetry interface for the component. | Unit test
-SVC-DPWRITER-007 | On receiving an `Fw::Buffer` _B_, and after performing any requested processing on _B_, `Svc::DpWriter` shall re-parse the container header and shrink the size of the product. | Allows processing interfaces to compress data products and communicate that compressed state back to `Svc::DpWriter`. | Unit Test
+SVC-DPWRITER-007 | On receiving an `Fw::Buffer` _B_, and after performing any selected processing on _B_, `Svc::DpWriter` shall re-parse the container header and shrink the size of the product. | Allows processing interfaces to compress data products and communicate that compressed state back to `Svc::DpWriter`. | Unit Test
 SVC-DPWRITER-008 | `Svc::DpWriter` shall return each valid received buffer on the `deallocBufferSendOut` port whose index matches the `bufferSendIn` port that received it. | Matching send and return paths allows a `DpWriter` instance to route buffers back toward the correct allocator. | Unit Test
 SVC-DPWRITER-009 | `Svc::DpWriter` shall provide a command that sets a processing override consisting of a state (`ENABLED` or `DISABLED`) and a bit mask of processing types. When the state is `ENABLED`, the processing types in the mask shall be performed on every received container in addition to those requested in its header. When the state is `DISABLED`, the processing types in the mask shall not be performed on any received container, even if requested in its header. | Processing such as compression is safe to apply to any data product, and operators need to turn it on or off for a whole deployment without every producing component supporting a per-container setting. An empty mask disables the override, restoring header-controlled processing. | Unit Test, Integration Test
 SVC-DPWRITER-010 | `Svc::DpWriter` shall reject, with a validation error and a warning event, a processing override whose mask selects a processing port that does not exist or, when the state is `ENABLED`, a processing port that is not connected. | A ground command must not be able to drive an unconnected port, which would assert the flight software. | Unit Test
-SVC-DPWRITER-011 | `Svc::DpWriter` shall record the processing types actually performed in the header of each written data product and shall report the current processing override state and mask in telemetry. | The data product file records the processing applied to it, and operators can confirm the override in effect. | Unit Test
+SVC-DPWRITER-011 | `Svc::DpWriter` shall record in the header of each written data product the processing types it routed the product through (the requested types with the processing override applied) and shall report the current processing override state and mask in telemetry. | The data product file records which processing ports the product was sent to, and operators can confirm the override in effect. A processor that declines to process (for example `Svc::DpCompressProc` with `ENABLE = DISABLED`) leaves its bit set. | Unit Test
 
 ## 3. Design
 
@@ -93,7 +93,8 @@ command and `bufferSendIn` are both asynchronous), so no lock is needed.
    specifies the number of matched input, notification, and buffer-return routing paths.
    Its default value is five, matching the default `DpManagerNumPorts` configuration.
    Projects can override this value to fit their topology. All routing paths share one
-   message queue with `schedIn` and the asynchronous `CLEAR_EVENT_THROTTLE` command.
+   message queue with `schedIn` and the asynchronous `CLEAR_EVENT_THROTTLE` and
+   `SET_PROC_OVERRIDE` commands.
    Size the queue for the sum of the maximum queued buffers across all connected paths,
    plus the maximum pending scheduler ticks and commands. If at most one tick and one
    command can be pending, reserve at least two additional slots; deployments permitting
@@ -162,7 +163,8 @@ It does the following:
    1. If any port was invoked, re-parse the container header pointed to
       by `B`.
 
-   1. If any port was invoked or `M` differs from `R`, record `M` in the
+   1. If any port was invoked or `M` differs from `R`, record `M` (the
+      processing types the container was routed through) in the
       `ProcType` field of the container header, recompute the header hash,
       serialize the header into `B`, and if necessary shrink the size of
       the `B` buffer to be consistent with the data size in the updated
@@ -203,7 +205,14 @@ processing type bit mask `M`. It does the following:
    command response of `OK`. The new override applies to every container
    received afterwards.
 
-Setting `M` to zero in either state removes the override.
+Setting `M` to zero in either state removes the override. The override is
+held in volatile component state: it is `DISABLED`/`0x00` at startup and must
+be commanded again after a reset. When `S` is `ENABLED`, every received
+container is routed through the forced processing ports on the `DpWriter`
+thread before it is written, which lowers the write throughput for all
+producers; a processor that declines to process (for example
+`Svc::DpCompressProc` with `ENABLE = DISABLED`) leaves the forced bit set in
+the header of an unprocessed product.
 
 <a name="file_format"></a>
 ## 4. File Format

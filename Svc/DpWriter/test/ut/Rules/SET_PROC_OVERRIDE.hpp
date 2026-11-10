@@ -26,6 +26,9 @@ class Tester {
     //! Invalid
     void Invalid();
 
+    //! Reject forcing on the existing processing port that is not connected
+    void InvalidUnconnected();
+
     //! Force processing on for every connected processing port
     void ForceOn();
 
@@ -53,6 +56,12 @@ class Tester {
 
     //! Test state
     TestState testState;
+
+  private:
+    //! Set the override, then write a container with and without requested processing
+    void overrideThenWrite(Fw::Enabled::T state,                      //!< The override state
+                           Fw::DpCfg::ProcType::SerialType procTypes  //!< The override mask
+    );
 };
 
 }  // namespace SET_PROC_OVERRIDE

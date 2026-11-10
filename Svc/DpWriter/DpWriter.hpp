@@ -33,6 +33,8 @@ class DpWriter final : public DpWriterComponentBase {
     static_assert(DpWriter::NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS <=
                       std::numeric_limits<Fw::DpCfg::ProcType::SerialType>::digits,
                   "Every processing port must have a bit in the ProcType bit mask");
+    static_assert(DpWriter::NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS <= std::numeric_limits<U8>::digits,
+                  "SET_PROC_OVERRIDE, ProcOverrideSet, ProcOverrideInvalid, and ProcOverrideMask carry the mask as U8");
 
   public:
     // ----------------------------------------------------------------------

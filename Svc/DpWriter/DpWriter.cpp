@@ -165,19 +165,20 @@ void DpWriter::SET_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, con
     Fw::DpCfg::ProcType::SerialType allowed = 0;
     for (FwIndexType portNum = 0; portNum < NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS; ++portNum) {
         if ((state != Fw::Enabled::ENABLED) || this->isConnected_procBufferSendOut_OutputPort(portNum)) {
-            allowed = static_cast<Fw::DpCfg::ProcType::SerialType>(allowed | (1 << portNum));
+            allowed = static_cast<Fw::DpCfg::ProcType::SerialType>(allowed | (1U << portNum));
         }
     }
     const Fw::DpCfg::ProcType::SerialType mask = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes);
+    Fw::CmdResponse response = Fw::CmdResponse::OK;
     if ((mask & static_cast<Fw::DpCfg::ProcType::SerialType>(~allowed)) != 0) {
         this->log_WARNING_LO_ProcOverrideInvalid(state, procTypes, static_cast<U8>(allowed));
-        this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::VALIDATION_ERROR);
-        return;
+        response = Fw::CmdResponse::VALIDATION_ERROR;
+    } else {
+        this->m_procOverrideState = state;
+        this->m_procOverrideMask = mask;
+        this->log_ACTIVITY_HI_ProcOverrideSet(state, procTypes);
     }
-    this->m_procOverrideState = state;
-    this->m_procOverrideMask = mask;
-    this->log_ACTIVITY_HI_ProcOverrideSet(state, procTypes);
-    this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
+    this->cmdResponse_out(opCode, cmdSeq, response);
 }
 
 // ----------------------------------------------------------------------
@@ -216,7 +217,7 @@ void DpWriter::performProcessing(Fw::DpContainer& container) {
     // Do the processing
     bool did_process = false;
     for (FwIndexType portNum = 0; portNum < NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS; ++portNum) {
-        if ((procTypes & (1 << portNum)) != 0) {
+        if ((procTypes & (1U << portNum)) != 0) {
             this->procBufferSendOut_out(portNum, buffer);
             did_process = true;
         }
@@ -236,7 +237,9 @@ void DpWriter::performProcessing(Fw::DpContainer& container) {
     }
 
     if (did_process || overrideApplied) {
-        // Record the processing types actually performed
+        // Record the processing types the container was routed through (the requested types with the
+        // override applied). This must follow the deserializeHeader() above, which reloads the
+        // requested types from the buffer.
         container.setProcTypes(procTypes);
 
         // Re-compute and serialize the container header into the buffer

@@ -8,7 +8,8 @@ Producing a data product is deployment specific, so the producer command is read
 configuration file given with --deployment-config, for example:
 
     "Svc.DpWriter.producer.command": "Ref.dpDemo.Dp",
-    "Svc.DpWriter.producer.args": ["IMMEDIATE", 10, "PROC_TYPE_ZLIB_DEFLATE"]
+    "Svc.DpWriter.producer.args": ["IMMEDIATE", 10, "PROC_TYPE_ZLIB_DEFLATE"],
+    "Svc.DpWriter.producer.bytes": 1535
 
 The command must request PROC_TYPE_ZLIB_DEFLATE processing and result in exactly one data product file
 written by `Svc.DpWriter` within a few seconds. The forced-off test is skipped when no producer is
@@ -19,6 +20,7 @@ import pytest
 
 PRODUCER_COMMAND_KEY = "Svc.DpWriter.producer.command"
 PRODUCER_ARGS_KEY = "Svc.DpWriter.producer.args"
+PRODUCER_BYTES_KEY = "Svc.DpWriter.producer.bytes"
 
 # Bit of Fw.DpCfg.ProcType.PROC_TYPE_ZLIB_DEFLATE, the processing port the override tests force off
 ZLIB_DEFLATE_MASK = 0x01
@@ -110,7 +112,11 @@ def test_proc_override_rejects_unavailable_ports(fprime_test_api, proc_override)
 
 
 def test_proc_override_forces_processing_off(fprime_test_api, proc_override):
-    """A product requesting zlib processing is written unprocessed while the override forces that type off"""
+    """A product requesting zlib processing is written while the override forces that type off
+
+    The product is not routed to the zlib processing port. When the deployment configures the unprocessed
+    size of the product, the written size is checked against it; otherwise only the write is checked.
+    """
     config = fprime_test_api.load_config_file() or {}
     command = config.get(PRODUCER_COMMAND_KEY)
     if not command:
@@ -119,6 +125,9 @@ def test_proc_override_forces_processing_off(fprime_test_api, proc_override):
     proc_override.set("DISABLED", ZLIB_DEFLATE_MASK)
     start = fprime_test_api.get_event_test_history().size()
     fprime_test_api.send_and_assert_command(command, args, max_delay=10)
-    fprime_test_api.assert_event(
+    written = fprime_test_api.assert_event(
         dp_writer(fprime_test_api, "FileWritten"), start=start, timeout=WRITE_TIMEOUT
     )
+    expected_bytes = config.get(PRODUCER_BYTES_KEY)
+    if expected_bytes is not None:
+        assert written.get_args()[0].val == expected_bytes

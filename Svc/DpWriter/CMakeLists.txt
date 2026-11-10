@@ -7,6 +7,8 @@ register_fprime_module(
     Fw_Dp
 )
 
+# UT_AUTO_HELPERS is not used: the tester hand-writes connectPorts() and
+# initComponents() to leave the last processing port unconnected
 register_fprime_ut(
   AUTOCODER_INPUTS
     "${CMAKE_CURRENT_LIST_DIR}/DpWriter.fpp"

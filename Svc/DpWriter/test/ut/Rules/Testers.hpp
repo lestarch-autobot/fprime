@@ -33,8 +33,6 @@ extern FileWriteStatus::Tester fileWriteStatus;
 
 extern SchedIn::Tester schedIn;
 
-extern SET_PROC_OVERRIDE::Tester setProcOverride;
-
 }  // namespace Testers
 
 }  // namespace Svc

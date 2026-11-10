@@ -49,8 +49,8 @@ void TestState ::action__SET_PROC_OVERRIDE__OK() {
     ASSERT_EVENTS_ProcOverrideSet_SIZE(1);
     ASSERT_EVENTS_ProcOverrideSet(0, state, static_cast<U8>(mask));
     // Update the abstract state
-    this->abstractState.m_procOverrideState = state;
-    this->abstractState.m_procOverrideMask = mask;
+    this->abstractState.m_modelProcOverrideState = state;
+    this->abstractState.m_modelProcOverrideMask = mask;
     this->abstractState.m_ProcOverrideState.value = state.e;
     this->abstractState.m_ProcOverrideMask.value = static_cast<U8>(mask);
 }
@@ -63,20 +63,45 @@ bool TestState ::precondition__SET_PROC_OVERRIDE__Invalid() const {
 void TestState ::action__SET_PROC_OVERRIDE__Invalid() {
     // Clear history
     this->clearHistory();
-    // Pick a state that has a disallowed bit
-    Fw::Enabled state(pickState());
+    // Pick a state that has a disallowed bit, unless the test steered it
+    Fw::Enabled state(this->abstractState.m_nextProcOverrideStateOpt.value_or(pickState()));
     Fw::DpCfg::ProcType::SerialType allowed = AbstractState::getAllowedProcMask(state);
     if (static_cast<U8>(~allowed) == 0) {
         state = Fw::Enabled::ENABLED;
         allowed = AbstractState::getAllowedProcMask(state);
     }
     const U8 disallowed = static_cast<U8>(~allowed);
-    // Pick a mask with at least one disallowed bit
-    U8 mask = static_cast<U8>(STest::Pick::any() & disallowed);
-    while (mask == 0) {
-        mask = static_cast<U8>(STest::Pick::any() & disallowed);
+    // Pick a mask with at least one disallowed bit, unless the test steered it
+    U8 mask = 0;
+    if (this->abstractState.m_nextProcOverrideMaskOpt.has_value()) {
+        mask = static_cast<U8>(this->abstractState.m_nextProcOverrideMaskOpt.value());
+        ASSERT_NE(static_cast<U8>(mask & disallowed), 0);
+    } else {
+        // Pick one disallowed bit, then any other bits
+        FwIndexType numDisallowed = 0;
+        for (FwIndexType i = 0; i < DpWriterNumProcPorts; i++) {
+            if ((disallowed & (1U << i)) != 0) {
+                numDisallowed = static_cast<FwIndexType>(numDisallowed + 1);
+            }
+        }
+        FwIndexType pick = static_cast<FwIndexType>(STest::Pick::lowerUpper(0, static_cast<U32>(numDisallowed - 1)));
+        for (FwIndexType i = 0; i < DpWriterNumProcPorts; i++) {
+            if ((disallowed & (1U << i)) != 0) {
+                if (pick == 0) {
+                    mask = static_cast<U8>(1U << i);
+                }
+                pick = static_cast<FwIndexType>(pick - 1);
+            }
+        }
+        if (mask == 0) {
+            // The disallowed bits are all outside the configured ports
+            mask = static_cast<U8>(1U << DpWriterNumProcPorts);
+        }
+        mask = static_cast<U8>(mask | static_cast<U8>(STest::Pick::any() & disallowed));
+        mask = static_cast<U8>(mask | static_cast<U8>(STest::Pick::any() & allowed));
     }
-    mask = static_cast<U8>(mask | static_cast<U8>(STest::Pick::any() & allowed));
+    this->abstractState.m_nextProcOverrideStateOpt.reset();
+    this->abstractState.m_nextProcOverrideMaskOpt.reset();
     // Send the command
     const U32 cmdSeq = STest::Pick::any();
     this->sendCmd_SET_PROC_OVERRIDE(0, cmdSeq, state, mask);
@@ -107,25 +132,28 @@ void Tester ::Invalid() {
     Testers::schedIn.ruleOK.apply(this->testState);
 }
 
-void Tester ::ForceOn() {
-    this->testState.setNextProcOverride(Fw::Enabled::ENABLED, AbstractState::getConnectedProcMask());
-    this->ruleOK.apply(this->testState);
+void Tester ::InvalidUnconnected() {
+    this->testState.setNextProcOverride(Fw::Enabled::ENABLED, static_cast<Fw::DpCfg::ProcType::SerialType>(
+                                                                  1U << AbstractState::NUM_CONNECTED_PROC_PORTS));
+    this->ruleInvalid.apply(this->testState);
     Testers::schedIn.ruleOK.apply(this->testState);
-    Testers::bufferSendIn.ruleOK.apply(this->testState);
-    Testers::bufferSendIn.ruleOKProcShrink.apply(this->testState);
+}
+
+void Tester ::ForceOn() {
+    this->overrideThenWrite(Fw::Enabled::ENABLED, AbstractState::getConnectedProcMask());
 }
 
 void Tester ::ForceOff() {
-    this->testState.setNextProcOverride(Fw::Enabled::DISABLED, AbstractState::getAllProcMask());
-    this->ruleOK.apply(this->testState);
-    Testers::schedIn.ruleOK.apply(this->testState);
-    Testers::bufferSendIn.ruleOK.apply(this->testState);
-    Testers::bufferSendIn.ruleOKProcShrink.apply(this->testState);
+    this->overrideThenWrite(Fw::Enabled::DISABLED, AbstractState::getAllProcMask());
 }
 
 void Tester ::Clear() {
     this->ForceOff();
-    this->testState.setNextProcOverride(Fw::Enabled::ENABLED, 0);
+    this->overrideThenWrite(Fw::Enabled::ENABLED, 0);
+}
+
+void Tester ::overrideThenWrite(Fw::Enabled::T state, Fw::DpCfg::ProcType::SerialType mask) {
+    this->testState.setNextProcOverride(state, mask);
     this->ruleOK.apply(this->testState);
     Testers::schedIn.ruleOK.apply(this->testState);
     Testers::bufferSendIn.ruleOK.apply(this->testState);

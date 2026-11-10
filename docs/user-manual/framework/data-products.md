@@ -482,7 +482,9 @@ For on-board lossless compression of data products, see
 processing types on (`ENABLED`) or off (`DISABLED`) for every data product it writes,
 regardless of the processing types requested in each container header. This lets an
 operator turn on compression for a whole deployment, or shut processing off, without
-every producing component supporting a per-container setting. See the
+every producing component supporting a per-container setting. The override is
+volatile (it is cleared by a reset) and forced processing runs on the `DpWriter`
+thread for every product, so it lowers write throughput for all producers. See the
 [`Svc::DpWriter` SDD](../../../Svc/DpWriter/docs/sdd.md).
 
 **Processing data products:**

@@ -75,20 +75,20 @@ Fw::Buffer AbstractState::getDpBufferWithProc(Fw::DpCfg::ProcType::SerialType pr
     return buffer;
 }
 
-Fw::DpCfg::ProcType::SerialType AbstractState::getAllProcMask() {
+Fw::DpCfg::ProcType::SerialType AbstractState::getLowBitsMask(FwIndexType numBits) {
     Fw::DpCfg::ProcType::SerialType mask = 0;
-    for (FwIndexType i = 0; i < DpWriterNumProcPorts; i++) {
-        mask = static_cast<Fw::DpCfg::ProcType::SerialType>(mask | (1 << i));
+    for (FwIndexType i = 0; i < numBits; i++) {
+        mask = static_cast<Fw::DpCfg::ProcType::SerialType>(mask | (1U << i));
     }
     return mask;
 }
 
+Fw::DpCfg::ProcType::SerialType AbstractState::getAllProcMask() {
+    return getLowBitsMask(DpWriterNumProcPorts);
+}
+
 Fw::DpCfg::ProcType::SerialType AbstractState::getConnectedProcMask() {
-    Fw::DpCfg::ProcType::SerialType mask = 0;
-    for (FwIndexType i = 0; i < NUM_CONNECTED_PROC_PORTS; i++) {
-        mask = static_cast<Fw::DpCfg::ProcType::SerialType>(mask | (1 << i));
-    }
-    return mask;
+    return getLowBitsMask(NUM_CONNECTED_PROC_PORTS);
 }
 
 Fw::DpCfg::ProcType::SerialType AbstractState::getAllowedProcMask(const Fw::Enabled& state) {
@@ -97,11 +97,11 @@ Fw::DpCfg::ProcType::SerialType AbstractState::getAllowedProcMask(const Fw::Enab
 
 Fw::DpCfg::ProcType::SerialType AbstractState::applyProcOverride(Fw::DpCfg::ProcType::SerialType procTypes) const {
     Fw::DpCfg::ProcType::SerialType result = procTypes;
-    if (this->m_procOverrideState == Fw::Enabled::ENABLED) {
-        result = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes | this->m_procOverrideMask);
+    if (this->m_modelProcOverrideState == Fw::Enabled::ENABLED) {
+        result = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes | this->m_modelProcOverrideMask);
     } else {
         result = static_cast<Fw::DpCfg::ProcType::SerialType>(
-            procTypes & static_cast<Fw::DpCfg::ProcType::SerialType>(~this->m_procOverrideMask));
+            procTypes & static_cast<Fw::DpCfg::ProcType::SerialType>(~this->m_modelProcOverrideMask));
     }
     return result;
 }

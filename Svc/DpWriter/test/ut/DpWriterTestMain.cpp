@@ -156,6 +156,13 @@ TEST(SET_PROC_OVERRIDE, Invalid) {
     tester.Invalid();
 }
 
+TEST(SET_PROC_OVERRIDE, InvalidUnconnected) {
+    COMMENT("Reject forcing on an existing processing type whose port is unconnected.");
+    REQUIREMENT("SVC-DPWRITER-010");
+    SET_PROC_OVERRIDE::Tester tester;
+    tester.InvalidUnconnected();
+}
+
 TEST(SET_PROC_OVERRIDE, ForceOn) {
     COMMENT("Force processing on and verify every connected processing port is invoked and recorded.");
     REQUIREMENT("SVC-DPWRITER-009");
