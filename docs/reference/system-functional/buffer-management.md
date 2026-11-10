@@ -26,7 +26,7 @@ In both cases, components request buffers via the Fw::BufferGet port and return 
 
 ### Buffer Accumulation
 
-The Buffer Accumulator accepts incoming buffers and queues them for later processing. This is useful when the data arrival rate may temporarily exceed the processing rate, or to pause buffer processing during critical events. Buffers are stored in an internal queue and drained in order. If the queue fills, the accumulator can either drop the newest buffer or assert, depending on the configuration. Operators can pause and resume buffer draining via command.
+The Buffer Accumulator accepts incoming buffers and queues them for later processing. This is useful when the data arrival rate may temporarily exceed the processing rate, or to pause buffer processing during critical events. Buffers are stored in an internal queue and drained in order. If the queue fills, the newest buffer is returned to its owner and a `BA_QueueFull` warning is emitted. Operators can pause and resume buffer draining via command, and can set a drain limit (`BA_SetDrainLimit`) — the number of drained buffers that may be outstanding with the consumer at once (default 1, at most the queue depth); the outstanding count and limit are reported on telemetry.
 
 ### Buffer Replication
 

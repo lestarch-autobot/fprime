@@ -63,8 +63,7 @@ void BufferAccumulatorTester ::InitialLimit() {
         ASSERT_from_bufferSendOutDrain(i, this->m_buffers[i]);
     }
     ASSERT_EQ(limit, this->lastOutstanding());
-    const U32 lastQueued = static_cast<U32>(this->tlmHistory_BA_NumQueuedBuffers->size() - 1);
-    ASSERT_TLM_BA_NumQueuedBuffers(lastQueued, numBuffers - limit);
+    ASSERT_EQ(numBuffers - limit, this->lastQueued());
 
     // Each return opens one slot
     for (U32 i = 0; i < numBuffers; ++i) {
@@ -83,10 +82,10 @@ void BufferAccumulatorTester ::InitialLimitInvalid() {
     Fw::MallocAllocator allocator;
     ASSERT_DEATH_IF_SUPPORTED(
         this->component.allocateQueue(0, allocator, MAX_NUM_BUFFERS, BufferAccumulator_OpState::ACCUMULATE, 0),
-        "Assert: ");
+        "Assert: \".*BufferAccumulator.cpp:[0-9]+\" 0");
     ASSERT_DEATH_IF_SUPPORTED(this->component.allocateQueue(0, allocator, MAX_NUM_BUFFERS,
                                                             BufferAccumulator_OpState::ACCUMULATE, MAX_NUM_BUFFERS + 1),
-                              "Assert: ");
+                              "Assert: \".*BufferAccumulator.cpp:[0-9]+\" 11 10");
 }
 
 void BufferAccumulatorTester ::SetLimitOK() {
@@ -146,6 +145,19 @@ void BufferAccumulatorTester ::SetLimitInvalid() {
     this->fill(2);
     ASSERT_from_bufferSendOutDrain_SIZE(1);
     ASSERT_from_bufferSendOutDrain(0, this->m_buffers[0]);
+
+    // Rejected in ACCUMULATE mode too, and the limit is still unchanged (REQ-BA-DL-005)
+    this->sendCmd_BA_SetMode(0, 0, BufferAccumulator_OpState::ACCUMULATE);
+    this->doDispatch();
+    this->sendCmd_BA_SetDrainLimit(0, 0, 0);
+    this->doDispatch();
+    ASSERT_CMD_RESPONSE_SIZE(4);
+    ASSERT_CMD_RESPONSE(3, BufferAccumulator::OPCODE_BA_SETDRAINLIMIT, 0, Fw::CmdResponse::VALIDATION_ERROR);
+    ASSERT_EVENTS_BA_InvalidDrainLimit_SIZE(3);
+    ASSERT_EVENTS_BA_InvalidDrainLimit(2, 0u, MAX_NUM_BUFFERS);
+    ASSERT_TLM_BA_DrainLimit_SIZE(0);
+    this->returnBuffer(0);
+    ASSERT_from_bufferSendOutDrain_SIZE(1);
 }
 
 void BufferAccumulatorTester ::WindowedDrain() {
@@ -171,8 +183,7 @@ void BufferAccumulatorTester ::WindowedDrain() {
         ASSERT_from_bufferSendOutDrain(i, this->m_buffers[i]);
     }
     ASSERT_EQ(0u, this->lastOutstanding());
-    const U32 lastQueued = static_cast<U32>(this->tlmHistory_BA_NumQueuedBuffers->size() - 1);
-    ASSERT_TLM_BA_NumQueuedBuffers(lastQueued, 0u);
+    ASSERT_EQ(0u, this->lastQueued());
 }
 
 void BufferAccumulatorTester ::WindowedPartialDrain() {
@@ -200,15 +211,31 @@ void BufferAccumulatorTester ::WindowedPartialDrain() {
     ASSERT_CMD_RESPONSE(0, BufferAccumulator::OPCODE_BA_DRAINBUFFERS, 0, Fw::CmdResponse::OK);
     ASSERT_EQ(limit, this->lastOutstanding());
 
-    // The remaining returns send nothing more: the sixth buffer stays queued
-    for (U32 i = 1; i < numToDrain; ++i) {
+    // A second partial drain is accepted while the window is still full (REQ-BA-DL-015); it pends silently
+    this->sendCmd_BA_DrainBuffers(0, 0, 1, BufferAccumulator_BlockMode::BLOCK);
+    this->doDispatch();
+    ASSERT_EVENTS_BA_StillDraining_SIZE(0);
+    ASSERT_EVENTS_BA_DrainStalled_SIZE(0);
+    ASSERT_CMD_RESPONSE_SIZE(1);
+    ASSERT_from_bufferSendOutDrain_SIZE(numToDrain);
+
+    // The next return opens a slot: the sixth buffer goes out and completes the second command on send
+    this->returnBuffer(1);
+    ASSERT_from_bufferSendOutDrain_SIZE(numBuffers);
+    ASSERT_from_bufferSendOutDrain(numBuffers - 1, this->m_buffers[numBuffers - 1]);
+    ASSERT_EVENTS_BA_PartialDrainDone_SIZE(2);
+    ASSERT_EVENTS_BA_PartialDrainDone(1, 1u);
+    ASSERT_CMD_RESPONSE_SIZE(2);
+    ASSERT_CMD_RESPONSE(1, BufferAccumulator::OPCODE_BA_DRAINBUFFERS, 0, Fw::CmdResponse::OK);
+
+    // The remaining returns send nothing more: the queue is empty
+    for (U32 i = 2; i < numBuffers; ++i) {
         this->returnBuffer(i);
-        ASSERT_from_bufferSendOutDrain_SIZE(numToDrain);
+        ASSERT_from_bufferSendOutDrain_SIZE(numBuffers);
     }
-    ASSERT_from_bufferSendOutReturn_SIZE(numToDrain);
+    ASSERT_from_bufferSendOutReturn_SIZE(numBuffers);
     ASSERT_EQ(0u, this->lastOutstanding());
-    const U32 lastQueued = static_cast<U32>(this->tlmHistory_BA_NumQueuedBuffers->size() - 1);
-    ASSERT_TLM_BA_NumQueuedBuffers(lastQueued, numBuffers - numToDrain);
+    ASSERT_EQ(0u, this->lastQueued());
 }
 
 void BufferAccumulatorTester ::SetLimitDuringPartialDrain() {
@@ -314,8 +341,7 @@ void BufferAccumulatorTester ::AccumulateMidFlight() {
         ASSERT_EQ(limit - (i + 1), this->lastOutstanding());
     }
     ASSERT_EVENTS_BA_UnexpectedReturn_SIZE(0);
-    const U32 lastQueued = static_cast<U32>(this->tlmHistory_BA_NumQueuedBuffers->size() - 1);
-    ASSERT_TLM_BA_NumQueuedBuffers(lastQueued, 2u);
+    ASSERT_EQ(2u, this->lastQueued());
 }
 
 void BufferAccumulatorTester ::StallAtLimit() {
@@ -367,6 +393,12 @@ void BufferAccumulatorTester ::fill(U32 count) {
 void BufferAccumulatorTester ::returnBuffer(U32 i) {
     this->invoke_to_bufferSendInReturn(0, this->m_buffers[i]);
     this->doDispatch();
+}
+
+U32 BufferAccumulatorTester ::lastQueued() {
+    const FwSizeType size = this->tlmHistory_BA_NumQueuedBuffers->size();
+    EXPECT_GT(size, 0u);
+    return (size > 0) ? static_cast<U32>(this->tlmHistory_BA_NumQueuedBuffers->at(static_cast<U32>(size - 1)).arg) : 0u;
 }
 
 U32 BufferAccumulatorTester ::lastOutstanding() {

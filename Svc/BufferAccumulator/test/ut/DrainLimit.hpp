@@ -79,10 +79,11 @@ class BufferAccumulatorTester : public Svc::BufferAccumulatorTester {
     void returnBuffer(U32 i);
 
     //! The last reported BA_NumOutstandingBuffers value
+    U32 lastQueued(void);
     U32 lastOutstanding(void);
 
     //! Backing store for the test buffers
-    U8 m_data[10];
+    U8 m_data[10] = {};
 
     //! The test buffers
     Fw::Buffer m_buffers[MAX_NUM_BUFFERS];

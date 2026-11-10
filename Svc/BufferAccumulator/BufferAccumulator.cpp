@@ -72,6 +72,7 @@ void BufferAccumulator ::deallocateQueue(Fw::MemAllocator& allocator) {
 void BufferAccumulator ::preamble() {
     this->tlmWrite_BA_DrainLimit(this->m_drainLimit);
     this->tlmWrite_BA_NumOutstandingBuffers(this->m_numOutstanding);
+    this->tlmWrite_BA_NumQueuedBuffers(static_cast<U32>(this->m_bufferQueue.getSize()));
 }
 
 // ----------------------------------------------------------------------
@@ -79,8 +80,8 @@ void BufferAccumulator ::preamble() {
 // ----------------------------------------------------------------------
 
 void BufferAccumulator ::bufferSendInFill_handler(const FwIndexType portNum, Fw::Buffer& buffer) {
-    const FwSizeType queuedBefore = this->m_bufferQueue.getSize();
     const U32 outstandingBefore = this->m_numOutstanding;
+    const FwSizeType queuedBefore = this->m_bufferQueue.getSize();
     const bool status = this->m_bufferQueue.enqueue(buffer);
     if (status) {
         if (this->m_numWarnings > 0) {
@@ -97,12 +98,12 @@ void BufferAccumulator ::bufferSendInFill_handler(const FwIndexType portNum, Fw:
     }
     // A fill never stalls a partial drain: the FIFO is non-empty here
     this->drain(false);
-    this->reportCounts(queuedBefore, outstandingBefore);
+    this->reportCounts(queuedBefore, outstandingBefore, true);
 }
 
 void BufferAccumulator ::bufferSendInReturn_handler(const FwIndexType portNum, Fw::Buffer& buffer) {
-    const FwSizeType queuedBefore = this->m_bufferQueue.getSize();
     const U32 outstandingBefore = this->m_numOutstanding;
+    const FwSizeType queuedBefore = this->m_bufferQueue.getSize();
     this->bufferSendOutReturn_out(0, buffer);
     if (this->m_numOutstanding > 0) {
         this->m_numOutstanding--;
@@ -113,7 +114,7 @@ void BufferAccumulator ::bufferSendInReturn_handler(const FwIndexType portNum, F
         this->m_unexpectedReturnReported = true;
     }
     this->drain(true);
-    this->reportCounts(queuedBefore, outstandingBefore);
+    this->reportCounts(queuedBefore, outstandingBefore, false);
 }
 
 void BufferAccumulator ::pingIn_handler(const FwIndexType portNum, U32 key) {
@@ -127,8 +128,8 @@ void BufferAccumulator ::pingIn_handler(const FwIndexType portNum, U32 key) {
 void BufferAccumulator ::BA_SetMode_cmdHandler(const FwOpcodeType opCode,
                                                const U32 cmdSeq,
                                                const BufferAccumulator_OpState& mode) {
-    const FwSizeType queuedBefore = this->m_bufferQueue.getSize();
     const U32 outstandingBefore = this->m_numOutstanding;
+    const FwSizeType queuedBefore = this->m_bufferQueue.getSize();
     // cancel an in-progress partial drain
     if (this->m_numToDrain > 0) {
         // reset counters for partial buffer drain
@@ -141,7 +142,7 @@ void BufferAccumulator ::BA_SetMode_cmdHandler(const FwOpcodeType opCode,
     this->m_mode = mode;
     // Sends stop in ACCUMULATE; buffers already outstanding still return and are counted
     this->drain(false);
-    this->reportCounts(queuedBefore, outstandingBefore);
+    this->reportCounts(queuedBefore, outstandingBefore, false);
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
 }
 
@@ -149,8 +150,8 @@ void BufferAccumulator ::BA_DrainBuffers_cmdHandler(const FwOpcodeType opCode,
                                                     const U32 cmdSeq,
                                                     U32 numToDrain,
                                                     const BufferAccumulator_BlockMode& blockMode) {
-    const FwSizeType queuedBefore = this->m_bufferQueue.getSize();
     const U32 outstandingBefore = this->m_numOutstanding;
+    const FwSizeType queuedBefore = this->m_bufferQueue.getSize();
     if (this->m_numDrained < this->m_numToDrain) {
         this->log_WARNING_HI_BA_StillDraining(static_cast<U32>(this->m_numDrained),
                                               static_cast<U32>(this->m_numToDrain));
@@ -195,7 +196,7 @@ void BufferAccumulator ::BA_DrainBuffers_cmdHandler(const FwOpcodeType opCode,
 
     // kick off the draining; the response is sent when the target has been sent
     this->drain(true);
-    this->reportCounts(queuedBefore, outstandingBefore);
+    this->reportCounts(queuedBefore, outstandingBefore, false);
 }
 
 void BufferAccumulator ::BA_SetDrainLimit_cmdHandler(const FwOpcodeType opCode, const U32 cmdSeq, U32 maxOutstanding) {
@@ -205,15 +206,15 @@ void BufferAccumulator ::BA_SetDrainLimit_cmdHandler(const FwOpcodeType opCode, 
         this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::VALIDATION_ERROR);
         return;
     }
-    const FwSizeType queuedBefore = this->m_bufferQueue.getSize();
     const U32 outstandingBefore = this->m_numOutstanding;
+    const FwSizeType queuedBefore = this->m_bufferQueue.getSize();
     this->m_drainLimit = maxOutstanding;
     this->log_ACTIVITY_HI_BA_DrainLimitSet(maxOutstanding);
     this->tlmWrite_BA_DrainLimit(this->m_drainLimit);
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
     // A raised limit may open slots; a lowered one pauses sends until enough buffers return
     this->drain(false);
-    this->reportCounts(queuedBefore, outstandingBefore);
+    this->reportCounts(queuedBefore, outstandingBefore, false);
 }
 
 // ----------------------------------------------------------------------
@@ -262,8 +263,10 @@ void BufferAccumulator ::drain(const bool reportStall) {
     }
 }
 
-void BufferAccumulator ::reportCounts(const FwSizeType queuedBefore, const U32 outstandingBefore) {
-    if (this->m_bufferQueue.getSize() != queuedBefore) {
+void BufferAccumulator ::reportCounts(const FwSizeType queuedBefore, const U32 outstandingBefore, const bool isFill) {
+    // Pre-change cadence: the depth is reported by every fill and by every handler that runs while draining,
+    // so the channel keeps appearing in DRAIN flow-through where the depth is 0 at every handler exit
+    if (isFill || this->isDraining() || (this->m_bufferQueue.getSize() != queuedBefore)) {
         this->tlmWrite_BA_NumQueuedBuffers(static_cast<U32>(this->m_bufferQueue.getSize()));
     }
     if (this->m_numOutstanding != outstandingBefore) {

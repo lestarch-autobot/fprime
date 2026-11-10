@@ -126,9 +126,12 @@ def test_set_drain_limit_invalid(fprime_test_api):
 
 
 def test_pipelined_drain(fprime_test_api):
-    """Accumulated buffers drain with up to the drain limit in flight at once, and all return
+    """Accumulated buffers drain through a window wider than one and all return
 
-    Covers: REQ-BA-DL-006, REQ-BA-DL-007, REQ-BA-DL-008, REQ-BA-DL-011
+    The window itself (REQ-BA-DL-007) is verified by unit test: TlmChan downlinks only the
+    latest value of a channel per tick, so the peak outstanding count is not observable here.
+
+    Covers: REQ-BA-DL-006, REQ-BA-DL-008, REQ-BA-DL-011
     """
     command, args = producer(fprime_test_api)
     num_buffers = 3
@@ -165,17 +168,6 @@ def test_pipelined_drain(fprime_test_api):
         fprime_test_api.assert_telemetry(
             outstanding, 0, start=tlm_start, timeout=TELEMETRY_TIMEOUT
         )
-
-        # The window was never exceeded (REQ-BA-DL-007)
-        samples = [
-            item.get_val()
-            for item in fprime_test_api.get_telemetry_test_history().retrieve(tlm_start)
-            if item.template.get_full_name() == outstanding
-        ]
-        assert samples, "BA_NumOutstandingBuffers must be reported while draining"
-        assert (
-            max(samples) <= num_buffers
-        ), f"Outstanding count {max(samples)} exceeded the drain limit"
     finally:
         fprime_test_api.send_and_assert_command(
             mode, ["DRAIN"], max_delay=EVENT_TIMEOUT

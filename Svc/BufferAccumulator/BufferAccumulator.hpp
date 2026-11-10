@@ -118,7 +118,9 @@ class BufferAccumulator final : public BufferAccumulatorComponentBase {
     // ----------------------------------------------------------------------
 
     //! Give the class a memory buffer. Should be called after constructor
-    //! and init, but before task is spawned.
+    //! and init, but before task is spawned. Asserts unless
+    //! 1 <= initialDrainLimit <= maxNumBuffers; the consumer connected to
+    //! bufferSendOutDrain must be able to queue maxNumBuffers buffers at once.
     void allocateQueue(
         FwEnumStoreType identifier,
         Fw::MemAllocator& allocator,
@@ -193,9 +195,11 @@ class BufferAccumulator final : public BufferAccumulatorComponentBase {
     //! reportStall: emit BA_DrainStalled if a partial drain would send but the FIFO is empty
     void drain(bool reportStall);
 
-    //! Write the queue depth and the outstanding count, each only when it changed
+    //! Write the queue depth (on a fill, while draining, or when it changed) and the outstanding count (when it
+    //! changed)
     void reportCounts(FwSizeType queuedBefore,  //!< The queue depth at handler entry
-                      U32 outstandingBefore     //!< The outstanding count at handler entry
+                      U32 outstandingBefore,    //!< The outstanding count at handler entry
+                      bool isFill               //!< Whether the caller is the fill handler
     );
 
   private:
