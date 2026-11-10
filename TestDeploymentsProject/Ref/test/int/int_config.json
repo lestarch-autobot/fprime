@@ -17,12 +17,5 @@
         "IMMEDIATE",
         10,
         "PROC_TYPE_NONE"
-    ],
-    "Svc.DpWriter.producer.command": "Ref.dpDemo.Dp",
-    "Svc.DpWriter.producer.args": [
-        "IMMEDIATE",
-        10,
-        "PROC_TYPE_ZLIB_DEFLATE"
-    ],
-    "Svc.DpWriter.producer.bytes": 1535
+    ]
 }
