@@ -95,11 +95,11 @@ Arguments follow the same `get_arguments()` / `check_arguments()` convention as 
 
 ## Registration
 
-Register the plugin through the `fprime_gds` entry point of the package that contains it, as for every other GDS plugin:
+Register the plugin class through the `fprime_gds` entry point of the package that contains it (the entry point must name the class, whose `register_data_transport_plugin` hook the plugin system discovers), as for every other GDS plugin:
 
 ```toml
 [project.entry-points.fprime_gds]
-example_ground = "example_package.transport"
+example_ground = "example_package.transport:ExampleGroundSystemClient"
 ```
 
 Once installed, `--data-transport-selection example-ground` selects it and its arguments appear in `--help`.
