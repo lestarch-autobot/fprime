@@ -26,7 +26,7 @@ In both cases, components request buffers via the Fw::BufferGet port and return 
 
 ### Buffer Accumulation
 
-The Buffer Accumulator accepts incoming buffers and queues them for later processing. This is useful when the data arrival rate may temporarily exceed the processing rate, or to pause buffer processing during critical events. Buffers are stored in an internal queue and drained in order. If the queue fills, the accumulator can either drop the newest buffer or assert, depending on the configuration. Operators can pause and resume buffer draining via command.
+The Buffer Accumulator accepts incoming buffers and queues them for later processing. This is useful when the data arrival rate may temporarily exceed the processing rate, or to pause buffer processing during critical events. Buffers are stored in an internal queue and drained in order. If the queue fills, the newest buffer is returned to its owner and a `BA_QueueFull` warning is emitted. Operators can pause and resume buffer draining via command, and can set a drain limit (`BA_SetDrainLimit`) — the number of drained buffers that may be outstanding with the consumer at once (default 1, at most the queue depth); the outstanding count and limit are reported on telemetry.
 
 ### Buffer Replication
 
@@ -40,4 +40,6 @@ The Buffer Logger writes incoming buffers to files on the file system. It is typ
 
 - If the Buffer Manager runs out of available buffers in the requested size bin, it returns an empty (invalid) buffer. The requesting component must check validity before use.
 - The Buffer Accumulator reports a warning when its queue is full and a buffer must be dropped.
+- The Buffer Accumulator warns (`BA_UnexpectedReturn`) when a buffer is returned while none is outstanding; the buffer is still forwarded to its owner.
+- Drained buffers that are never returned stay counted as outstanding (`BA_NumOutstandingBuffers`); once the count reaches the drain limit the accumulator stops sending until buffers return or the limit is raised. There is no timeout or reset command.
 - Buffers that are never returned consume pool capacity. The Buffer Manager tracks outstanding allocations via telemetry.
