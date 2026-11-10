@@ -128,61 +128,76 @@ TEST(FileWriteStatus, OK) {
     tester.OK();
 }
 
-TEST(SET_PROC_OVERRIDE, OK) {
-    COMMENT("Set a valid processing override and verify the response, event, and telemetry.");
+TEST(ProcOverride, State) {
+    COMMENT("Set the override state and verify the response, event, and update-on-change telemetry.");
     REQUIREMENT("SVC-DPWRITER-009");
     REQUIREMENT("SVC-DPWRITER-011");
-    SET_PROC_OVERRIDE::Tester tester;
-    tester.OK();
+    ProcOverride::Tester tester;
+    tester.State();
 }
 
-TEST(SET_PROC_OVERRIDE, Invalid) {
-    COMMENT("Reject a processing override that selects an unconnected or nonexistent processing port.");
-    REQUIREMENT("SVC-DPWRITER-010");
-    SET_PROC_OVERRIDE::Tester tester;
-    tester.Invalid();
-}
-
-TEST(SET_PROC_OVERRIDE, InvalidUnconnected) {
-    COMMENT("Reject forcing on an existing processing type whose port is unconnected.");
-    REQUIREMENT("SVC-DPWRITER-010");
-    SET_PROC_OVERRIDE::Tester tester;
-    tester.InvalidUnconnected();
-}
-
-TEST(SET_PROC_OVERRIDE, InvalidNonexistent) {
-    COMMENT("Reject a DISABLED override selecting a processing type with no port.");
-    REQUIREMENT("SVC-DPWRITER-010");
-    SET_PROC_OVERRIDE::Tester tester;
-    tester.InvalidNonexistent();
-}
-
-TEST(SET_PROC_OVERRIDE, InvalidKeepsOverride) {
-    COMMENT("Reject an override while one is ENABLED and verify the ENABLED override stays in force.");
-    REQUIREMENT("SVC-DPWRITER-010");
-    SET_PROC_OVERRIDE::Tester tester;
-    tester.InvalidKeepsOverride();
-}
-
-TEST(SET_PROC_OVERRIDE, ForceOn) {
-    COMMENT("Enable an override selecting every connected processing port and verify each is invoked and recorded.");
+TEST(ProcOverride, MaskOK) {
+    COMMENT("Set a valid override mask and verify the response, event, and telemetry.");
     REQUIREMENT("SVC-DPWRITER-009");
-    SET_PROC_OVERRIDE::Tester tester;
+    REQUIREMENT("SVC-DPWRITER-011");
+    ProcOverride::Tester tester;
+    tester.MaskOK();
+}
+
+TEST(ProcOverride, MaskInvalid) {
+    COMMENT("Reject a mask that selects a processing type with no processing port.");
+    REQUIREMENT("SVC-DPWRITER-010");
+    ProcOverride::Tester tester;
+    tester.MaskInvalid();
+}
+
+TEST(ProcOverride, MaskInvalidKeepsMask) {
+    COMMENT("Reject a mask while an override is ENABLED and verify the override stays in force.");
+    REQUIREMENT("SVC-DPWRITER-010");
+    ProcOverride::Tester tester;
+    tester.MaskInvalidKeepsMask();
+}
+
+TEST(ProcOverride, Add) {
+    COMMENT("Add a processing type to the mask; adding it again changes nothing.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    ProcOverride::Tester tester;
+    tester.Add();
+}
+
+TEST(ProcOverride, Remove) {
+    COMMENT("Remove a processing type from the mask; removing an absent type changes nothing.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    ProcOverride::Tester tester;
+    tester.Remove();
+}
+
+TEST(ProcOverride, ForceOn) {
+    COMMENT("Enable an override selecting every processing port and verify each is invoked and recorded.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    ProcOverride::Tester tester;
     tester.ForceOn();
 }
 
-TEST(SET_PROC_OVERRIDE, ForceOff) {
+TEST(ProcOverride, ForceOff) {
     COMMENT("Enable an empty override and verify no processing port is invoked and the header is cleared.");
     REQUIREMENT("SVC-DPWRITER-009");
-    SET_PROC_OVERRIDE::Tester tester;
+    ProcOverride::Tester tester;
     tester.ForceOff();
 }
 
-TEST(SET_PROC_OVERRIDE, Clear) {
+TEST(ProcOverride, Clear) {
     COMMENT("Disable the override and verify header-controlled processing resumes regardless of the mask.");
     REQUIREMENT("SVC-DPWRITER-009");
-    SET_PROC_OVERRIDE::Tester tester;
+    ProcOverride::Tester tester;
     tester.Clear();
+}
+
+TEST(ProcOverride, AddThenEnable) {
+    COMMENT("Edit the mask while DISABLED (not applied), then enable it and verify it is applied.");
+    REQUIREMENT("SVC-DPWRITER-009");
+    ProcOverride::Tester tester;
+    tester.AddThenEnable();
 }
 
 TEST(SchedIn, OK) {

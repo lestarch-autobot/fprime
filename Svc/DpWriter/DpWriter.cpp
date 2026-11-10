@@ -159,26 +159,27 @@ void DpWriter::CLEAR_EVENT_THROTTLE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq) 
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
 }
 
-void DpWriter::SET_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, const Fw::Enabled& state, U8 procTypes) {
-    // Compute the processing types the command may select in the requested state: every configured
-    // processing port when DISABLED (the mask is stored but not applied), only connected ports when ENABLED
-    Fw::DpCfg::ProcType::SerialType allowed = 0;
-    for (FwIndexType portNum = 0; portNum < NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS; ++portNum) {
-        if ((state != Fw::Enabled::ENABLED) || this->isConnected_procBufferSendOut_OutputPort(portNum)) {
-            allowed = static_cast<Fw::DpCfg::ProcType::SerialType>(allowed | (1U << portNum));
-        }
-    }
-    const Fw::DpCfg::ProcType::SerialType mask = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes);
-    Fw::CmdResponse response = Fw::CmdResponse::OK;
-    if ((mask & static_cast<Fw::DpCfg::ProcType::SerialType>(~allowed)) != 0) {
-        this->log_WARNING_LO_ProcOverrideInvalid(state, procTypes, static_cast<U8>(allowed));
-        response = Fw::CmdResponse::VALIDATION_ERROR;
-    } else {
-        this->m_procOverrideState = state;
-        this->m_procOverrideMask = mask;
-        this->log_ACTIVITY_HI_ProcOverrideSet(state, procTypes);
-    }
-    this->cmdResponse_out(opCode, cmdSeq, response);
+void DpWriter::SET_PROC_OVERRIDE_STATE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, const Fw::Enabled& state) {
+    this->m_procOverrideState = state;
+    this->log_ACTIVITY_HI_ProcOverrideSet(this->m_procOverrideState, static_cast<U8>(this->m_procOverrideMask));
+    this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
+}
+
+void DpWriter::ADD_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, const Fw::DpCfg::ProcType& procType) {
+    this->setProcOverrideMask(opCode, cmdSeq,
+                              static_cast<Fw::DpCfg::ProcType::SerialType>(
+                                  this->m_procOverrideMask | static_cast<Fw::DpCfg::ProcType::SerialType>(procType.e)));
+}
+
+void DpWriter::REMOVE_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, const Fw::DpCfg::ProcType& procType) {
+    this->setProcOverrideMask(
+        opCode, cmdSeq,
+        static_cast<Fw::DpCfg::ProcType::SerialType>(this->m_procOverrideMask &
+                                                     static_cast<Fw::DpCfg::ProcType::SerialType>(~procType.e)));
+}
+
+void DpWriter::SET_PROC_OVERRIDE_MASK_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, U8 procTypes) {
+    this->setProcOverrideMask(opCode, cmdSeq, static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes));
 }
 
 // ----------------------------------------------------------------------
@@ -194,6 +195,23 @@ Fw::Success::T DpWriter::deserializePacketHeader(Fw::Buffer& buffer, Fw::DpConta
         status = Fw::Success::FAILURE;
     }
     return status;
+}
+
+void DpWriter::setProcOverrideMask(FwOpcodeType opCode, U32 cmdSeq, Fw::DpCfg::ProcType::SerialType procTypes) {
+    // Every configured processing port has a bit in the mask; bits beyond the configured ports have no port
+    Fw::DpCfg::ProcType::SerialType configured = 0;
+    for (FwIndexType portNum = 0; portNum < NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS; ++portNum) {
+        configured = static_cast<Fw::DpCfg::ProcType::SerialType>(configured | (1U << portNum));
+    }
+    Fw::CmdResponse response = Fw::CmdResponse::OK;
+    if ((procTypes & static_cast<Fw::DpCfg::ProcType::SerialType>(~configured)) != 0) {
+        this->log_WARNING_LO_ProcOverrideInvalid(static_cast<U8>(procTypes), static_cast<U8>(configured));
+        response = Fw::CmdResponse::VALIDATION_ERROR;
+    } else {
+        this->m_procOverrideMask = procTypes;
+        this->log_ACTIVITY_HI_ProcOverrideSet(this->m_procOverrideState, static_cast<U8>(this->m_procOverrideMask));
+    }
+    this->cmdResponse_out(opCode, cmdSeq, response);
 }
 
 Fw::DpCfg::ProcType::SerialType DpWriter::applyProcOverride(Fw::DpCfg::ProcType::SerialType procTypes) const {

@@ -25,7 +25,7 @@ namespace Svc {
 //! \return The buffer
 Fw::Buffer AbstractState::getDpBuffer() {
     Fw::DpCfg::ProcType::SerialType procTypes = 0;
-    for (FwIndexType i = 0; (i < Fw::DpCfg::ProcType::NUM_CONSTANTS) && (i < NUM_CONNECTED_PROC_PORTS); i++) {
+    for (FwIndexType i = 0; i < Fw::DpCfg::ProcType::NUM_CONSTANTS; i++) {
         const bool selector = static_cast<bool>(STest::Pick::lowerUpper(0, 1));
         if (selector) {
             procTypes = static_cast<Fw::DpCfg::ProcType::SerialType>(procTypes | (1 << i));
@@ -85,14 +85,6 @@ Fw::DpCfg::ProcType::SerialType AbstractState::getLowBitsMask(FwIndexType numBit
 
 Fw::DpCfg::ProcType::SerialType AbstractState::getAllProcMask() {
     return getLowBitsMask(DpWriterNumProcPorts);
-}
-
-Fw::DpCfg::ProcType::SerialType AbstractState::getConnectedProcMask() {
-    return getLowBitsMask(NUM_CONNECTED_PROC_PORTS);
-}
-
-Fw::DpCfg::ProcType::SerialType AbstractState::getAllowedProcMask(const Fw::Enabled& state) {
-    return (state == Fw::Enabled::ENABLED) ? getConnectedProcMask() : getAllProcMask();
 }
 
 Fw::DpCfg::ProcType::SerialType AbstractState::applyProcOverride(Fw::DpCfg::ProcType::SerialType procTypes) const {

@@ -51,8 +51,11 @@ RULES_DEF_RULE(FileOpenStatus, OK)
 RULES_DEF_RULE(FileWriteStatus, Error)
 RULES_DEF_RULE(FileWriteStatus, OK)
 RULES_DEF_RULE(SchedIn, OK)
-RULES_DEF_RULE(SET_PROC_OVERRIDE, Invalid)
-RULES_DEF_RULE(SET_PROC_OVERRIDE, OK)
+RULES_DEF_RULE(ProcOverride, State)
+RULES_DEF_RULE(ProcOverride, MaskOK)
+RULES_DEF_RULE(ProcOverride, MaskInvalid)
+RULES_DEF_RULE(ProcOverride, Add)
+RULES_DEF_RULE(ProcOverride, Remove)
 
 }  // namespace Rules
 

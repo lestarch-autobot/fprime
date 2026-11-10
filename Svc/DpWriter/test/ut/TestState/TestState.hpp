@@ -41,8 +41,11 @@ class TestState : public DpWriterTester {
     TEST_STATE_DEF_RULE(FileWriteStatus, Error)
     TEST_STATE_DEF_RULE(FileWriteStatus, OK)
     TEST_STATE_DEF_RULE(SchedIn, OK)
-    TEST_STATE_DEF_RULE(SET_PROC_OVERRIDE, Invalid)
-    TEST_STATE_DEF_RULE(SET_PROC_OVERRIDE, OK)
+    TEST_STATE_DEF_RULE(ProcOverride, State)
+    TEST_STATE_DEF_RULE(ProcOverride, MaskOK)
+    TEST_STATE_DEF_RULE(ProcOverride, MaskInvalid)
+    TEST_STATE_DEF_RULE(ProcOverride, Add)
+    TEST_STATE_DEF_RULE(ProcOverride, Remove)
 
   public:
     // ----------------------------------------------------------------------
@@ -60,12 +63,22 @@ class TestState : public DpWriterTester {
     // Test steering
     // ----------------------------------------------------------------------
 
-    //! Steer the next SET_PROC_OVERRIDE OK rule to request a specific override
-    void setNextProcOverride(Fw::Enabled::T state,                      //!< The override state to request
-                             Fw::DpCfg::ProcType::SerialType procTypes  //!< The override mask to request
+    //! Steer the next ProcOverride::State rule to request a specific state
+    void setNextProcOverrideState(Fw::Enabled::T state  //!< The override state to request
     ) {
         this->abstractState.m_nextProcOverrideStateOpt = state;
+    }
+
+    //! Steer the next ProcOverride::MaskOK or MaskInvalid rule to request a specific mask
+    void setNextProcOverrideMask(Fw::DpCfg::ProcType::SerialType procTypes  //!< The override mask to request
+    ) {
         this->abstractState.m_nextProcOverrideMaskOpt = procTypes;
+    }
+
+    //! Steer the next ProcOverride::Add or Remove rule to request a specific processing type
+    void setNextProcType(Fw::DpCfg::ProcType::T procType  //!< The processing type to request
+    ) {
+        this->abstractState.m_nextProcTypeOpt = procType;
     }
 };
 

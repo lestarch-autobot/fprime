@@ -33,8 +33,9 @@ class DpWriter final : public DpWriterComponentBase {
     static_assert(DpWriter::NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS <=
                       std::numeric_limits<Fw::DpCfg::ProcType::SerialType>::digits,
                   "Every processing port must have a bit in the ProcType bit mask");
-    static_assert(DpWriter::NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS <= std::numeric_limits<U8>::digits,
-                  "SET_PROC_OVERRIDE, ProcOverrideSet, ProcOverrideInvalid, and ProcOverrideMask carry the mask as U8");
+    static_assert(
+        DpWriter::NUM_PROCBUFFERSENDOUT_OUTPUT_PORTS <= std::numeric_limits<U8>::digits,
+        "SET_PROC_OVERRIDE_MASK, ProcOverrideSet, ProcOverrideInvalid, and ProcOverrideMask carry the mask as U8");
 
   public:
     // ----------------------------------------------------------------------
@@ -89,15 +90,31 @@ class DpWriter final : public DpWriterComponentBase {
                                          U32 cmdSeq            //!< The command sequence number
                                          ) final;
 
-    //! Handler implementation for command SET_PROC_OVERRIDE
+    //! Handler implementation for command SET_PROC_OVERRIDE_STATE
     //!
-    //! Set the processing override applied to every data product container
-    void SET_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode,       //!< The opcode
-                                      U32 cmdSeq,                //!< The command sequence number
-                                      const Fw::Enabled& state,  //!< ENABLED applies the override; DISABLED restores
-                                                                 //!< header-controlled processing
-                                      U8 procTypes  //!< Bit mask of processing types selected while ENABLED
+    //! Enable or disable the processing override applied to every data product container
+    void SET_PROC_OVERRIDE_STATE_cmdHandler(FwOpcodeType opCode,      //!< The opcode
+                                            U32 cmdSeq,               //!< The command sequence number
+                                            const Fw::Enabled& state  //!< ENABLED applies the override mask
+                                            ) final;
+
+    //! Add a processing type to the processing override mask
+    void ADD_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode,                 //!< The opcode
+                                      U32 cmdSeq,                          //!< The command sequence number
+                                      const Fw::DpCfg::ProcType& procType  //!< The processing type to add
                                       ) final;
+
+    //! Remove a processing type from the processing override mask
+    void REMOVE_PROC_OVERRIDE_cmdHandler(FwOpcodeType opCode,                 //!< The opcode
+                                         U32 cmdSeq,                          //!< The command sequence number
+                                         const Fw::DpCfg::ProcType& procType  //!< The processing type to remove
+                                         ) final;
+
+    //! Set the processing override mask directly
+    void SET_PROC_OVERRIDE_MASK_cmdHandler(FwOpcodeType opCode,  //!< The opcode
+                                           U32 cmdSeq,           //!< The command sequence number
+                                           U8 procTypes          //!< The bit mask of processing types
+                                           ) final;
 
   private:
     // ----------------------------------------------------------------------
@@ -108,6 +125,12 @@ class DpWriter final : public DpWriterComponentBase {
     //! \return Success or failure
     Fw::Success::T deserializePacketHeader(Fw::Buffer& buffer,         //!< The packet buffer
                                            Fw::DpContainer& container  //!< The container
+    );
+
+    //! Validate and store a new processing override mask, emit the event, and send the command response
+    void setProcOverrideMask(FwOpcodeType opCode,                       //!< The opcode
+                             U32 cmdSeq,                                //!< The command sequence number
+                             Fw::DpCfg::ProcType::SerialType procTypes  //!< The requested mask
     );
 
     //! Apply the processing override to the processing types requested by a container

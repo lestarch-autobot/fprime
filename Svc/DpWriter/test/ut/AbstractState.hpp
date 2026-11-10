@@ -39,10 +39,6 @@ class AbstractState {
     //! The maximum buffer size
     static constexpr FwSizeType MAX_BUFFER_SIZE = Fw::DpContainer::getPacketSizeForDataSize(MAX_DATA_SIZE);
 
-    //! The number of processing ports connected in the test harness
-    //! The last processing port is left unconnected
-    static constexpr FwIndexType NUM_CONNECTED_PROC_PORTS = DpWriterNumProcPorts - 1;
-
   public:
     // ----------------------------------------------------------------------
     // Constructors
@@ -64,6 +60,7 @@ class AbstractState {
           m_modelProcOverrideMask(0),
           m_nextProcOverrideStateOpt(),
           m_nextProcOverrideMaskOpt(),
+          m_nextProcTypeOpt(),
           m_procShrinkDataSizeOpt(),
           m_dpWrittenOutPortNumOpt(),
           m_deallocBufferSendOutPortNumOpt() {}
@@ -97,15 +94,6 @@ class AbstractState {
 
     //! Get the mask with the low numBits bits set
     static Fw::DpCfg::ProcType::SerialType getLowBitsMask(FwIndexType numBits  //!< The number of bits
-    );
-
-    //! Get the bit mask selecting every connected processing port
-    //! \return The bit mask
-    static Fw::DpCfg::ProcType::SerialType getConnectedProcMask();
-
-    //! Get the bit mask of processing types the override allows in a state
-    //! \return The bit mask
-    static Fw::DpCfg::ProcType::SerialType getAllowedProcMask(const Fw::Enabled& state  //!< The override state
     );
 
     //! Apply the modeled processing override to requested processing types
@@ -187,11 +175,14 @@ class AbstractState {
     //! The modeled processing override mask
     Fw::DpCfg::ProcType::SerialType m_modelProcOverrideMask;
 
-    //! The state to request in the next SET_PROC_OVERRIDE OK rule, if any
+    //! The state to request in the next ProcOverride::State rule, if any
     Fw::Optional<Fw::Enabled::T> m_nextProcOverrideStateOpt;
 
-    //! The mask to request in the next SET_PROC_OVERRIDE OK rule, if any
+    //! The mask to request in the next ProcOverride::MaskOK or MaskInvalid rule, if any
     Fw::Optional<Fw::DpCfg::ProcType::SerialType> m_nextProcOverrideMaskOpt;
+
+    //! The processing type to request in the next ProcOverride::Add or Remove rule, if any
+    Fw::Optional<Fw::DpCfg::ProcType::T> m_nextProcTypeOpt;
 
     Fw::Optional<FwSizeType> m_procShrinkDataSizeOpt;
 

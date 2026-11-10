@@ -122,48 +122,6 @@ void DpWriterTester::checkTelemetry() {
     TESTER_CHECK_CHANNEL(ProcOverrideMask);
 }
 
-// ----------------------------------------------------------------------
-// Private helper functions
-// ----------------------------------------------------------------------
-
-// connectPorts() and initComponents() are hand-written in place of UT_AUTO_HELPERS so that the last
-// processing port stays unconnected; keep them in sync with DpWriter.fpp
-void DpWriterTester::connectPorts() {
-    // Connect special input ports
-    this->connect_to_cmdIn(0, this->component.get_cmdIn_InputPort(0));
-
-    // Connect special output ports
-    this->component.set_cmdRegIn_OutputPort(0, this->get_from_cmdRegIn(0));
-    this->component.set_cmdResponseOut_OutputPort(0, this->get_from_cmdResponseOut(0));
-    this->component.set_eventOut_OutputPort(0, this->get_from_eventOut(0));
-#if FW_ENABLE_TEXT_LOGGING == 1
-    this->component.set_textEventOut_OutputPort(0, this->get_from_textEventOut(0));
-#endif
-    this->component.set_timeGetOut_OutputPort(0, this->get_from_timeGetOut(0));
-    this->component.set_tlmOut_OutputPort(0, this->get_from_tlmOut(0));
-
-    // Connect typed input ports
-    for (FwIndexType i = 0; i < DpWriterNumPorts; i++) {
-        this->connect_to_bufferSendIn(i, this->component.get_bufferSendIn_InputPort(i));
-    }
-    this->connect_to_schedIn(0, this->component.get_schedIn_InputPort(0));
-
-    // Connect typed output ports
-    for (FwIndexType i = 0; i < DpWriterNumPorts; i++) {
-        this->component.set_deallocBufferSendOut_OutputPort(i, this->get_from_deallocBufferSendOut(i));
-        this->component.set_dpWrittenOut_OutputPort(i, this->get_from_dpWrittenOut(i));
-    }
-    // Leave the last processing port unconnected to exercise override validation
-    for (FwIndexType i = 0; i < AbstractState::NUM_CONNECTED_PROC_PORTS; i++) {
-        this->component.set_procBufferSendOut_OutputPort(i, this->get_from_procBufferSendOut(i));
-    }
-}
-
-void DpWriterTester::initComponents() {
-    this->init();
-    this->component.init(DpWriterTester::TEST_INSTANCE_QUEUE_DEPTH, DpWriterTester::TEST_INSTANCE_ID);
-}
-
 void DpWriterTester::doDispatch() {
     this->component.doDispatch();
 }
