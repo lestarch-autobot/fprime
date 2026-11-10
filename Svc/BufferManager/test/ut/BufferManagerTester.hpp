@@ -15,6 +15,7 @@
 
 #include <cstddef>
 #include <cstdlib>
+#include <vector>
 #include "BufferManagerGTestBase.hpp"
 #include "Fw/Types/MemAllocator.hpp"
 #include "Svc/BufferManager/BufferManagerComponentImpl.hpp"
@@ -23,55 +24,129 @@
 
 namespace Svc {
 
-//! Instrumented allocator recording the latest allocation request and every deallocation. It honors any
-//! power-of-two alignment (over-allocating and aligning within), so the alignment setup() asks for is observable
-//! both as the request and in the memory handed back; setMisaligned() makes it break the alignment contract.
+//! Tracking allocator: records every allocation (identifier, size requested and returned, alignment, memory) and
+//! every deallocation, and frees each block it handed out exactly once. It honors any power-of-two alignment
+//! (over-allocating and aligning within), so the alignment setup() asks for is observable both as the request and in
+//! the memory handed back; setMisaligned() makes it break the alignment contract. The tests check the allocation
+//! contract through it without assuming how many allocations setup() makes or how they are laid out.
 class TestAllocator : public Fw::MemAllocator {
   public:
-    ~TestAllocator() override = default;
+    //! One allocate() call and what became of it
+    struct Allocation {
+        FwEnumStoreType id;        //!< identifier the allocation was requested under
+        FwSizeType requestedSize;  //!< size asked for
+        FwSizeType returnedSize;   //!< size written back
+        FwSizeType alignment;      //!< alignment asked for
+        void* memory;              //!< memory handed out
+        void* raw;                 //!< the malloc() block the memory lies in
+        bool released;             //!< deallocated once (and freed)
+    };
+
+    ~TestAllocator() override {
+        // free whatever the component did not return so the test process does not leak
+        for (Allocation& allocation : this->m_allocations) {
+            if (!allocation.released) {
+                ::free(allocation.raw);
+            }
+        }
+    }
     void* allocate(const FwEnumStoreType identifier,
                    FwSizeType& size,
                    bool& recoverable,
                    FwSizeType alignment) override {
-        this->m_reqId = identifier;
-        this->m_reqSize = size;
-        this->m_reqAlignment = alignment;
+        Allocation allocation = {identifier, size, size, alignment, nullptr, nullptr, false};
         recoverable = false;
-        this->m_raw = ::malloc(size + alignment);
-        if (this->m_raw == nullptr) {
+        allocation.raw = ::malloc(size + alignment);
+        if (allocation.raw == nullptr) {
             size = 0;
-            this->m_mem = nullptr;
+            allocation.returnedSize = 0;
+            allocation.released = true;  // nothing to free
+            this->m_allocations.push_back(allocation);
             return nullptr;
         }
-        PlatformPointerCastType address = reinterpret_cast<PlatformPointerCastType>(this->m_raw);
+        PlatformPointerCastType address = reinterpret_cast<PlatformPointerCastType>(allocation.raw);
         address = (address + alignment - 1) & ~static_cast<PlatformPointerCastType>(alignment - 1);
-        this->m_mem = reinterpret_cast<void*>(address + (this->m_misaligned ? 1 : 0));
-        return this->m_mem;
+        allocation.memory = reinterpret_cast<void*>(address + (this->m_misaligned ? 1 : 0));
+        this->m_allocations.push_back(allocation);
+        return allocation.memory;
     }
+    //! Release the live allocation at ptr; anything else (unknown memory, a second release, another
+    //! identifier) is counted as a bad deallocation and frees nothing
     void deallocate(const FwEnumStoreType identifier, void* ptr) override {
         this->m_deallocCount++;
-        this->m_deallocPtr = ptr;
-        ::free(this->m_raw);
-        this->m_raw = nullptr;
+        for (Allocation& allocation : this->m_allocations) {
+            if (!allocation.released && allocation.memory == ptr) {
+                if (allocation.id != identifier) {
+                    this->m_badDeallocCount++;
+                }
+                allocation.released = true;
+                ::free(allocation.raw);
+                return;
+            }
+        }
+        this->m_badDeallocCount++;
     }
     //! Hand back memory one byte past the aligned address: an allocator that does not honor the alignment
     void setMisaligned(bool misaligned) { this->m_misaligned = misaligned; }
-    FwEnumStoreType getId() const { return this->m_reqId; }
-    FwSizeType getSize() const { return this->m_reqSize; }
-    FwSizeType getAlignment() const { return this->m_reqAlignment; }
-    void* getMem() const { return this->m_mem; }
+
+    //! Number of allocate() calls so far
+    U32 getAllocationCount() const { return static_cast<U32>(this->m_allocations.size()); }
+    //! Number of allocations handed out and not yet released
+    U32 getLiveCount() const {
+        U32 live = 0;
+        for (const Allocation& allocation : this->m_allocations) {
+            if (!allocation.released) {
+                live++;
+            }
+        }
+        return live;
+    }
+    //! Number of deallocate() calls so far
     U32 getDeallocCount() const { return this->m_deallocCount; }
-    void* getDeallocPtr() const { return this->m_deallocPtr; }
+    //! Number of deallocate() calls that did not release a live allocation under its own identifier
+    U32 getBadDeallocCount() const { return this->m_badDeallocCount; }
+    //! True if every allocation was requested under identifier
+    bool allRequestedUnder(FwEnumStoreType identifier) const {
+        for (const Allocation& allocation : this->m_allocations) {
+            if (allocation.id != identifier) {
+                return false;
+            }
+        }
+        return true;
+    }
+    //! True if every allocation was requested at a non-zero power-of-two alignment and given the size it asked for
+    bool allRequestsWellFormed() const {
+        for (const Allocation& allocation : this->m_allocations) {
+            const bool powerOfTwo =
+                (allocation.alignment != 0) && ((allocation.alignment & (allocation.alignment - 1)) == 0);
+            if (!powerOfTwo || allocation.returnedSize != allocation.requestedSize || allocation.memory == nullptr) {
+                return false;
+            }
+        }
+        return true;
+    }
+    //! True if memory is the start of a live allocation
+    bool startsLiveAllocation(const void* memory) const { return this->findLive(memory) != nullptr; }
+    //! Alignment requested for the live allocation starting at memory (0 if there is none)
+    FwSizeType alignmentRequestedAt(const void* memory) const {
+        const Allocation* allocation = this->findLive(memory);
+        return (allocation != nullptr) ? allocation->alignment : 0;
+    }
 
   private:
-    void* m_raw = nullptr;  //!< The malloc() block the aligned memory lies in
+    const Allocation* findLive(const void* memory) const {
+        for (const Allocation& allocation : this->m_allocations) {
+            if (!allocation.released && allocation.memory == memory) {
+                return &allocation;
+            }
+        }
+        return nullptr;
+    }
+
     bool m_misaligned = false;
-    FwEnumStoreType m_reqId = 0;
-    FwSizeType m_reqSize = 0;
-    FwSizeType m_reqAlignment = 0;
-    void* m_mem = nullptr;
+    std::vector<Allocation> m_allocations;  //!< every allocate() call, in order
     U32 m_deallocCount = 0;
-    void* m_deallocPtr = nullptr;
+    U32 m_badDeallocCount = 0;
 };
 
 class BufferManagerTester : public BufferManagerGTestBase {
@@ -234,6 +309,15 @@ class BufferManagerTester : public BufferManagerGTestBase {
     void returnEmptyBuffer(Fw::Buffer& empty);
     //! Run schedIn and check how many channels it wrote; the values are checked by the caller
     void checkTelemetry(U32 expectedChannels);
+    //! setup() the component with the given table (and pool alignment) through m_allocator and check the allocation
+    //! contract: memory requested under MEM_ID at well-formed alignments, nothing released
+    void setupPool(const BufferManagerComponentImpl::BufferBins& bins, FwSizeType alignment = DEFAULT_ALIGNMENT);
+    //! cleanup() the component and check that every allocation it made is released
+    void cleanupPool();
+    //! Every allocation the given allocator made was released exactly once, under MEM_ID
+    static void checkAllReleased(const TestAllocator& allocator);
+    //! A buffer at the start of an allocation has the pool alignment, and that allocation was requested at it
+    void checkAllocationAlignment(const Fw::Buffer& buffer);
     //! setup() with the given table (and pool alignment) must assert
     void expectSetupDeath(const BufferManagerComponentImpl::BufferBins& bins, FwSizeType alignment = DEFAULT_ALIGNMENT);
     //! Request a buffer expected to be served from the shadow's bin and record it (shared by the BufferGet rules)
@@ -248,6 +332,8 @@ class BufferManagerTester : public BufferManagerGTestBase {
     //! Declared before the component: its destructor may deallocate through this allocator
     TestAllocator m_allocator;
     BufferManagerComponentImpl component;
+    //! Pool alignment given to the last setupPool()
+    FwSizeType m_poolAlignment;
 };
 
 }  // end namespace Svc

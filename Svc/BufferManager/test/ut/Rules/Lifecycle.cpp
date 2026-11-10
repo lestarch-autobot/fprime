@@ -10,7 +10,7 @@
 namespace Svc {
 
 // ----------------------------------------------------------------------
-// Lifecycle.Setup — set up with the staged bins and check the allocator contract
+// Lifecycle.Setup — set up with the staged bins and check the allocation contract
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::Lifecycle__Setup__precondition() const {
@@ -18,25 +18,15 @@ bool BufferManagerTester::Lifecycle__Setup__precondition() const {
 }
 
 void BufferManagerTester::Lifecycle__Setup__action() {
-    const U32 deallocsBefore = this->m_allocator.getDeallocCount();
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, this->shadow.table, this->shadow.alignment);
+    // setupPool checks the allocation contract: memory requested from the configured allocator under the configured
+    // identifier at well-formed alignments, nothing released; the buffers' alignment is checked as they are obtained
+    this->setupPool(this->shadow.table, this->shadow.alignment);
     this->shadow.configure();
     this->clearHistory();
-
-    // The pool was requested from the configured allocator under the configured identifier, at a power-of-two
-    // alignment no looser than the one staged (exactly it from the allocator default up); nothing was released
-    ASSERT_EQ(MEM_ID, this->m_allocator.getId());
-    ASSERT_NE(nullptr, this->m_allocator.getMem());
-    ASSERT_TRUE(BufferManagerTestState::isPowerOfTwo(this->m_allocator.getAlignment()));
-    ASSERT_GE(this->m_allocator.getAlignment(), this->shadow.alignment);
-    if (this->shadow.alignment >= DEFAULT_ALIGNMENT) {
-        ASSERT_EQ(this->shadow.alignment, this->m_allocator.getAlignment());
-    }
-    ASSERT_EQ(deallocsBefore, this->m_allocator.getDeallocCount());
 }
 
 // ----------------------------------------------------------------------
-// Lifecycle.Cleanup — return everything, clean up, and check the release happens once
+// Lifecycle.Cleanup — return everything, clean up, and check every allocation is released once
 // ----------------------------------------------------------------------
 
 bool BufferManagerTester::Lifecycle__Cleanup__precondition() const {
@@ -47,11 +37,9 @@ void BufferManagerTester::Lifecycle__Cleanup__action() {
     while (!this->shadow.held.empty()) {
         this->BufferReturn__Ok__action();
     }
-    const U32 before = this->m_allocator.getDeallocCount();
-    this->component.cleanup();
+    this->cleanupPool();
     this->component.cleanup();  // second call must be a no-op
-    ASSERT_EQ(before + 1, this->m_allocator.getDeallocCount());
-    ASSERT_EQ(this->m_allocator.getMem(), this->m_allocator.getDeallocPtr());
+    this->checkAllReleased(this->m_allocator);
     this->shadow.recordCleanup();
 }
 
@@ -64,10 +52,7 @@ bool BufferManagerTester::Lifecycle__CleanupHolding__precondition() const {
 }
 
 void BufferManagerTester::Lifecycle__CleanupHolding__action() {
-    const U32 before = this->m_allocator.getDeallocCount();
-    this->component.cleanup();
-    ASSERT_EQ(before + 1, this->m_allocator.getDeallocCount());
-    ASSERT_EQ(this->m_allocator.getMem(), this->m_allocator.getDeallocPtr());
+    this->cleanupPool();
     this->shadow.recordCleanup();
 }
 

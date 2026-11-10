@@ -55,7 +55,9 @@ const U16 BufferManagerTester::TOTAL_NUM_BUFFERS;
 // ----------------------------------------------------------------------
 
 BufferManagerTester ::BufferManagerTester()
-    : BufferManagerGTestBase("Tester", MAX_HISTORY_SIZE), component("BufferManager") {
+    : BufferManagerGTestBase("Tester", MAX_HISTORY_SIZE),
+      component("BufferManager"),
+      m_poolAlignment(DEFAULT_ALIGNMENT) {
     this->initComponents();
     this->connectPorts();
 }
@@ -70,13 +72,9 @@ void BufferManagerTester ::setupBehavior() {
     REQUIREMENT("FPRIME-BM-001");
     REQUIREMENT("FPRIME-BM-005");
 
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins());
-
-    // The pool was requested from the supplied allocator under the configured identifier, at the allocator's
-    // own default alignment when setup() is given none
-    ASSERT_EQ(MEM_ID, this->m_allocator.getId());
-    ASSERT_NE(nullptr, this->m_allocator.getMem());
-    ASSERT_EQ(DEFAULT_ALIGNMENT, this->m_allocator.getAlignment());
+    // The pool is requested from the supplied allocator under the configured identifier (setupPool checks the
+    // allocation contract; given no alignment, setup() uses the allocator's own default)
+    this->setupPool(defaultBins());
 
     // Telemetry before any request
     this->checkTelemetry(NUM_TLM_CHANNELS);
@@ -105,54 +103,46 @@ void BufferManagerTester ::setupBehavior() {
         this->returnBuffer(buffers[i]);
     }
 
-    // Cleanup releases what was allocated, through the same allocator
-    this->component.cleanup();
-    ASSERT_EQ(1u, this->m_allocator.getDeallocCount());
-    ASSERT_EQ(this->m_allocator.getMem(), this->m_allocator.getDeallocPtr());
+    // Cleanup releases everything that was allocated, through the same allocator
+    this->cleanupPool();
 }
 
 void BufferManagerTester ::setupAlignment() {
     REQUIREMENT("FPRIME-BM-005");
-    COMMENT("The alignment given to setup() reaches the allocator and the first buffer payload has it (SDD 4.2)");
+    COMMENT(
+        "The alignment given to setup() reaches the allocator and the buffers starting an allocation have it (SDD "
+        "4.2)");
 
     const FwSizeType alignments[] = {MIN_ALIGNMENT,  // below anything setup() places in the pool: the request is raised
                                      DEFAULT_ALIGNMENT,             // the default, given explicitly
                                      ABOVE_DEFAULT_ALIGNMENT,       // stricter than the default: passed on as is
                                      4 * ABOVE_DEFAULT_ALIGNMENT};  // well above: still passed on as is
     for (FwSizeType alignment : alignments) {
-        this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins(), alignment);
+        this->setupPool(defaultBins(), alignment);
 
-        // The allocator is asked for a power of two no looser than the alignment given; a request at or above
-        // the allocator default (which nothing setup() places in the pool exceeds) is passed on as is
-        ASSERT_TRUE(BufferManagerTestState::isPowerOfTwo(this->m_allocator.getAlignment()));
-        ASSERT_GE(this->m_allocator.getAlignment(), alignment);
-        if (alignment >= DEFAULT_ALIGNMENT) {
-            ASSERT_EQ(alignment, this->m_allocator.getAlignment());
-        }
-
-        // The first payload starts at the allocation, so one buffer of the smallest bin sits at the memory
-        // the allocator returned and has the alignment given (whichever order the bin hands them out)
+        // Payloads start at the beginning of the memory the allocator hands back: at least one buffer of the smallest
+        // bin starts an allocation, and every such buffer has the alignment given, requested of the allocator as a
+        // power of two no looser than it (getBuffer checks that; whichever order the bin hands them out)
         Fw::Buffer smallest[BIN0_NUM_BUFFERS];
         U16 atBase = 0;
         for (U16 b = 0; b < BIN0_NUM_BUFFERS; b++) {
             smallest[b] = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
-            if (smallest[b].getData() == this->m_allocator.getMem()) {
-                ASSERT_TRUE(BufferManagerTestState::isAligned(smallest[b], alignment));
+            if (this->m_allocator.startsLiveAllocation(smallest[b].getData())) {
                 atBase++;
             }
         }
-        ASSERT_EQ(1, atBase);
+        ASSERT_GE(atBase, 1);
         for (U16 b = 0; b < BIN0_NUM_BUFFERS; b++) {
             this->returnBuffer(smallest[b]);
         }
-        this->component.cleanup();
+        this->cleanupPool();
     }
 }
 
 void BufferManagerTester ::singleBin() {
     REQUIREMENT("FPRIME-BM-006");
 
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, oneBin(BIN1_BUFFER_SIZE, BIN1_NUM_BUFFERS));
+    this->setupPool(oneBin(BIN1_BUFFER_SIZE, BIN1_NUM_BUFFERS));
 
     // Every buffer of the bin can be obtained, then the bin is exhausted
     Fw::Buffer buffers[BIN1_NUM_BUFFERS];
@@ -194,7 +184,7 @@ void BufferManagerTester ::singleBin() {
     for (U16 b = 0; b < BIN1_NUM_BUFFERS; b++) {
         this->returnBuffer(buffers[b]);
     }
-    this->component.cleanup();
+    this->cleanupPool();
 }
 
 void BufferManagerTester ::multipleBins() {
@@ -202,7 +192,7 @@ void BufferManagerTester ::multipleBins() {
     REQUIREMENT("FPRIME-BM-003");
     REQUIREMENT("FPRIME-BM-004");
 
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins());
+    this->setupPool(defaultBins());
 
     // Requests of one bin's size drain that bin and then every larger bin, smallest first; the bins
     // below it cannot serve them
@@ -234,13 +224,13 @@ void BufferManagerTester ::multipleBins() {
         ASSERT_TLM_CurrBuffs(0, 0);
         ASSERT_TLM_EmptyBuffs(0, first + 1);
     }
-    this->component.cleanup();
+    this->cleanupPool();
 }
 
 void BufferManagerTester ::trimmedReturn() {
     REQUIREMENT("FPRIME-BM-007");
 
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, oneBin(BIN1_BUFFER_SIZE, 1));
+    this->setupPool(oneBin(BIN1_BUFFER_SIZE, 1));
 
     // The size is trimmed to the request while the capacity stays the bin's
     Fw::Buffer buffer = this->getBuffer(BIN1_BUFFER_SIZE - 1, BIN1_BUFFER_SIZE);
@@ -248,14 +238,14 @@ void BufferManagerTester ::trimmedReturn() {
     // A trimmed buffer goes back to its slot: the only buffer is available again at full size
     buffer = this->getBuffer(BIN1_BUFFER_SIZE, BIN1_BUFFER_SIZE);
     this->returnBuffer(buffer);
-    this->component.cleanup();
+    this->cleanupPool();
 }
 
 void BufferManagerTester ::bufferSizeSelection() {
     REQUIREMENT("FPRIME-BM-002");
     REQUIREMENT("FPRIME-BM-003");
 
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins());
+    this->setupPool(defaultBins());
 
     // A request between two bin sizes is served by the next larger bin
     Fw::Buffer between = this->getBuffer(BIN0_BUFFER_SIZE + 1, BIN1_BUFFER_SIZE);
@@ -312,7 +302,7 @@ void BufferManagerTester ::bufferSizeSelection() {
     // and handing the empty result back is the ordinary empty-buffer warning
     this->returnEmptyBuffer(zero);
 
-    this->component.cleanup();
+    this->cleanupPool();
 }
 
 void BufferManagerTester ::eventThrottling() {
@@ -320,7 +310,7 @@ void BufferManagerTester ::eventThrottling() {
     REQUIREMENT("FPRIME-BM-004");
     REQUIREMENT("FPRIME-BM-009");
 
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, oneBin(BIN0_BUFFER_SIZE, 1));
+    this->setupPool(oneBin(BIN0_BUFFER_SIZE, 1));
 
     const U32 requests = BufferManagerTestState::EVENT_THROTTLE + 2;
     Fw::Buffer only = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
@@ -359,13 +349,13 @@ void BufferManagerTester ::eventThrottling() {
     this->checkTelemetry(2);  // CurrBuffs (the return) and NoBuffs moved
     ASSERT_TLM_CurrBuffs(0, 0);
     ASSERT_TLM_NoBuffs(0, 2 * requests);
-    this->component.cleanup();
+    this->cleanupPool();
 }
 
 void BufferManagerTester ::payloadIntegrity() {
     COMMENT("Writes over one buffer's full size never disturb another buffer");
 
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, defaultBins());
+    this->setupPool(defaultBins());
 
     Fw::Buffer buffers[TOTAL_NUM_BUFFERS];
     this->getAllBuffers(buffers);
@@ -384,7 +374,7 @@ void BufferManagerTester ::payloadIntegrity() {
     for (U16 i = 0; i < TOTAL_NUM_BUFFERS; i++) {
         this->returnBuffer(buffers[i]);
     }
-    this->component.cleanup();
+    this->cleanupPool();
 }
 
 void BufferManagerTester ::lifecycle() {
@@ -392,14 +382,13 @@ void BufferManagerTester ::lifecycle() {
 
     // A single-buffer pool works, and cleanup() releases the pool exactly once however often it is called
     {
-        this->component.setup(MGR_ID, MEM_ID, this->m_allocator, bins);
+        this->setupPool(bins);
         Fw::Buffer only = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
         this->getNoBuffer(BIN0_BUFFER_SIZE);
         this->returnBuffer(only);
-        this->component.cleanup();
-        this->component.cleanup();
-        ASSERT_EQ(1u, this->m_allocator.getDeallocCount());
-        ASSERT_EQ(this->m_allocator.getMem(), this->m_allocator.getDeallocPtr());
+        this->cleanupPool();
+        this->component.cleanup();  // a second call is a no-op
+        this->checkAllReleased(this->m_allocator);
         // The ports reject use after cleanup
         ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferGetCallee(0, BIN0_BUFFER_SIZE), UUT_ASSERT);
         ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_bufferSendIn(0, only), UUT_ASSERT);
@@ -407,7 +396,9 @@ void BufferManagerTester ::lifecycle() {
         // setup() after cleanup() yields a pool that cleanup() releases
         REQUIREMENT("FPRIME-BM-012");
         TestAllocator other;
+        const U32 ownDeallocs = this->m_allocator.getDeallocCount();
         this->component.setup(MGR_ID, MEM_ID, other, bins);
+        ASSERT_GE(other.getLiveCount(), 1u);
         this->checkTelemetry(NUM_TLM_CHANNELS);
         ASSERT_TLM_HiBuffs(0, 0);  // the high-water mark restarted with the new pool
         Fw::Buffer again = this->getBuffer(BIN0_BUFFER_SIZE, BIN0_BUFFER_SIZE);
@@ -416,10 +407,9 @@ void BufferManagerTester ::lifecycle() {
         this->expectSetupDeath(bins);
         this->returnBuffer(again);
         this->component.cleanup();
-        // the second pool goes back to the allocator it came from
-        ASSERT_EQ(1u, this->m_allocator.getDeallocCount());
-        ASSERT_EQ(1u, other.getDeallocCount());
-        ASSERT_EQ(other.getMem(), other.getDeallocPtr());
+        // the second pool goes back to the allocator it came from, all of it
+        ASSERT_EQ(ownDeallocs, this->m_allocator.getDeallocCount());
+        this->checkAllReleased(other);
     }
 
     // A configuration with no buffers, or with zero-sized buffers, asserts
@@ -432,10 +422,10 @@ void BufferManagerTester ::lifecycle() {
         {
             BufferManagerComponentImpl scoped("BufferManagerScoped");
             scoped.setup(MGR_ID, MEM_ID, alloc, bins);
+            ASSERT_GE(alloc.getLiveCount(), 1u);
             ASSERT_EQ(0u, alloc.getDeallocCount());
         }
-        ASSERT_EQ(1u, alloc.getDeallocCount());
-        ASSERT_EQ(alloc.getMem(), alloc.getDeallocPtr());
+        this->checkAllReleased(alloc);
     }
 }
 
@@ -449,10 +439,10 @@ void BufferManagerTester ::setupBinOrderAsserts() {
     this->Lifecycle__BinOrderAsserts__action();
 
     // Equal sizes and empty bins between ascending bins are accepted
-    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, equalAndGappedBins());
+    this->setupPool(equalAndGappedBins());
     Fw::Buffer buffer = this->getBuffer(BIN1_BUFFER_SIZE, BIN1_BUFFER_SIZE);
     this->returnBuffer(buffer);
-    this->component.cleanup();
+    this->cleanupPool();
 }
 
 void BufferManagerTester ::setupAlignmentAsserts() {
@@ -571,6 +561,7 @@ Fw::Buffer BufferManagerTester ::getBuffer(FwSizeType size, FwSizeType expectedC
     EXPECT_EQ(size, buffer.getSize());
     EXPECT_EQ(expectedCapacity, buffer.getCapacity());
     EXPECT_EQ(static_cast<U32>(MGR_ID), BufferManagerTestState::managerIdOf(buffer));
+    this->checkAllocationAlignment(buffer);
     ASSERT_EVENTS_SIZE(0);
     return buffer;
 }
@@ -615,6 +606,48 @@ void BufferManagerTester ::checkTelemetry(U32 expectedChannels) {
     ASSERT_TLM_SIZE(expectedChannels);
 }
 
+void BufferManagerTester ::setupPool(const BufferManagerComponentImpl::BufferBins& bins, FwSizeType alignment) {
+    const U32 liveBefore = this->m_allocator.getLiveCount();
+    const U32 deallocsBefore = this->m_allocator.getDeallocCount();
+    this->m_poolAlignment = alignment;
+    this->component.setup(MGR_ID, MEM_ID, this->m_allocator, bins, alignment);
+    // Memory was requested from the supplied allocator under the configured identifier, every request at a non-zero
+    // power-of-two alignment and served in full; nothing was released. How many allocations setup() makes is its own
+    // business: cleanupPool() checks that each one comes back.
+    ASSERT_GT(this->m_allocator.getLiveCount(), liveBefore);
+    ASSERT_EQ(deallocsBefore, this->m_allocator.getDeallocCount());
+    ASSERT_TRUE(this->m_allocator.allRequestedUnder(MEM_ID));
+    ASSERT_TRUE(this->m_allocator.allRequestsWellFormed());
+}
+
+void BufferManagerTester ::cleanupPool() {
+    this->component.cleanup();
+    this->checkAllReleased(this->m_allocator);
+}
+
+void BufferManagerTester ::checkAllReleased(const TestAllocator& allocator) {
+    // Every allocation ever made through the allocator was released exactly once, under the identifier it was
+    // requested with: nothing live, as many releases as requests, none of them unknown, repeated or misidentified
+    ASSERT_EQ(0u, allocator.getLiveCount());
+    ASSERT_EQ(allocator.getAllocationCount(), allocator.getDeallocCount());
+    ASSERT_EQ(0u, allocator.getBadDeallocCount());
+    ASSERT_TRUE(allocator.allRequestedUnder(MEM_ID));
+}
+
+void BufferManagerTester ::checkAllocationAlignment(const Fw::Buffer& buffer) {
+    // A buffer lying at the start of an allocation has the alignment the pool was set up with, and that allocation
+    // was requested at a power of two no looser than it: exactly it from the allocator default up, which nothing
+    // setup() places in memory exceeds. Where the other buffers lie is the component's business.
+    if (this->m_allocator.startsLiveAllocation(buffer.getData())) {
+        const FwSizeType requested = this->m_allocator.alignmentRequestedAt(buffer.getData());
+        ASSERT_TRUE(BufferManagerTestState::isAligned(buffer, this->m_poolAlignment));
+        ASSERT_GE(requested, this->m_poolAlignment);
+        if (this->m_poolAlignment >= DEFAULT_ALIGNMENT) {
+            ASSERT_EQ(this->m_poolAlignment, requested);
+        }
+    }
+}
+
 void BufferManagerTester ::expectSetupDeath(const BufferManagerComponentImpl::BufferBins& bins, FwSizeType alignment) {
     ASSERT_DEATH_IF_SUPPORTED(this->component.setup(MGR_ID, MEM_ID, this->m_allocator, bins, alignment), UUT_ASSERT);
 }
@@ -632,10 +665,7 @@ void BufferManagerTester ::ruleGet(FwSizeType size) {
     ASSERT_EQ(static_cast<U32>(MGR_ID), BufferManagerTestState::managerIdOf(buffer));
     ASSERT_FALSE(this->shadow.overlapsHeld(buffer));
     ASSERT_EVENTS_SIZE(0);
-    // The first payload starts at the allocation and so has the alignment the pool was set up with
-    if (buffer.getData() == this->m_allocator.getMem()) {
-        ASSERT_TRUE(BufferManagerTestState::isAligned(buffer, this->shadow.alignment));
-    }
+    this->checkAllocationAlignment(buffer);
 
     // Stamp the payload so a later return can detect cross-talk between buffers
     const U8 pattern = static_cast<U8>(STest::Pick::lowerUpper(1, 255));
