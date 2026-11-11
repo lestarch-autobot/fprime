@@ -23,6 +23,7 @@ How-To guides offer step-by-step instructions for specific development tasks in 
 - [Develop a Subtopology](develop/develop-subtopologies.md)
 - [Implement a Radio Manager Component](develop/implement-radio-manager.md)
 - [Develop Components in Python](develop/python-development.md)
+- [Develop Components in Rust](develop/rust-development.md)
 
 </details>
 
