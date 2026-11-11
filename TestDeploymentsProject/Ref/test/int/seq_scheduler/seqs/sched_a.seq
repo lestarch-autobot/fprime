@@ -1,0 +1,2 @@
+; SEQSCHED stimulus: one marker command, observable as CdhCore.cmdDisp.NoOpStringReceived(message=SEQ_A)
+R00:00:00 CdhCore.cmdDisp.CMD_NO_OP_STRING "SEQ_A"

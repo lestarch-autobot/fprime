@@ -74,3 +74,9 @@ constant AssertFatalAdapterEventFileSize = FileNameStringSize
 @ FW_CMD_ARG_BUFFER_MAX_SIZE alongside the other command arguments it travels with
 @ (filename length prefix + fileName + BlockState + the SeqArgs size field).
 constant SequenceArgumentsMaxSize = 12
+
+@ Number of rows in a Svc.SeqScheduler table
+constant SeqSchedulerRows = 8
+
+@ Maximum length of a sequence file name in a Svc.SeqScheduler row
+constant SeqSchedulerSequenceNameSize = 80

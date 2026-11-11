@@ -1,0 +1,153 @@
+{
+  "max_count": 2,
+  "knobs": [
+    {
+      "name": "disturb_disable",
+      "class": "uut-state",
+      "applies_to": [
+        "L2-3"
+      ],
+      "fails": {
+        "L2-3": [
+          "W1: last(seqScheduler.NextRow) == 2",
+          "W2: event seqScheduler.RowDispatched(index=2) count == 1",
+          "W2: event CdhCore.cmdDisp.NoOpStringReceived(message=SEQ_A) count == 1",
+          "W2: dispatch not early (check function: t(RowDispatched) - t(SET_TIME_BASE sent) >= 4 s)",
+          "t(event seqScheduler.RowDispatched(index=2)) - t(timeBaseOverride.SET_TIME_BASE sent) <= 8 s"
+        ]
+      },
+      "mechanism": "a DISABLE_ROW(2) is inserted right after ENABLE_ROW(2): the row is disabled in the table when the base appears, so it never dispatches",
+      "kind": "insert",
+      "ripples_to": {}
+    },
+    {
+      "name": "drop_wait_flag",
+      "class": "stimulus",
+      "applies_to": [
+        "L2-4"
+      ],
+      "fails": {
+        "L2-4": [
+          "event seqScheduler.RowDispatched(index=4) count == 1",
+          "event seqScheduler.RowDispatched(index=3) precedes event seqScheduler.RowDispatched(index=4)",
+          "event seqScheduler.RowCompleted(index=3) precedes event seqScheduler.RowDispatched(index=4)",
+          "event CdhCore.cmdDisp.NoOpStringReceived(message=SEQ_L_END) precedes event CdhCore.cmdDisp.NoOpStringReceived(message=SEQ_A)",
+          "event seqScheduler.RowCompleted(index=4) count == 1",
+          "t(event seqScheduler.RowDispatched(index=4)) - t(seqScheduler.ENABLE_ROW sent) <= 18 s"
+        ]
+      },
+      "mechanism": "SET_ROW_FLAGS(4, true, false) sent as (4, false, false): row 4 is due while row 3 is DISPATCHED and, lacking waitPrevious, FAILS without dispatch (RowFailed(4, BUSY), REQ-041) \u2014 never dispatched, never completed",
+      "kind": "rewrite",
+      "ripples_to": {}
+    },
+    {
+      "name": "fresh_absolute",
+      "class": "stimulus",
+      "applies_to": [
+        "L5-1"
+      ],
+      "fails": {
+        "L5-1": [
+          "event seqScheduler.RowSkippedLate(index=7) count == 1",
+          "event seqScheduler.RowDispatched count == 0",
+          "event CdhCore.cmdDisp.NoOpStringReceived(message=SEQ_A) count == 0",
+          "last(seqScheduler.RowsSkipped) == 1",
+          "t(event seqScheduler.RowSkippedLate(index=7)) - t(seqScheduler.ENABLE_ROW sent) <= 3 s"
+        ]
+      },
+      "mechanism": "SET_ROW_TIME seconds rewritten from N-60 to N+3: the row is on time and dispatches instead of being skipped late",
+      "kind": "rewrite",
+      "ripples_to": {}
+    },
+    {
+      "name": "late_absolute",
+      "class": "stimulus",
+      "applies_to": [
+        "L2-2"
+      ],
+      "fails": {
+        "L2-2": [
+          "W2: event seqScheduler.RowDispatched(index=1) count == 1",
+          "W2: event CdhCore.cmdDisp.NoOpStringReceived(message=SEQ_B) count == 1",
+          "W2: event seqScheduler.RowCompleted(index=1) count == 1",
+          "W2: event seqScheduler.RowSkippedLate count == 0",
+          "t(event seqScheduler.RowDispatched(index=1)) - t(timeBaseOverride.SET_TIME_BASE sent) <= 3 s"
+        ]
+      },
+      "mechanism": "SET_ROW_TIME absolute seconds rewritten from N+4 to N-62: when TB_SC_TIME appears the row is 72 s late and is skipped instead of dispatched",
+      "kind": "rewrite",
+      "ripples_to": {}
+    },
+    {
+      "name": "no_cancel_flag",
+      "class": "stimulus",
+      "applies_to": [
+        "L2-5"
+      ],
+      "fails": {
+        "L2-5": [
+          "event seqScheduler.RowCancelled(index=6, running=5) count == 1",
+          "event cmdSeq.CS_SequenceCanceled count == 1",
+          "event seqScheduler.RowFailed(index=5) count == 1",
+          "event seqScheduler.RowFailed(index=5) precedes event seqScheduler.RowDispatched(index=6)",
+          "event seqScheduler.RowDispatched(index=6) count == 1",
+          "event CdhCore.cmdDisp.NoOpStringReceived(message=SEQ_B) count == 1",
+          "event seqScheduler.RowCompleted(index=6) count == 1",
+          "event CdhCore.cmdDisp.NoOpStringReceived(message=SEQ_L_END) count == 0",
+          "t(event seqScheduler.RowDispatched(index=6)) - t(event seqScheduler.RowCancelled(index=6, running=5)) <= 1 s"
+        ]
+      },
+      "mechanism": "SET_ROW_FLAGS(6, false, true) sent as (6, false, false): row 6 is due while row 5 is DISPATCHED and FAILS with BUSY instead of cancelling; the long sequence runs to SEQ_L_END",
+      "kind": "rewrite",
+      "ripples_to": {}
+    },
+    {
+      "name": "persist_late_row",
+      "class": "uut-state",
+      "applies_to": [
+        "L3-1"
+      ],
+      "fails": {
+        "L3-1": [
+          "W2: event seqScheduler.RowDispatched(index=0) count == 1",
+          "W2: event CdhCore.cmdDisp.NoOpStringReceived(message=SEQ_A) count == 1",
+          "W2: event seqScheduler.RowCompleted(index=0) count == 1",
+          "W2: last(seqScheduler.RowsPending) == 7",
+          "W2: last(seqScheduler.RowsComplete) == 1"
+        ]
+      },
+      "mechanism": "before SAVE_TABLE the harness inserts SET_ROW_TIME(0, START_RELATIVE, TB_NONE, 500, 0): the saved table carries a 500 s offset, so nothing dispatches in the 12 s after restart",
+      "kind": "insert",
+      "ripples_to": {}
+    },
+    {
+      "name": "wrong_sequence_name",
+      "class": "stimulus",
+      "applies_to": [
+        "L2-1"
+      ],
+      "fails": {
+        "L2-1": [
+          "event CdhCore.cmdDisp.NoOpStringReceived(message=SEQ_A) count == 1",
+          "event cmdSeq.CS_SequenceComplete count == 1",
+          "event seqScheduler.RowCompleted(index=0) count == 1",
+          "event seqScheduler.RowDispatched(index=0) precedes event seqScheduler.RowCompleted(index=0)",
+          "last(seqScheduler.RowsComplete) == 1",
+          "event cmdSeq.CS_FileNotFound count == 0"
+        ]
+      },
+      "mechanism": "SET_ROW_SEQUENCE names seqs/missing.bin: the row dispatches on time, CmdSequencer answers CS_FileNotFound + seqDone(EXECUTION_ERROR) with no start, so the unconfirmed row FAILS at once (RowFailed); SEQ_A never runs",
+      "kind": "rewrite",
+      "ripples_to": {}
+    }
+  ],
+  "tests_covered": [
+    "L2-1",
+    "L2-2",
+    "L2-3",
+    "L2-4",
+    "L2-5",
+    "L3-1",
+    "L5-1"
+  ]
+}

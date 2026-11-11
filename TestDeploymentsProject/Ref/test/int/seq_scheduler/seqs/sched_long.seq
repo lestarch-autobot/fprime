@@ -1,0 +1,3 @@
+; SEQSCHED stimulus: an 8 s sequence (waitPrevious / cancelPrevious / timeout tests)
+R00:00:00 CdhCore.cmdDisp.CMD_NO_OP_STRING "SEQ_L_START"
+R00:00:08 CdhCore.cmdDisp.CMD_NO_OP_STRING "SEQ_L_END"
