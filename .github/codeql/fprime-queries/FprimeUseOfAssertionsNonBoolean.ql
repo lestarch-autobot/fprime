@@ -10,9 +10,16 @@
 
 import FprimeAssertions
 
+predicate isLiteralZero(Expr e) {
+  e instanceof Literal and e.getValue() = "0" and e.getUnspecifiedType() instanceof IntType
+}
+
 from Assertion a
 where
   not a.getAsserted().getUnspecifiedType() instanceof BoolType and
+  // `FW_ASSERT(0, ...)` ("unreachable") is the approved divergence from the
+  // Boolean rule: the asserted expression must be the literal `0` itself.
+  not isLiteralZero(a.getAsserted()) and
   // In the uninstantiated copy of a template, the type of an expression
   // involving template parameters is unresolved, so a boolean comparison such
   // as `status == Success::SUCCESS` would be misreported as non-boolean.
