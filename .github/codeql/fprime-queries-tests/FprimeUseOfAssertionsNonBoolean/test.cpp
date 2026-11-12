@@ -22,3 +22,16 @@ void assertBoolean(const U32* ptr) {
     FW_ASSERT(ptr != nullptr);
     static_cast<void>(*ptr);
 }
+
+void unreachable(int mode) {
+    switch (mode) {
+        case 0:
+            break;
+        default:
+            FW_ASSERT(0);  // approved divergence: literal 0
+            break;
+    }
+    FW_ASSERT(1);          // still non-boolean
+    const int zero = 0;
+    FW_ASSERT(zero);       // not a literal
+}
