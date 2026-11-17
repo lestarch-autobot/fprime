@@ -56,11 +56,6 @@ function(ut_add_deployment_target MODULE TARGET SOURCES DEPENDENCIES FULL_DEPEND
         get_property(DEPENDENCY_UNIT_TESTS TARGET ${DEPENDENCY} PROPERTY FPRIME_UNIT_TESTS)
         if(DEPENDENCY_UNIT_TESTS)
             foreach(UNIT_TEST IN LISTS DEPENDENCY_UNIT_TESTS)
-                # A unit test that excluded itself explicitly is never rolled into a deployment's tests
-                get_target_property(UNIT_TEST_EXPLICITLY_EXCLUDED "${UNIT_TEST}" FPRIME_EXPLICITLY_EXCLUDED)
-                if (UNIT_TEST_EXPLICITLY_EXCLUDED)
-                    continue()
-                endif()
                 fprime_util_metadata_add_test("${UNIT_TEST}")
                 list(APPEND DEPLOYMENT_TESTS "${UNIT_TEST}")
             endforeach()
