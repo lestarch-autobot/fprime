@@ -1,0 +1,57 @@
+# Component development checklist for pushes / tags.
+#
+# Fills the F Prime Component Development Checklist of every component with
+# fprime-auto-checklist (component checks plus the fprime clang-tidy plugin),
+# keeps the reviewer decisions recorded in <component>/docs/checklist.md, and
+# publishes the result to the baseline branch coverage/<ref-name> beside the
+# coverage, CodeQL and component-checks pages.
+#
+# See nasa/fprime-actions/component-checklist/README.md for input
+# documentation.
+
+name: "Component Checklist"
+
+on:
+  schedule:
+    - cron: "0 21 * * *"  # Nightly at 2:00 PM US/Pacific (PDT)
+  push:
+    branches: [ release/**, component-checklist-ci ]
+    tags:     [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  component-checklist:
+    name: "Component Checklist [push]"
+    concurrency:
+      group: publish-checklist-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: "Checkout F' Repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          submodules: true
+      - name: "Setup F' Tools"
+        uses: nasa/fprime-actions/setup@devel
+        with:
+          location: ${{ github.workspace }}
+      - name: "Generate + Build"
+        run: |
+          fprime-util generate -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          fprime-util build -j"$(nproc)"
+      - name: "Component checklist"
+        uses: lestarch-autobot/fprime-actions/component-checklist@component-checklist
+        with:
+          working-directory: ${{ github.workspace }}
+          compile-commands: build-fprime-automatic-native
+          publish-from-forks: "true"
