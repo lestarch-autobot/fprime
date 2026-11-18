@@ -218,7 +218,7 @@ static <Impl>& getSingleton();    //!< backing instance for the static convenien
 ```
 
 `Os/Stub/Cpu.hpp` shows the minimal shape. A `FileSystem` alias inherits `init()` and `getSingleton()` from
-`Os::FileSystemInterface`, but MUST be default-constructible by it and MUST assert its own arguments (non-null
+`Os::FileSystemInterface`, but MUST be publicly default-constructible and MUST assert its own arguments (non-null
 paths, non-zero `_getWorkingDirectory` buffer size) as `Os/Posix/FileSystem.cpp` does. `Console` additionally
 needs `static void
 write(const CHAR*, FwSizeType)` / `static void write(const Fw::ConstStringBase&)`, and its
