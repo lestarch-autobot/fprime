@@ -27,7 +27,7 @@ StubFileSystem::Status StubFileSystem::_rename(const char* originPath, const cha
 
 StubFileSystem::Status StubFileSystem::_getWorkingDirectory(char* path, FwSizeType bufferSize) {
     FW_ASSERT(path != nullptr);
-    FW_ASSERT(bufferSize > 0);  // because bufferSize=0 would trigger a malloc in some implementations (e.g. Posix)
+    FW_ASSERT(bufferSize > 0);  // same contract as the other implementations
     return Status::NOT_SUPPORTED;
 }
 

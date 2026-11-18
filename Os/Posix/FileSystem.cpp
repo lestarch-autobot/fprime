@@ -50,7 +50,7 @@ PosixFileSystem::Status PosixFileSystem::_rename(const char* originPath, const c
 
 PosixFileSystem::Status PosixFileSystem::_getWorkingDirectory(char* path, FwSizeType bufferSize) {
     FW_ASSERT(path != nullptr);
-    FW_ASSERT(bufferSize > 0);  // because bufferSize=0 would trigger a malloc in some implementations (e.g. Posix)
+    FW_ASSERT(bufferSize > 0);  // getcwd may allocate when given a size of 0
     Status status = OP_OK;
     const char* cwd = ::getcwd(path, static_cast<size_t>(bufferSize));
     if (cwd == nullptr) {
@@ -113,7 +113,6 @@ FileSystemHandle* PosixFileSystem::getHandle() {
 }
 
 PosixFileSystem::Status PosixFileSystem::_getPathType(const char* path, PathType& pathType) {
-    FW_ASSERT(path != nullptr);
     FW_ASSERT(path != nullptr);
     struct stat path_stat;
     const I32 status = lstat(path, &path_stat);
