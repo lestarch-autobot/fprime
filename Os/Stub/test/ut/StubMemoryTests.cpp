@@ -32,6 +32,9 @@ TEST(Interface, Usage) {
     ASSERT_EQ(Os::Stub::Memory::Test::StaticData::data.usage.used, usage.used);
     ASSERT_EQ(usage_copy.total, usage.total);
     ASSERT_EQ(usage_copy.used, usage.used);
+    // The status chosen by the test is forwarded, not a fixed value
+    Os::Stub::Memory::Test::StaticData::data.status_out = Os::MemoryInterface::Status::OP_OK;
+    ASSERT_EQ(Os::Memory::getUsage(usage), Os::MemoryInterface::Status::OP_OK);
 }
 
 int main(int argc, char** argv) {

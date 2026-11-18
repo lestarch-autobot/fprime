@@ -12,4 +12,10 @@
 
 #include OS_MEMORY_HEADER
 
+#include <type_traits>
+
+static_assert(std::is_base_of<Os::MemoryInterface, Os::Memory>::value,
+              "Os::Memory (config/OsSelection.hpp) must derive from Os::MemoryInterface and be defined by "
+              "OS_MEMORY_HEADER");
+
 #endif  // OS_MEMORY_HPP_

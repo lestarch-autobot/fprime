@@ -7,9 +7,12 @@
 
 namespace Os {
 
-DelegateMemory::DelegateMemory() : m_delegate(*MemoryInterface::getDelegate(m_handle_storage)) {}
+DelegateMemory::DelegateMemory() : m_delegate(*MemoryInterface::getDelegate(m_handle_storage)) {
+    FW_ASSERT(&this->m_delegate == reinterpret_cast<MemoryInterface*>(&this->m_handle_storage[0]));
+}
 
 DelegateMemory::~DelegateMemory() {
+    FW_ASSERT(&this->m_delegate == reinterpret_cast<MemoryInterface*>(&this->m_handle_storage[0]));
     m_delegate.~MemoryInterface();
 }
 

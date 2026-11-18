@@ -23,7 +23,7 @@ TestMemory::Status TestMemory::_getUsage(Usage& memory_usage) {
     StaticData::data.lastCalled = StaticData::LastFn::USAGE_FN;
     StaticData::data.usage.total = memory_usage.total;
     StaticData::data.usage.used = memory_usage.used;
-    return Status::ERROR;
+    return StaticData::data.status_out;
 }
 
 MemoryHandle* TestMemory::getHandle() {
