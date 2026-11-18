@@ -80,18 +80,11 @@ class FileInterface {
 
     virtual ~FileInterface() = default;
 
-    //! \brief copy constructor that copies the tracked mode and CRC state
-    FileInterface(const FileInterface& other) = default;
-
-    //! \brief assignment operator that copies the tracked mode and CRC state
-    FileInterface& operator=(const FileInterface& other) = default;
-
     //! \brief open file with supplied path and mode
     //!
     //! Open the file passed in with the given mode. If overwrite is set to OVERWRITE, then opening files in
     //! OPEN_CREATE mode will clobber existing files. Set overwrite to NO_OVERWRITE to preserve existing files.
-    //! The status of the open request is returned from the function call. Delegates to the chosen
-    //! implementation's `open` function.
+    //! The status of the open request is returned from the function call.
     //!
     //! It is invalid to send `nullptr` as the path.
     //! It is invalid to supply `mode` as a non-enumerated value.
@@ -106,8 +99,7 @@ class FileInterface {
 
     //! \brief close the file, if not opened then do nothing
     //!
-    //! Closes the file, if open. Otherwise this function does nothing. Delegates to the chosen implementation's
-    //! `closeInternal` function. `mode` is set to `OPEN_NO_MODE`.
+    //! Closes the file, if open. Otherwise this function does nothing. `mode` is set to `OPEN_NO_MODE`.
     //!
     virtual void close() = 0;
 
@@ -429,9 +421,9 @@ class FileInterface {
     //! implemented:
     //!
     //! 1. Assert that the supplied memory is non-null. e.g `FW_ASSERT(aligned_placement_new_memory != NULL);`
-    //! 2. Assert that their implementation fits within FW_HANDLE_MAX_SIZE.
+    //! 2. Assert that their implementation fits within FW_FILE_HANDLE_MAX_SIZE.
     //!    e.g. `static_assert(sizeof(PosixFileImplementation) <= sizeof(Os::FileHandleStorage),
-    //!        "FW_HANDLE_MAX_SIZE too small");`
+    //!        "FW_FILE_HANDLE_MAX_SIZE too small");`
     //! 3. Assert that their implementation aligns within FW_HANDLE_ALIGNMENT.
     //!    e.g. `static_assert((FW_HANDLE_ALIGNMENT % alignof(PosixFileImplementation)) == 0, "Bad handle alignment");`
     //! 4. If to_copy is null, placement new their implementation into `aligned_placement_new_memory`
@@ -448,6 +440,14 @@ class FileInterface {
                                       const FileInterface* to_copy = nullptr);
 
   protected:
+    //! \brief copy constructor that copies the tracked mode and CRC state
+    //!
+    //! Protected: copying through the interface would copy the state without the implementation's handle.
+    FileInterface(const FileInterface& other) = default;
+
+    //! \brief assignment operator that copies the tracked mode and CRC state
+    FileInterface& operator=(const FileInterface& other) = default;
+
     //! \brief record a successful open
     //!
     //! Implementations of `open` MUST call this on success so that the common functions of this interface

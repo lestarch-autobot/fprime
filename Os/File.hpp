@@ -10,7 +10,7 @@
 //   1. config/OsSelection.hpp (CFG) defines the Os::File type alias by
 //      forward-declaring a link-time delegate (DelegateFile) or a concrete
 //      implementation (e.g. Os::Posix::File::PosixFile). It must not include
-//      Os OSAL headers and should only be included by Os/FileInterface.hpp.
+//      Os OSAL headers and should only be included by the Os *Interface.hpp headers.
 //
 //   2. Os/FileInterface.hpp (IF) includes CFG first, then defines FileHandle
 //      and FileInterface.

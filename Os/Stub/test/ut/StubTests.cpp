@@ -9,6 +9,7 @@
 #include <Os/Mutex.hpp>
 #include <Os/Queue.hpp>
 #include <Os/RawTime.hpp>
+#include <Os/Stub/File.hpp>
 #include <Os/Task.hpp>
 
 TEST(Stub, File) {
@@ -53,6 +54,29 @@ TEST(Stub, Memory) {
 
 TEST(Stub, RawTime) {
     Os::RawTime _;
+}
+
+// StubFile used directly, as when Os::File is aliased to it in config/OsSelection.hpp
+TEST(Stub, FileDirect) {
+    Os::Stub::File::StubFile file;
+    U8 buffer[4] = {0};
+    FwSizeType size = sizeof(buffer);
+    FwSizeType result = 0;
+    ASSERT_EQ(file.open("/does/not/matter", Os::FileInterface::Mode::OPEN_READ),
+              Os::FileInterface::Status::NOT_SUPPORTED);
+    ASSERT_FALSE(file.isOpen());
+    ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(size, 0U);
+    size = sizeof(buffer);
+    ASSERT_EQ(file.write(buffer, size), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(size, 0U);
+    ASSERT_EQ(file.size(result), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(file.position(result), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(file.preallocate(0, 1), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(file.seek_absolute(0), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(file.flush(), Os::FileInterface::Status::NOT_OPENED);
+    file.close();
+    ASSERT_FALSE(file.isOpen());
 }
 
 int main(int argc, char** argv) {

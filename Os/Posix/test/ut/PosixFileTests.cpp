@@ -2,6 +2,7 @@
 // \title Os/Posix/test/ut/PosixFileTests.cpp
 // \brief tests for posix implementation for Os::File
 // ======================================================================
+#include <fcntl.h>
 #include <gtest/gtest.h>
 #include <unistd.h>
 #include <config/FppConstantsAc.hpp>
@@ -247,6 +248,17 @@ TEST(PosixFileErrorHandling, ReadBadDescriptorSurfacesError) {
     ::unlink(path_template);
 }
 
+namespace {
+//! Descriptor held by a PosixFile
+int descriptorOf(Os::Posix::File::PosixFile& file) {
+    return static_cast<Os::Posix::File::PosixFileHandle*>(file.getHandle())->m_file_descriptor;
+}
+//! Whether the descriptor is open in this process
+bool descriptorIsOpen(int descriptor) {
+    return ::fcntl(descriptor, F_GETFD) != -1;
+}
+}  // namespace
+
 // The checks below are also performed by Os::DelegateFile. These tests use the implementation class directly, as when
 // Os::File is aliased to it in config/OsSelection.hpp, so the implementation's own checks are the ones exercised.
 TEST(PosixFileDirect, OperationsOnClosedFile) {
@@ -277,19 +289,24 @@ TEST(PosixFileDirect, ModeChecksAndDoubleOpen) {
     (void)::close(fd);
     U8 buffer[4] = {1, 2, 3, 4};
     FwSizeType size = sizeof(buffer);
+    int descriptor = -1;
     {
         Os::Posix::File::PosixFile file;
         ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_WRITE), Os::FileInterface::Status::OP_OK);
         ASSERT_TRUE(file.isOpen());
+        descriptor = descriptorOf(file);
         // A second open must not replace (and leak) the descriptor already held
         ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::INVALID_MODE);
+        ASSERT_EQ(descriptorOf(file), descriptor);
         ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::INVALID_MODE);
         ASSERT_EQ(size, 0U);
         size = sizeof(buffer);
         ASSERT_EQ(file.write(buffer, size), Os::FileInterface::Status::OP_OK);
         ASSERT_EQ(size, sizeof(buffer));
+        ASSERT_TRUE(descriptorIsOpen(descriptor));
         // No explicit close: the destructor must close the file
     }
+    ASSERT_FALSE(descriptorIsOpen(descriptor));
     Os::Posix::File::PosixFile file;
     ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
     ASSERT_EQ(file.write(buffer, size), Os::FileInterface::Status::INVALID_MODE);
@@ -322,6 +339,10 @@ TEST(PosixFileDirect, CopyDuplicatesDescriptorAndState) {
     Os::Posix::File::PosixFile closed;
     Os::Posix::File::PosixFile closed_copy(closed);
     ASSERT_FALSE(closed_copy.isOpen());
+    ASSERT_EQ(descriptorOf(closed_copy), -1);
+    ASSERT_NE(descriptorOf(copy), descriptorOf(original));
+    ASSERT_NE(descriptorOf(assigned), descriptorOf(original));
+    ASSERT_NE(descriptorOf(assigned), descriptorOf(copy));
     original.close();
     // Copies own their descriptors: closing the original must not close them
     U8 buffer[2] = {5, 6};
@@ -331,8 +352,11 @@ TEST(PosixFileDirect, CopyDuplicatesDescriptorAndState) {
     size = sizeof(buffer);
     ASSERT_TRUE(assigned.isOpen());
     ASSERT_EQ(assigned.write(buffer, size), Os::FileInterface::Status::OP_OK);
+    const int assigned_descriptor = descriptorOf(assigned);
     assigned = closed;
+    // Assignment releases the descriptor previously held
     ASSERT_FALSE(assigned.isOpen());
+    ASSERT_FALSE(descriptorIsOpen(assigned_descriptor));
     (void)::unlink(path);
 }
 

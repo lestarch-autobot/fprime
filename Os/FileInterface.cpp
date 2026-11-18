@@ -114,7 +114,7 @@ FileInterface::Status FileInterface::calculateCrc(U32& crc) {
 FileInterface::Status FileInterface::incrementalCrc(FwSizeType& size) {
     FileInterface::Status status = FileInterface::Status::OP_OK;
     // Scratch buffer is local so that implementations selected by direct alias do not carry it per-object
-    U8 crc_buffer[FW_FILE_CHUNK_SIZE];
+    U8 crc_buffer[FW_FILE_CHUNK_SIZE] = {};
     FW_ASSERT(size <= FW_FILE_CHUNK_SIZE, FwAssertArgType(size));
     if (OPEN_NO_MODE == this->m_mode) {
         status = FileInterface::Status::NOT_OPENED;
@@ -144,7 +144,7 @@ FileInterface::Status FileInterface::finalizeCrc(U32& crc) {
 FileInterface::Status FileInterface::readline(U8* buffer, FwSizeType& size, FileInterface::WaitType wait) {
     const FwSizeType requested_size = size;
     FW_ASSERT(buffer != nullptr);
-    FW_ASSERT(this->m_mode < Mode::MAX_OPEN_MODE);
+    FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
     if (OPEN_NO_MODE == this->m_mode) {
         size = 0;
