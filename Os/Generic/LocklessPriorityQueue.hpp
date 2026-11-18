@@ -218,11 +218,11 @@ class LocklessPriorityQueue final : public Os::QueueInterface {
     //!
     //! Allocates the slot pool and message-data region through the registered memory allocator.
     //!
-    //! \warning allocates memory exactly once through the memory allocator registry; subsequent
+    //! \warning allocates memory once per create through the memory allocator registry; subsequent
     //! `send` and `receive` calls do not allocate.
     //!
     //! \param id: identifier for the queue, used for memory allocation
-    //! \param name: name of queue (unused by this implementation)
+    //! \param name: name of queue
     //! \param depth: depth of queue in number of messages
     //! \param messageSize: maximum size of an individual message
     //! \return: status of the creation

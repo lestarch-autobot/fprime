@@ -25,6 +25,19 @@ using Blocking = Os::QueueInterface::BlockingType;
 //! The common checks of Os::QueueInterface are the first assertion on every path
 const char* const COMMON_CHECK_ASSERT = "Assert:.*QueueInterface\\.cpp";
 
+#if FW_QUEUE_REGISTRATION
+//! Registry counting the queues registered with it
+class CountingRegistry : public Os::QueueRegistry {
+  public:
+    void registerQueue(Os::Queue* queue) override {
+        this->m_calls++;
+        this->m_last = queue;
+    }
+    U32 m_calls = 0;
+    Os::Queue* m_last = nullptr;
+};
+#endif
+
 //! Exercise the life cycle shared by every Os::QueueInterface: create, teardown, and create again
 template <typename T>
 void checkLifeCycle(T& queue, const bool counted) {
@@ -142,7 +155,18 @@ TYPED_TEST(DirectQueue, TeardownAndCreateAgain) {
 // The configured Os::Queue follows the same life cycle as the implementations used directly
 TEST(ConfiguredQueue, TeardownAndCreateAgain) {
     Os::Queue queue;
+#if FW_QUEUE_REGISTRATION
+    static CountingRegistry registry;
+    Os::Queue::setRegistry(&registry);
+    registry.m_calls = 0;
+    registry.m_last = nullptr;
+#endif
     checkLifeCycle(queue, true);
+#if FW_QUEUE_REGISTRATION
+    // Registered once, although created twice
+    EXPECT_EQ(registry.m_calls, 1u);
+    EXPECT_EQ(registry.m_last, &queue);
+#endif
 }
 
 TYPED_TEST(DirectQueue, NullAndZeroArgumentsAssert) {

@@ -94,8 +94,11 @@ class QueueInterface {
 
     //! \brief teardown the queue
     //!
-    //! Allow for queues to deallocate resources as part of system shutdown. This delegates to the underlying queue
-    //! implementation.
+    //! Allow for queues to deallocate resources as part of system shutdown. The queue is uninitialized afterward and
+    //! may be created again, so an implementation must release everything its create acquired and then call
+    //! finishTeardown().
+    //!
+    //! \warning teardown must not run concurrently with any other call on the same queue
     virtual void teardown() = 0;
 
     //! \brief send a message into the queue
@@ -160,13 +163,13 @@ class QueueInterface {
     //! implemented:
     //!
     //! 1. Assert that the supplied memory is non-null. e.g `FW_ASSERT(aligned_placement_new_memory != NULL);`
-    //! 2. Assert that their implementation fits within FW_HANDLE_MAX_SIZE.
-    //!    e.g. `static_assert(sizeof(PosixQueueImplementation) <= sizeof Os::Queue::m_handle_storage,
-    //!        "FW_HANDLE_MAX_SIZE to small");`
+    //! 2. Assert that their implementation fits within FW_QUEUE_HANDLE_MAX_SIZE.
+    //!    e.g. `static_assert(sizeof(PosixQueueImplementation) <= sizeof(Os::QueueHandleStorage),
+    //!        "FW_QUEUE_HANDLE_MAX_SIZE to small");`
     //! 3. Assert that their implementation aligns within FW_HANDLE_ALIGNMENT.
     //!    e.g. `static_assert((FW_HANDLE_ALIGNMENT % alignof(PosixQueueImplementation)) == 0, "Bad handle alignment");`
     //! 4. Placement new their implementation into `aligned_placement_new_memory`
-    //!    e.g. `TaskInterface* interface = new (aligned_placement_new_memory) PosixQueueImplementation;`
+    //!    e.g. `QueueInterface* interface = new (aligned_placement_new_memory) PosixQueueImplementation;`
     //! 5. Return the result of the placement new
     //!    e.g. `return interface;`
     //!

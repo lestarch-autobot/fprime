@@ -472,6 +472,17 @@ TEST_P(PriorityMemQueueConfigTest, ConfigAndOperate) {
     Os::QueueInterface::Status status = queue.create(testCase.queueId, name, 10, 128);
     ASSERT_EQ(Os::QueueInterface::Status::OP_OK, status);
 
+    // A configured queue reports the largest message it can hold, bounded by the size given to create
+    FwSizeType largest = 0;
+    for (const auto& priorityCfg : priorityCfgs) {
+        largest = FW_MAX(largest, priorityCfg.maxMsgSize);
+    }
+    const FwSizeType expectedSize = FW_MIN(static_cast<FwSizeType>(128), largest);
+    ASSERT_EQ(expectedSize, queue.getMessageSize());
+    U8 oversized[129] = {};
+    ASSERT_EQ(Os::QueueInterface::Status::SIZE_MISMATCH,
+              queue.send(oversized, expectedSize + 1, 0, Os::QueueInterface::BlockingType::NONBLOCKING));
+
     if (testCase.testSendRecv) {
         U8 sendData[64] = {1, 2, 3};
         status = queue.send(sendData, 3, 0, Os::QueueInterface::BlockingType::NONBLOCKING);

@@ -179,8 +179,8 @@ class PriorityMemQueue : public Os::QueueInterface {
 
     //! \brief teardown the queue
     //!
-    //! Allow for queues to deallocate resources as part of system shutdown. This delegates to the underlying queue
-    //! implementation.
+    //! Allow for queues to deallocate resources as part of system shutdown. The queue is uninitialized afterward and
+    //! may be created again.
     void teardown() override;
 
     //! \brief teardown the queue
