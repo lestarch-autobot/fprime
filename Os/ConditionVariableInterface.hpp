@@ -123,11 +123,10 @@ class ConditionVariableInterface {
     //! \param mutex: mutex supplied to pend()
     //! \return OP_OK when the mutex is acceptable, ERROR_DIFFERENT_MUTEX otherwise
     static Status checkMutex(Os::Mutex*& expected, Os::Mutex& mutex) {
-        if (expected != nullptr && expected != &mutex) {
-            return Status::ERROR_DIFFERENT_MUTEX;
+        if (expected == nullptr) {
+            expected = &mutex;
         }
-        expected = &mutex;
-        return Status::OP_OK;
+        return (expected == &mutex) ? Status::OP_OK : Status::ERROR_DIFFERENT_MUTEX;
     }
 };
 

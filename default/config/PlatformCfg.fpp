@@ -14,7 +14,8 @@ constant FW_FILE_HANDLE_MAX_SIZE = 16
 @ Maximum size of a handle for Os::Mutex
 constant FW_MUTEX_HANDLE_MAX_SIZE = 72
 
-@ Maximum size of a handle for Os::Queue
+@ Maximum size of a handle for Os::Queue. The generic queues embed two Os::ConditionVariable
+@ objects, so this grows with FW_CONDITION_VARIABLE_HANDLE_MAX_SIZE.
 constant FW_QUEUE_HANDLE_MAX_SIZE = 384
 
 @ Maximum size of a handle for Os::Directory
@@ -32,7 +33,8 @@ constant FW_RAW_TIME_SERIALIZATION_MAX_SIZE = 8
 @ Maximum size of a handle for Os::CountingSemaphore
 constant FW_COUNTING_SEMAPHORE_HANDLE_MAX_SIZE = 48
 
-@ Maximum size of a handle for Os::ConditionVariable
+@ Maximum size of a handle for Os::ConditionVariable. Must hold the implementation class, which for Posix is
+@ the virtual table pointer, pthread_cond_t, and the pointer to the mutex the variable is bound to.
 constant FW_CONDITION_VARIABLE_HANDLE_MAX_SIZE = 64
 
 @ Maximum size of a handle for Os::Cpu
