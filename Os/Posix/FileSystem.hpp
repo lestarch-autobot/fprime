@@ -18,7 +18,7 @@ struct PosixFileSystemHandle : public FileSystemHandle {};
 //! Posix implementation of `FileSystemInterface` for use as the link-time delegate or as a compile-time
 //! alias of Os::FileSystem (see config/OsSelection.hpp).
 //!
-class PosixFileSystem : public FileSystemInterface {
+class PosixFileSystem final : public FileSystemInterface {
   public:
     //! \brief constructor
     PosixFileSystem() = default;

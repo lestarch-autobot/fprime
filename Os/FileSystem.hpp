@@ -25,11 +25,15 @@
 #ifndef _OS_FILESYSTEM_HPP_
 #define _OS_FILESYSTEM_HPP_
 
+#include <type_traits>
 #include "Os/FileSystemInterface.hpp"
 
 #ifndef OS_FILE_SYSTEM_HEADER
 #error "OS_FILE_SYSTEM_HEADER must be defined in config/OsSelection.hpp"
 #endif
 #include OS_FILE_SYSTEM_HEADER
+
+static_assert(std::is_base_of<Os::FileSystemInterface, Os::FileSystem>::value,
+              "Os::FileSystem must be selected as a type derived from Os::FileSystemInterface");
 
 #endif

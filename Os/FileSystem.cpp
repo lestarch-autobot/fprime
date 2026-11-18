@@ -124,6 +124,8 @@ FileSystemInterface::Status FileSystemInterface::copyFile(const char* sourcePath
 FileSystemInterface::Status FileSystemInterface::appendFile(const char* sourcePath,
                                                             const char* destPath,
                                                             bool createMissingDest) {
+    FW_ASSERT(sourcePath != nullptr);
+    FW_ASSERT(destPath != nullptr);
     Os::File source;
     Os::File destination;
 
@@ -156,6 +158,8 @@ FileSystemInterface::Status FileSystemInterface::appendFile(const char* sourcePa
 }  // end appendFile
 
 FileSystemInterface::Status FileSystemInterface::moveFile(const char* source, const char* destination) {
+    FW_ASSERT(source != nullptr);
+    FW_ASSERT(destination != nullptr);
     Status status = Status::OP_OK;
 
     // Try to rename the file
@@ -174,6 +178,7 @@ FileSystemInterface::Status FileSystemInterface::moveFile(const char* source, co
 }
 
 FileSystemInterface::Status FileSystemInterface::getFileSize(const char* path, FwSizeType& size) {
+    FW_ASSERT(path != nullptr);
     Os::File file;
     Os::File::Status status = file.open(path, Os::File::OPEN_READ);
     if (status != File::Status::OP_OK) {

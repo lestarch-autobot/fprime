@@ -18,7 +18,7 @@ struct StubFileSystemHandle : public FileSystemHandle {};
 //! Stub implementation of `FileSystemInterface` for use as the link-time delegate or as a compile-time
 //! alias of Os::FileSystem (see config/OsSelection.hpp).
 //!
-class StubFileSystem : public FileSystemInterface {
+class StubFileSystem final : public FileSystemInterface {
   public:
     //! \brief constructor
     StubFileSystem() = default;
