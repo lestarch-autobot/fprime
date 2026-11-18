@@ -1,6 +1,8 @@
 // ======================================================================
 // \title Os/ConsoleInterface.hpp
 // \brief Os::ConsoleHandle and Os::ConsoleInterface definitions
+//
+// Users include Os/Console.hpp, which completes the Os::Console type. Implementation headers include this file.
 // ======================================================================
 #ifndef OS_CONSOLEINTERFACE_HPP_
 #define OS_CONSOLEINTERFACE_HPP_

@@ -96,6 +96,10 @@
 // getSingleton() functions, and MUST be default constructible because the
 // singleton is an instance of the selected class. The implementation module
 // providing the class must still be in the link (see the Mutex note above).
+// An "undefined reference to vtable for <class>" link error means the chosen
+// implementation module does not match the alias. The class must also
+// re-expose the common overload with `using ConsoleInterface::writeMessage;`
+// and both the alias and OS_CONSOLE_HEADER must be defined together.
 //
 // Example compile-time selection override:
 //
