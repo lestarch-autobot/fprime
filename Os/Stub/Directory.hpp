@@ -14,7 +14,8 @@ struct StubDirectoryHandle : public DirectoryHandle {};
 
 //! \brief stub implementation of Os::Directory
 //!
-//! Stub implementation of `DirectoryInterface` for use as a delegate class handling error-only file operations.
+//! Stub implementation of `DirectoryInterface` usable through the link-time delegate or directly as
+//! `Os::Directory`. Every operation fails: `open` returns NOT_SUPPORTED, so the directory is never open.
 //!
 class StubDirectory : public DirectoryInterface {
   public:

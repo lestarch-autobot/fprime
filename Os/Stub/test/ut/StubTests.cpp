@@ -64,6 +64,14 @@ TEST(Stub, DirectoryDirect) {
     ASSERT_FALSE(directory.isOpen());
 }
 
+// Invalid open() arguments assert in the implementation
+TEST(Stub, DirectoryDirectInvalidArguments) {
+    Os::Stub::Directory::StubDirectory directory;
+    ASSERT_DEATH_IF_SUPPORTED(directory.open(nullptr, Os::Directory::OpenMode::READ), "Assert: .*Directory\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(directory.open("/does/not/matter", Os::Directory::OpenMode::MAX_OPEN_MODE),
+                              "Assert: .*Directory\\.cpp");
+}
+
 TEST(Stub, Cpu) {
     Os::Cpu::getSingleton();
 }

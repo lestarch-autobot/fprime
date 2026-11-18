@@ -17,7 +17,8 @@ struct PosixDirectoryHandle : public DirectoryHandle {
 
 //! \brief Posix implementation of Os::Directory
 //!
-//! Posix implementation of `DirectoryInterface` for use as a delegate class handling error-only file operations.
+//! Posix implementation of `DirectoryInterface` usable through the link-time delegate or directly as
+//! `Os::Directory`. It performs the argument and open-state checks itself.
 class PosixDirectory : public DirectoryInterface {
   public:
     //! \brief constructor
@@ -28,8 +29,8 @@ class PosixDirectory : public DirectoryInterface {
     //! Closes the directory if it is open.
     ~PosixDirectory() override;
 
-    //! \brief return the underlying mutex handle (implementation specific)
-    //! \return internal mutex handle representation
+    //! \brief return the underlying Directory handle (implementation specific)
+    //! \return internal Directory handle representation
     DirectoryHandle* getHandle() override;
 
     // ------------------------------------------------------------
