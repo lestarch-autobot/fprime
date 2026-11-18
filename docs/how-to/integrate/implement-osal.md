@@ -100,7 +100,7 @@ class MyOsMutex : public MutexInterface {
 > [!TIP]
 > Look at each interface header in `Os/` (e.g., `Os/MutexInterface.hpp`, `Os/File.hpp`, `Os/TaskInterface.hpp`) to see the exact set of pure virtual methods that need to be implemented for each. Each interface also defines a `Status` enum — your implementation must return the appropriate [status values](../../../Os/docs/sdd.md#24-error-handling). Note: for services that support compile-time selection, the pure-virtual contract lives in the `*Interface.hpp` header (e.g. `Os/MutexInterface.hpp`, `Os/RawTimeInterface.hpp`, `Os/TaskInterface.hpp`), while `Os/Mutex.hpp` / `Os/RawTime.hpp` / `Os/Task.hpp` are thin alias/aggregation headers.
 >
-> A Task implementation must call the common `TaskInterface` helpers so that it also works when selected directly as `Os::Task`: `prepareStart()` / `completeStart()` in `start()` (starting the task from the arguments `prepareStart()` returns), `prepareJoin()` / `completeJoin()` in `join()`, `completeSuspend()` in `suspend()`, and `deregister()` in its destructor. See `Os/Posix/Task.cpp`.
+> A Task implementation must call the common `TaskInterface` helpers so that it also works when selected directly as `Os::Task`: `prepareStart()` / `completeStart()` in `start()` (starting the task from the arguments `prepareStart()` returns), `prepareJoin()` / `completeJoin()` in `join()`, `completeSuspend()` in `suspend()`, and `deregister()` in its destructor, each passed `this` (e.g. `this->prepareStart(this, arguments)`). The helpers do the common bookkeeping only when the calling class is the configured `Os::Task`, and pass through otherwise. See `Os/Posix/Task.cpp`.
 
 ### 2.2 — Implement the Methods
 
@@ -383,7 +383,7 @@ The bottom line is that to use your new OSAL implementation, you need to add the
 
 - **Start with Stubs.** Only implement the modules you need. The [Stub backend](../../../Os/Stub) returns `NOT_SUPPORTED` for unimplemented services, allowing you to bring up an OSAL incrementally.
 - **Map error codes consistently.** Create a shared error-translation module (like `Os/Posix/error.hpp`) that converts your OS's native error codes to the F´ Os `Status` enums. This keeps error handling centralized and testable.
-- **Watch the handle size.** Each implementation object must fit in the fixed-size handle storage. If your native OS primitives are large, override `FW_MUTEX_HANDLE_MAX_SIZE` (or equivalent) in your platform configuration.
+- **Watch the handle size.** Each implementation object must fit in the fixed-size handle storage. If your native OS primitives are large, override `FW_MUTEX_HANDLE_MAX_SIZE` (or equivalent) in your platform configuration. For Task, the handle storage also holds the common `Os::TaskInterface` state (task name, mutex, routine wrapper), so `FW_TASK_HANDLE_MAX_SIZE` must cover that state plus your native handle.
 - **Use other implementations as references.** The `Os/Posix/` directory is the most complete OSAL implementation in F´ and serves as the canonical example for all modules. Other implementations exist (see links above, or in the resources below)
 - **Test with the F´ OSAL unit tests.** The framework provides OS-agnostic unit tests under `Os/test/` that exercise the OSAL interfaces. Run these tests against your implementation to validate correctness.
 

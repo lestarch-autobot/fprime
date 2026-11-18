@@ -124,11 +124,7 @@ void TaskInterface::registerTaskRegistry(TaskRegistry* registry) {
     TaskInterface::s_taskRegistry = registry;
 }
 
-TaskInterface::Arguments TaskInterface::prepareStart(const Arguments& arguments) {
-    FW_ASSERT(arguments.m_routine != nullptr);
-    if (this->m_isDelegate) {
-        return arguments;
-    }
+TaskInterface::Arguments TaskInterface::commonPrepareStart(const Arguments& arguments) {
     TaskInterface::init();
     // init call above is to ensure singleton is initialized in a thread-safe
     // manner and such that the address sanitizer does not inadvertently
@@ -146,8 +142,8 @@ TaskInterface::Arguments TaskInterface::prepareStart(const Arguments& arguments)
     return wrapped_arguments;
 }
 
-void TaskInterface::completeStart(Status status, const Arguments& arguments) {
-    if ((not this->m_isDelegate) && (status == Status::OP_OK)) {
+void TaskInterface::commonCompleteStart(Task* task, Status status, const Arguments& arguments) {
+    if (status == Status::OP_OK) {
         this->m_lock.lock();
         this->m_priority = arguments.m_priority;
         this->m_lock.unlock();
@@ -157,42 +153,34 @@ void TaskInterface::completeStart(Status status, const Arguments& arguments) {
 
         // If a registry has been registered, register task to it
         if (TaskInterface::s_taskRegistry != nullptr) {
-            // Only the configured Os::Task performs the bookkeeping, thus this is an Os::Task
-            TaskInterface::s_taskRegistry->addTask(static_cast<Task*>(this));
+            TaskInterface::s_taskRegistry->addTask(task);
             this->m_registered = true;
         }
     }
 }
 
-bool TaskInterface::prepareJoin() const {
-    if (this->m_isDelegate) {
-        return true;
-    }
+bool TaskInterface::commonPrepareJoin() const {
     const State state = this->getState();
     return (state == State::RUNNING) || (state == State::STARTING);
 }
 
-void TaskInterface::completeJoin(Status status) {
-    if (not this->m_isDelegate) {
-        this->m_lock.lock();
-        this->m_state = (status == Status::OP_OK) ? State::EXITED : State::UNKNOWN;
-        this->m_lock.unlock();
-    }
+void TaskInterface::commonCompleteJoin(Status status) {
+    this->m_lock.lock();
+    this->m_state = (status == Status::OP_OK) ? State::EXITED : State::UNKNOWN;
+    this->m_lock.unlock();
 }
 
-void TaskInterface::completeSuspend(SuspensionType suspensionType) {
-    if (not this->m_isDelegate) {
-        this->m_lock.lock();
-        this->m_state = (suspensionType == SuspensionType::INTENTIONAL) ? State::SUSPENDED_INTENTIONALLY
-                                                                        : State::SUSPENDED_UNINTENTIONALLY;
-        this->m_lock.unlock();
-    }
+void TaskInterface::commonCompleteSuspend(SuspensionType suspensionType) {
+    this->m_lock.lock();
+    this->m_state = (suspensionType == SuspensionType::INTENTIONAL) ? State::SUSPENDED_INTENTIONALLY
+                                                                    : State::SUSPENDED_UNINTENTIONALLY;
+    this->m_lock.unlock();
 }
 
-void TaskInterface::deregister() {
+void TaskInterface::commonDeregister(Task* task) {
     // If a registry has been registered and the task has been started then remove task from the registry
     if ((TaskInterface::s_taskRegistry != nullptr) && this->m_registered) {
-        TaskInterface::s_taskRegistry->removeTask(static_cast<Task*>(this));
+        TaskInterface::s_taskRegistry->removeTask(task);
         this->m_registered = false;
     }
 }

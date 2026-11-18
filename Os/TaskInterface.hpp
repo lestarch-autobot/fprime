@@ -7,6 +7,7 @@
 
 #include <Fw/FPrimeBasicTypes.hpp>
 #include <Fw/Time/TimeInterval.hpp>
+#include <Fw/Types/Assert.hpp>
 #include <Fw/Types/Serializable.hpp>
 #include <Os/Mutex.hpp>
 #include <Os/Os.hpp>
@@ -15,6 +16,7 @@
 
 #include <Fw/Deprecate.hpp>
 #include <limits>
+#include <type_traits>
 
 // Forward declare for UTs
 namespace Os {
@@ -35,7 +37,6 @@ class TaskHandle {};
 
 class TaskInterface {
     friend struct Os::Test::Task::Tester;
-    friend class DelegateTask;
 
   public:
     //! Sentinel value to use a default value for the task argument to which this is supplied.
@@ -151,9 +152,9 @@ class TaskInterface {
     //! implemented:
     //!
     //! 1. Assert that the supplied memory is non-null. e.g `FW_ASSERT(aligned_placement_new_memory != NULL);`
-    //! 2. Assert that their implementation fits within FW_HANDLE_MAX_SIZE.
-    //!    e.g. `static_assert(sizeof(PosixTaskImplementation) <= sizeof Os::Task::m_handle_storage,
-    //!        "FW_HANDLE_MAX_SIZE to small");`
+    //! 2. Assert that their implementation fits within FW_TASK_HANDLE_MAX_SIZE.
+    //!    e.g. `static_assert(sizeof(PosixTaskImplementation) <= sizeof(Os::TaskHandleStorage),
+    //!        "FW_TASK_HANDLE_MAX_SIZE too small");`
     //! 3. Assert that their implementation aligns within FW_HANDLE_ALIGNMENT.
     //!    e.g. `static_assert((FW_HANDLE_ALIGNMENT % alignof(PosixTaskImplementation)) == 0, "Bad handle alignment");`
     //! 4. Placement new their implementation into `aligned_placement_new_memory`
@@ -317,52 +318,111 @@ class TaskInterface {
 
   protected:
     // ------------------------------------------------------------------
-    // Common bookkeeping helpers. Every implementation of start(), join(), and suspend() must call these
-    // so that it provides the complete Os::Task behavior when it is selected directly as the Os::Task alias
-    // (compile-time selection, see config/OsSelection.hpp). When the implementation is instead owned by an
-    // Os::DelegateTask the bookkeeping is performed once on the DelegateTask, and the helpers called by the
-    // implementation pass through without effect.
+    // Common bookkeeping helpers. Every implementation of start(), join(), suspend(), and the destructor must
+    // call these, passing `this`, so that it provides the complete Os::Task behavior when it is selected
+    // directly as the Os::Task alias (compile-time selection, see config/OsSelection.hpp).
+    //
+    // The bookkeeping is performed only when the calling class is the configured Os::Task. When the
+    // implementation is instead owned by an Os::DelegateTask, or is constructed on its own, the bookkeeping
+    // belongs to the owner and the helpers pass through without effect.
     // ------------------------------------------------------------------
 
     //! \brief common actions required before an implementation starts a task
     //!
-    //! Asserts that the routine is valid, records the task name, moves the task to STARTING, and wraps the
-    //! user routine and argument in this task's TaskRoutineWrapper so that the RUNNING transition and onStart()
-    //! happen once the task begins to run. The implementation must start the task from the returned arguments.
+    //! Asserts that the routine is valid. For the configured Os::Task it also records the task name, moves the
+    //! task to STARTING, and wraps the user routine and argument in this task's TaskRoutineWrapper so that the
+    //! RUNNING transition and onStart() happen once the task begins to run. The implementation must start the
+    //! task from the returned arguments.
     //!
+    //! \param self: `this` of the calling implementation
     //! \param arguments: arguments supplied to the task start call
     //! \return arguments the implementation must use to start the task
-    Arguments prepareStart(const Arguments& arguments);
+    template <class Impl>
+    Arguments prepareStart(Impl* self, const Arguments& arguments) {
+        FW_ASSERT(arguments.m_routine != nullptr);
+        return (TaskInterface::asTask(self) != nullptr) ? this->commonPrepareStart(arguments) : arguments;
+    }
 
     //! \brief common actions required after an implementation attempted to start a task
     //!
     //! On success records the priority, counts the task, and adds it to the task registry (when registered).
     //!
+    //! \param self: `this` of the calling implementation
     //! \param status: status of the implementation's start attempt
     //! \param arguments: arguments returned by prepareStart
-    void completeStart(Status status, const Arguments& arguments);
+    template <class Impl>
+    void completeStart(Impl* self, Status status, const Arguments& arguments) {
+        Task* const task = TaskInterface::asTask(self);
+        if (task != nullptr) {
+            this->commonCompleteStart(task, status, arguments);
+        }
+    }
 
     //! \brief check that the task is in a state that may be joined
     //!
+    //! \param self: `this` of the calling implementation
     //! \return true when the implementation may join, false when it must return INVALID_STATE
-    bool prepareJoin() const;
+    template <class Impl>
+    bool prepareJoin(const Impl* self) const {
+        return (TaskInterface::asTask(self) != nullptr) ? this->commonPrepareJoin() : true;
+    }
 
     //! \brief record the outcome of an implementation's join
     //!
+    //! \param self: `this` of the calling implementation
     //! \param status: status of the implementation's join
-    void completeJoin(Status status);
+    template <class Impl>
+    void completeJoin(Impl* self, Status status) {
+        if (TaskInterface::asTask(self) != nullptr) {
+            this->commonCompleteJoin(status);
+        }
+    }
 
     //! \brief record that the task was suspended
     //!
+    //! \param self: `this` of the calling implementation
     //! \param suspensionType intentionality of the suspension
-    void completeSuspend(SuspensionType suspensionType);
+    template <class Impl>
+    void completeSuspend(Impl* self, SuspensionType suspensionType) {
+        if (TaskInterface::asTask(self) != nullptr) {
+            this->commonCompleteSuspend(suspensionType);
+        }
+    }
 
     //! \brief remove the task from the task registry if it was added
     //!
-    //! Must be called from the destructor of every implementation, while the object is still an Os::Task.
-    void deregister();
+    //! Must be called from the destructor of every implementation.
+    //!
+    //! \param self: `this` of the calling implementation
+    template <class Impl>
+    void deregister(Impl* self) {
+        Task* const task = TaskInterface::asTask(self);
+        if (task != nullptr) {
+            this->commonDeregister(task);
+        }
+    }
 
   private:
+    //! \brief convert the calling implementation to the configured Os::Task
+    //!
+    //! \param self: `this` of the calling implementation
+    //! \return self when the calling class is the configured Os::Task, nullptr otherwise
+    template <class Impl>
+    static Task* asTask(Impl* self) {
+        FW_ASSERT(self != nullptr);
+        // void* round trip is exact: it is only converted back to the type it came from
+        return std::is_same<typename std::remove_cv<Impl>::type, Task>::value
+                   ? static_cast<Task*>(const_cast<void*>(static_cast<const void*>(self)))
+                   : nullptr;
+    }
+
+    Arguments commonPrepareStart(const Arguments& arguments);
+    void commonCompleteStart(Task* task, Status status, const Arguments& arguments);
+    bool commonPrepareJoin() const;
+    void commonCompleteJoin(Status status);
+    void commonCompleteSuspend(SuspensionType suspensionType);
+    void commonDeregister(Task* task);
+
     static TaskRegistry* s_taskRegistry;  //!< Pointer to registered task registry
     static FwSizeType s_numTasks;         //!< Stores the number of tasks created.
     static Mutex s_taskMutex;             //!< Guards s_numTasks
@@ -374,7 +434,6 @@ class TaskInterface {
     FwTaskPriorityType m_priority = 0;  // Storage of priority
 
     bool m_registered = false;  //!< Was this task registered
-    bool m_isDelegate = false;  //!< Owned by an Os::DelegateTask, which performs the common bookkeeping
 };
 
 class TaskRegistry {

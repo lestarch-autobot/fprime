@@ -5,7 +5,11 @@
 @ Maximum size of a handle for Os::Console
 constant FW_CONSOLE_HANDLE_MAX_SIZE = 24
 
-@ Maximum size of a handle for Os::Task
+@ Maximum size of a handle for Os::Task. Must hold the task implementation
+@ selected at link time, which includes the common Os::TaskInterface state
+@ (task name of FW_TASK_NAME_BUFFER_SIZE, an Os::Mutex of
+@ FW_MUTEX_HANDLE_MAX_SIZE, routine wrapper, state, and priority) plus the
+@ implementation's own handle. Raise it together with those constants.
 constant FW_TASK_HANDLE_MAX_SIZE = 320
 
 @ Maximum size of a handle for Os::File

@@ -8,22 +8,22 @@ namespace Stub {
 namespace Task {
 
 StubTask::~StubTask() {
-    this->deregister();
+    this->deregister(this);
 }
 
 void StubTask::onStart() {}
 
 Os::TaskInterface::Status StubTask::join() {
-    if (not this->prepareJoin()) {
+    if (not this->prepareJoin(this)) {
         return Os::TaskInterface::Status::INVALID_STATE;
     }
     const Status status = Os::TaskInterface::Status::UNKNOWN_ERROR;
-    this->completeJoin(status);
+    this->completeJoin(this, status);
     return status;
 }
 
 void StubTask::suspend(Os::TaskInterface::SuspensionType suspensionType) {
-    this->completeSuspend(suspensionType);
+    this->completeSuspend(this, suspensionType);
 }
 
 void StubTask::resume() {}
@@ -34,9 +34,9 @@ Os::TaskHandle* StubTask::getHandle() {
 
 Os::TaskInterface::Status StubTask::start(const Os::TaskInterface::Arguments& arguments) {
     FW_ASSERT(arguments.m_routine != nullptr);
-    const Arguments wrapped_arguments = this->prepareStart(arguments);
+    const Arguments wrapped_arguments = this->prepareStart(this, arguments);
     const Status status = Os::TaskInterface::Status::UNKNOWN_ERROR;
-    this->completeStart(status, wrapped_arguments);
+    this->completeStart(this, status, wrapped_arguments);
     return status;
 }
 

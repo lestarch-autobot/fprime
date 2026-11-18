@@ -93,10 +93,13 @@
 //
 // A compile-time selection MUST derive from Os::TaskInterface, which holds the
 // common Os::Task state and functions (state tracking, task registry, task
-// count, delay(), getSingleton()). Its start(), join(), suspend(), and
-// destructor MUST call the TaskInterface helpers prepareStart()/completeStart(),
-// prepareJoin()/completeJoin(), completeSuspend(), and deregister() as
-// Os/Posix/Task.cpp does. The implementation module must still be in the link.
+// count, delay(), getSingleton()). Its start(), join(), suspend() (where
+// supported), and destructor MUST call the TaskInterface helpers
+// prepareStart()/completeStart(), prepareJoin()/completeJoin(),
+// completeSuspend(), and deregister(), passing `this`, as Os/Posix/Task.cpp
+// and Os/Stub/Task.cpp do. An implementation that does not call them compiles
+// but does not track state, count, or register tasks. The implementation
+// module must still be in the link.
 //
 // Example compile-time selection override:
 //
