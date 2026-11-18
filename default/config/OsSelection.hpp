@@ -96,6 +96,9 @@
 // initial count, and not be copyable (Os/CountingSemaphore.hpp static_asserts
 // all three). The aliased class must still be in the link (see the Mutex note
 // above).
+// An override of this file that defines neither the alias nor
+// OS_COUNTING_SEMAPHORE_HEADER keeps the link-time delegate; define both or
+// neither.
 //
 // Example compile-time selection override:
 //
