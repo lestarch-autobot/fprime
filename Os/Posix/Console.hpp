@@ -21,7 +21,8 @@ struct PosixConsoleHandle : public ConsoleHandle {
 
 //! \brief posix implementation of Os::ConsoleInterface
 //!
-//! Posix implementation of `ConsoleInterface` for use as a delegate class handling posix console operations. Posix
+//! Posix implementation of `ConsoleInterface` handling posix console operations, usable as the link-time delegate or
+//! directly as `Os::Console`. Posix
 //! consoles write to either standard out or standard error. The default file descriptor used is standard out. This may
 //! be changed by calling `setOutputStream`.
 //!

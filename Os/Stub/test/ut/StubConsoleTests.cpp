@@ -62,7 +62,25 @@ TEST(Interface, WriteMessageString) {
 // A nullptr message with a non-zero size is a coding error caught before reaching the delegate
 TEST(Interface, WriteMessageNull) {
     Os::Console console;
-    ASSERT_DEATH(console.writeMessage(nullptr, 5), "Assert: ");
+    ASSERT_DEATH(console.writeMessage(nullptr, 5), "Assert: .*DelegateConsole\\.cpp");
+}
+
+// The test implementation makes the same check when used without the delegate
+TEST(Interface, WriteMessageNullImplementation) {
+    Os::Stub::Console::Test::TestConsole console;
+    ASSERT_DEATH(console.writeMessage(nullptr, 5), "Assert: .*test/Console\\.cpp");
+}
+
+// Both static write overloads reach the singleton's implementation
+TEST(Interface, StaticWrite) {
+    const Fw::String message("hello");
+    Os::Stub::Console::Test::StaticData::data.lastCalled = Os::Stub::Console::Test::StaticData::NONE_FN;
+    Os::Console::write(message);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.message, message.toChar());
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, 5);
+    Os::Console::write("direct", 6);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, 6);
 }
 
 // A logger that records whether it received a message

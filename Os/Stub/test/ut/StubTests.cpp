@@ -50,7 +50,7 @@ TEST(Stub, ConsoleWrite) {
 // A nullptr message with a non-zero size is a coding error
 TEST(Stub, ConsoleWriteNull) {
     Os::Stub::Console::StubConsole stub_console;
-    ASSERT_DEATH(stub_console.writeMessage(nullptr, 5), "Assert: ");
+    ASSERT_DEATH(stub_console.writeMessage(nullptr, 5), "Assert: .*Stub/Console\\.cpp");
 }
 
 TEST(Stub, FileSystem) {

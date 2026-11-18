@@ -18,7 +18,8 @@ struct StubConsoleHandle : public ConsoleHandle {};
 
 //! \brief stub implementation of Os::ConsoleInterface
 //!
-//! Stub implementation of `ConsoleInterface` for use as a delegate class handling stub console operations.
+//! Stub implementation of `ConsoleInterface` handling stub console operations, usable as the link-time delegate
+//! or directly as `Os::Console`.
 //!
 class StubConsole : public ConsoleInterface {
   public:

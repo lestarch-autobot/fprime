@@ -52,15 +52,15 @@ class ConsoleInterface : public Fw::Logger {
     //! correctly implemented:
     //!
     //! 1. Assert that their implementation fits within FW_HANDLE_MAX_SIZE.
-    //!    e.g. `static_assert(sizeof(PosixFileImplementation) <= sizeof Os::File::m_handle_storage,
+    //!    e.g. `static_assert(sizeof(PosixConsole) <= sizeof(Os::ConsoleHandleStorage),
     //!        "FW_HANDLE_MAX_SIZE too small");`
     //! 2. Assert that their implementation aligns within FW_HANDLE_ALIGNMENT.
-    //!    e.g. `static_assert((FW_HANDLE_ALIGNMENT % alignof(PosixFileImplementation)) == 0, "Bad handle alignment");`
+    //!    e.g. `static_assert((FW_HANDLE_ALIGNMENT % alignof(PosixConsole)) == 0, "Bad handle alignment");`
     //! 3. If to_copy is null, placement new their implementation into `aligned_placement_new_memory`
-    //!    e.g. `FileInterface* interface = new (aligned_placement_new_memory) PosixFileImplementation;`
+    //!    e.g. `ConsoleInterface* interface = new (aligned_placement_new_memory) PosixConsole;`
     //! 4. If to_copy is non-null, placement new using copy constructor their implementation into
     //!    `aligned_placement_new_memory`
-    //!    e.g. `FileInterface* interface = new (aligned_placement_new_memory) PosixFileImplementation(*to_copy);`
+    //!    e.g. `ConsoleInterface* interface = new (aligned_placement_new_memory) PosixConsole(*to_copy);`
     //! 5. Return the result of the placement new
     //!    e.g. `return interface;`
     //!

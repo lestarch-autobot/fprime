@@ -92,7 +92,7 @@ TEST(Nominal, WriteMessageEmpty) {
 // A nullptr message with a non-zero size is a coding error
 TEST(OffNominal, WriteMessageNull) {
     Os::Posix::Console::PosixConsole posix_console;
-    ASSERT_DEATH(posix_console.writeMessage(nullptr, 5), "Assert: ");
+    ASSERT_DEATH(posix_console.writeMessage(nullptr, 5), "Assert: .*Posix/Console\\.cpp");
 }
 
 int main(int argc, char** argv) {
