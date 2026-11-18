@@ -326,6 +326,7 @@ class TaskInterface {
     // implementation is instead owned by an Os::DelegateTask the bookkeeping belongs to the DelegateTask and
     // the helpers pass through without effect. The configured Os::Task must be the class that calls the
     // helpers: aliasing Os::Task to a class derived from an implementation is rejected at compile time.
+    // The source that calls the helpers must include Os/Task.hpp so that Os::Task is a complete type.
     // ------------------------------------------------------------------
 
     //! \brief common actions required before an implementation starts a task
@@ -410,6 +411,7 @@ class TaskInterface {
     //! \return self when the calling class is the configured Os::Task, nullptr otherwise
     template <class Impl>
     static Task* asTask(Impl* self) {
+        // Os::Task must be a complete type here: the source calling the helpers must include Os/Task.hpp
         // An Os::Task derived from an implementation would silently skip the bookkeeping
         static_assert(std::is_same<typename std::remove_cv<Impl>::type, Task>::value ||
                           (not std::is_base_of<typename std::remove_cv<Impl>::type, Task>::value),

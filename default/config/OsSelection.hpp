@@ -98,8 +98,10 @@
 // prepareStart()/completeStart(), prepareJoin()/completeJoin(),
 // completeSuspend(), and deregister(), passing `this`, as Os/Posix/Task.cpp
 // and Os/Stub/Task.cpp do. An implementation that does not call them compiles
-// but does not track state, count, or register tasks. The implementation
-// module must still be in the link.
+// but does not track state, count, or register tasks. The source calling the
+// helpers must include Os/Task.hpp, and Os::Task must be the class that calls
+// them, not a class derived from it (rejected at compile time). The
+// implementation module must still be in the link.
 //
 // Example compile-time selection override:
 //
