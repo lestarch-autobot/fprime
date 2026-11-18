@@ -37,7 +37,8 @@ QueueInterface::Status DelegateQueue::create(FwEnumStoreType id,
 
 void DelegateQueue::teardown() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<QueueInterface*>(&this->m_handle_storage[0]));
-    return this->m_delegate.teardown();
+    this->m_delegate.teardown();
+    this->finishTeardown();
 }
 
 QueueInterface::Status DelegateQueue::send(const U8* buffer,

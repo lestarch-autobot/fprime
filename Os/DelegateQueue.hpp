@@ -50,8 +50,12 @@ class DelegateQueue final : public QueueInterface {
     //! \brief teardown the queue
     //!
     //! Allow for queues to deallocate resources as part of system shutdown. This delegates to the underlying queue
-    //! implementation.
+    //! implementation. The queue is uninitialized afterward and may be created again.
     void teardown() override;
+
+    // Bring the common send/receive overloads of the interface back into scope
+    using QueueInterface::receive;
+    using QueueInterface::send;
 
     //! \brief send a message into the queue through delegate
     //!
@@ -67,10 +71,6 @@ class DelegateQueue final : public QueueInterface {
     //! \param priority: priority of the message
     //! \param blockType: BLOCKING to block for space or NONBLOCKING to return error when queue is full
     //! \return: status of the send
-    // Bring the common send/receive overloads of the interface back into scope
-    using QueueInterface::receive;
-    using QueueInterface::send;
-
     Status send(const U8* buffer, FwSizeType size, FwQueuePriorityType priority, BlockingType blockType) override;
 
     //! \brief receive a message from the queue through delegate

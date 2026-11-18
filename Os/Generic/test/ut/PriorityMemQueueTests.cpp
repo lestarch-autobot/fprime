@@ -2109,7 +2109,7 @@ TEST_F(PriorityMemQueueTestFixture, BlockingReceiveUnblock) {
 }
 
 // Double create without teardown test - verify second create is rejected
-TEST_F(PriorityMemQueueTestFixture, DoubleCreateAssertion) {
+TEST_F(PriorityMemQueueTestFixture, DoubleCreateRejected) {
     Os::Generic::PriorityMemQueue::configure(configs, 1, false,
                                              Fw::MemoryAllocation::MemoryAllocatorType::OS_GENERIC_PRIORITY_QUEUE);
 

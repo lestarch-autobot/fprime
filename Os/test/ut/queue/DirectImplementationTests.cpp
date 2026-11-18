@@ -22,6 +22,41 @@ constexpr FwSizeType DEPTH = 4;
 constexpr FwSizeType MESSAGE_SIZE = 16;
 using Status = Os::QueueInterface::Status;
 using Blocking = Os::QueueInterface::BlockingType;
+//! The common checks of Os::QueueInterface are the first assertion on every path
+const char* const COMMON_CHECK_ASSERT = "Assert:.*QueueInterface\\.cpp";
+
+//! Exercise the life cycle shared by every Os::QueueInterface: create, teardown, and create again
+template <typename T>
+void checkLifeCycle(T& queue, const bool counted) {
+    const FwSizeType before = Os::Queue::getNumQueues();
+    const FwSizeType after = counted ? (before + 1) : before;
+    U8 buffer[MESSAGE_SIZE] = {};
+    FwSizeType actualSize = 0;
+    FwQueuePriorityType priority = 0;
+    ASSERT_EQ(queue.create(0, Fw::String("first"), DEPTH, MESSAGE_SIZE), Status::OP_OK);
+    EXPECT_EQ(Os::Queue::getNumQueues(), after);
+    ASSERT_EQ(queue.send(buffer, sizeof(buffer), 0, Blocking::NONBLOCKING), Status::OP_OK);
+    // A torn down queue is uninitialized
+    queue.teardown();
+    EXPECT_EQ(queue.getDepth(), 0u);
+    EXPECT_EQ(queue.getMessageSize(), 0u);
+    EXPECT_STREQ(queue.getName().toChar(), "");
+    EXPECT_EQ(queue.send(buffer, sizeof(buffer), 0, Blocking::NONBLOCKING), Status::UNINITIALIZED);
+    EXPECT_EQ(queue.receive(buffer, sizeof(buffer), Blocking::NONBLOCKING, actualSize, priority),
+              Status::UNINITIALIZED);
+    // It may be created again, is empty, and is not counted a second time
+    ASSERT_EQ(queue.create(0, Fw::String("second"), DEPTH, MESSAGE_SIZE), Status::OP_OK);
+    EXPECT_EQ(Os::Queue::getNumQueues(), after);
+    EXPECT_EQ(queue.getDepth(), DEPTH);
+    EXPECT_EQ(queue.getMessageSize(), MESSAGE_SIZE);
+    EXPECT_STREQ(queue.getName().toChar(), "second");
+    EXPECT_EQ(queue.getMessagesAvailable(), 0u);
+    EXPECT_EQ(queue.receive(buffer, sizeof(buffer), Blocking::NONBLOCKING, actualSize, priority), Status::EMPTY);
+    ASSERT_EQ(queue.send(buffer, sizeof(buffer), 0, Blocking::NONBLOCKING), Status::OP_OK);
+    ASSERT_EQ(queue.receive(buffer, sizeof(buffer), Blocking::NONBLOCKING, actualSize, priority), Status::OP_OK);
+    EXPECT_EQ(actualSize, sizeof(buffer));
+    queue.teardown();
+}
 
 //! Functional implementations: create succeeds and messages round trip
 template <typename T>
@@ -100,15 +135,28 @@ TYPED_TEST(DirectQueue, CountedOnlyWhenConfiguredQueue) {
     queue.teardown();
 }
 
+TYPED_TEST(DirectQueue, TeardownAndCreateAgain) {
+    checkLifeCycle(this->m_queue, std::is_base_of<TypeParam, Os::Queue>::value);
+}
+
+// The configured Os::Queue follows the same life cycle as the implementations used directly
+TEST(ConfiguredQueue, TeardownAndCreateAgain) {
+    Os::Queue queue;
+    checkLifeCycle(queue, true);
+}
+
 TYPED_TEST(DirectQueue, NullAndZeroArgumentsAssert) {
     U8 buffer[MESSAGE_SIZE] = {};
     FwSizeType actualSize = 0;
     FwQueuePriorityType priority = 0;
-    ASSERT_DEATH_IF_SUPPORTED(this->m_queue.create(0, Fw::String("direct-queue"), 0, MESSAGE_SIZE), "");
-    ASSERT_DEATH_IF_SUPPORTED(this->m_queue.create(0, Fw::String("direct-queue"), DEPTH, 0), "");
-    ASSERT_DEATH_IF_SUPPORTED(this->m_queue.send(nullptr, sizeof(buffer), 0, Blocking::NONBLOCKING), "");
+    ASSERT_DEATH_IF_SUPPORTED(this->m_queue.create(0, Fw::String("direct-queue"), 0, MESSAGE_SIZE),
+                              COMMON_CHECK_ASSERT);
+    ASSERT_DEATH_IF_SUPPORTED(this->m_queue.create(0, Fw::String("direct-queue"), DEPTH, 0), COMMON_CHECK_ASSERT);
+    ASSERT_DEATH_IF_SUPPORTED(this->m_queue.send(nullptr, sizeof(buffer), 0, Blocking::NONBLOCKING),
+                              COMMON_CHECK_ASSERT);
     ASSERT_DEATH_IF_SUPPORTED(
-        this->m_queue.receive(nullptr, sizeof(buffer), Blocking::NONBLOCKING, actualSize, priority), "");
+        this->m_queue.receive(nullptr, sizeof(buffer), Blocking::NONBLOCKING, actualSize, priority),
+        COMMON_CHECK_ASSERT);
 }
 
 TEST(DirectStubQueue, ChecksAndStubStatuses) {
@@ -124,9 +172,10 @@ TEST(DirectStubQueue, ChecksAndStubStatuses) {
               Status::UNINITIALIZED);
     EXPECT_EQ(queue.send(serialized, 0, Blocking::NONBLOCKING), Status::UNINITIALIZED);
     EXPECT_EQ(queue.receive(serialized, Blocking::NONBLOCKING, priority), Status::UNINITIALIZED);
-    ASSERT_DEATH_IF_SUPPORTED(queue.create(0, Fw::String("stub-queue"), 0, MESSAGE_SIZE), "");
-    ASSERT_DEATH_IF_SUPPORTED(queue.send(nullptr, sizeof(buffer), 0, Blocking::NONBLOCKING), "");
-    ASSERT_DEATH_IF_SUPPORTED(queue.receive(nullptr, sizeof(buffer), Blocking::NONBLOCKING, actualSize, priority), "");
+    ASSERT_DEATH_IF_SUPPORTED(queue.create(0, Fw::String("stub-queue"), 0, MESSAGE_SIZE), COMMON_CHECK_ASSERT);
+    ASSERT_DEATH_IF_SUPPORTED(queue.send(nullptr, sizeof(buffer), 0, Blocking::NONBLOCKING), COMMON_CHECK_ASSERT);
+    ASSERT_DEATH_IF_SUPPORTED(queue.receive(nullptr, sizeof(buffer), Blocking::NONBLOCKING, actualSize, priority),
+                              COMMON_CHECK_ASSERT);
 }
 
 }  // namespace

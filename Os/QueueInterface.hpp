@@ -272,9 +272,10 @@ class QueueInterface {
 
     //! \brief record a teardown call
     //!
-    //! Clears the name, depth, and message size stored by finishCreate() so that the implementation reports
-    //! UNINITIALIZED until it is created again. Os::DelegateQueue does not clear its own state: a queue used
-    //! through the delegate cannot be created again after teardown.
+    //! Clears the name, depth, and message size stored by finishCreate() so that the queue reports UNINITIALIZED
+    //! until it is created again. A queue created again is not counted or registered a second time.
+    //!
+    //! \warning teardown must not run concurrently with any other call on the same queue
     void finishTeardown();
 
     //! \brief check the arguments and state of a send call
@@ -313,6 +314,7 @@ class QueueInterface {
     QueueString m_name;              //!< queue name
     FwSizeType m_depth = 0;          //!< Queue depth
     FwSizeType m_size = 0;           //!< Maximum message size
+    bool m_counted = false;          //!< This object was counted (and registered) as a created queue
     static FwSizeType s_queueCount;  //!< Count of the number of queues
 #if FW_QUEUE_REGISTRATION
     static QueueRegistry* s_queueRegistry;  //!< Queue registry store

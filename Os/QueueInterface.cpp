@@ -32,8 +32,10 @@ void QueueInterface::recordCreation(const Fw::ConstStringBase& name,
     this->m_depth = depth;
     this->m_size = messageSize;
     // Only the configured Os::Queue is counted and registered: an implementation wrapped by a delegate is
-    // accounted for by that delegate
-    if (queue != nullptr) {
+    // accounted for by that delegate,
+    // and an object created again after a teardown is not counted or registered a second time
+    if ((queue != nullptr) && (not this->m_counted)) {
+        this->m_counted = true;
         ScopeLock lock(QueueInterface::getStaticMutex());
         QueueInterface::s_queueCount++;
 #if FW_QUEUE_REGISTRATION

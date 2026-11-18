@@ -94,9 +94,11 @@
 // Compile-time selections MUST derive from Os::QueueInterface, which supplies
 // the common Os::Queue functions (serialized send()/receive(), getDepth(),
 // getMessageSize(), getName(), getNumQueues(), setRegistry()) and the
-// createChecks()/finishCreate()/sendChecks()/receiveChecks() helpers each
-// implementation calls. As with Mutex, the implementation module providing
-// the aliased class must still be in the link.
+// createChecks()/finishCreate()/finishTeardown()/sendChecks()/receiveChecks()
+// helpers each implementation calls. As with Mutex, the implementation module
+// providing the aliased class must still be in the link. FW_QUEUE_HANDLE_MAX_SIZE
+// only sizes the storage of the link-time delegate; a compile-time selection
+// does not use it.
 //
 // Example compile-time selection override:
 //
