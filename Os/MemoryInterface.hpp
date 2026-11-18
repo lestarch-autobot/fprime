@@ -8,9 +8,14 @@
 #include "Os/Os.hpp"
 #include "config/OsSelection.hpp"  // defines the Os::Memory alias and OS_MEMORY_HEADER; do not remove
 
-// Validate that the Memory selection was made by config/OsSelection.hpp
+// A project config/OsSelection.hpp override that predates the Memory selection (no OS_MEMORY_HEADER)
+// keeps the link-time delegate, so existing overrides continue to build.
 #ifndef OS_MEMORY_HEADER
-#error "OS_MEMORY_HEADER must be defined in config/OsSelection.hpp"
+namespace Os {
+class DelegateMemory;
+using Memory = DelegateMemory;
+}  // namespace Os
+#define OS_MEMORY_HEADER <Os/DelegateMemory.hpp>
 #endif
 
 namespace Os {
