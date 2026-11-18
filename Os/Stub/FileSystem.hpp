@@ -26,13 +26,6 @@ class StubFileSystem : public FileSystemInterface {
     //! \brief destructor
     ~StubFileSystem() override = default;
 
-    //! \brief initialize singleton
-    static void init() {}
-
-    //! \brief get a reference to singleton
-    //! \return reference to singleton
-    static StubFileSystem& getSingleton();
-
     // ------------------------------------------------------------
     // Implementation-specific FileSystem member functions
     // ------------------------------------------------------------

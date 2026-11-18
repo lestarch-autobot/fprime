@@ -16,6 +16,8 @@ namespace Os {
 //! This class uses the singleton pattern and should be accessed through
 //! its static functions, for example using `Os::FileSystem::removeFile(path)`.
 class DelegateFileSystem final : public FileSystemInterface {
+    friend class FileSystemInterface;  //!< Constructs the singleton
+
   private:
     DelegateFileSystem();  //!<  Constructor (private because singleton pattern)
   public:
@@ -100,14 +102,6 @@ class DelegateFileSystem final : public FileSystemInterface {
     // Convenience static wrappers (removeDirectory, removeFile, rename, getWorkingDirectory,
     // changeWorkingDirectory, getFreeSpace, exists, getPathType, touch, createDirectory, appendFile,
     // copyFile, moveFile, getFileSize) are inherited from Os::FileSystemInterface.
-
-  public:
-    //! \brief initialize singleton
-    static void init();
-
-    //! \brief get a reference to singleton
-    //! \return reference to singleton
-    static DelegateFileSystem& getSingleton();
 
   private:
     // This section is used to store the implementation-defined FileSystem handle. To Os::FileSystem and fprime, this

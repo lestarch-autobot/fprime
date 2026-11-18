@@ -20,6 +20,7 @@ namespace Posix {
 namespace FileSystem {
 
 PosixFileSystem::Status PosixFileSystem::_removeDirectory(const char* path) {
+    FW_ASSERT(path != nullptr);
     Status status = OP_OK;
     if (::rmdir(path) == -1) {
         status = errno_to_filesystem_status(errno);
@@ -28,6 +29,7 @@ PosixFileSystem::Status PosixFileSystem::_removeDirectory(const char* path) {
 }
 
 PosixFileSystem::Status PosixFileSystem::_removeFile(const char* path) {
+    FW_ASSERT(path != nullptr);
     Status status = OP_OK;
     if (::unlink(path) == -1) {
         status = errno_to_filesystem_status(errno);
@@ -36,6 +38,8 @@ PosixFileSystem::Status PosixFileSystem::_removeFile(const char* path) {
 }
 
 PosixFileSystem::Status PosixFileSystem::_rename(const char* originPath, const char* destPath) {
+    FW_ASSERT(originPath != nullptr);
+    FW_ASSERT(destPath != nullptr);
     Status status = OP_OK;
     if (::rename(originPath, destPath) == -1) {
         status = errno_to_filesystem_status(errno);
@@ -44,6 +48,8 @@ PosixFileSystem::Status PosixFileSystem::_rename(const char* originPath, const c
 }
 
 PosixFileSystem::Status PosixFileSystem::_getWorkingDirectory(char* path, FwSizeType bufferSize) {
+    FW_ASSERT(path != nullptr);
+    FW_ASSERT(bufferSize > 0);
     Status status = OP_OK;
     const char* cwd = ::getcwd(path, static_cast<size_t>(bufferSize));
     if (cwd == nullptr) {
@@ -53,6 +59,7 @@ PosixFileSystem::Status PosixFileSystem::_getWorkingDirectory(char* path, FwSize
 }
 
 PosixFileSystem::Status PosixFileSystem::_changeWorkingDirectory(const char* path) {
+    FW_ASSERT(path != nullptr);
     Status status = OP_OK;
     if (::chdir(path) == -1) {
         status = errno_to_filesystem_status(errno);
@@ -63,6 +70,7 @@ PosixFileSystem::Status PosixFileSystem::_changeWorkingDirectory(const char* pat
 PosixFileSystem::Status PosixFileSystem::_getFreeSpace(const char* path,
                                                        FwSizeType& totalBytes,
                                                        FwSizeType& freeBytes) {
+    FW_ASSERT(path != nullptr);
 #ifdef TGT_OS_TYPE_VXWORKS
     return Status::NOT_SUPPORTED;
 #else

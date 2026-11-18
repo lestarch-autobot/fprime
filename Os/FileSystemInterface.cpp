@@ -104,6 +104,16 @@ FileSystemInterface::Status copyFileData(File& source, File& destination, FwSize
 
 }  // namespace
 
+void FileSystemInterface::init() {
+    // Force trigger on the fly singleton setup
+    (void)FileSystemInterface::getSingleton();
+}
+
+FileSystem& FileSystemInterface::getSingleton() {
+    static FileSystem s_singleton;
+    return s_singleton;
+}
+
 // ------------------------------------------------------------
 // Convenience static wrappers built directly on the virtual instance API
 // ------------------------------------------------------------

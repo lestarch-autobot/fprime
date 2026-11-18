@@ -209,15 +209,18 @@ namespace Os {
 static convenience wrappers that resolve through `Os::<Service>::getSingleton()`, and `Os::init()`
 (`Os/Os.cpp`) calls `Os::<Service>::init()`. The `FileSystem`, `Cpu` and `Memory` static wrappers are
 declared on the interface class (`Console`'s `write()` statics are not, see below), and `init()` and
-`getSingleton()` are declared on no interface, so a compile-time alias for one of these services MUST
-additionally provide:
+`getSingleton()` are declared on no interface except `Os::FileSystemInterface`, so a compile-time alias for
+`Console`, `Cpu` or `Memory` MUST additionally provide:
 
 ```c++
 static void init();               //!< called by Os::init()
 static <Impl>& getSingleton();    //!< backing instance for the static convenience API
 ```
 
-`Os/Stub/FileSystem.hpp` shows the minimal shape. `Console` additionally needs `static void
+`Os/Stub/Cpu.hpp` shows the minimal shape. A `FileSystem` alias inherits `init()` and `getSingleton()` from
+`Os::FileSystemInterface`, but MUST be default-constructible by it and MUST assert its own arguments (non-null
+paths, non-zero `_getWorkingDirectory` buffer size) as `Os/Posix/FileSystem.cpp` does. `Console` additionally
+needs `static void
 write(const CHAR*, FwSizeType)` / `static void write(const Fw::ConstStringBase&)`, and its
 `getSingleton()` is responsible for the one-time `Fw::Logger::registerLogger()` call — omitting it
 silently drops all `Fw::Logger` output. Without these, the build fails to link (or, for the logger,

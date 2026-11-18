@@ -69,14 +69,4 @@ DelegateFileSystem::Status DelegateFileSystem::_getFreeSpace(const char* path,
     return this->m_delegate._getFreeSpace(path, totalBytes, freeBytes);
 }
 
-void DelegateFileSystem::init() {
-    // Force trigger on the fly singleton setup
-    (void)DelegateFileSystem::getSingleton();
-}
-
-DelegateFileSystem& DelegateFileSystem::getSingleton() {
-    static DelegateFileSystem s_singleton;
-    return s_singleton;
-}
-
 }  // namespace Os

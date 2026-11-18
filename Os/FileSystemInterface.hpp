@@ -10,6 +10,14 @@
 #include <Os/Os.hpp>
 #include "config/OsSelection.hpp"
 
+// A project config/OsSelection.hpp that predates the FileSystem selection does not define the Os::FileSystem alias
+#ifndef OS_FILE_SYSTEM_HEADER
+namespace Os {
+class DelegateFileSystem;
+using FileSystem = DelegateFileSystem;
+}  // namespace Os
+#endif
+
 namespace Os {
 
 struct FileSystemHandle {};
@@ -64,6 +72,13 @@ class FileSystemInterface {
 
     //! \brief provide a pointer to a FileSystem delegate object
     static FileSystemInterface* getDelegate(FileSystemHandleStorage& aligned_new_memory);
+
+    //! \brief initialize singleton
+    static void init();
+
+    //! \brief get a reference to singleton
+    //! \return reference to singleton
+    static FileSystem& getSingleton();
 
     // ------------------------------------------------------------------
     // FileSystem operations to be implemented by an OSAL implementation

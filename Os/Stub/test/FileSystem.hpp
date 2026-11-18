@@ -40,7 +40,7 @@ struct StaticData {
     //! Last function called
     LastFn lastCalled = NONE_FN;
 
-    Os::FileSystem::Status lastStatus = Os::FileSystem::Status::OP_OK;
+    Os::FileSystemInterface::Status lastStatus = Os::FileSystemInterface::Status::OP_OK;
 
     // Singleton data
     static StaticData data;
