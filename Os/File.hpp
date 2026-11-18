@@ -19,15 +19,23 @@
 //      class Os::File aliases: Os/DelegateFile.hpp for link-time selection, or
 //      an implementation header (e.g. Os/Posix/File.hpp) for compile-time
 //      selection.
+//
+// When CFG does not define OS_FILE_HEADER, this header selects the link-time
+// delegate.
 // ======================================================================
 #ifndef Os_File_hpp_
 #define Os_File_hpp_
 
 #include "Os/FileInterface.hpp"
 
-// Validate that OS_FILE_HEADER was defined by config/OsSelection.hpp
+// A project config/OsSelection.hpp that predates the Os::File alias makes no selection. Default to the link-time
+// delegate so such projects keep building unchanged.
 #ifndef OS_FILE_HEADER
-#error "OS_FILE_HEADER must be defined in config/OsSelection.hpp"
+namespace Os {
+class DelegateFile;
+using File = DelegateFile;
+}  // namespace Os
+#define OS_FILE_HEADER <Os/DelegateFile.hpp>
 #endif
 
 #include OS_FILE_HEADER
