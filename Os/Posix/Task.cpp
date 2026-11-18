@@ -215,8 +215,14 @@ Os::Task::Status PosixTask::create(const Os::Task::Arguments& arguments,
 
 void PosixTask::onStart() {}
 
-Os::Task::Status PosixTask::start(const Arguments& arguments) {
-    FW_ASSERT(arguments.m_routine != nullptr);
+PosixTask::~PosixTask() {
+    this->deregister();
+}
+
+Os::Task::Status PosixTask::start(const Arguments& user_arguments) {
+    FW_ASSERT(user_arguments.m_routine != nullptr);
+    // Common start bookkeeping: the arguments returned must be used to start the task
+    const Arguments arguments = this->prepareStart(user_arguments);
 
     // Try to create thread with assuming permissions
     Os::Task::Status status = this->create(arguments, PermissionExpectation::EXPECT_PERMISSION);
@@ -242,10 +248,15 @@ Os::Task::Status PosixTask::start(const Arguments& arguments) {
     } else if (status != Os::Task::Status::OP_OK) {
         Fw::Logger::log("[ERROR] Failed to create task with status: %d", static_cast<int>(status));
     }
+    this->completeStart(status, arguments);
     return status;
 }
 
 Os::Task::Status PosixTask::join() {
+    // Common state check: only a started task may be joined
+    if (not this->prepareJoin()) {
+        return Os::Task::Status::INVALID_STATE;
+    }
     Os::Task::Status status = Os::Task::Status::JOIN_ERROR;
     if (not this->m_handle.m_is_valid) {
         status = Os::Task::Status::INVALID_HANDLE;
@@ -253,6 +264,7 @@ Os::Task::Status PosixTask::join() {
         int stat = ::pthread_join(this->m_handle.m_task_descriptor, nullptr);
         status = (stat == PosixTaskHandle::SUCCESS) ? Os::Task::Status::OP_OK : Os::Task::Status::JOIN_ERROR;
     }
+    this->completeJoin(status);
     return status;
 }
 

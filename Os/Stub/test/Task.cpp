@@ -12,19 +12,25 @@ TestTask::TestTask() {
 }
 
 TestTask::~TestTask() {
+    this->deregister();
     StaticData::data.lastCalled = StaticData::LastFn::DESTRUCT_FN;
 }
 
 void TestTask::onStart() {}
 
 Os::TaskInterface::Status TestTask::join() {
+    if (not this->prepareJoin()) {
+        return Os::TaskInterface::Status::INVALID_STATE;
+    }
     StaticData::data.lastCalled = StaticData::LastFn::JOIN_FN;
+    this->completeJoin(StaticData::data.joinStatus);
     return StaticData::data.joinStatus;
 }
 
 void TestTask::suspend(Os::TaskInterface::SuspensionType suspensionType) {
     StaticData::data.suspensionType = suspensionType;
     StaticData::data.lastCalled = StaticData::LastFn::SUSPEND_FN;
+    this->completeSuspend(suspensionType);
 }
 
 void TestTask::resume() {
@@ -36,7 +42,10 @@ Os::TaskHandle* TestTask::getHandle() {
 }
 
 Os::TaskInterface::Status TestTask::start(const Os::TaskInterface::Arguments& arguments) {
+    FW_ASSERT(arguments.m_routine != nullptr);
+    const Arguments wrapped_arguments = this->prepareStart(arguments);
     StaticData::data.lastCalled = StaticData::LastFn::START_FN;
+    this->completeStart(StaticData::data.startStatus, wrapped_arguments);
     return StaticData::data.startStatus;
 }
 

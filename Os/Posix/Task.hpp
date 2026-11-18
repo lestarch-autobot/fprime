@@ -38,6 +38,11 @@ struct PosixTaskHandle : public TaskHandle {
 //! Posix task implementation as driven by pthreads implementation
 class PosixTask : public TaskInterface {
   public:
+    // Keep the common TaskInterface overloads visible alongside the overrides below
+    using TaskInterface::join;
+    using TaskInterface::start;
+    using TaskInterface::suspend;
+
     //! Enumeration of permission expectations
     enum PermissionExpectation {
         EXPECT_PERMISSION,    //!< Expect that you hold necessary permissions
@@ -54,7 +59,7 @@ class PosixTask : public TaskInterface {
     PosixTask() = default;
 
     //! \brief default virtual destructor
-    ~PosixTask() = default;
+    ~PosixTask() override;
 
     //! \brief copy constructor is forbidden
     PosixTask(const PosixTask& other) = delete;

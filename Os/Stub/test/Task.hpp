@@ -42,6 +42,11 @@ class TestTask : public TaskInterface {
     //! Destructor
     ~TestTask() override;
 
+    // Keep the common TaskInterface overloads visible alongside the overrides below
+    using TaskInterface::join;
+    using TaskInterface::start;
+    using TaskInterface::suspend;
+
     //! \brief perform required task start actions
     void onStart() override;
 
