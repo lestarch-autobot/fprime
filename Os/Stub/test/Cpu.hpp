@@ -27,7 +27,7 @@ struct StaticData {
     FwSizeType index = 0;
 
     //! Ticks test
-    CpuInterface::Ticks ticks;
+    CpuInterface::Ticks ticks{};
 
     //! Status out
     CpuInterface::Status status_out;

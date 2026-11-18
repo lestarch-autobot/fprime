@@ -218,6 +218,9 @@ static void init();               //!< called by Os::init()
 static <Impl>& getSingleton();    //!< backing instance for the static convenience API
 ```
 
+A compile-time alias for `Cpu` MUST be default-constructible (the inherited `getSingleton()`
+default-constructs it) and MUST NOT declare its own `init()` or `getSingleton()`.
+
 `Os/Stub/FileSystem.hpp` shows the minimal shape. `Console` additionally needs `static void
 write(const CHAR*, FwSizeType)` / `static void write(const Fw::ConstStringBase&)`, and its
 `getSingleton()` is responsible for the one-time `Fw::Logger::registerLogger()` call — omitting it

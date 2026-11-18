@@ -16,7 +16,8 @@
 //      Included by Os/CpuInterface.hpp, which this header includes first.
 //
 //   2. Os/CpuInterface.hpp (IF) includes CFG first (so the Os::Cpu alias is
-//      available), then defines CpuHandle and CpuInterface.
+//      available; IF declares the delegate default when CFG defines none),
+//      then defines CpuHandle and CpuInterface.
 //
 //   3. OS_CPU_HEADER (IMPL) is defined by CFG and points to the concrete
 //      implementation header. If using delegation, this points to

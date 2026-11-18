@@ -7,7 +7,7 @@
 namespace Os {
 
 void CpuInterface::init() {
-    (void)CpuInterface::getSingleton();
+    (void)Os::Cpu::getSingleton();
 }
 
 Cpu& CpuInterface::getSingleton() {
