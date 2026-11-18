@@ -53,6 +53,9 @@ class TestDirectory : public DirectoryInterface {
     // ------------------------------------------------------------
     Status open(const char* path, OpenMode mode) override;
     Status rewind() override;
+    // Bring the base class's read(Fw::StringBase&) overload back into scope; it would
+    // otherwise be hidden by the read(char*, FwSizeType) override declared below.
+    using DirectoryInterface::read;
     Status read(char* fileNameBuffer, FwSizeType bufSize) override;
     void close() override;
 

@@ -10,6 +10,7 @@
 #include <Os/Queue.hpp>
 #include <Os/RawTime.hpp>
 #include <Os/Task.hpp>
+#include "Os/Stub/Directory.hpp"
 
 TEST(Stub, File) {
     Os::File _;
@@ -41,6 +42,17 @@ TEST(Stub, FileSystem) {
 
 TEST(Stub, Directory) {
     Os::Directory _;
+}
+
+// Ensure that StubDirectory performs its own checks when used without the Os::Directory delegate
+TEST(Stub, DirectoryDirectChecks) {
+    Os::Stub::Directory::StubDirectory directory;
+    char buffer[4];
+    ASSERT_EQ(directory.open("/does/not/matter", Os::DirectoryInterface::OpenMode::READ),
+              Os::DirectoryInterface::Status::NOT_SUPPORTED);
+    ASSERT_FALSE(directory.isOpen());
+    ASSERT_EQ(directory.rewind(), Os::DirectoryInterface::Status::NOT_OPENED);
+    ASSERT_EQ(directory.read(buffer, sizeof(buffer)), Os::DirectoryInterface::Status::NOT_OPENED);
 }
 
 TEST(Stub, Cpu) {

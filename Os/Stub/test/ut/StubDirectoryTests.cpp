@@ -64,6 +64,22 @@ TEST_F(Interface, Close) {
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CLOSE_FN);
 }
 
+// Ensure that the test implementation performs its own checks when used without the Os::Directory delegate
+TEST_F(Interface, DirectChecks) {
+    TestDirectory directory;
+    char buffer[4] = {'x', 'x', 'x', 'x'};
+    ASSERT_EQ(directory.rewind(), Os::DirectoryInterface::Status::NOT_OPENED);
+    ASSERT_EQ(directory.read(buffer, sizeof(buffer)), Os::DirectoryInterface::Status::NOT_OPENED);
+    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CONSTRUCT_FN);
+    ASSERT_EQ(directory.open("/does/not/matter", Os::DirectoryInterface::OpenMode::READ),
+              Os::DirectoryInterface::Status::OP_OK);
+    ASSERT_TRUE(directory.isOpen());
+    ASSERT_EQ(directory.read(buffer, sizeof(buffer)), Os::DirectoryInterface::Status::OP_OK);
+    ASSERT_EQ(buffer[sizeof(buffer) - 1], '\0');
+    directory.close();
+    ASSERT_FALSE(directory.isOpen());
+}
+
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     STest::Random::seed();

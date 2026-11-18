@@ -24,7 +24,9 @@ class PosixDirectory : public DirectoryInterface {
     PosixDirectory();
 
     //! \brief destructor
-    ~PosixDirectory() = default;
+    //!
+    //! Destructor will close the Directory if it is open
+    ~PosixDirectory() override;
 
     //! \brief return the underlying mutex handle (implementation specific)
     //! \return internal mutex handle representation

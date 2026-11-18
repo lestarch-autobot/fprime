@@ -4,6 +4,7 @@
 // ======================================================================
 #include <gtest/gtest.h>
 #include "Fw/Types/String.hpp"
+#include "Os/Posix/Directory.hpp"
 #include "Os/Posix/Task.hpp"
 #include "Os/test/ut/directory/CommonTests.hpp"
 #include "Os/test/ut/directory/RulesHeaders.hpp"
@@ -57,8 +58,22 @@ void tearDown(Os::Test::Directory::Tester* tester) {
 // ----------------------------------------------------------------------
 // Posix Test Cases:
 //
-// No posix-specific tests - tests are pulled in from CommonTests.cpp
+// Remaining tests are pulled in from CommonTests.cpp
 // ----------------------------------------------------------------------
+
+// Ensure that PosixDirectory performs its own checks when used without the Os::Directory delegate
+TEST(PosixDirectory, DirectChecks) {
+    Os::Posix::Directory::PosixDirectory directory;
+    char buffer[4] = {'x', 'x', 'x', 'x'};
+    ASSERT_EQ(directory.rewind(), Os::DirectoryInterface::Status::NOT_OPENED);
+    ASSERT_EQ(directory.read(buffer, sizeof(buffer)), Os::DirectoryInterface::Status::NOT_OPENED);
+    ASSERT_EQ(directory.open(".", Os::DirectoryInterface::OpenMode::READ), Os::DirectoryInterface::Status::OP_OK);
+    ASSERT_TRUE(directory.isOpen());
+    ASSERT_EQ(directory.rewind(), Os::DirectoryInterface::Status::OP_OK);
+    (void)directory.read(buffer, sizeof(buffer));
+    ASSERT_EQ(buffer[sizeof(buffer) - 1], '\0');
+    // Destructor closes the open directory (a leak here is reported by the sanitizers)
+}
 
 int main(int argc, char** argv) {
     STest::Random::seed();
