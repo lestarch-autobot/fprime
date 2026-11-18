@@ -219,7 +219,7 @@ static <Impl>& getSingleton();    //!< backing instance for the static convenien
 ```
 
 A compile-time alias for `Cpu` MUST be default-constructible (the inherited `getSingleton()`
-default-constructs it) and MUST NOT declare its own `init()` or `getSingleton()`.
+default-constructs it) and need not declare `init()` or `getSingleton()`.
 
 `Os/Stub/FileSystem.hpp` shows the minimal shape. `Console` additionally needs `static void
 write(const CHAR*, FwSizeType)` / `static void write(const Fw::ConstStringBase&)`, and its
