@@ -32,11 +32,7 @@
 
 #include "Os/ConsoleInterface.hpp"
 
-// Validate that OS_CONSOLE_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_CONSOLE_HEADER
-#error "OS_CONSOLE_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
+// OS_CONSOLE_HEADER comes from config/OsSelection.hpp, or defaults to the link-time delegate in ConsoleInterface.hpp
 #include OS_CONSOLE_HEADER
 
 #endif

@@ -12,6 +12,15 @@
 #include <Os/Os.hpp>
 #include "config/OsSelection.hpp"  // defines Os::Console alias and OS_CONSOLE_HEADER consumed by Os/Console.hpp; do not remove
 
+// A config/OsSelection.hpp override written before the Console selection existed keeps the link-time delegate
+#ifndef OS_CONSOLE_HEADER
+namespace Os {
+class DelegateConsole;
+using Console = DelegateConsole;
+}  // namespace Os
+#define OS_CONSOLE_HEADER <Os/DelegateConsole.hpp>
+#endif
+
 namespace Os {
 //! \brief Base class for storing implementation specific handle information
 struct ConsoleHandle {};

@@ -99,7 +99,8 @@
 // An "undefined reference to vtable for <class>" link error means the chosen
 // implementation module does not match the alias. The class must also
 // re-expose the common overload with `using ConsoleInterface::writeMessage;`
-// and both the alias and OS_CONSOLE_HEADER must be defined together.
+// and both the alias and OS_CONSOLE_HEADER must be defined together. An
+// override that defines neither keeps the link-time delegate.
 //
 // Example compile-time selection override:
 //
