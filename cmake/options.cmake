@@ -132,8 +132,8 @@ option(FPRIME_ENABLE_FRAMEWORK_UTS "Enable framework UT generation" ON)
 # 4.4.0) builds the project's own
 # modules, deployments, unit tests, and only the framework and library modules they depend upon. Every registered
 # module, excluded or not, is added to the `universe` target, which builds the whole build system
-# (`cmake --build . --target universe`). Framework and library unit tests that are excluded from `all` carry the CTest
-# label `fprime_universe` (`ctest -LE fprime_universe` runs the project's tests only).
+# (`cmake --build . --target universe`). Every unit test carries the CTest label `fprime_universe`; unit tests built by
+# `all` also carry `fprime_project` (`ctest -L fprime_project` runs the project's tests only).
 #
 # `EXCLUDE_FROM_ALL` has its CMake meaning however it was set: by this option, by the `EXCLUDE_FROM_ALL` argument of a
 # `register_fprime_*` call, or by `add_fprime_subdirectory`. The module is left out of `all` and stays in `universe`.

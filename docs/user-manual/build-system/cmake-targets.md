@@ -27,9 +27,9 @@ cmake --build . --target all        # the project and what it depends upon (fpri
 cmake --build . --target universe   # everything the build system knows about
 ```
 
-In unit-test builds (`BUILD_TESTING=ON`) the tests of excluded modules carry the CTest label `fprime_universe`, so
-`ctest -LE fprime_universe` runs the project's tests only, and `fprime-util check` at the project root runs exactly
-those tests. `fprime-util check --all` runs CTest without a filter, i.e. every test. fprime-tools releases after 4.4.0
+In unit-test builds (`BUILD_TESTING=ON`) every test carries the CTest label `fprime_universe`, and the tests built by
+`all` also carry `fprime_project`. `ctest -L fprime_project` runs the project's tests only, and `fprime-util check` at
+the project root runs exactly those tests. `fprime-util check --all` runs CTest without a filter, i.e. every test. fprime-tools releases after 4.4.0
 also offer `fprime-util build --project` and `check --project` to do the same from any directory of the project.
 
 A module may exclude itself regardless of this option with the `EXCLUDE_FROM_ALL` argument of its `register_fprime_*`

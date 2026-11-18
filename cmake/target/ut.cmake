@@ -133,16 +133,19 @@ function(ut_add_ctest UT_EXECUTABLE_TARGET)
     )
     add_test(NAME ${UT_EXECUTABLE_TARGET} COMMAND ${UT_EXECUTABLE_TARGET} WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
     fprime_util_metadata_add_test("${UT_EXECUTABLE_TARGET}")
-    # Tests excluded from "all" (framework/library tests under FPRIME_EXCLUDE_LIBRARIES_FROM_ALL) are labeled so that
-    # `ctest -LE fprime_universe` runs the project's tests only. Project tests are listed in the root metadata when
-    # the root does not already carry the ".*" catch-all.
+    # Every test is labeled `fprime_universe`; tests built by "all" (not EXCLUDE_FROM_ALL) are also labeled
+    # `fprime_project`, so `ctest -L fprime_project` runs the project's tests only. Project tests are listed in the
+    # root metadata when the root does not already carry the ".*" catch-all.
     get_target_property(UT_EXCLUDED_FROM_ALL "${UT_EXECUTABLE_TARGET}" EXCLUDE_FROM_ALL)
     get_property(UT_EXCLUDING_INCLUDED_CODE GLOBAL PROPERTY FPRIME_EXCLUDING_INCLUDED_CODE)
-    if (UT_EXCLUDED_FROM_ALL)
-        set_tests_properties(${UT_EXECUTABLE_TARGET} PROPERTIES LABELS "fprime_universe")
-    elseif (UT_EXCLUDING_INCLUDED_CODE)
-        fprime_util_metadata_add_project_test("${UT_EXECUTABLE_TARGET}")
+    set(UT_LABELS "fprime_universe")
+    if (NOT UT_EXCLUDED_FROM_ALL)
+        list(APPEND UT_LABELS "fprime_project")
+        if (UT_EXCLUDING_INCLUDED_CODE)
+            fprime_util_metadata_add_project_test("${UT_EXECUTABLE_TARGET}")
+        endif()
     endif()
+    set_tests_properties(${UT_EXECUTABLE_TARGET} PROPERTIES LABELS "${UT_LABELS}")
 endfunction(ut_add_ctest)
 
 ####

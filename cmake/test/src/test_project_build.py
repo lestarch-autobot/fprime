@@ -43,6 +43,9 @@ def _cmake_arguments(**extra):
     return arguments
 
 
+# A unit test registered by the Ref project itself
+PROJECT_TEST = "Ref_SignalGen_ut_exe"
+
 PROJECT_BUILD_RESULT = cmake.get_build(
     "PROJECT_BUILD", settings.DATA_DIR / "TestDeployment", _cmake_arguments(), ["all"]
 )
@@ -110,15 +113,26 @@ def test_option_off_builds_everything(EVERYTHING_BUILD):
 
 
 def test_excluded_unit_tests_labeled(PROJECT_UT_CONFIGURE):
-    """Excluded framework tests carry the fprime_universe label and the root test metadata is not the catch-all"""
+    """Every test is labeled fprime_universe, only project tests fprime_project; root metadata is not the catch-all"""
     cmake.assert_process_success(PROJECT_UT_CONFIGURE, errors_ok=True)
-    return_code, labeled, _ = cmake.subprocess_helper(
+    return_code, universe, _ = cmake.subprocess_helper(
         ["ctest", "-N", "-L", "fprime_universe"], PROJECT_UT_CONFIGURE["build"]
     )
     assert return_code == 0
+    return_code, project, _ = cmake.subprocess_helper(
+        ["ctest", "-N", "-L", "fprime_project"], PROJECT_UT_CONFIGURE["build"]
+    )
+    assert return_code == 0
+    for test in ["Fw_Types_ut_exe", PROJECT_TEST]:
+        assert any(
+            test in line for line in universe
+        ), f"{test} not labeled fprime_universe"
     assert any(
-        "Fw_Types_ut_exe" in line for line in labeled
-    ), "Framework test not labeled fprime_universe"
+        PROJECT_TEST in line for line in project
+    ), "Project test not labeled fprime_project"
+    assert not any(
+        "Fw_Types_ut_exe" in line for line in project
+    ), "Framework test labeled fprime_project"
     root_tests = (
         (PROJECT_UT_CONFIGURE["build"] / "tests.fprime-util").read_text().split()
     )
@@ -129,19 +143,23 @@ def test_excluded_unit_tests_labeled(PROJECT_UT_CONFIGURE):
 
 
 def test_framework_top_level_forces_option_off(FRAMEWORK_UT_CONFIGURE):
-    """When F Prime is the top-level project the option is forced OFF: no labels, catch-all root test metadata"""
+    """When F Prime is the top-level project the option is forced OFF: every test is a project test"""
     cmake.assert_process_success(FRAMEWORK_UT_CONFIGURE, errors_ok=True)
     _, stdout, _ = FRAMEWORK_UT_CONFIGURE["cmake"]
     assert any(
         "FPRIME_EXCLUDE_LIBRARIES_FROM_ALL forced OFF" in line for line in stdout
     )
-    return_code, labeled, _ = cmake.subprocess_helper(
-        ["ctest", "-N", "-L", "fprime_universe"], FRAMEWORK_UT_CONFIGURE["build"]
-    )
-    assert return_code == 0
-    assert any(
-        "Total Tests: 0" in line for line in labeled
-    ), "Framework build labeled its own tests"
+    totals = []
+    for label in ["fprime_universe", "fprime_project"]:
+        return_code, labeled, _ = cmake.subprocess_helper(
+            ["ctest", "-N", "-L", label], FRAMEWORK_UT_CONFIGURE["build"]
+        )
+        assert return_code == 0
+        assert any(
+            "Fw_Types_ut_exe" in line for line in labeled
+        ), f"Framework test not labeled {label}"
+        totals.append([line for line in labeled if "Total Tests:" in line])
+    assert totals[0] == totals[1], "Framework build has tests outside the project"
     root_tests = (
         (FRAMEWORK_UT_CONFIGURE["build"] / "tests.fprime-util").read_text().split()
     )
