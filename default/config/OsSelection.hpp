@@ -87,6 +87,25 @@
 //     }  // namespace Os
 //     #define OS_MUTEX_HEADER "Va416x0/Os/AtomicMutex/AtomicMutex.hpp"
 //     #define OS_CONDITION_VARIABLE_HEADER "Os/Stub/ConditionVariable.hpp"
+//
+// ----------------------------------------------------------------------
+// FileSystem
+//
+// Os::FileSystem is a singleton used through static functions (e.g.
+// Os::FileSystem::removeFile(path)). Those static functions, init(), and
+// getSingleton() are defined by Os::FileSystemInterface for every selection.
+//
+// WARNING: a compile-time selection MUST derive from Os::FileSystemInterface,
+// MUST be default constructible, and MUST perform its own argument checks
+// (e.g. FW_ASSERT on nullptr paths) as there is no delegate in front of it.
+// The module providing the aliased class must still be in the link (see the
+// Mutex note above).
+//
+// Example compile-time selection override:
+//
+//     namespace Os { namespace Posix { namespace FileSystem { class PosixFileSystem; } } }
+//     namespace Os { using FileSystem = Os::Posix::FileSystem::PosixFileSystem; }
+//     #define OS_FILE_SYSTEM_HEADER "Os/Posix/FileSystem.hpp"
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
@@ -104,10 +123,14 @@ using Mutex = DelegateMutex;
 class DelegateConditionVariable;
 using ConditionVariable = DelegateConditionVariable;
 
+class DelegateFileSystem;
+using FileSystem = DelegateFileSystem;
+
 }  // namespace Os
 
 #define OS_RAW_TIME_HEADER <Os/DelegateRawTime.hpp>
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_FILE_SYSTEM_HEADER <Os/DelegateFileSystem.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP

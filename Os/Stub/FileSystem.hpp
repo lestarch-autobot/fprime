@@ -15,7 +15,8 @@ struct StubFileSystemHandle : public FileSystemHandle {};
 
 //! \brief stub implementation of Os::FileSystem
 //!
-//! Stub implementation of `FileSystemInterface` for use as a delegate class handling error-only fileSystem operations.
+//! Stub implementation of `FileSystemInterface` for use as the link-time delegate or as a compile-time
+//! alias of Os::FileSystem (see config/OsSelection.hpp).
 //!
 class StubFileSystem : public FileSystemInterface {
   public:
@@ -107,7 +108,7 @@ class StubFileSystem : public FileSystemInterface {
     Status _getPathType(const char* path, PathType& pathType) override;
 
   private:
-    //! FileSystem handle for PosixFileSystem
+    //! FileSystem handle for StubFileSystem
     StubFileSystemHandle m_handle;
 };
 

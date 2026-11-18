@@ -136,7 +136,9 @@ register_fprime_module(
 )
 
 add_named_os_module(Console Fw_Logger)
-add_named_os_module("File;FileSystem;Directory" Utils_Hash Fw_DataStructures)
+# FileSystem: FileSystem.hpp is the public alias header and FileSystem.cpp holds the code common to every
+# Os::FileSystem selection; the link-time delegate lives in DelegateFileSystem.{hpp,cpp}.
+add_named_os_module("File;FileSystem;DelegateFileSystem;Directory" Utils_Hash Fw_DataStructures)
 add_named_os_module(Task ${CMAKE_THREAD_LIBS_INIT})
 # Mutex: Mutex.hpp is a thin public alias header (no Mutex.cpp); the interface and
 # link-time delegate live in MutexInterface.hpp / DelegateMutex.{hpp,cpp}. Registered

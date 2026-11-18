@@ -15,7 +15,8 @@ struct PosixFileSystemHandle : public FileSystemHandle {};
 
 //! \brief Posix implementation of Os::FileSystem
 //!
-//! Posix implementation of `FileSystemInterface` for use as a delegate class handling error-only fileSystem operations.
+//! Posix implementation of `FileSystemInterface` for use as the link-time delegate or as a compile-time
+//! alias of Os::FileSystem (see config/OsSelection.hpp).
 //!
 class PosixFileSystem : public FileSystemInterface {
   public:
