@@ -107,8 +107,8 @@ class ConsoleInterface : public Fw::Logger {
 
     //! \brief get a reference to singleton
     //!
-    //! The singleton is registered as the Fw::Logger on first access. Implementations must not redeclare `init`,
-    //! `getSingleton` or `write`, as these statics use this singleton.
+    //! The singleton is registered as the Fw::Logger on first access. `init` and `write` resolve through
+    //! `Os::Console::getSingleton()`, so an implementation declaring its own `getSingleton` must register the logger.
     //!
     //! \return reference to singleton
     static Console& getSingleton();

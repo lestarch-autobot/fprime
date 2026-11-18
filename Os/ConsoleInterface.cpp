@@ -11,16 +11,16 @@ void ConsoleInterface::writeMessage(const Fw::ConstStringBase& message) {
 }
 
 void ConsoleInterface::write(const CHAR* message, const FwSizeType size) {
-    ConsoleInterface::getSingleton().writeMessage(message, size);
+    Console::getSingleton().writeMessage(message, size);
 }
 
 void ConsoleInterface::write(const Fw::ConstStringBase& message) {
-    ConsoleInterface::getSingleton().writeMessage(message.toChar(), message.length());
+    Console::getSingleton().writeMessage(message.toChar(), message.length());
 }
 
 void ConsoleInterface::init() {
     // Force trigger on the fly singleton setup
-    (void)ConsoleInterface::getSingleton();
+    (void)Console::getSingleton();
 }
 
 Console& ConsoleInterface::getSingleton() {
