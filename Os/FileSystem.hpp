@@ -27,9 +27,7 @@
 
 #include "Os/FileSystemInterface.hpp"
 
-#ifndef OS_FILE_SYSTEM_HEADER
-#error "config/OsSelection.hpp must define the Os::FileSystem alias and OS_FILE_SYSTEM_HEADER"
-#endif
+// Os/FileSystemInterface.hpp falls back to the link-time delegate when config/OsSelection.hpp selects nothing
 #include OS_FILE_SYSTEM_HEADER
 
 #endif

@@ -12,6 +12,17 @@
 #include <Os/Os.hpp>
 #include "config/OsSelection.hpp"  // defines Os::FileSystem alias and OS_FILE_SYSTEM_HEADER consumed by Os/FileSystem.hpp; do not remove
 
+// A project config/OsSelection.hpp that predates the FileSystem selection (e.g. one supplied by a platform library)
+// defines neither the Os::FileSystem alias nor OS_FILE_SYSTEM_HEADER: select the link-time delegate so that such
+// projects keep building. A config that selects FileSystem must define both.
+#ifndef OS_FILE_SYSTEM_HEADER
+namespace Os {
+class DelegateFileSystem;
+using FileSystem = DelegateFileSystem;
+}  // namespace Os
+#define OS_FILE_SYSTEM_HEADER <Os/DelegateFileSystem.hpp>
+#endif
+
 namespace Os {
 
 struct FileSystemHandle {};
