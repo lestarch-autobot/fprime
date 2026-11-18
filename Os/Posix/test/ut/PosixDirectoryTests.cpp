@@ -154,6 +154,13 @@ TEST_F(PosixDirectoryDirect, ReadTruncatesAndTerminates) {
     this->m_directory.close();
 }
 
+// Destroying an open directory releases the directory stream (checked by the leak sanitizer)
+TEST_F(PosixDirectoryDirect, DestructorCloses) {
+    Os::Posix::Directory::PosixDirectory directory;
+    ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+    ASSERT_TRUE(directory.isOpen());
+}
+
 // Invalid arguments assert in the implementation
 TEST_F(PosixDirectoryDirect, InvalidArguments) {
     char buffer[8];

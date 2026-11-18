@@ -17,6 +17,11 @@ namespace Directory {
 
 PosixDirectory::PosixDirectory() : Os::DirectoryInterface(), m_handle() {}
 
+PosixDirectory::~PosixDirectory() {
+    // Not dispatched virtually: the directory stream is owned by this class
+    PosixDirectory::close();
+}
+
 DirectoryHandle* PosixDirectory::getHandle() {
     return &this->m_handle;
 }
