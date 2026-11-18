@@ -94,6 +94,8 @@
 // A compile-time selection MUST derive from Os::MemoryInterface, which supplies
 // the static init()/getSingleton()/getUsage(), and MUST be default
 // constructible. Its implementation module must still be in the link.
+// A project override that omits both the Memory alias and OS_MEMORY_HEADER
+// keeps Os::DelegateMemory (see Os/MemoryInterface.hpp).
 //
 // Example compile-time selection override:
 //
