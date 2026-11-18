@@ -11,6 +11,7 @@
 #include "Fw/Logger/Logger.hpp"
 #include "Fw/Types/Assert.hpp"
 #include "Fw/Types/StringUtils.hpp"
+#include "Os/Posix/Models/FppConstantsAc.hpp"
 #include "Os/Posix/Task.hpp"
 #include "Os/Posix/error.hpp"
 #include "Os/Task.hpp"
@@ -18,6 +19,10 @@
 namespace Os {
 namespace Posix {
 namespace Task {
+static_assert(PosixTask::TASK_PRIORITY_NON_REALTIME ==
+                  static_cast<FwTaskPriorityType>(Os::Posix::TASK_PRIORITY_NON_REALTIME),
+              "PosixTask::TASK_PRIORITY_NON_REALTIME must match the FPP constant Os.Posix.TASK_PRIORITY_NON_REALTIME");
+
 std::atomic<bool> PosixTask::s_permissions_reported(false);
 static const int SCHED_POLICY = SCHED_RR;
 static const int SCHED_POLICY_NON_REALTIME = SCHED_OTHER;

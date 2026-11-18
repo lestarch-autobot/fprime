@@ -144,23 +144,23 @@ RawTime::Status errno_to_rawtime_status(int errno_input) {
     return status;
 }
 
-Task::Status posix_status_to_task_status(int posix_status) {
-    Task::Status status = Task::Status::OP_OK;
+Os::Task::Status posix_status_to_task_status(int posix_status) {
+    Os::Task::Status status = Os::Task::Status::OP_OK;
     switch (posix_status) {
         case 0:
-            status = Task::Status::OP_OK;
+            status = Os::Task::Status::OP_OK;
             break;
         case EINVAL:
-            status = Task::Status::INVALID_PARAMS;
+            status = Os::Task::Status::INVALID_PARAMS;
             break;
         case EPERM:
-            status = Task::Status::ERROR_PERMISSION;
+            status = Os::Task::Status::ERROR_PERMISSION;
             break;
         case EAGAIN:
-            status = Task::Status::ERROR_RESOURCES;
+            status = Os::Task::Status::ERROR_RESOURCES;
             break;
         default:
-            status = Task::Status::UNKNOWN_ERROR;
+            status = Os::Task::Status::UNKNOWN_ERROR;
             break;
     }
     return status;

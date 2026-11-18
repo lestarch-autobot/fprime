@@ -44,9 +44,9 @@ bool StubTask::isCooperative() {
     return true;
 }
 
-Os::Task::Status StubTask::_delay(const Fw::TimeInterval& interval) {
+Os::TaskInterface::Status StubTask::_delay(const Fw::TimeInterval& interval) {
     FW_ASSERT(false);
-    return Os::Task::Status::UNKNOWN_ERROR;
+    return Os::TaskInterface::Status::UNKNOWN_ERROR;
 }
 
 }  // namespace Task

@@ -13,7 +13,6 @@
 #include <Fw/FPrimeBasicTypes.hpp>
 #include <Fw/Types/Serializable.hpp>
 #include <Os/Mutex.hpp>
-#include <Os/Posix/Models/FppConstantsAc.hpp>
 #include <Os/TaskString.hpp>
 
 namespace Os {
@@ -50,9 +49,12 @@ class PosixTask : public TaskInterface {
     };
 
     //! Sentinel priority: run the task under SCHED_OTHER (non-realtime) rather than SCHED_RR
-    static constexpr FwTaskPriorityType TASK_PRIORITY_NON_REALTIME =
-        static_cast<FwTaskPriorityType>(Os::Posix::TASK_PRIORITY_NON_REALTIME);
-    static_assert(TASK_PRIORITY_NON_REALTIME != Os::Task::TASK_PRIORITY_DEFAULT,
+    //!
+    //! Must match the FPP constant Os.Posix.TASK_PRIORITY_NON_REALTIME (checked in Os/Posix/Task.cpp). The value is
+    //! repeated here, rather than read from the autocoded header, so that this header depends on no build product
+    //! and may be included by Os/Task.hpp when PosixTask is selected directly as Os::Task.
+    static constexpr FwTaskPriorityType TASK_PRIORITY_NON_REALTIME = static_cast<FwTaskPriorityType>(-2);
+    static_assert(TASK_PRIORITY_NON_REALTIME != TaskInterface::TASK_PRIORITY_DEFAULT,
                   "TASK_PRIORITY_NON_REALTIME must not alias TASK_PRIORITY_DEFAULT");
 
     //! \brief default constructor
@@ -127,7 +129,7 @@ class PosixTask : public TaskInterface {
     //! \param arguments: arguments used to set priority, affinity, etc
     //! \param permissions: whether to expect permissions or not
     //! \return OP_OK on success, or an error
-    Status create(const Os::Task::Arguments& arguments, const PosixTask::PermissionExpectation permissions);
+    Status create(const Os::TaskInterface::Arguments& arguments, const PosixTask::PermissionExpectation permissions);
 
     PosixTaskHandle m_handle;                         //!< Posix task tracking
     static std::atomic<bool> s_permissions_reported;  //!< Permission errors have been reported
