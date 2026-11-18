@@ -163,6 +163,10 @@ def test_framework_top_level_forces_option_off(FRAMEWORK_UT_CONFIGURE):
     root_tests = (
         (FRAMEWORK_UT_CONFIGURE["build"] / "tests.fprime-util").read_text().split()
     )
-    assert "Fw_Types_ut_exe" in root_tests, "Framework test not listed as a project test"
+    assert (
+        "Fw_Types_ut_exe" in root_tests
+    ), "Framework test not listed as a project test"
     assert ".*" not in root_tests, "Root test metadata still carries the catch-all"
-    assert len(root_tests) == len(set(root_tests)), "Root test metadata lists a test twice"
+    assert len(root_tests) == len(
+        set(root_tests)
+    ), "Root test metadata lists a test twice"
