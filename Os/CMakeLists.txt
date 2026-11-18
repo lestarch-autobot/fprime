@@ -168,8 +168,8 @@ add_named_os_module(CountingSemaphore)
 add_named_os_module(Queue)
 add_named_os_module(Cpu)
 add_named_os_module(Memory)
-# RawTime: RawTime.hpp is a thin public alias header (no .cpp); the interface and
-# link-time delegate live in DelegateRawTime.{hpp,cpp}. Registered explicitly
+# RawTime: RawTime.hpp is a thin public alias header (no .cpp); the interface lives in
+# RawTimeInterface.{hpp,cpp} and the link-time delegate in DelegateRawTime.{hpp,cpp}. Registered explicitly
 # because add_named_os_module assumes a matching <name>.cpp per header.
 register_fprime_module(
       "Os_RawTime"

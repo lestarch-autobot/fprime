@@ -1,6 +1,6 @@
 // ======================================================================
 // \title Os/DelegateRawTime.cpp
-// \brief common function implementation for Os::RawTimeInterface and Os::DelegateRawTime
+// \brief link-time delegate implementation: Os::DelegateRawTime
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
 #include <Os/DelegateRawTime.hpp>

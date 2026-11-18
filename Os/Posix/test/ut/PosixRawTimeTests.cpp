@@ -151,6 +151,20 @@ TEST(PosixRawTime, IntervalDifferentSourcesRejected) {
     EXPECT_FALSE(realtime == monotonic);
 }
 
+// Ensure the Posix implementation itself (as used by a direct alias) reports and copies the clock source
+TEST(PosixRawTimeSource, ImplementationSource) {
+    Os::Posix::RawTime::PosixRawTime implementation(Os::RAWTIME_MONOTONIC);
+    ASSERT_EQ(implementation.getSource(), Os::RAWTIME_MONOTONIC);
+    Os::Posix::RawTime::PosixRawTime copied(implementation);
+    ASSERT_EQ(copied.getSource(), Os::RAWTIME_MONOTONIC);
+    Os::Posix::RawTime::PosixRawTime defaulted;
+    ASSERT_EQ(defaulted.getSource(), Os::RAWTIME_DEFAULT);
+    defaulted = implementation;
+    ASSERT_EQ(defaulted.getSource(), Os::RAWTIME_MONOTONIC);
+    const Os::RawTimeInterface& interface = implementation;
+    ASSERT_EQ(interface.getSource(), Os::RAWTIME_MONOTONIC);
+}
+
 int main(int argc, char** argv) {
     STest::Random::seed();
     ::testing::InitGoogleTest(&argc, argv);

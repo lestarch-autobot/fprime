@@ -103,6 +103,24 @@ TEST_F(Interface, GetHandle) {
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_HANDLE_FN);
 }
 
+// Ensure the test stub implementation itself records, reports and copies the timer source
+TEST_F(Interface, ImplementationSource) {
+    const Os::RawTimeSource source = static_cast<Os::RawTimeSource>(Os::RAWTIME_DEFAULT + 1);
+    TestRawTime implementation(source);
+    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CONSTRUCT_FN);
+    ASSERT_EQ(implementation.getSource(), source);
+    TestRawTime copied(implementation);
+    ASSERT_EQ(copied.getSource(), source);
+    TestRawTime assigned;
+    ASSERT_EQ(assigned.getSource(), Os::RAWTIME_DEFAULT);
+    assigned = implementation;
+    ASSERT_EQ(assigned.getSource(), source);
+    const Os::RawTimeInterface& interface = implementation;
+    ASSERT_EQ(interface.getSource(), source);
+    // Interface default, used by implementations that do not override getSource()
+    ASSERT_EQ(implementation.Os::RawTimeInterface::getSource(), Os::RAWTIME_DEFAULT);
+}
+
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     STest::Random::seed();
