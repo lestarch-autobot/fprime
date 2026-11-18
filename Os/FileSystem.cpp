@@ -8,8 +8,12 @@
 #include <Fw/Types/Assert.hpp>
 #include <Os/FileSystem.hpp>
 #include <algorithm>
+#include <type_traits>
 
 namespace Os {
+
+static_assert(std::is_base_of<FileSystemInterface, FileSystem>::value,
+              "Os::FileSystem must be selected as a type derived from Os::FileSystemInterface");
 
 void FileSystemInterface::init() {
     // Force trigger on the fly singleton setup
