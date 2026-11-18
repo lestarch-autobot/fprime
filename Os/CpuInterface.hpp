@@ -8,6 +8,15 @@
 #include "Os/Os.hpp"
 #include "config/OsSelection.hpp"
 
+// A project config/OsSelection.hpp that predates the Cpu selection does not declare the Os::Cpu
+// alias; declare the link-time delegate default here (see the matching fallback in Os/Cpu.hpp).
+#ifndef OS_CPU_HEADER
+namespace Os {
+class DelegateCpu;
+using Cpu = DelegateCpu;
+}  // namespace Os
+#endif
+
 namespace Os {
 
 //! \brief Cpu variable handle parent
@@ -55,6 +64,19 @@ class CpuInterface {
 
     //! \brief provide a pointer to a Cpu delegate object
     static CpuInterface* getDelegate(CpuHandleStorage& aligned_new_memory);
+
+    // ------------------------------------------------------------------
+    // Singleton
+    // ------------------------------------------------------------------
+    // Defined once for the configured Os::Cpu and inherited by every concrete
+    // Os::Cpu backend, link-time delegate or direct compile-time alias.
+
+    //! \brief initialize the singleton
+    static void init();
+
+    //! \brief return singleton
+    //! \return reference to the Os::Cpu singleton
+    static Cpu& getSingleton();
 
     // ------------------------------------------------------------------
     // Convenience static wrappers

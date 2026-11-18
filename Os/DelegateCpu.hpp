@@ -28,16 +28,6 @@ class DelegateCpu final : public CpuInterface {
     CpuInterface& operator=(const CpuInterface& other) override = delete;
 
     //-----------------------------------------------------------------------------
-    // Interface methods
-    //-----------------------------------------------------------------------------
-
-    //! \brief initialize the singleton
-    static void init();
-
-    //! \brief return singleton
-    static DelegateCpu& getSingleton();
-
-    //-----------------------------------------------------------------------------
     // Delegating methods
     //-----------------------------------------------------------------------------
 

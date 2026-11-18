@@ -8,11 +8,6 @@ namespace Os {
 namespace Stub {
 namespace Cpu {
 
-StubCpu& StubCpu::getSingleton() {
-    static StubCpu s_singleton;
-    return s_singleton;
-}
-
 CpuInterface::Status StubCpu::_getCount(FwSizeType& cpu_count) {
     cpu_count = 0;
     return Status::ERROR;

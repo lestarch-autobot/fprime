@@ -6,6 +6,15 @@
 
 namespace Os {
 
+void CpuInterface::init() {
+    (void)CpuInterface::getSingleton();
+}
+
+Cpu& CpuInterface::getSingleton() {
+    static Cpu _singleton;
+    return _singleton;
+}
+
 CpuInterface::Status CpuInterface::getCount(FwSizeType& cpu_count) {
     return Os::Cpu::getSingleton()._getCount(cpu_count);
 }
