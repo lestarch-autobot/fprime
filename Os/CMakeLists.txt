@@ -177,8 +177,10 @@ register_fprime_module(
       "Os_RawTime"
     SOURCES
       "${CMAKE_CURRENT_LIST_DIR}/DelegateRawTime.cpp"
+      "${CMAKE_CURRENT_LIST_DIR}/RawTimeInterface.cpp"
     HEADERS
       "${CMAKE_CURRENT_LIST_DIR}/RawTime.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/RawTimeInterface.hpp"
       "${CMAKE_CURRENT_LIST_DIR}/DelegateRawTime.hpp"
     DEPENDS
       Fw_Time

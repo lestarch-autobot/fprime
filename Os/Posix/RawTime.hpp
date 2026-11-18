@@ -34,6 +34,10 @@ class PosixRawTime : public RawTimeInterface {
     //! \brief destructor
     ~PosixRawTime() override = default;
 
+    //! \brief Get the clock source read by this RawTime object
+    //! \return the RawTimeSource this object was constructed with
+    RawTimeSource getSource() const override;
+
     //! \brief return the underlying RawTime handle (implementation specific)
     //! \return internal RawTime handle representation
     RawTimeHandle* getHandle() override;

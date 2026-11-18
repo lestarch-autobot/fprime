@@ -35,6 +35,28 @@ TEST_F(Interface, CopyConstruction) {
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::COPY_CONSTRUCT_FN);
 }
 
+// Ensure that Os::RawTime constructed with a timer source calls the implementation constructor and reports the source
+TEST_F(Interface, SourceConstruction) {
+    const Os::RawTimeSource source = static_cast<Os::RawTimeSource>(Os::RAWTIME_DEFAULT + 1);
+    Os::RawTime rawtime(source);
+    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CONSTRUCT_FN);
+    ASSERT_EQ(rawtime.getSource(), source);
+    Os::RawTime rawtime_default;
+    ASSERT_EQ(rawtime_default.getSource(), Os::RAWTIME_DEFAULT);
+}
+
+// Ensure that copies of Os::RawTime preserve the timer source
+TEST_F(Interface, CopyPreservesSource) {
+    const Os::RawTimeSource source = static_cast<Os::RawTimeSource>(Os::RAWTIME_DEFAULT + 1);
+    Os::RawTime rawtime(source);
+    Os::RawTime rawtime_copy(rawtime);
+    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::COPY_CONSTRUCT_FN);
+    ASSERT_EQ(rawtime_copy.getSource(), source);
+    Os::RawTime rawtime_assigned;
+    rawtime_assigned = rawtime;
+    ASSERT_EQ(rawtime_assigned.getSource(), source);
+}
+
 // Ensure that Os::RawTime properly calls the implementation destructor
 TEST_F(Interface, Destruction) {
     delete (new Os::RawTime);

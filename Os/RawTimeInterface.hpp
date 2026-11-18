@@ -122,6 +122,15 @@ class RawTimeInterface : public Fw::Serializable {
 
     //! \brief Compare whether two RawTime objects are the same (i.e. refer to the same microsecond)
     virtual bool operator==(const RawTime& other) const;
+
+    //! \brief Get the timer source used by this RawTime object.
+    //!
+    //! Declared on the interface so that `Os::RawTime::getSource()` is available whichever implementation
+    //! config/OsSelection.hpp selects (delegate or direct alias). The default reports RAWTIME_DEFAULT;
+    //! implementations constructible from a RawTimeSource override it to report the selected source.
+    //!
+    //! \return timer source selection
+    virtual RawTimeSource getSource() const;
 };
 }  // namespace Os
 

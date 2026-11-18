@@ -15,12 +15,20 @@ TestRawTime::TestRawTime() {
     StaticData::data.lastCalled = StaticData::LastFn::CONSTRUCT_FN;
 }
 
-TestRawTime::TestRawTime(const TestRawTime& other) {
+TestRawTime::TestRawTime(RawTimeSource source) : m_source(source) {
+    StaticData::data.lastCalled = StaticData::LastFn::CONSTRUCT_FN;
+}
+
+TestRawTime::TestRawTime(const TestRawTime& other) : m_source(other.m_source) {
     StaticData::data.lastCalled = StaticData::LastFn::COPY_CONSTRUCT_FN;
 }
 
 TestRawTime::~TestRawTime() {
     StaticData::data.lastCalled = StaticData::LastFn::DESTRUCT_FN;
+}
+
+RawTimeSource TestRawTime::getSource() const {
+    return this->m_source;
 }
 
 RawTimeHandle* TestRawTime::getHandle() {

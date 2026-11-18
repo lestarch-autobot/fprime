@@ -34,7 +34,7 @@ struct StaticData {
     //! Last function called
     LastFn lastCalled = NONE_FN;
 
-    Os::RawTime::Status lastStatus = Os::RawTime::Status::OP_OK;
+    Os::RawTimeInterface::Status lastStatus = Os::RawTimeInterface::Status::OP_OK;
 
     // Singleton data
     static StaticData data;
@@ -51,8 +51,21 @@ class TestRawTime : public RawTimeInterface {
     //!
     TestRawTime();
 
+    //! \brief constructor selecting the timer source
+    //!
+    //! No clock is read: the source is only recorded so that `getSource()` reports it.
+    //! \param source: timer source selection
+    explicit TestRawTime(RawTimeSource source);
+
+    //! \brief Get the timer source this RawTime object was constructed with
+    //! \return timer source selection
+    RawTimeSource getSource() const override;
+
     //! \brief copy constructor
     TestRawTime(const TestRawTime& other);
+
+    //! \brief copy assignment operator
+    TestRawTime& operator=(const TestRawTime& other) = default;
 
     //! \brief destructor
     //!
@@ -75,6 +88,7 @@ class TestRawTime : public RawTimeInterface {
   private:
     //! Handle for TestRawTime
     TestRawTimeHandle m_handle;
+    RawTimeSource m_source = RAWTIME_DEFAULT;  //!< Timer source selection (recorded only)
 };
 
 }  // namespace Test

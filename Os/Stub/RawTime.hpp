@@ -23,6 +23,16 @@ class StubRawTime : public RawTimeInterface {
     //!
     StubRawTime() = default;
 
+    //! \brief constructor selecting the timer source
+    //!
+    //! No clock is read: the source is only recorded so that `getSource()` reports it.
+    //! \param source: timer source selection
+    explicit StubRawTime(RawTimeSource source);
+
+    //! \brief Get the timer source this RawTime object was constructed with
+    //! \return timer source selection
+    RawTimeSource getSource() const override;
+
     //! \brief destructor
     //!
     ~StubRawTime() override = default;
@@ -85,6 +95,7 @@ class StubRawTime : public RawTimeInterface {
   private:
     //! Handle for StubRawTime
     StubRawTimeHandle m_handle;
+    RawTimeSource m_source = RAWTIME_DEFAULT;  //!< Timer source selection (recorded only)
 };
 
 }  // namespace RawTime

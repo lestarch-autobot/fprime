@@ -8,6 +8,12 @@ namespace Os {
 namespace Stub {
 namespace RawTime {
 
+StubRawTime::StubRawTime(RawTimeSource source) : m_source(source) {}
+
+RawTimeSource StubRawTime::getSource() const {
+    return this->m_source;
+}
+
 RawTimeHandle* StubRawTime::getHandle() {
     return &this->m_handle;
 }

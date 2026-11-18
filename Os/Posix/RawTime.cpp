@@ -83,6 +83,10 @@ Fw::SerializeStatus PosixRawTime::deserializeFrom(Fw::SerialBufferBase& buffer, 
     return Fw::SerializeStatus::FW_SERIALIZE_OK;
 }
 
+RawTimeSource PosixRawTime::getSource() const {
+    return static_cast<RawTimeSource>(this->m_handle.m_clock_id);
+}
+
 RawTimeHandle* PosixRawTime::getHandle() {
     return &this->m_handle;
 }
