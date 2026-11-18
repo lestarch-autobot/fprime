@@ -17,6 +17,7 @@ TestRawTime::TestRawTime() {
 
 TestRawTime::TestRawTime(RawTimeSource source) : m_source(source) {
     StaticData::data.lastCalled = StaticData::LastFn::CONSTRUCT_FN;
+    StaticData::data.lastSource = source;
 }
 
 TestRawTime::TestRawTime(const TestRawTime& other) : m_source(other.m_source) {

@@ -35,6 +35,8 @@ struct StaticData {
     LastFn lastCalled = NONE_FN;
 
     Os::RawTimeInterface::Status lastStatus = Os::RawTimeInterface::Status::OP_OK;
+    //! Timer source passed to the last source constructor call
+    Os::RawTimeSource lastSource = Os::RAWTIME_DEFAULT;
 
     // Singleton data
     static StaticData data;

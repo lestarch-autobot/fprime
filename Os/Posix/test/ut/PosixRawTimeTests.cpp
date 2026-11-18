@@ -152,7 +152,7 @@ TEST(PosixRawTime, IntervalDifferentSourcesRejected) {
 }
 
 // Ensure the Posix implementation itself (as used by a direct alias) reports and copies the clock source
-TEST(PosixRawTimeSource, ImplementationSource) {
+TEST(PosixRawTime, ImplementationSource) {
     Os::Posix::RawTime::PosixRawTime implementation(Os::RAWTIME_MONOTONIC);
     ASSERT_EQ(implementation.getSource(), Os::RAWTIME_MONOTONIC);
     Os::Posix::RawTime::PosixRawTime copied(implementation);

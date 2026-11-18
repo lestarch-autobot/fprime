@@ -40,6 +40,8 @@ TEST_F(Interface, SourceConstruction) {
     const Os::RawTimeSource source = static_cast<Os::RawTimeSource>(Os::RAWTIME_DEFAULT + 1);
     Os::RawTime rawtime(source);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CONSTRUCT_FN);
+    // The selected source must reach the implementation, not only the wrapper
+    ASSERT_EQ(StaticData::data.lastSource, source);
     ASSERT_EQ(rawtime.getSource(), source);
     Os::RawTime rawtime_default;
     ASSERT_EQ(rawtime_default.getSource(), Os::RAWTIME_DEFAULT);
