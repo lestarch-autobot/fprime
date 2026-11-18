@@ -72,6 +72,10 @@ TEST(PosixDirectory, DirectChecks) {
     ASSERT_EQ(directory.rewind(), Os::DirectoryInterface::Status::OP_OK);
     (void)directory.read(buffer, sizeof(buffer));
     ASSERT_EQ(buffer[sizeof(buffer) - 1], '\0');
+    directory.close();
+    ASSERT_FALSE(directory.isOpen());
+    ASSERT_EQ(directory.rewind(), Os::DirectoryInterface::Status::NOT_OPENED);
+    ASSERT_EQ(directory.open(".", Os::DirectoryInterface::OpenMode::READ), Os::DirectoryInterface::Status::OP_OK);
     // Destructor closes the open directory (a leak here is reported by the sanitizers)
 }
 

@@ -238,10 +238,9 @@ re-open silently overwrites, and leaks, the previous descriptor), and callers su
 
 **Additional requirements for `Os::Directory`.** `DirectoryInterface` tracks the open state in a
 non-virtual member, so a compile-time `Os::Directory` alias MUST call `setOpen()` on open/close. It
-MUST also perform the checks itself, as the in-tree implementations (`PosixDirectory`,
-`StubDirectory`) do: assert the `open()` and `read()` arguments, return `NOT_OPENED` from `rewind()`
-and `read()` on a closed directory, null-terminate the `read()` buffer, and close an open directory
-in its destructor.
+MUST also perform the checks itself, as `PosixDirectory` does: assert the `open()` and `read()`
+arguments, return `NOT_OPENED` from `rewind()` and `read()` on a closed directory, null-terminate
+the `read()` buffer, and close an open directory in its destructor.
 
 ### 5.3 API usage
 
