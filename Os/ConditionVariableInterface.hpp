@@ -80,10 +80,6 @@ class ConditionVariableInterface {
     virtual ConditionVariableHandle* getHandle() = 0;
 
     //! \brief provide a pointer to a ConditionVariable delegate object
-    //!
-    //! \note ERROR_DIFFERENT_MUTEX is reported by the link-time Os::DelegateConditionVariable, which records the mutex
-    //! first supplied to pend(); an implementation selected directly as Os::ConditionVariable does not perform that
-    //! check.
     static ConditionVariableInterface* getDelegate(ConditionVariableHandleStorage& aligned_new_memory);
 
     // ------------------------------------------------------------------
@@ -107,6 +103,24 @@ class ConditionVariableInterface {
         const Status status = this->pend(mutex);
         FW_ASSERT(status == Status::OP_OK,
                   static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(this)), status);
+    }
+
+  protected:
+    //! \brief check that a condition variable is always used with the same mutex
+    //!
+    //! Common safety check shared by every implementation of pend(), so that it applies whether the implementation
+    //! is reached through the link-time delegate or selected directly as Os::ConditionVariable. The first mutex
+    //! supplied is recorded in `expected`; any later call supplying a different mutex is rejected.
+    //!
+    //! \param expected: mutex recorded by the implementation (nullptr until the first call)
+    //! \param mutex: mutex supplied to pend()
+    //! \return OP_OK when the mutex is acceptable, ERROR_DIFFERENT_MUTEX otherwise
+    static Status checkMutex(Os::Mutex*& expected, Os::Mutex& mutex) {
+        if (expected != nullptr && expected != &mutex) {
+            return Status::ERROR_DIFFERENT_MUTEX;
+        }
+        expected = &mutex;
+        return Status::OP_OK;
     }
 };
 

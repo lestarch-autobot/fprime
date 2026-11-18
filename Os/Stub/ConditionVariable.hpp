@@ -14,7 +14,8 @@ struct StubConditionVariableHandle : public ConditionVariableHandle {};
 
 //! \brief Stub implementation of Os::ConditionVariable
 //!
-//! Stub implementation of `ConditionVariable` for use as a delegate class handling error-only file operations.
+//! Stub implementation of `ConditionVariable` usable through the link-time delegate or selected directly as
+//! `Os::ConditionVariable` (together with the matching `Os::Mutex`) in `config/OsSelection.hpp`.
 //!
 class StubConditionVariable : public ConditionVariableInterface {
   public:
@@ -44,6 +45,8 @@ class StubConditionVariable : public ConditionVariableInterface {
   private:
     //! Handle for PosixMutex
     StubConditionVariableHandle m_handle;
+    //! Mutex first supplied to pend(); every later pend() must supply the same one
+    Os::Mutex* m_lock = nullptr;
 };
 
 }  // namespace Mutex

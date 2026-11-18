@@ -22,6 +22,10 @@ PosixConditionVariable::~PosixConditionVariable() {
 PosixConditionVariable::Status PosixConditionVariable::pend(Os::Mutex& mutex) {
     // Os::Mutex is selected as a pair with this implementation (config/OsSelection.hpp), so its handle is a
     // PosixMutexHandle
+    const Status check = ConditionVariableInterface::checkMutex(this->m_lock, mutex);
+    if (check != Status::OP_OK) {
+        return check;
+    }
     PosixMutexHandle* mutex_handle = reinterpret_cast<PosixMutexHandle*>(mutex.getHandle());
     FW_ASSERT(mutex_handle != nullptr);
     int status = pthread_cond_wait(&this->m_handle.m_condition, &mutex_handle->m_mutex_descriptor);
