@@ -166,7 +166,7 @@ register_fprime_module(
 fprime_target_dependencies(Os PUBLIC "Os_Mutex")
 add_named_os_module(CountingSemaphore)
 add_named_os_module(Queue)
-# Cpu: Cpu.hpp is a thin public alias header (no Cpu.cpp); the interface and
+# Cpu: Cpu.hpp is the public alias header (no Cpu.cpp); the interface and
 # link-time delegate live in CpuInterface.hpp / DelegateCpu.{hpp,cpp}. Registered
 # explicitly because add_named_os_module assumes a matching <name>.cpp per header.
 register_fprime_module(

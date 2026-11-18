@@ -95,14 +95,9 @@
 // constructible: the singleton and the static init()/getCount()/getTicks()
 // functions are defined once on CpuInterface in terms of Os::Cpu.
 //
-// The singleton is the only reference to the selected class, and it lives in
-// the Os_Cpu module. The Os_Cpu implementation chosen for an executable
-// (CHOOSES_IMPLEMENTATIONS / the platform default) must therefore be the one
-// providing the selected class: listing the module under DEPENDS is not
-// enough. That implementation must keep its DefaultCpu.cpp, i.e. define
-// CpuInterface::getDelegate() constructing the selected class: Os_Cpu still
-// links the delegate, and that definition is what brings the class into the
-// link. A project-provided class must register such an Os_Cpu implementation.
+// Those functions are defined inline in Os/Cpu.hpp, so a compile-time
+// selection uses neither Os::DelegateCpu nor CpuInterface::getDelegate(); the
+// module providing the selected class must still be in the link (see above).
 //
 // Example compile-time selection override:
 //

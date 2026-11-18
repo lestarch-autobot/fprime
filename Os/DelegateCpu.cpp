@@ -1,11 +1,9 @@
 // ======================================================================
 // \title Os/DelegateCpu.cpp
-// \brief common function implementation for Os::CpuInterface and Os::DelegateCpu
+// \brief link-time delegate implementation of Os::Cpu
 // ======================================================================
 #include "Os/DelegateCpu.hpp"
-#include <type_traits>
 #include "Fw/Types/Assert.hpp"
-#include "Os/Cpu.hpp"
 
 namespace Os {
 
@@ -31,33 +29,5 @@ DelegateCpu::Status DelegateCpu::_getTicks(Ticks& ticks, FwSizeType cpu_index) {
 CpuHandle* DelegateCpu::getHandle() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<CpuInterface*>(&this->m_handle_storage[0]));
     return this->m_delegate.getHandle();
-}
-
-// ------------------------------------------------------------
-// CpuInterface common implementations
-// Built on the configured Os::Cpu and the pure virtual functions.
-// Located here (not CpuInterface.cpp) to keep Cpu implementation
-// code in one translation unit.
-// ------------------------------------------------------------
-
-static_assert(std::is_convertible<Os::Cpu*, CpuInterface*>::value,
-              "Os::Cpu must publicly derive from Os::CpuInterface");
-static_assert(std::is_default_constructible<Os::Cpu>::value, "Os::Cpu must be default constructible");
-
-void CpuInterface::init() {
-    (void)CpuInterface::getSingleton();
-}
-
-Os::Cpu& CpuInterface::getSingleton() {
-    static Os::Cpu _singleton;
-    return _singleton;
-}
-
-CpuInterface::Status CpuInterface::getCount(FwSizeType& cpu_count) {
-    return CpuInterface::getSingleton()._getCount(cpu_count);
-}
-
-CpuInterface::Status CpuInterface::getTicks(Ticks& ticks, FwSizeType cpu_index) {
-    return CpuInterface::getSingleton()._getTicks(ticks, cpu_index);
 }
 }  // namespace Os
