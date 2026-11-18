@@ -40,7 +40,8 @@ CpuHandle* DelegateCpu::getHandle() {
 // code in one translation unit.
 // ------------------------------------------------------------
 
-static_assert(std::is_base_of<CpuInterface, Os::Cpu>::value, "Os::Cpu must derive from Os::CpuInterface");
+static_assert(std::is_convertible<Os::Cpu*, CpuInterface*>::value,
+              "Os::Cpu must publicly derive from Os::CpuInterface");
 static_assert(std::is_default_constructible<Os::Cpu>::value, "Os::Cpu must be default constructible");
 
 void CpuInterface::init() {

@@ -248,6 +248,7 @@ See [OSAL SDD §5.2.2](../../../Os/docs/sdd.md#522-compile-time-selection-perfor
 - **No Circular Dependencies**: Config header must not include Os OSAL headers
 - **Interface Inheritance Required**: Implementation must inherit from interface
 - **An Implementation Must Still Be Chosen**: the alias changes only the C++ type. The `Os_<Service>` module still `REQUIRES_IMPLEMENTATIONS`, so CMake will fail with `requires implementation of Os_Mutex but none was chosen` unless some `Os_<Service>_<Impl>` is selected via `CHOOSES_IMPLEMENTATIONS` (an in-tree one such as `Os_Mutex_Stub` is sufficient; its `getDelegate()` is compiled but unused), and the module providing the aliased class must be in the link
+- **Cpu Is Stricter**: `Os::Cpu` is only referenced through its singleton, which lives in the `Os_Cpu` module. The chosen `Os_Cpu_<Impl>` must be the one providing the aliased class and must keep its `DefaultCpu.cpp` (Step 3 cannot be skipped)
 - **Paired Services**: `Os::Mutex` and `Os::ConditionVariable` are both configured in `config/OsSelection.hpp` and must be overridden together with a ConditionVariable that accepts the selected Mutex's handle (see that header)
 
 ### Which Services Support Compile-Time Selection?

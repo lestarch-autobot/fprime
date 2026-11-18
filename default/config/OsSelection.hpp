@@ -99,7 +99,10 @@
 // the Os_Cpu module. The Os_Cpu implementation chosen for an executable
 // (CHOOSES_IMPLEMENTATIONS / the platform default) must therefore be the one
 // providing the selected class: listing the module under DEPENDS is not
-// enough. A project-provided class must register its own Os_Cpu implementation.
+// enough. That implementation must keep its DefaultCpu.cpp, i.e. define
+// CpuInterface::getDelegate() constructing the selected class: Os_Cpu still
+// links the delegate, and that definition is what brings the class into the
+// link. A project-provided class must register such an Os_Cpu implementation.
 //
 // Example compile-time selection override:
 //
