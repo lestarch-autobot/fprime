@@ -31,6 +31,11 @@ PosixDirectory::Status PosixDirectory::open(const char* path, OpenMode mode) {
     FW_ASSERT(mode >= 0 and mode < OpenMode::MAX_OPEN_MODE);
     Status status = Status::OP_OK;
 
+    // Re-opening releases the previous directory stream
+    if (this->isOpen()) {
+        this->close();
+    }
+
     // If one of the CREATE mode, attempt to create the directory
     if (mode == OpenMode::CREATE_EXCLUSIVE || mode == OpenMode::CREATE_IF_MISSING) {
         if (::mkdir(path, S_IRWXU) == -1) {

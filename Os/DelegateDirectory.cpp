@@ -30,9 +30,8 @@ DelegateDirectory::Status DelegateDirectory::open(const char* path, OpenMode mod
     FW_ASSERT(path != nullptr);
     FW_ASSERT(mode >= 0 and mode < OpenMode::MAX_OPEN_MODE);
     Status status = this->m_delegate.open(path, mode);
-    if (status == Status::OP_OK) {
-        this->setOpen(true);
-    }
+    // A failed re-open leaves the directory closed
+    this->setOpen(status == Status::OP_OK);
     return status;
 }
 

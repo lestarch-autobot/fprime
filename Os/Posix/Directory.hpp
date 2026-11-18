@@ -19,7 +19,7 @@ struct PosixDirectoryHandle : public DirectoryHandle {
 //!
 //! Posix implementation of `DirectoryInterface` usable through the link-time delegate or directly as
 //! `Os::Directory`. It performs the argument and open-state checks itself.
-class PosixDirectory : public DirectoryInterface {
+class PosixDirectory final : public DirectoryInterface {
   public:
     //! \brief constructor
     PosixDirectory();

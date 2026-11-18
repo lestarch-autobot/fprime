@@ -17,7 +17,7 @@ struct StubDirectoryHandle : public DirectoryHandle {};
 //! Stub implementation of `DirectoryInterface` usable through the link-time delegate or directly as
 //! `Os::Directory`. Every operation fails: `open` returns NOT_SUPPORTED, so the directory is never open.
 //!
-class StubDirectory : public DirectoryInterface {
+class StubDirectory final : public DirectoryInterface {
   public:
     //! \brief constructor
     StubDirectory() = default;

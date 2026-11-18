@@ -80,6 +80,7 @@ class PosixDirectoryDirect : public ::testing::Test {
     }
 
     static constexpr const char* PATH = "./test_directory_direct";
+    static constexpr const char* MISSING_PATH = "./test_directory_direct_missing";
     static constexpr const char* FILE_NAME = "test_file_0";
     static constexpr const char* FILE_PATH = "./test_directory_direct/test_file_0";
     static constexpr const char* ASSERT_IN_DIRECTORY_CPP = "Assert: \".*/?Os/Posix/Directory\\.cpp:[0-9]+\"";
@@ -88,6 +89,7 @@ class PosixDirectoryDirect : public ::testing::Test {
 };
 
 constexpr const char* PosixDirectoryDirect::PATH;
+constexpr const char* PosixDirectoryDirect::MISSING_PATH;
 constexpr const char* PosixDirectoryDirect::FILE_NAME;
 constexpr const char* PosixDirectoryDirect::FILE_PATH;
 constexpr const char* PosixDirectoryDirect::ASSERT_IN_DIRECTORY_CPP;
@@ -159,6 +161,28 @@ TEST_F(PosixDirectoryDirect, DestructorCloses) {
     Os::Posix::Directory::PosixDirectory directory;
     ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
     ASSERT_TRUE(directory.isOpen());
+}
+
+// Re-opening releases the previous stream (checked by the leak sanitizer); a failed re-open leaves it closed
+TEST_F(PosixDirectoryDirect, Reopen) {
+    ASSERT_EQ(this->m_directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+    ASSERT_EQ(this->m_directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+    ASSERT_TRUE(this->m_directory.isOpen());
+    ASSERT_EQ(this->m_directory.open(MISSING_PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::DOESNT_EXIST);
+    ASSERT_FALSE(this->m_directory.isOpen());
+    ASSERT_EQ(this->m_directory.rewind(), Os::Directory::Status::NOT_OPENED);
+}
+
+// The same re-open sequence through Os::Directory reports the same state
+TEST_F(PosixDirectoryDirect, ReopenThroughOsDirectory) {
+    Os::Directory directory;
+    FwSizeType count = 0;
+    ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+    ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+    ASSERT_TRUE(directory.isOpen());
+    ASSERT_EQ(directory.open(MISSING_PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::DOESNT_EXIST);
+    ASSERT_FALSE(directory.isOpen());
+    ASSERT_EQ(directory.getFileCount(count), Os::Directory::Status::NOT_OPENED);
 }
 
 // Invalid arguments assert in the implementation
