@@ -9,6 +9,7 @@
 #include <Os/Mutex.hpp>
 #include <Os/Queue.hpp>
 #include <Os/RawTime.hpp>
+#include <Os/Stub/Console.hpp>
 #include <Os/Task.hpp>
 
 TEST(Stub, File) {
@@ -33,6 +34,13 @@ TEST(Stub, Mutex) {
 
 TEST(Stub, Console) {
     Os::Console _;
+}
+
+TEST(Stub, ConsoleWriteNullMessage) {
+    Os::Stub::Console::StubConsole console;
+    console.writeMessage(nullptr, 0);
+    // intentional death test
+    ASSERT_DEATH(console.writeMessage(nullptr, 1), "Os/Stub/Console\\.cpp");
 }
 
 TEST(Stub, FileSystem) {

@@ -390,6 +390,9 @@ For the services that have been split into an alias header plus an interface hea
 `RawTime`), `Os/<Service>.hpp` is a thin aggregator and the pure-virtual contract is in
 `Os/<Service>Interface.hpp`.
 
+A `Console` implementation's `writeMessage(const CHAR*, FwSizeType)` must itself
+`FW_ASSERT(message != nullptr || size == 0)`; `Os::DelegateConsole` does not check this.
+
 > [!NOTE]
 > The steps above cover *link-time* selection, where your class is reached through the generated
 > `getDelegate()` factory. If instead you alias `Os::<Service>` directly to your class

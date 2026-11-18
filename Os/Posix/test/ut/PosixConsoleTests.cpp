@@ -28,7 +28,7 @@ TEST(OffNominal, WriteNullMessage) {
     Os::Posix::Console::PosixConsole posix_console;
     posix_console.writeMessage(nullptr, 0);
     // intentional death test
-    ASSERT_DEATH(posix_console.writeMessage(nullptr, 1), "Assert: ");
+    ASSERT_DEATH(posix_console.writeMessage(nullptr, 1), "Os/Posix/Console\\.cpp");
 }
 
 int main(int argc, char** argv) {

@@ -54,7 +54,7 @@ TEST(Interface, WriteNullMessage) {
     console.writeMessage(nullptr, 0);
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
     // intentional death test
-    ASSERT_DEATH(console.writeMessage(nullptr, 1), "Assert: ");
+    ASSERT_DEATH(console.writeMessage(nullptr, 1), "Os/Stub/test/Console\\.cpp");
 }
 
 TEST(Interface, SingletonWrite) {
@@ -68,7 +68,9 @@ TEST(Interface, SingletonWrite) {
     Os::Console::write(string);
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.message, string.toChar());
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, string.length());
-    ASSERT_EQ(&Os::Console::getSingleton(), &Os::Console::getSingleton());
+    Os::Console::getSingleton().writeMessage(message, 5);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.message, message);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, 5);
 }
 
 TEST(Interface, SingletonRegistersLogger) {
@@ -84,4 +86,21 @@ TEST(Interface, SingletonRegistersLogger) {
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
+}
+
+TEST(Interface, SingletonRegistersLoggerOnce) {
+    class OtherLogger : public Fw::Logger {
+      public:
+        bool m_called = false;
+        void writeMessage(const Fw::ConstStringBase& message) override { this->m_called = true; }
+    } other;
+    Os::Console::init();
+    Fw::Logger::registerLogger(&other);
+    // Singleton access must not replace the logger registered after first use
+    Os::Console::write("x", 1);
+    Os::Stub::Console::Test::StaticData::data.lastCalled = Os::Stub::Console::Test::StaticData::NONE_FN;
+    Fw::Logger::log(Fw::String("y"));
+    ASSERT_TRUE(other.m_called);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::NONE_FN);
+    Fw::Logger::registerLogger(&Os::Console::getSingleton());
 }

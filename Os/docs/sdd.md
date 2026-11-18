@@ -220,8 +220,9 @@ static <Impl>& getSingleton();    //!< backing instance for the static convenien
 `Os/Stub/FileSystem.hpp` shows the minimal shape. Without these, the build fails to link rather than
 failing at compile time. `Console` needs neither: `ConsoleInterface` provides `init()`, `getSingleton()`
 (which performs the one-time `Fw::Logger::registerLogger()` call) and the `write()` statics, so a
-compile-time `Os::Console` alias inherits them and only has to be default-constructible. Every
-`writeMessage(const CHAR*, FwSizeType)` implementation asserts `message != nullptr || size == 0` itself.
+compile-time `Os::Console` alias inherits them and only has to be default-constructible; it must not redeclare
+them. Every `writeMessage(const CHAR*, FwSizeType)` implementation, link-time or compile-time, must assert
+`message != nullptr || size == 0` itself; `DelegateConsole` does not check it.
 
 **Additional requirements for `Os::File`.** `FileInterface` tracks open mode in a non-virtual
 `m_mode` member maintained by `DelegateFile`, and its CRC methods (`calculateCrc`,

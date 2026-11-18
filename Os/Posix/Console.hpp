@@ -55,7 +55,7 @@ class PosixConsole : public ConsoleInterface {
     //! \brief write message to console
     //!
     //! Write a message to the console with a bounded size. This will use the active file descriptor as the output
-    //! destination.
+    //! destination. Asserts that `message` is not null unless `size` is 0.
     //!
     //! \param message: raw message to write
     //! \param size: size of the message to write to the console
