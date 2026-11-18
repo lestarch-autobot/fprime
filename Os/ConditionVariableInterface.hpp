@@ -110,7 +110,14 @@ class ConditionVariableInterface {
     //!
     //! Common safety check shared by every implementation of pend(), so that it applies whether the implementation
     //! is reached through the link-time delegate or selected directly as Os::ConditionVariable. The first mutex
-    //! supplied is recorded in `expected`; any later call supplying a different mutex is rejected.
+    //! supplied is recorded in `expected`; any later call supplying a different mutex is rejected. The mutex is
+    //! recorded on the first call even when the wait itself then fails.
+    //!
+    //! Every implementation of pend() must call this before waiting: an implementation selected directly as
+    //! Os::ConditionVariable has no delegate in front of it to perform the check.
+    //!
+    //! \warning the check is not synchronized. It detects misuse by callers that otherwise follow the pend()
+    //! contract (mutex held); two tasks racing on the first call with different mutexes may both pass.
     //!
     //! \param expected: mutex recorded by the implementation (nullptr until the first call)
     //! \param mutex: mutex supplied to pend()

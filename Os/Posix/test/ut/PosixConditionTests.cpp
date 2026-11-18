@@ -41,10 +41,12 @@ static void checkDifferentMutexRejected() {
     first.unLock();
 }
 
+// Through the configured Os::ConditionVariable: the delegate by default, the Posix class when aliased directly
 TEST(PosixCondition, DifferentMutexRejected) {
     checkDifferentMutexRejected<Os::ConditionVariable>();
 }
 
+// On the Posix class itself, so the implementation's own check is exercised whatever the configuration
 TEST(PosixCondition, DifferentMutexRejectedByImplementation) {
     checkDifferentMutexRejected<Os::Posix::Mutex::PosixConditionVariable>();
 }
