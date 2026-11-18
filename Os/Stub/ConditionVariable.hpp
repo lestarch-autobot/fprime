@@ -15,7 +15,7 @@ struct StubConditionVariableHandle : public ConditionVariableHandle {};
 //! \brief Stub implementation of Os::ConditionVariable
 //!
 //! Stub implementation of `ConditionVariable` usable through the link-time delegate or selected directly as
-//! `Os::ConditionVariable` (together with the matching `Os::Mutex`) in `config/OsSelection.hpp`.
+//! `Os::ConditionVariable` (together with any `Os::Mutex`) in `config/OsSelection.hpp`.
 //!
 class StubConditionVariable : public ConditionVariableInterface {
   public:

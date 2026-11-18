@@ -59,6 +59,9 @@ class ConditionVariableInterface {
     //! in one step. Blocking will occur until a future `notify` or `notifyAll` call is made to this variable on another
     //! thread of execution.
     //!
+    //! The same mutex must be supplied on every call: a call supplying a different mutex returns
+    //! ERROR_DIFFERENT_MUTEX. Implementations enforce this by calling checkMutex() before waiting.
+    //!
     //! \param mutex: mutex to unlock as part of this operation
     //! \return status of the conditional wait
     virtual Status pend(Os::Mutex& mutex) = 0;

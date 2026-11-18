@@ -43,7 +43,6 @@ TEST(Interface, WaitHeld) {
               Os::Stub::ConditionVariable::Test::StaticData::WAIT_FN);
 }
 
-// Notify test
 // The test double accepts every mutex, so a rejection here can only come from the delegate's own check
 TEST(Interface, WaitDifferentMutex) {
     Os::Mutex first;
@@ -55,6 +54,7 @@ TEST(Interface, WaitDifferentMutex) {
     ASSERT_EQ(Os::ConditionVariable::Status::OP_OK, variable.pend(first));
 }
 
+// Notify test
 TEST(Interface, Notify) {
     Os::ConditionVariable variable;
     variable.notify();

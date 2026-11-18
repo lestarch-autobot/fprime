@@ -14,8 +14,8 @@ constant FW_FILE_HANDLE_MAX_SIZE = 16
 @ Maximum size of a handle for Os::Mutex
 constant FW_MUTEX_HANDLE_MAX_SIZE = 72
 
-@ Maximum size of a handle for Os::Queue. The generic queues embed two Os::ConditionVariable
-@ objects, so this grows with FW_CONDITION_VARIABLE_HANDLE_MAX_SIZE.
+@ Maximum size of a handle for Os::Queue. Os::Generic::PriorityQueue embeds two
+@ Os::ConditionVariable objects, so this grows with FW_CONDITION_VARIABLE_HANDLE_MAX_SIZE.
 constant FW_QUEUE_HANDLE_MAX_SIZE = 384
 
 @ Maximum size of a handle for Os::Directory
