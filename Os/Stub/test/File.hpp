@@ -33,9 +33,9 @@ struct StaticData {
     //! Path of last open call
     const char* openPath = nullptr;
     //! Mode of last open call
-    Os::File::Mode openMode = Os::File::MAX_OPEN_MODE;
+    Os::FileInterface::Mode openMode = Os::FileInterface::MAX_OPEN_MODE;
     //! Overwrite of last open call
-    Os::File::OverwriteType openOverwrite = Os::File::OverwriteType::NO_OVERWRITE;
+    Os::FileInterface::OverwriteType openOverwrite = Os::FileInterface::OverwriteType::NO_OVERWRITE;
     //! Offset of last preallocate call
     FwSizeType preallocateOffset = std::numeric_limits<FwSizeType>::max();
     //! Length of last preallocate call
@@ -43,39 +43,39 @@ struct StaticData {
     //! Offset of last seek call
     FwSizeType seekOffset = std::numeric_limits<FwSizeType>::max();
     //! Absolute of last seek call
-    Os::File::SeekType seekType = Os::File::SeekType::ABSOLUTE;
+    Os::FileInterface::SeekType seekType = Os::FileInterface::SeekType::ABSOLUTE;
     //! Buffer of last read call
     U8* readBuffer = nullptr;
     //! Size of last read call
     FwSizeType readSize = std::numeric_limits<FwSizeType>::max();
     //! Wait of last read call
-    Os::File::WaitType readWait = Os::File::WaitType::NO_WAIT;
+    Os::FileInterface::WaitType readWait = Os::FileInterface::WaitType::NO_WAIT;
     //! Buffer of last write call
     const void* writeBuffer = nullptr;
     //! Size of last write call
     FwSizeType writeSize = std::numeric_limits<FwSizeType>::max();
     //! Wait of last write call
-    Os::File::WaitType writeWait = Os::File::WaitType::NO_WAIT;
+    Os::FileInterface::WaitType writeWait = Os::FileInterface::WaitType::NO_WAIT;
 
     //! File pointer
     FwSizeType pointer = 0;
 
     //! Status to return from open
-    Os::File::Status openStatus = Os::File::Status::OP_OK;
+    Os::FileInterface::Status openStatus = Os::FileInterface::Status::OP_OK;
     //! Status to return from size
-    Os::File::Status sizeStatus = Os::File::Status::OP_OK;
+    Os::FileInterface::Status sizeStatus = Os::FileInterface::Status::OP_OK;
     //! Status to return from position
-    Os::File::Status positionStatus = Os::File::Status::OP_OK;
+    Os::FileInterface::Status positionStatus = Os::FileInterface::Status::OP_OK;
     //! Status to return from preallocate
-    Os::File::Status preallocateStatus = Os::File::Status::OP_OK;
+    Os::FileInterface::Status preallocateStatus = Os::FileInterface::Status::OP_OK;
     //! Status to return from seek
-    Os::File::Status seekStatus = Os::File::Status::OP_OK;
+    Os::FileInterface::Status seekStatus = Os::FileInterface::Status::OP_OK;
     //! Status to return from flush
-    Os::File::Status flushStatus = Os::File::Status::OP_OK;
+    Os::FileInterface::Status flushStatus = Os::FileInterface::Status::OP_OK;
     //! Status to return from read
-    Os::File::Status readStatus = Os::File::Status::OP_OK;
+    Os::FileInterface::Status readStatus = Os::FileInterface::Status::OP_OK;
     //! Status to return from write
-    Os::File::Status writeStatus = Os::File::Status::OP_OK;
+    Os::FileInterface::Status writeStatus = Os::FileInterface::Status::OP_OK;
 
     //! Return of next size call
     FwSizeType sizeResult = std::numeric_limits<FwSizeType>::max();
@@ -98,7 +98,7 @@ struct StaticData {
     static StaticData data;
 
     //! Set next status to return
-    static void setNextStatus(Os::File::Status status);
+    static void setNextStatus(Os::FileInterface::Status status);
 
     //! Set next size to result
     static void setSizeResult(FwSizeType size);
@@ -158,6 +158,11 @@ class TestFile : public FileInterface {
     //! \return: status of the open
     //!
     Os::FileInterface::Status open(const char* path, Mode mode, OverwriteType overwrite) override;
+
+    // Keep the FileInterface open/read/write overloads visible when this class is used directly as Os::File
+    using FileInterface::open;
+    using FileInterface::read;
+    using FileInterface::write;
 
     //! \brief close the file, if not opened then do nothing
     //!

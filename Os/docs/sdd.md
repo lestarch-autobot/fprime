@@ -224,17 +224,15 @@ silently drops all `Fw::Logger` output. Without these, the build fails to link (
 loses output at runtime) rather than failing at compile time.
 
 **Additional requirements for `Os::File`.** `FileInterface` tracks open mode in a non-virtual
-`m_mode` member maintained by `DelegateFile`, and its CRC methods (`calculateCrc`,
-`incrementalCrc`, `finalizeCrc`) are virtual stubs returning `NOT_SUPPORTED` whose real
-implementation lives on `DelegateFile` (see the design note in `Os/FileInterface.hpp`). A
-compile-time `Os::File` alias MUST therefore call `setMode()` on open/close so that `isOpen()`,
-`readline()` and the mode checks in the `open(...)` overloads behave, and MUST override the three
-CRC methods — otherwise `Svc::PrmDb::readParamFile` fails on every boot and
-`Svc::FileManager`'s `CALCULATE_CRC` command always returns `EXECUTION_ERROR`. It MUST also replicate the
-per-call guards that live only on `DelegateFile`: `open()` on an already-open file returns `INVALID_MODE`
-and every other operation on a closed file returns `NOT_OPENED`. `PosixFile` alone does neither (a
-re-open silently overwrites, and leaks, the previous descriptor), and callers such as
-`Svc::ActiveTextLogger` rely on those statuses. The same `setMode`
+`m_mode` member and implements the CRC methods (`calculateCrc`, `incrementalCrc`, `finalizeCrc`)
+on top of the virtual `read()`, so every implementation inherits them. A compile-time `Os::File`
+alias MUST call `setMode()` on open/close so that `isOpen()`, `readline()` and the CRC methods
+behave, and SHOULD re-initialize `m_hash` on a successful open. It MUST also perform the per-call
+checks itself, as the in-tree implementations (`Os/Posix/File.cpp`, `Os/Stub/File.cpp`) do:
+`open()` on an already-open file returns `INVALID_MODE`, every other operation on a closed file
+returns `NOT_OPENED`, and operations in the wrong mode return `INVALID_MODE`; callers such as
+`Svc::ActiveTextLogger` rely on those statuses. Because `FileInterface` now carries the
+`Utils::Hash` accumulator, `FW_FILE_HANDLE_MAX_SIZE` must fit the implementation including it. The same `setMode`
 style obligation applies to `Os::Directory` (`setOpen()`).
 
 ### 5.3 API usage

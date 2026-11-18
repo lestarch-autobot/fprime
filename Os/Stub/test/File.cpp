@@ -1,6 +1,7 @@
 #include "Os/Stub/test/File.hpp"
 #include <algorithm>
 #include <new>
+#include "Fw/Types/Assert.hpp"
 #include "Os/File.hpp"
 namespace Os {
 namespace Stub {
@@ -55,32 +56,59 @@ TestFile::~TestFile() {
 }
 
 FileInterface::Status TestFile::open(const char* filepath, Mode open_mode, OverwriteType overwrite) {
+    FW_ASSERT(nullptr != filepath);
+    FW_ASSERT(Mode::OPEN_NO_MODE < open_mode && Mode::MAX_OPEN_MODE > open_mode);
+    FW_ASSERT((0 <= overwrite) && (overwrite < OverwriteType::MAX_OVERWRITE_TYPE));
+    // Check for already opened file
+    if (this->isOpen()) {
+        return Status::INVALID_MODE;
+    }
     StaticData::data.openPath = filepath;
     StaticData::data.openMode = open_mode;
     StaticData::data.openOverwrite = overwrite;
     StaticData::data.lastCalled = StaticData::OPEN_FN;
     StaticData::data.pointer = 0;
     StaticData::data.positionResult = StaticData::data.pointer;
+    if (StaticData::data.openStatus == Status::OP_OK) {
+        this->setMode(open_mode);
+        // Reset any open CRC calculation to match the freshly-opened file
+        this->m_hash.init();
+    }
     return StaticData::data.openStatus;
 }
 
 void TestFile::close() {
     StaticData::data.lastCalled = StaticData::CLOSE_FN;
+    this->setMode(Mode::OPEN_NO_MODE);
 }
 
 FileInterface::Status TestFile::size(FwSizeType& size_result) {
+    // Check that the file is open before attempting operation
+    if (not this->isOpen()) {
+        return Status::NOT_OPENED;
+    }
     StaticData::data.lastCalled = StaticData::SIZE_FN;
     size_result = StaticData::data.sizeResult;
     return StaticData::data.sizeStatus;
 }
 
 FileInterface::Status TestFile::position(FwSizeType& position_result) {
+    // Check that the file is open before attempting operation
+    if (not this->isOpen()) {
+        return Status::NOT_OPENED;
+    }
     StaticData::data.lastCalled = StaticData::POSITION_FN;
     position_result = StaticData::data.positionResult;
     return StaticData::data.positionStatus;
 }
 
 FileInterface::Status TestFile::preallocate(FwSizeType offset, FwSizeType length) {
+    // Check that the file is open before attempting operation
+    if (not this->isOpen()) {
+        return Status::NOT_OPENED;
+    } else if (this->getMode() == Mode::OPEN_READ) {
+        return Status::INVALID_MODE;
+    }
     StaticData::data.preallocateOffset = offset;
     StaticData::data.preallocateLength = length;
     StaticData::data.lastCalled = StaticData::PREALLOCATE_FN;
@@ -88,6 +116,13 @@ FileInterface::Status TestFile::preallocate(FwSizeType offset, FwSizeType length
 }
 
 FileInterface::Status TestFile::seek(FwSignedSizeType offset, SeekType seekType) {
+    FW_ASSERT((0 <= seekType) && (seekType < SeekType::MAX_SEEK_TYPE));
+    // Cannot do a seek with a negative offset in absolute mode
+    FW_ASSERT((seekType == SeekType::RELATIVE) || (offset >= 0));
+    // Check that the file is open before attempting operation
+    if (not this->isOpen()) {
+        return Status::NOT_OPENED;
+    }
     StaticData::data.seekOffset = offset;
     StaticData::data.seekType = seekType;
     StaticData::data.lastCalled = StaticData::SEEK_FN;
@@ -98,11 +133,26 @@ FileInterface::Status TestFile::seek(FwSignedSizeType offset, SeekType seekType)
 }
 
 FileInterface::Status TestFile::flush() {
+    // Check that the file is open before attempting operation
+    if (not this->isOpen()) {
+        return Status::NOT_OPENED;
+    } else if (this->getMode() == Mode::OPEN_READ) {
+        return Status::INVALID_MODE;
+    }
     StaticData::data.lastCalled = StaticData::FLUSH_FN;
     return StaticData::data.flushStatus;
 }
 
 FileInterface::Status TestFile::read(U8* buffer, FwSizeType& size, WaitType wait) {
+    FW_ASSERT(buffer != nullptr);
+    // Check that the file is open before attempting operation
+    if (not this->isOpen()) {
+        size = 0;
+        return Status::NOT_OPENED;
+    } else if (this->getMode() != Mode::OPEN_READ) {
+        size = 0;
+        return Status::INVALID_MODE;
+    }
     StaticData::data.readBuffer = buffer;
     StaticData::data.readSize = size;
     StaticData::data.readWait = wait;
@@ -120,6 +170,15 @@ FileInterface::Status TestFile::read(U8* buffer, FwSizeType& size, WaitType wait
 }
 
 FileInterface::Status TestFile::write(const U8* buffer, FwSizeType& size, WaitType wait) {
+    FW_ASSERT(buffer != nullptr);
+    // Check that the file is open before attempting operation
+    if (not this->isOpen()) {
+        size = 0;
+        return Status::NOT_OPENED;
+    } else if (this->getMode() == Mode::OPEN_READ) {
+        size = 0;
+        return Status::INVALID_MODE;
+    }
     StaticData::data.writeBuffer = buffer;
     StaticData::data.writeSize = size;
     StaticData::data.writeWait = wait;

@@ -7,14 +7,16 @@
 #include <Os/FileInterface.hpp>
 #include <algorithm>
 #include <config/FppConstantsAc.hpp>
+#include <limits>
 
 namespace Os {
 
-FileInterface::FileInterface(const FileInterface& other) : m_mode(other.m_mode) {}
+FileInterface::FileInterface(const FileInterface& other) : m_hash(other.m_hash), m_mode(other.m_mode) {}
 
 FileInterface& FileInterface::operator=(const FileInterface& other) {
     if (this != &other) {
         this->m_mode = other.m_mode;
+        this->m_hash = other.m_hash;
     }
     return *this;
 }
@@ -102,24 +104,51 @@ FileInterface::Status FileInterface::write(const U8* buffer, FwSizeType& size) {
     return this->write(buffer, size, WaitType::WAIT);
 }
 
-// The CRC scratch state (`Utils::Hash` accumulator + `FW_FILE_CHUNK_SIZE`
-// read buffer) and the working algorithm deliberately do not live on this
-// base class -- see the design note in Os/FileInterface.hpp. These base
-// implementations report the capability is unavailable; `Os::DelegateFile`
-// (which `Os::File` aliases) overrides all three with the real logic.
 FileInterface::Status FileInterface::calculateCrc(U32& crc) {
+    FileInterface::Status status = FileInterface::Status::OP_OK;
+    FwSizeType size = FW_FILE_CHUNK_SIZE;
     crc = 0;
-    return FileInterface::Status::NOT_SUPPORTED;
+    for (FwSizeType i = 0; i < std::numeric_limits<FwSizeType>::max(); i++) {
+        status = this->incrementalCrc(size);
+        // Break on eof or error
+        if ((size != FW_FILE_CHUNK_SIZE) || (status != FileInterface::OP_OK)) {
+            break;
+        }
+    }
+    // When successful, finalize the CRC
+    if (status == FileInterface::OP_OK) {
+        status = this->finalizeCrc(crc);
+    }
+    return status;
 }
 
 FileInterface::Status FileInterface::incrementalCrc(FwSizeType& size) {
-    (void)size;
-    return FileInterface::Status::NOT_SUPPORTED;
+    FileInterface::Status status = FileInterface::Status::OP_OK;
+    FW_ASSERT(size <= FW_FILE_CHUNK_SIZE, FwAssertArgType(size));
+    if (not this->isOpen()) {
+        status = FileInterface::Status::NOT_OPENED;
+    } else if (OPEN_READ != this->m_mode) {
+        status = FileInterface::Status::INVALID_MODE;
+    } else {
+        // Local so that implementations stored in a file handle do not carry the read buffer
+        U8 crc_buffer[FW_FILE_CHUNK_SIZE];
+        // Read data without waiting for additional data to be available
+        status = this->read(crc_buffer, size, FileInterface::WaitType::NO_WAIT);
+        if (OP_OK == status) {
+            FW_ASSERT(size <= FW_FILE_CHUNK_SIZE, FwAssertArgType(size));
+            this->m_hash.update(crc_buffer, size);
+        }
+    }
+    return status;
 }
 
 FileInterface::Status FileInterface::finalizeCrc(U32& crc) {
-    crc = 0;
-    return FileInterface::Status::NOT_SUPPORTED;
+    this->m_hash.finalize(crc);
+    // Historically, the CRC calculation in File omitted the final 1's complement step. Utils::Hash performs that step
+    // and as such, we must undo it before returning the value to ensure backwards compatibility.
+    crc = ~crc;
+    this->m_hash.init();
+    return FileInterface::Status::OP_OK;
 }
 
 FileInterface::Status FileInterface::readline(U8* buffer, FwSizeType& size, FileInterface::WaitType wait) {
