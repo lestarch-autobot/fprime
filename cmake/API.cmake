@@ -621,6 +621,46 @@ endfunction()
 
 
 ####
+# Function `fprime_exclude_test_from_project`:
+#
+# Excludes unit tests from the project's test set: each test loses the `fprime_project` CTest label
+# (`FPRIME_PROJECT_TEST_LABEL`) and its entry in the project test list, so `fprime-util check` at the project root and
+# `fprime-util check --project` no longer run it. The test is still built, still labeled `fprime_universe`, and still
+# runs with `fprime-util check --all` and from its own directory.
+#
+# A test is named by its unit test executable target, e.g. `Svc_Health_ut_exe`. Call this before the test is
+# registered, or afterwards from the directory that registered it; CMake 3.28 and newer also allow the call from any
+# directory after registration. A project excluding a test of the framework or of a library calls it before
+# `fprime_setup_included_code`.
+#
+# ```
+# fprime_exclude_test_from_project(Svc_Health_ut_exe)
+# ```
+#
+# **ARGN**: names of the tests to exclude
+####
+function(fprime_exclude_test_from_project)
+    foreach (TEST_NAME IN LISTS ARGN)
+        get_property(_EXCLUDED_TESTS GLOBAL PROPERTY FPRIME__INTERNAL_PROJECT_EXCLUDED_TESTS)
+        if (NOT "${TEST_NAME}" IN_LIST _EXCLUDED_TESTS)
+            set_property(GLOBAL APPEND PROPERTY FPRIME__INTERNAL_PROJECT_EXCLUDED_TESTS "${TEST_NAME}")
+        endif()
+        # Tests not yet registered are handled when registered; a registered test is relabeled here
+        if (BUILD_TESTING AND NOT FPRIME_IS_SUB_BUILD AND TARGET "${TEST_NAME}")
+            get_target_property(_TEST_DIRECTORY "${TEST_NAME}" SOURCE_DIR)
+            if ("${_TEST_DIRECTORY}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+                set_tests_properties("${TEST_NAME}" PROPERTIES LABELS "${FPRIME_UNIVERSE_TEST_LABEL}")
+            elseif (CMAKE_VERSION VERSION_GREATER_EQUAL "3.28")
+                set_property(TEST "${TEST_NAME}" DIRECTORY "${_TEST_DIRECTORY}" PROPERTY LABELS "${FPRIME_UNIVERSE_TEST_LABEL}")
+            else()
+                fprime_cmake_fatal_error("fprime_exclude_test_from_project(${TEST_NAME}) must be called before the test is registered, or from ${_TEST_DIRECTORY}")
+            endif()
+            fprime_util_metadata_remove_project_test("${TEST_NAME}")
+        endif()
+    endforeach()
+endfunction(fprime_exclude_test_from_project)
+
+####
 # Macro `register_fprime_target`:
 #
 # This function allows users to register custom build targets into the build system.  These targets are defined in a
