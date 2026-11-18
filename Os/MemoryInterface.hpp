@@ -10,6 +10,12 @@
 
 namespace Os {
 
+// A project config/OsSelection.hpp that predates the Memory selection does not define the Os::Memory alias
+#ifndef OS_MEMORY_HEADER
+class DelegateMemory;
+using Memory = DelegateMemory;
+#endif
+
 //! \brief Memory variable handle parent
 class MemoryHandle {};
 
@@ -42,6 +48,18 @@ class MemoryInterface {
 
     //! \brief provide a pointer to a Memory delegate object
     static MemoryInterface* getDelegate(MemoryHandleStorage& aligned_new_memory);
+
+    // ------------------------------------------------------------------
+    // Singleton functions
+    // ------------------------------------------------------------------
+    // Inherited by every concrete Os::Memory backend. The singleton is an
+    // instance of the configured Os::Memory type.
+
+    //! \brief initialize the singleton
+    static void init();
+
+    //! \brief return singleton
+    static Memory& getSingleton();
 
     // ------------------------------------------------------------------
     // Convenience static wrappers

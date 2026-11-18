@@ -27,7 +27,7 @@ struct StaticData {
     FwSizeType index = 0;
 
     //! Ticks test
-    Os::Memory::Usage usage;
+    MemoryInterface::Usage usage;
 
     //! Status out
     MemoryInterface::Status status_out;

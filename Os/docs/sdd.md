@@ -208,9 +208,10 @@ namespace Os {
 **Additional requirements for singleton services.** `Console`, `FileSystem`, `Cpu` and `Memory` expose
 static convenience wrappers that resolve through `Os::<Service>::getSingleton()`, and `Os::init()`
 (`Os/Os.cpp`) calls `Os::<Service>::init()`. The `FileSystem`, `Cpu` and `Memory` static wrappers are
-declared on the interface class (`Console`'s `write()` statics are not, see below), and `init()` and
-`getSingleton()` are declared on no interface, so a compile-time alias for one of these services MUST
-additionally provide:
+declared on the interface class (`Console`'s `write()` statics are not, see below). `Memory`'s `init()`
+and `getSingleton()` are defined on `Os::MemoryInterface` and inherited by a compile-time alias. For
+`Console`, `FileSystem` and `Cpu`, `init()` and `getSingleton()` are declared on no interface, so a
+compile-time alias for one of these services MUST additionally provide:
 
 ```c++
 static void init();               //!< called by Os::init()

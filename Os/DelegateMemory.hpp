@@ -28,16 +28,6 @@ class DelegateMemory final : public MemoryInterface {
     MemoryInterface& operator=(const MemoryInterface& other) override = delete;
 
     //-----------------------------------------------------------------------------
-    // Interface methods
-    //-----------------------------------------------------------------------------
-  public:
-    //! \brief initialize the singleton
-    static void init();
-
-    //! \brief return singleton
-    static DelegateMemory& getSingleton();
-
-    //-----------------------------------------------------------------------------
     // Delegating methods
     //-----------------------------------------------------------------------------
 
