@@ -2,7 +2,7 @@
 // \title Os/Posix/File.hpp
 // \brief posix implementation for Os::File, header and test definitions
 // ======================================================================
-#include <Os/File.hpp>
+#include <Os/FileInterface.hpp>
 #ifndef OS_POSIX_FILE_HPP
 #define OS_POSIX_FILE_HPP
 
@@ -42,7 +42,12 @@ class PosixFile : public FileInterface {
 
     //! \brief destructor
     //!
-    ~PosixFile() override = default;
+    ~PosixFile() override;
+
+    // The overrides below would otherwise hide the common overloads defined on FileInterface
+    using FileInterface::open;
+    using FileInterface::read;
+    using FileInterface::write;
 
     // ------------------------------------
     // Functions overrides

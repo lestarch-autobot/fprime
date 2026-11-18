@@ -2,7 +2,7 @@
 // \title Os/Stub/File.hpp
 // \brief stub file definitions for Os::File
 // ======================================================================
-#include "Os/File.hpp"
+#include <Os/FileInterface.hpp>
 
 #ifndef OS_STUB_FILE_HPP
 #define OS_STUB_FILE_HPP
@@ -25,6 +25,11 @@ class StubFile : public FileInterface {
     //! \brief destructor
     //!
     ~StubFile() override = default;
+
+    // The overrides below would otherwise hide the common overloads defined on FileInterface
+    using FileInterface::open;
+    using FileInterface::read;
+    using FileInterface::write;
 
     // ------------------------------------
     // Functions overrides

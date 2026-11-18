@@ -8,41 +8,41 @@
 namespace Os {
 namespace Posix {
 
-File::Status errno_to_file_status(int errno_input) {
-    File::Status status = File::Status::OP_OK;
+FileInterface::Status errno_to_file_status(int errno_input) {
+    FileInterface::Status status = FileInterface::Status::OP_OK;
     switch (errno_input) {
         case 0:
-            status = File::Status::OP_OK;
+            status = FileInterface::Status::OP_OK;
             break;
         // Fallthrough intended
         case ENOSPC:
         case EFBIG:
-            status = File::Status::NO_SPACE;
+            status = FileInterface::Status::NO_SPACE;
             break;
         case ENOENT:
-            status = File::Status::DOESNT_EXIST;
+            status = FileInterface::Status::DOESNT_EXIST;
             break;
         // Fallthrough intended
         case EPERM:
         case EACCES:
-            status = File::Status::NO_PERMISSION;
+            status = FileInterface::Status::NO_PERMISSION;
             break;
         case EEXIST:
-            status = File::Status::FILE_EXISTS;
+            status = FileInterface::Status::FILE_EXISTS;
             break;
         case EBADF:
-            status = File::Status::NOT_OPENED;
+            status = FileInterface::Status::NOT_OPENED;
             break;
         // Fallthrough intended
         case ENOSYS:
         case EOPNOTSUPP:
-            status = File::Status::NOT_SUPPORTED;
+            status = FileInterface::Status::NOT_SUPPORTED;
             break;
         case EINVAL:
-            status = File::Status::INVALID_ARGUMENT;
+            status = FileInterface::Status::INVALID_ARGUMENT;
             break;
         default:
-            status = File::Status::OTHER_ERROR;
+            status = FileInterface::Status::OTHER_ERROR;
             break;
     }
     return status;

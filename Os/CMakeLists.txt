@@ -136,7 +136,32 @@ register_fprime_module(
 )
 
 add_named_os_module(Console Fw_Logger)
-add_named_os_module("File;FileSystem;Directory" Utils_Hash Fw_DataStructures)
+# File: File.hpp is a thin public alias header (no File.cpp); the interface and its common
+# code live in FileInterface.{hpp,cpp} and the link-time delegate in DelegateFile.{hpp,cpp}.
+# Registered explicitly because add_named_os_module assumes a matching <name>.cpp per header.
+# FileSystem and Directory stay bundled into Os_File as before.
+register_fprime_module(
+      "Os_File"
+    REQUIRES_IMPLEMENTATIONS
+      "Os_File"
+    SOURCES
+      "${CMAKE_CURRENT_LIST_DIR}/FileInterface.cpp"
+      "${CMAKE_CURRENT_LIST_DIR}/DelegateFile.cpp"
+      "${CMAKE_CURRENT_LIST_DIR}/FileSystem.cpp"
+      "${CMAKE_CURRENT_LIST_DIR}/Directory.cpp"
+    HEADERS
+      "${CMAKE_CURRENT_LIST_DIR}/File.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/FileInterface.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/DelegateFile.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/FileSystem.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/Directory.hpp"
+    DEPENDS
+      Fw_Time
+      Fw_Types
+      Utils_Hash
+      Fw_DataStructures
+)
+fprime_target_dependencies(Os PUBLIC "Os_File")
 add_named_os_module(Task ${CMAKE_THREAD_LIBS_INIT})
 # Mutex: Mutex.hpp is a thin public alias header (no Mutex.cpp); the interface and
 # link-time delegate live in MutexInterface.hpp / DelegateMutex.{hpp,cpp}. Registered
