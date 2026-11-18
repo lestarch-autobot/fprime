@@ -3,6 +3,7 @@
 // \brief Linux implementation for Os::Cpu, header and test definitions
 // ======================================================================
 #include <Os/CpuInterface.hpp>
+#include <Os/File.hpp>
 #ifndef OS_Linux_Cpu_HPP
 #define OS_Linux_Cpu_HPP
 
