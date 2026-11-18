@@ -87,6 +87,30 @@
 //     }  // namespace Os
 //     #define OS_MUTEX_HEADER "Va416x0/Os/AtomicMutex/AtomicMutex.hpp"
 //     #define OS_CONDITION_VARIABLE_HEADER "Os/Stub/ConditionVariable.hpp"
+//
+// ----------------------------------------------------------------------
+// Directory
+//
+// WARNING: compile-time selections MUST derive from Os::DirectoryInterface
+// (isOpen(), read(Fw::StringBase&), readDirectory() and getFileCount() are
+// defined there). No link-time delegate wraps a directly aliased
+// implementation, so the implementation itself MUST perform the checks the
+// delegate otherwise provides: assert the open() arguments, track the open
+// state with setOpen(), return NOT_OPENED from rewind()/read() when closed,
+// assert the read() buffer, and null-terminate what read() writes.
+// Os::Posix::Directory::PosixDirectory and Os::Stub::Directory::StubDirectory
+// do so.
+//
+// The alias only changes the C++ type; the implementation module providing the
+// aliased class must still be in the link (e.g. CHOOSES_IMPLEMENTATIONS
+// Os_File_Posix). Directory shares the Os_File module with File and
+// FileSystem.
+//
+// Example compile-time selection override:
+//
+//     namespace Os { namespace Posix { namespace Directory { class PosixDirectory; } } }
+//     namespace Os { using Directory = Os::Posix::Directory::PosixDirectory; }
+//     #define OS_DIRECTORY_HEADER "Os/Posix/Directory.hpp"
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
@@ -104,10 +128,14 @@ using Mutex = DelegateMutex;
 class DelegateConditionVariable;
 using ConditionVariable = DelegateConditionVariable;
 
+class DelegateDirectory;
+using Directory = DelegateDirectory;
+
 }  // namespace Os
 
 #define OS_RAW_TIME_HEADER <Os/DelegateRawTime.hpp>
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_DIRECTORY_HEADER <Os/DelegateDirectory.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP

@@ -192,21 +192,24 @@ namespace MyPlatform {
 
 namespace Os {
     class DelegateMutex;             // Forward-declare the link-time delegates
-    class DelegateConditionVariable; // kept for Mutex and ConditionVariable
+    class DelegateConditionVariable; // kept for Mutex, ConditionVariable,
+    class DelegateDirectory;         // and Directory
 
     // Alias Os::RawTime directly to your implementation (no delegate wrapper)
     using RawTime = MyPlatform::MyRawTime;
 
     // The override file replaces the whole default, so every selection must be
-    // present: keep Mutex and ConditionVariable on the link-time delegates
+    // present: keep Mutex, ConditionVariable, and Directory on the link-time delegates
     using Mutex = DelegateMutex;
     using ConditionVariable = DelegateConditionVariable;
+    using Directory = DelegateDirectory;
 }
 
 // Point to your implementation header (will be included after RawTimeInterface.hpp)
 #define OS_RAW_TIME_HEADER "MyPlatform/Os/RawTime.hpp"
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_DIRECTORY_HEADER <Os/DelegateDirectory.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP
 ```
