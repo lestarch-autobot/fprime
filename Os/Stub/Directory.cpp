@@ -26,6 +26,7 @@ StubDirectory::Status StubDirectory::read(char* fileNameBuffer, FwSizeType bufSi
     if (not this->isOpen()) {
         return Status::NOT_OPENED;
     }
+    // Unreachable while open() cannot succeed; kept for parity with the other implementations
     FW_ASSERT(fileNameBuffer != nullptr);
     FW_ASSERT(bufSize > 0);
     fileNameBuffer[bufSize - 1] = '\0';

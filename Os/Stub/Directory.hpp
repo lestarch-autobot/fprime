@@ -61,9 +61,7 @@ class StubDirectory final : public DirectoryInterface {
 
     //! \brief Get next filename from directory stream
     //!
-    //! Writes at most buffSize characters of the file name to fileNameBuffer.
-    //! This function skips the current directory (.) and parent directory (..) entries.
-    //! Returns NO_MORE_FILES if there are no more files to read from the buffer.
+    //! The stub directory is never open, so this returns NOT_OPENED without writing to fileNameBuffer.
     //!
     //! It is invalid to pass `nullptr` as fileNameBuffer.
     //!

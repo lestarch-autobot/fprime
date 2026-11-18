@@ -65,9 +65,11 @@ class PosixDirectory final : public DirectoryInterface {
 
     //! \brief Get next filename from directory stream
     //!
-    //! Writes at most buffSize characters of the file name to fileNameBuffer.
+    //! Writes at most buffSize characters of the file name to fileNameBuffer; the buffer is always null-terminated,
+    //! truncating the name if needed.
     //! This function skips the current directory (.) and parent directory (..) entries.
     //! Returns NO_MORE_FILES if there are no more files to read from the buffer.
+    //! Returns NOT_OPENED if the directory is not open.
     //!
     //! It is invalid to pass `nullptr` as fileNameBuffer.
     //!

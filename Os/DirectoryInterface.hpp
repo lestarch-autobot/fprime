@@ -76,6 +76,8 @@ class DirectoryInterface {
     //! Use OpenMode::CREATE_IF_MISSING to open a directory, creating the directory if it doesn't exist
     //! Use OpenMode::CREATE_EXCLUSIVE to open a directory, creating the directory and erroring if it already exists
     //!
+    //! Opening an already open directory closes it first; if the open fails the directory is left closed.
+    //!
     //! It is invalid to pass `nullptr` as the path.
     //! It is invalid to supply `mode` as a non-enumerated value.
     //!

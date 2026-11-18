@@ -8,7 +8,7 @@
 namespace Os {
 
 DelegateDirectory::DelegateDirectory()
-    : m_handle_storage(), m_delegate(*DirectoryInterface::getDelegate(m_handle_storage)) {
+    : DirectoryInterface(), m_handle_storage(), m_delegate(*DirectoryInterface::getDelegate(m_handle_storage)) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
 }
 
@@ -29,8 +29,11 @@ DelegateDirectory::Status DelegateDirectory::open(const char* path, OpenMode mod
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
     FW_ASSERT(path != nullptr);
     FW_ASSERT(mode >= 0 and mode < OpenMode::MAX_OPEN_MODE);
+    // Re-opening closes the previous directory; a failed re-open leaves the directory closed
+    if (this->isOpen()) {
+        this->close();
+    }
     Status status = this->m_delegate.open(path, mode);
-    // A failed re-open leaves the directory closed
     this->setOpen(status == Status::OP_OK);
     return status;
 }

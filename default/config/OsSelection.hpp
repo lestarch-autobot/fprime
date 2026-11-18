@@ -2,8 +2,8 @@
 // \title config/OsSelection.hpp
 // \brief configured selection of Os OSAL implementations
 //
-// This header configures how the Os services below (RawTime, Mutex,
-// ConditionVariable, and Directory) resolve to concrete implementations. Two mechanisms are
+// This header configures how the Os services below (RawTime, Mutex, and
+// ConditionVariable) resolve to concrete implementations. Two mechanisms are
 // available:
 //
 // 1. Link-time selection (default): each service aliases to an Os::Delegate*
@@ -97,8 +97,9 @@
 // implementation, so the implementation itself MUST perform the checks the
 // delegate otherwise provides: assert the open() arguments, track the open
 // state with setOpen(), return NOT_OPENED from rewind()/read() when closed,
-// assert the read() buffer, null-terminate what read() writes, and release
-// its resources on destruction.
+// assert the read() buffer, null-terminate what read() writes, close an
+// already open directory before open() opens another (leaving it closed when
+// that open fails), and release its resources on destruction.
 // Os::Posix::Directory::PosixDirectory and Os::Stub::Directory::StubDirectory
 // do so.
 //

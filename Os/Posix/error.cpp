@@ -103,6 +103,7 @@ FileSystem::Status errno_to_filesystem_status(int errno_input) {
     return status;
 }
 
+// Os:: is required: inside Os::Posix, Directory names the namespace Os::Posix::Directory
 Os::Directory::Status errno_to_directory_status(int errno_input) {
     Os::Directory::Status status = Os::Directory::Status::OP_OK;
     switch (errno_input) {

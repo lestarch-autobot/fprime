@@ -28,7 +28,7 @@ class DelegateDirectory final : public DirectoryInterface {
     DirectoryHandle* getHandle() override;
 
     // ------------------------------------------------------------
-    // Implementation-specific Directory member functions
+    // Directory operations forwarded to the link-time implementation
     // ------------------------------------------------------------
 
     // Bring the DirectoryInterface convenience overloads into scope; overriding a

@@ -41,6 +41,17 @@ TEST_F(Interface, Open) {
 }
 
 // Ensure that Os::Directory properly calls the implementation rewind()
+// Opening an already open directory closes the implementation before opening it again
+TEST_F(Interface, ReopenClosesFirst) {
+    Os::Directory directory;
+    ASSERT_EQ(directory.open("/does/not/matter", Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+    ASSERT_EQ(StaticData::data.closeCount, 0);
+    ASSERT_EQ(directory.open("/does/not/matter", Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+    ASSERT_EQ(StaticData::data.closeCount, 1);
+    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::OPEN_FN);
+    ASSERT_TRUE(directory.isOpen());
+}
+
 TEST_F(Interface, Rewind) {
     Os::Directory directory;
     directory.open("/does/not/matter", Os::Directory::OpenMode::READ);
