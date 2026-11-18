@@ -17,7 +17,8 @@ struct PosixConditionVariableHandle : public ConditionVariableHandle {
 
 //! \brief Posix implementation of Os::ConditionVariable
 //!
-//! Posix implementation of `ConditionVariable` for use as a delegate class handling error-only file operations.
+//! Posix implementation of `ConditionVariable` usable through the link-time delegate or selected directly as
+//! `Os::ConditionVariable` (together with the matching `Os::Mutex`) in `config/OsSelection.hpp`.
 //!
 class PosixConditionVariable : public ConditionVariableInterface {
   public:
@@ -46,6 +47,8 @@ class PosixConditionVariable : public ConditionVariableInterface {
   private:
     //! Handle for PosixMutex
     PosixConditionVariableHandle m_handle;
+    //! Mutex first supplied to pend(); every later pend() must supply the same one
+    Os::Mutex* m_lock = nullptr;
 };
 
 }  // namespace Mutex

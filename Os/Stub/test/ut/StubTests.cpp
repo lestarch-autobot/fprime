@@ -9,6 +9,7 @@
 #include <Os/Mutex.hpp>
 #include <Os/Queue.hpp>
 #include <Os/RawTime.hpp>
+#include <Os/Stub/ConditionVariable.hpp>
 #include <Os/Task.hpp>
 
 TEST(Stub, File) {
@@ -25,6 +26,16 @@ TEST(Stub, Queue) {
 
 TEST(Stub, ConditionVariable) {
     Os::ConditionVariable _;
+}
+
+// The stub implementation itself rejects a second mutex, whether or not it is reached through the delegate
+TEST(Stub, ConditionVariableDifferentMutex) {
+    Os::Mutex first;
+    Os::Mutex second;
+    Os::Stub::Mutex::StubConditionVariable variable;
+    ASSERT_EQ(variable.pend(first), Os::ConditionVariableInterface::Status::ERROR_NOT_IMPLEMENTED);
+    ASSERT_EQ(variable.pend(second), Os::ConditionVariableInterface::Status::ERROR_DIFFERENT_MUTEX);
+    ASSERT_EQ(variable.pend(first), Os::ConditionVariableInterface::Status::ERROR_NOT_IMPLEMENTED);
 }
 
 TEST(Stub, Mutex) {

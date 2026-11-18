@@ -69,6 +69,9 @@
 // of the two are the link-time delegates, so aliasing Os::Mutex alone is a
 // build error. A ConditionVariable that does not inspect the mutex handle
 // (e.g. Os::Stub::Mutex::StubConditionVariable) is compatible with any Mutex.
+// A ConditionVariable implementation MUST call
+// ConditionVariableInterface::checkMutex() from pend(): when selected here
+// there is no delegate in front of it to reject a different mutex.
 //
 // The alias only changes the C++ type; the implementation module providing the
 // aliased classes must still be in the link (via CHOOSES_IMPLEMENTATIONS for an

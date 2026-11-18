@@ -59,6 +59,9 @@ class ConditionVariableInterface {
     //! in one step. Blocking will occur until a future `notify` or `notifyAll` call is made to this variable on another
     //! thread of execution.
     //!
+    //! The same mutex must be supplied on every call: a call supplying a different mutex returns
+    //! ERROR_DIFFERENT_MUTEX. Implementations enforce this by calling checkMutex() before waiting.
+    //!
     //! \param mutex: mutex to unlock as part of this operation
     //! \return status of the conditional wait
     virtual Status pend(Os::Mutex& mutex) = 0;
@@ -80,10 +83,6 @@ class ConditionVariableInterface {
     virtual ConditionVariableHandle* getHandle() = 0;
 
     //! \brief provide a pointer to a ConditionVariable delegate object
-    //!
-    //! \note ERROR_DIFFERENT_MUTEX is reported by the link-time Os::DelegateConditionVariable, which records the mutex
-    //! first supplied to pend(); an implementation selected directly as Os::ConditionVariable does not perform that
-    //! check.
     static ConditionVariableInterface* getDelegate(ConditionVariableHandleStorage& aligned_new_memory);
 
     // ------------------------------------------------------------------
@@ -107,6 +106,30 @@ class ConditionVariableInterface {
         const Status status = this->pend(mutex);
         FW_ASSERT(status == Status::OP_OK,
                   static_cast<FwAssertArgType>(reinterpret_cast<PlatformPointerCastType>(this)), status);
+    }
+
+  protected:
+    //! \brief check that a condition variable is always used with the same mutex
+    //!
+    //! Common safety check shared by every implementation of pend(), so that it applies whether the implementation
+    //! is reached through the link-time delegate or selected directly as Os::ConditionVariable. The first mutex
+    //! supplied is recorded in `expected`; any later call supplying a different mutex is rejected. The mutex is
+    //! recorded on the first call even when the wait itself then fails.
+    //!
+    //! Every implementation of pend() must call this before waiting: an implementation selected directly as
+    //! Os::ConditionVariable has no delegate in front of it to perform the check.
+    //!
+    //! \warning the check is not synchronized. It detects misuse by callers that otherwise follow the pend()
+    //! contract (mutex held); two tasks racing on the first call with different mutexes may both pass.
+    //!
+    //! \param expected: mutex recorded by the implementation (nullptr until the first call)
+    //! \param mutex: mutex supplied to pend()
+    //! \return OP_OK when the mutex is acceptable, ERROR_DIFFERENT_MUTEX otherwise
+    static Status checkMutex(Os::Mutex*& expected, Os::Mutex& mutex) {
+        if (expected == nullptr) {
+            expected = &mutex;
+        }
+        return (expected == &mutex) ? Status::OP_OK : Status::ERROR_DIFFERENT_MUTEX;
     }
 };
 
