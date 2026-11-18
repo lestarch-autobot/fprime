@@ -1,0 +1,1438 @@
+{
+  "schema_version": 2,
+  "tool": {
+    "name": "fprime-auto-checklist",
+    "version": "0.2.2"
+  },
+  "checklist_version": "1.2.0",
+  "module": "FppTestProject/FppTest/topology/components/Receiver",
+  "component": "Receiver",
+  "project": "/home/runner/work/fprime/fprime",
+  "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+  "fingerprints": {
+    "1": "e3b0c44298fc",
+    "2": "a756386da461",
+    "3": "e44ede88dfd2",
+    "4": "e3b0c44298fc",
+    "5": "f2e5a1d1ae9c"
+  },
+  "stage": null,
+  "summary": {
+    "YES": 2,
+    "NO": 15,
+    "N/A": 7,
+    "REVIEW": 11,
+    "UNCHECKED": 38
+  },
+  "items": [
+    {
+      "id": "1.1",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD that define the component's expected operational behaviors?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.2",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD that define input data expected to be received and handled by the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.3",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD that define output data expected to be produced by the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.4",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD for all relevant memory usage constraints for the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.5",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD for all relevant hardware I/O usage constraints for the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.6",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD for all relevant runtime performance constraints for the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.7",
+      "section": "1",
+      "text": "Does every requirement specify a verification method?",
+      "status": "NO",
+      "notes": [
+        "R8: no requirements found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "R8: no requirements found"
+      ]
+    },
+    {
+      "id": "1.8",
+      "section": "1",
+      "text": "Are there any relevant external interface or functional requirements documented elsewhere such as ICDs/FDDs? If so, please specify in notes.",
+      "status": "YES",
+      "notes": [
+        "D9 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D9 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.1",
+      "section": "2",
+      "text": "Is the high level component functionality documented/described in the SDD?",
+      "status": "NO",
+      "notes": [
+        "SDD: docs/sdd.md graded bronze; silver or better required (filled intro + sections)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "SDD: docs/sdd.md graded bronze; silver or better required (filled intro + sections)"
+      ]
+    },
+    {
+      "id": "2.2",
+      "section": "2",
+      "text": "Is the component block diagram documented in the SDD and consistent with the FPP model?",
+      "status": "NO",
+      "notes": [
+        "D9: no docs/sdd.md found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D9: no docs/sdd.md found"
+      ]
+    },
+    {
+      "id": "2.3",
+      "section": "2",
+      "text": "Is the component port table documented in the SDD and consistent with the FPP model?",
+      "status": "NO",
+      "notes": [
+        "D7: no docs/sdd.md found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D7: no docs/sdd.md found"
+      ]
+    },
+    {
+      "id": "2.4",
+      "section": "2",
+      "text": "Are the component input port behaviors described in the SDD?",
+      "status": "NO",
+      "notes": [
+        "D10: no docs/sdd.md found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D10: no docs/sdd.md found"
+      ]
+    },
+    {
+      "id": "2.5",
+      "section": "2",
+      "text": "Are the component input port handlers defined?",
+      "status": "YES",
+      "notes": [
+        "D1 pass (1 input port(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D1 pass (1 input port(s) checked)"
+      ]
+    },
+    {
+      "id": "2.6",
+      "section": "2",
+      "text": "Are the component command handlers defined?",
+      "status": "N/A",
+      "notes": [
+        "D2: no commands declared"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "D2: no commands declared"
+      ]
+    },
+    {
+      "id": "2.7",
+      "section": "2",
+      "text": "Are the component sequence diagrams documented?",
+      "status": "NO",
+      "notes": [
+        "D9: no docs/sdd.md found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D9: no docs/sdd.md found"
+      ]
+    },
+    {
+      "id": "2.8",
+      "section": "2",
+      "text": "Are component state machines and use-cases described in the SDD?",
+      "status": "NO",
+      "notes": [
+        "D9: no docs/sdd.md found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D9: no docs/sdd.md found"
+      ]
+    },
+    {
+      "id": "2.9",
+      "section": "2",
+      "text": "Are the state machine actions defined?",
+      "status": "N/A",
+      "notes": [
+        "D3: no state machines declared"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "D3: no state machines declared"
+      ]
+    },
+    {
+      "id": "2.10",
+      "section": "2",
+      "text": "Are component commands, telemetry, events and parameters documented in the SDD (and consistent with the FPP model)?",
+      "status": "N/A",
+      "notes": [
+        "D8: FPP model declares no dictionary items"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "D8: FPP model declares no dictionary items"
+      ]
+    },
+    {
+      "id": "2.11",
+      "section": "2",
+      "text": "Are component data products documented and consistent with the FPP model?",
+      "status": "N/A",
+      "notes": [
+        "D8: FPP model declares no dictionary items"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "D8: FPP model declares no dictionary items"
+      ]
+    },
+    {
+      "id": "2.12",
+      "section": "2",
+      "text": "Are all data product containers assigned a default priority?",
+      "status": "N/A",
+      "notes": [
+        "D4: no data product containers declared"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "D4: no data product containers declared"
+      ]
+    },
+    {
+      "id": "2.13",
+      "section": "2",
+      "text": "Does each component port in the FPP model have a known/planned use-case?",
+      "status": "NO",
+      "notes": [
+        "R6: no requirements found (searched: nothing); cannot trace 3 port(s)",
+        "D10: no docs/sdd.md found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "R6: no requirements found (searched: nothing); cannot trace 3 port(s)",
+        "D10: no docs/sdd.md found"
+      ]
+    },
+    {
+      "id": "2.14",
+      "section": "2",
+      "text": "Are port directions and types as expected?",
+      "status": "NO",
+      "notes": [
+        "D7: no docs/sdd.md found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D7: no docs/sdd.md found"
+      ]
+    },
+    {
+      "id": "2.15",
+      "section": "2",
+      "text": "Is the component type as expected (passive, queued or active)?",
+      "status": "NO",
+      "notes": [
+        "D9: no docs/sdd.md found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D9: no docs/sdd.md found"
+      ]
+    },
+    {
+      "id": "2.16",
+      "section": "2",
+      "text": "Are all the component requirements mapped to design description and/or artifacts?",
+      "status": "NO",
+      "notes": [
+        "D5: no requirements found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D5: no requirements found"
+      ]
+    },
+    {
+      "id": "2.17",
+      "section": "2",
+      "text": "Does the component FPP compile and generate auto-code?",
+      "status": "NO",
+      "notes": [
+        "D6: fpp-check failed:\nfpp-check\n/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver/Receiver.fpp:5.12\n    import TypedPortsSyncInputs\n           ^\nerror: symbol TypedPortsSyncInputs is not defined\nnote: looking for a interface here"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D6: fpp-check failed:\nfpp-check\n/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver/Receiver.fpp:5.12\n    import TypedPortsSyncInputs\n           ^\nerror: symbol TypedPortsSyncInputs is not defined\nnote: looking for a interface here"
+      ]
+    },
+    {
+      "id": "3.1",
+      "section": "3",
+      "text": "Are all component source dependencies listed in the CMakeLists.txt file for the component?",
+      "status": "NO",
+      "notes": [
+        "I1: dependency 'Fw/Buffer' (from #include \"Fw/Buffer/Buffer.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Buffer)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "I1: dependency 'Fw/Buffer' (from #include \"Fw/Buffer/Buffer.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Buffer)"
+      ]
+    },
+    {
+      "id": "3.2",
+      "section": "3",
+      "text": "Does the component compile without warnings for all required targets?",
+      "status": "UNCHECKED",
+      "notes": [
+        "I2 not run: not done yet: no build output to scan (the module was not built by this run)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "I2 not run: not done yet: no build output to scan (the module was not built by this run)"
+      ]
+    },
+    {
+      "id": "3.3",
+      "section": "3",
+      "text": "Are all loops properly terminated/bounded?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/jpl-c/loop-bounds` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/jpl-c/loop-bounds` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.4",
+      "section": "3",
+      "text": "Has gating been provided for any potential cyclic error/status messages (e.g. log messages, events)?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/unthrottled-cyclic-event` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/unthrottled-cyclic-event` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.5",
+      "section": "3",
+      "text": "Do all switch statements have a break after each case and terminate with a default case?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/switch-default` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/switch-case-fallthrough` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/switch-default` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/switch-case-fallthrough` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.6",
+      "section": "3",
+      "text": "Verify all non-empty case statements that fall through to the following case statement are explicitly commented as such",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/switch-case-fallthrough` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/switch-case-fallthrough` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.7",
+      "section": "3",
+      "text": "Are all variables locally defined unless global or specific visibility is required?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/global-mutable-variable` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/global-mutable-variable` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.8",
+      "section": "3",
+      "text": "Are all class members defined appropriately using private, public and protected keywords?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/public-data-member` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/public-data-member` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.9",
+      "section": "3",
+      "text": "Verify that no floating point expressions are tested for equality/inequality",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/float-equality` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/float-equality` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.10",
+      "section": "3",
+      "text": "Is the precision of floating point numbers sufficient to ensure accuracy and floating-point equivalence is evaluated with margin (i.e. safe floating-point usage), and is not used in a loop control?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/float-narrowing` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/float-loop-control` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/float-equality` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/float-narrowing` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/float-loop-control` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/float-equality` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.11",
+      "section": "3",
+      "text": "Are all variables initialized before use?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/uninitialized-member` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/uninitialized-local` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/uninitialized-member` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/uninitialized-local` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.12",
+      "section": "3",
+      "text": "Are the priorities of all data products produced by the component configurable via command(s) or parameter(s)?",
+      "status": "N/A",
+      "notes": [
+        "I3: no data product containers declared"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "I3: no data product containers declared"
+      ]
+    },
+    {
+      "id": "3.13",
+      "section": "3",
+      "text": "Are all commands acknowledged with success/failure?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/command-response` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/command-response` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.14",
+      "section": "3",
+      "text": "Do all validation failure cases for port and command handlers include a return statement to avoid unintended code execution beyond validation failures?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/validation-failure-return` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/validation-failure-return` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.15",
+      "section": "3",
+      "text": "Are all internal port interfaces invoked via the auto-coded internal port invoke() function?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/internal-port-invoke` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/internal-port-invoke` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.16",
+      "section": "3",
+      "text": "All pointer arguments to functions are checked to be not nullptr using FW_ASSERT",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/checking-parameter-values` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/checking-parameter-values` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.17",
+      "section": "3",
+      "text": "Assumptions on software state are validated using FW_ASSERT.",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/jpl-c/use-of-assertions-density` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/jpl-c/use-of-assertions-density` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.18",
+      "section": "3",
+      "text": "Assertions shall not be used to validate state that could be dependent on hardware or user input.",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/assert-on-untrusted-input` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/assert-on-untrusted-input` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.19",
+      "section": "3",
+      "text": "Verify all ISR code is free of floating point operations",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/no-float-in-isr` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/no-float-in-isr` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.20",
+      "section": "3",
+      "text": "Has the ISR code been optimized to minimize length/execution time?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/isr-complexity` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/isr-complexity` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.21",
+      "section": "3",
+      "text": "Verify any software state that's expected upon receive of an interrupt is configured prior to enabling/setting conditions that would allow the interrupt to trigger.",
+      "status": "REVIEW",
+      "notes": [
+        "CL-1: ISR state before enable (3.21): for every ISR-named function (*_isr, *interrupt_handler*, *_irq*) find the code that enables its interrupt; every variable the ISR reads or writes must be assigned on a path that completes before that enable call."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-1: ISR state before enable (3.21): for every ISR-named function (*_isr, *interrupt_handler*, *_irq*) find the code that enables its interrupt; every variable the ISR reads or writes must be assigned on a path that completes before that enable call."
+      ]
+    },
+    {
+      "id": "3.22",
+      "section": "3",
+      "text": "Verify there are no blocking operations in ISRs",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/no-blocking-in-isr` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/no-blocking-in-isr` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.23",
+      "section": "3",
+      "text": "Verify any relevant interrupt enables and interrupts are cleared during initialization and re-enabled selectively as needed.",
+      "status": "REVIEW",
+      "notes": [
+        "CL-2: Interrupt enables cleared at init (3.23): in the constructor/init/configure/preamble, interrupt-enable bits must be explicitly cleared or masked before peripheral configuration, not assumed clear from reset."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-2: Interrupt enables cleared at init (3.23): in the constructor/init/configure/preamble, interrupt-enable bits must be explicitly cleared or masked before peripheral configuration, not assumed clear from reset."
+      ]
+    },
+    {
+      "id": "3.24",
+      "section": "3",
+      "text": "Are RateGroup schedule calls non-blocking?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/no-blocking-in-sched-handler` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/no-blocking-in-sched-handler` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.25",
+      "section": "3",
+      "text": "Verify no synchronous file access is done within a critical region (e.g. SchedIn)",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/no-file-access-in-critical` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/no-file-access-in-critical` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.26",
+      "section": "3",
+      "text": "Verify that all loops and if/else statements are compound statements (i.e. always use brackets {})",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/compound-statements` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/compound-statements` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.27",
+      "section": "3",
+      "text": "Verify that all divisions first check for small numbers (including zero)",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/division-guard` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/float-division-guard` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/division-guard` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/float-division-guard` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.28",
+      "section": "3",
+      "text": "Verify all array accesses are checked to be within array index bounds",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/unchecked-array-index` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/checking-parameter-values` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/unchecked-array-index` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/checking-parameter-values` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.29",
+      "section": "3",
+      "text": "Verify there are no function declarations within a function.",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/no-function-decl-in-function` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/no-function-decl-in-function` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.30",
+      "section": "3",
+      "text": "Verify that the three expressions in all for statements only concern flow control",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/for-header-flow-control` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/for-header-flow-control` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.31",
+      "section": "3",
+      "text": "Verify that there are no dependencies on signed integer overflow behavior",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/signed-overflow` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/signed-overflow` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.32",
+      "section": "3",
+      "text": "Verify return values are used or voided otherwise.",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/jpl-c/checking-return-values` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/jpl-c/checking-return-values` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.33",
+      "section": "3",
+      "text": "Verify units are incorporated into variable name, where applicable",
+      "status": "REVIEW",
+      "notes": [
+        "CL-3: Units in names (3.33): every variable, member, parameter, telemetry channel and command argument carrying a physical quantity must encode its unit in the name (timeoutMs, angleRad, sizeBytes) or in an FPP annotation."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-3: Units in names (3.33): every variable, member, parameter, telemetry channel and command argument carrying a physical quantity must encode its unit in the name (timeoutMs, angleRad, sizeBytes) or in an FPP annotation."
+      ]
+    },
+    {
+      "id": "3.34",
+      "section": "3",
+      "text": "Verify that all invariant numbers are in enums, static constexpr or #defines. Enums or static constexpr must be used unless #define is only way to specify constant.",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/magic-numbers` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/define-constant` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/magic-numbers` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/define-constant` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.35",
+      "section": "3",
+      "text": "Verify no use of printf",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/no-printf` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/no-printf` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.36",
+      "section": "3",
+      "text": "Does the component use platform independent standard data types (e.g. I32, F32 etc.) rather than primitive data types (e.g. int, float etc.)?",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/jpl-c/basic-int-types` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/jpl-c/basic-int-types` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "3.37",
+      "section": "3",
+      "text": "Does the component pass static analysis?",
+      "status": "UNCHECKED",
+      "notes": [
+        "I4: check not run"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "I4: check not run"
+      ]
+    },
+    {
+      "id": "3.38",
+      "section": "3",
+      "text": "Does the implementation address all component requirements and remains consistent with the documented design?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-4: Implementation matches requirements and design (3.38): for each requirement row locate the handler(s) that satisfy it and confirm the behaviour including each error path the SDD describes; report requirements with no implementing code and handler behaviour the SDD does not describe."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-4: Implementation matches requirements and design (3.38): for each requirement row locate the handler(s) that satisfy it and confirm the behaviour including each error path the SDD describes; report requirements with no implementing code and handler behaviour the SDD does not describe."
+      ]
+    },
+    {
+      "id": "4.1",
+      "section": "4",
+      "text": "Have all test output/results been published?",
+      "status": "UNCHECKED",
+      "notes": [
+        "U1 not run: not done yet: no published unit-test artifacts given (--artifacts-dir)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "U1 not run: not done yet: no published unit-test artifacts given (--artifacts-dir)"
+      ]
+    },
+    {
+      "id": "4.2",
+      "section": "4",
+      "text": "Are all component unit test source dependencies listed in the CMakeLists.txt file for the component?",
+      "status": "N/A",
+      "notes": [
+        "U3: no unit-test sources found"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "U3: no unit-test sources found"
+      ]
+    },
+    {
+      "id": "4.3",
+      "section": "4",
+      "text": "Have input data ranges been tested for boundary conditions?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-5: Boundary tests (4.3): for each bounded quantity (array sizes, FW_ASSERT limits, configuration constants, command-argument ranges, queue depths) a unit test must exercise the limit value and one past it."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-5: Boundary tests (4.3): for each bounded quantity (array sizes, FW_ASSERT limits, configuration constants, command-argument ranges, queue depths) a unit test must exercise the limit value and one past it."
+      ]
+    },
+    {
+      "id": "4.4",
+      "section": "4",
+      "text": "Do the unit tests pass a memory leak check?",
+      "status": "UNCHECKED",
+      "notes": [
+        "U4 not run: not done yet: the leak check (unit-test executable under LeakSanitizer/valgrind) has not been run"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "U4 not run: not done yet: the leak check (unit-test executable under LeakSanitizer/valgrind) has not been run"
+      ]
+    },
+    {
+      "id": "4.5",
+      "section": "4",
+      "text": "Is there sufficient code coverage?",
+      "status": "UNCHECKED",
+      "notes": [
+        "U5 not run: not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "U5 not run: not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+      ]
+    },
+    {
+      "id": "5.1",
+      "section": "5",
+      "text": "Verify no TBDs, TODOs or printfs in the code (no incomplete code).",
+      "status": "UNCHECKED",
+      "notes": [
+        "clang-tidy `cpp/fprime/incomplete-code` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/no-printf` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "clang-tidy `cpp/fprime/incomplete-code` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+        "clang-tidy `cpp/fprime/no-printf` not run: no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first"
+      ]
+    },
+    {
+      "id": "5.2",
+      "section": "5",
+      "text": "Verify that component can be instantiated, connected, and compiled along with the Topology for all applicable targets.",
+      "status": "UNCHECKED",
+      "notes": [
+        "C1 not run: not done yet: no topology build performed by this run (pass --deployment with --build, or the process builds the deployment)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "C1 not run: not done yet: no topology build performed by this run (pass --deployment with --build, or the process builds the deployment)"
+      ]
+    },
+    {
+      "id": "5.3",
+      "section": "5",
+      "text": "Verify that the flight deployment with component instantiation/connections runs successfully on a hardware platform. Indicate hardware platform used for checkout in Notes.",
+      "status": "NO",
+      "notes": [
+        "Human: Run the flight deployment that instantiates this component on the target hardware and record platform, deployment, commit, date, result and tester in docs/hardware-run.md (check C2 validates the record).",
+        "C2: no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "Human: Run the flight deployment that instantiates this component on the target hardware and record platform, deployment, commit, date, result and tester in docs/hardware-run.md (check C2 validates the record).",
+        "C2: no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)"
+      ]
+    },
+    {
+      "id": "5.4",
+      "section": "5",
+      "text": "Update the SDD to accurately reflect the final state of the component. Add any additional design detail, including any known idiosyncrasies.",
+      "status": "NO",
+      "notes": [
+        "D7: no docs/sdd.md found",
+        "D8: FPP model declares no dictionary items",
+        "D9: no docs/sdd.md found",
+        "SDD: docs/sdd.md graded bronze; silver or better required (filled intro + sections)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D7: no docs/sdd.md found",
+        "D8: FPP model declares no dictionary items",
+        "D9: no docs/sdd.md found",
+        "SDD: docs/sdd.md graded bronze; silver or better required (filled intro + sections)"
+      ]
+    },
+    {
+      "id": "5.5",
+      "section": "5",
+      "text": "Validate that CI passes.",
+      "status": "UNCHECKED",
+      "notes": [
+        "C3 not run: not done yet: CI status not consulted (needs the repository, the commit and GITHUB_TOKEN)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "C3 not run: not done yet: CI status not consulted (needs the repository, the commit and GITHUB_TOKEN)"
+      ]
+    }
+  ],
+  "queue": [],
+  "checks": {
+    "R1": {
+      "id": "R1",
+      "name": "Requirement per command",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no commands declared in the FPP model"
+    },
+    "R2": {
+      "id": "R2",
+      "name": "Requirement per telemetry channel",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no telemetry channels declared in the FPP model"
+    },
+    "R3": {
+      "id": "R3",
+      "name": "Requirement per event",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no events declared in the FPP model"
+    },
+    "R4": {
+      "id": "R4",
+      "name": "Requirement per parameter",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no parameters declared in the FPP model"
+    },
+    "R5": {
+      "id": "R5",
+      "name": "Requirement per data product",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no data products declared in the FPP model"
+    },
+    "R6": {
+      "id": "R6",
+      "name": "Requirement per port/interface",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "fail",
+      "failures": [
+        "no requirements found (searched: nothing); cannot trace 3 port(s)"
+      ],
+      "detail": "3 port(s) traced against 0 requirement(s)"
+    },
+    "R7": {
+      "id": "R7",
+      "name": "Requirement parent traceability",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no requirements found"
+    },
+    "R8": {
+      "id": "R8",
+      "name": "Requirement verification method",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no requirements found"
+    },
+    "D1": {
+      "id": "D1",
+      "name": "Input port handlers defined",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "pass",
+      "failures": [],
+      "detail": "1 input port(s) checked"
+    },
+    "D2": {
+      "id": "D2",
+      "name": "Command handlers defined",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no commands declared"
+    },
+    "D3": {
+      "id": "D3",
+      "name": "State machine actions defined",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no state machines declared"
+    },
+    "D4": {
+      "id": "D4",
+      "name": "Data product containers have default priority",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no data product containers declared"
+    },
+    "D5": {
+      "id": "D5",
+      "name": "Requirements mapped to design artifacts",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no requirements found"
+    },
+    "D7": {
+      "id": "D7",
+      "name": "SDD port table matches FPP",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "fail",
+      "failures": [
+        "no docs/sdd.md found"
+      ],
+      "detail": "3 port(s) checked"
+    },
+    "D8": {
+      "id": "D8",
+      "name": "SDD dictionary tables match FPP",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "FPP model declares no dictionary items"
+    },
+    "D9": {
+      "id": "D9",
+      "name": "SDD design sections present",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "fail",
+      "failures": [
+        "no docs/sdd.md found"
+      ],
+      "detail": ""
+    },
+    "D10": {
+      "id": "D10",
+      "name": "Input port behaviour documented",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "fail",
+      "failures": [
+        "no docs/sdd.md found"
+      ],
+      "detail": "1 input port(s) checked"
+    },
+    "I1": {
+      "id": "I1",
+      "name": "Source dependencies listed in CMakeLists",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "fail",
+      "failures": [
+        "dependency 'Fw/Buffer' (from #include \"Fw/Buffer/Buffer.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Buffer)"
+      ],
+      "detail": "1 dependency module(s) checked; 1 provided by FPP/implicit framework dependencies"
+    },
+    "I3": {
+      "id": "I3",
+      "name": "Data product priorities configurable",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no data product containers declared"
+    },
+    "U3": {
+      "id": "U3",
+      "name": "Unit-test dependencies in CMakeLists",
+      "category": "unit-testing",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "no unit-test sources found"
+    },
+    "C2": {
+      "id": "C2",
+      "name": "Hardware run record",
+      "category": "close-out",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "fail",
+      "failures": [
+        "no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)"
+      ],
+      "detail": ""
+    },
+    "D6": {
+      "id": "D6",
+      "name": "FPP compiles and generates auto-code",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "fail",
+      "failures": [
+        "fpp-check failed:\nfpp-check\n/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver/Receiver.fpp:5.12\n    import TypedPortsSyncInputs\n           ^\nerror: symbol TypedPortsSyncInputs is not defined\nnote: looking for a interface here"
+      ],
+      "detail": "1 FPP file(s) checked"
+    },
+    "I2": {
+      "id": "I2",
+      "name": "Compiles without warnings",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no build output to scan (the module was not built by this run)"
+    },
+    "U5": {
+      "id": "U5",
+      "name": "Sufficient code coverage",
+      "category": "unit-test",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+    },
+    "U4": {
+      "id": "U4",
+      "name": "Unit tests pass a memory leak check",
+      "category": "unit-test",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: the leak check (unit-test executable under LeakSanitizer/valgrind) has not been run"
+    },
+    "C1": {
+      "id": "C1",
+      "name": "Component builds in the topology",
+      "category": "close-out",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no topology build performed by this run (pass --deployment with --build, or the process builds the deployment)"
+    },
+    "U1": {
+      "id": "U1",
+      "name": "Unit-test results published",
+      "category": "unit-test",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no published unit-test artifacts given (--artifacts-dir)"
+    },
+    "C3": {
+      "id": "C3",
+      "name": "CI passes",
+      "category": "close-out",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: CI status not consulted (needs the repository, the commit and GITHUB_TOKEN)"
+    },
+    "SDD": {
+      "id": "SDD",
+      "name": "SDD structural grade",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver",
+      "status": "fail",
+      "failures": [
+        "docs/sdd.md graded bronze; silver or better required (filled intro + sections)"
+      ],
+      "detail": "tier bronze"
+    }
+  },
+  "codeql": {
+    "ran": false,
+    "tool": "clang-tidy",
+    "reason": "no translation units of /home/runner/work/fprime/fprime/FppTestProject/FppTest/topology/components/Receiver in /home/runner/work/fprime/fprime/build-fprime-automatic-native/compile_commands.json; build the module first",
+    "rules_run": [],
+    "autocode_findings": 0,
+    "findings": {}
+  }
+}

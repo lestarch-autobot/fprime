@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "artifact": "checklist",
+  "module": "Svc/EventManager",
+  "ref": "component-checklist-ci",
+  "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+  "checklist_version": "1.2.0",
+  "tool": {
+    "name": "fprime-auto-checklist",
+    "version": "0.2.2"
+  },
+  "counts": {
+    "YES": 39,
+    "NO": 14,
+    "N/A": 3,
+    "REVIEW": 11,
+    "UNCHECKED": 6
+  },
+  "total": 73,
+  "reviewer_decisions": 0,
+  "source": null,
+  "static_analysis": {
+    "tool": "clang-tidy",
+    "ran": true,
+    "findings": 4
+  }
+}

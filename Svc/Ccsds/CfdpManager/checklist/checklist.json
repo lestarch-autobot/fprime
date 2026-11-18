@@ -1,0 +1,3249 @@
+{
+  "schema_version": 2,
+  "tool": {
+    "name": "fprime-auto-checklist",
+    "version": "0.2.2"
+  },
+  "checklist_version": "1.2.0",
+  "module": "Svc/Ccsds/CfdpManager",
+  "component": "CfdpManager",
+  "project": "/home/runner/work/fprime/fprime",
+  "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+  "fingerprints": {
+    "1": "c973bf1d249e",
+    "2": "6b024b48eb04",
+    "3": "af5cee930095",
+    "4": "3d4a93aff6f5",
+    "5": "7001c375f6d0"
+  },
+  "stage": null,
+  "summary": {
+    "YES": 35,
+    "NO": 18,
+    "N/A": 3,
+    "REVIEW": 11,
+    "UNCHECKED": 6
+  },
+  "items": [
+    {
+      "id": "1.1",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD that define the component's expected operational behaviors?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.2",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD that define input data expected to be received and handled by the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.3",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD that define output data expected to be produced by the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.4",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD for all relevant memory usage constraints for the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.5",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD for all relevant hardware I/O usage constraints for the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.6",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD for all relevant runtime performance constraints for the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.7",
+      "section": "1",
+      "text": "Does every requirement specify a verification method?",
+      "status": "YES",
+      "notes": [
+        "R8 pass (15 requirement(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "R8 pass (15 requirement(s) checked)"
+      ]
+    },
+    {
+      "id": "1.8",
+      "section": "1",
+      "text": "Are there any relevant external interface or functional requirements documented elsewhere such as ICDs/FDDs? If so, please specify in notes.",
+      "status": "YES",
+      "notes": [
+        "D9 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D9 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.1",
+      "section": "2",
+      "text": "Is the high level component functionality documented/described in the SDD?",
+      "status": "YES",
+      "notes": [
+        "SDD pass (tier gold)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "SDD pass (tier gold)"
+      ]
+    },
+    {
+      "id": "2.2",
+      "section": "2",
+      "text": "Is the component block diagram documented in the SDD and consistent with the FPP model?",
+      "status": "YES",
+      "notes": [
+        "D9 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D9 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.3",
+      "section": "2",
+      "text": "Is the component port table documented in the SDD and consistent with the FPP model?",
+      "status": "NO",
+      "notes": [
+        "D7: port 'bufferAllocate' is documented with type 'output array[N]' but FPP declares Fw.BufferGet",
+        "D7: port 'bufferDeallocate' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataInReturn' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataOut' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataReturnIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "... 5 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D7: port 'bufferAllocate' is documented with type 'output array[N]' but FPP declares Fw.BufferGet",
+        "D7: port 'bufferDeallocate' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataInReturn' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataOut' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataReturnIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "... 5 more"
+      ]
+    },
+    {
+      "id": "2.4",
+      "section": "2",
+      "text": "Are the component input port behaviors described in the SDD?",
+      "status": "YES",
+      "notes": [
+        "D10 pass (5 input port(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D10 pass (5 input port(s) checked)"
+      ]
+    },
+    {
+      "id": "2.5",
+      "section": "2",
+      "text": "Are the component input port handlers defined?",
+      "status": "YES",
+      "notes": [
+        "D1 pass (5 input port(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D1 pass (5 input port(s) checked)"
+      ]
+    },
+    {
+      "id": "2.6",
+      "section": "2",
+      "text": "Are the component command handlers defined?",
+      "status": "YES",
+      "notes": [
+        "D2 pass (9 command(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D2 pass (9 command(s) checked)"
+      ]
+    },
+    {
+      "id": "2.7",
+      "section": "2",
+      "text": "Are the component sequence diagrams documented?",
+      "status": "YES",
+      "notes": [
+        "D9 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D9 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.8",
+      "section": "2",
+      "text": "Are component state machines and use-cases described in the SDD?",
+      "status": "YES",
+      "notes": [
+        "D9 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D9 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.9",
+      "section": "2",
+      "text": "Are the state machine actions defined?",
+      "status": "N/A",
+      "notes": [
+        "D3: no state machines declared"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "D3: no state machines declared"
+      ]
+    },
+    {
+      "id": "2.10",
+      "section": "2",
+      "text": "Are component commands, telemetry, events and parameters documented in the SDD (and consistent with the FPP model)?",
+      "status": "NO",
+      "notes": [
+        "D8: no command table in SDD (9 declared in FPP)",
+        "D8: telemetry channel 'ChannelTelemetry' is missing from the SDD telemetry channel table",
+        "D8: event 'RxFileDataOutOfBounds' is missing from the SDD event table"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D8: no command table in SDD (9 declared in FPP)",
+        "D8: telemetry channel 'ChannelTelemetry' is missing from the SDD telemetry channel table",
+        "D8: event 'RxFileDataOutOfBounds' is missing from the SDD event table"
+      ]
+    },
+    {
+      "id": "2.11",
+      "section": "2",
+      "text": "Are component data products documented and consistent with the FPP model?",
+      "status": "YES",
+      "notes": [
+        "D8 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D8 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.12",
+      "section": "2",
+      "text": "Are all data product containers assigned a default priority?",
+      "status": "N/A",
+      "notes": [
+        "D4: no data product containers declared"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "D4: no data product containers declared"
+      ]
+    },
+    {
+      "id": "2.13",
+      "section": "2",
+      "text": "Does each component port in the FPP model have a known/planned use-case?",
+      "status": "YES",
+      "notes": [
+        "R6 pass (11 port(s) traced against 15 requirement(s); 11 covered by companion/SDD evidence)",
+        "D10 pass (5 input port(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "R6 pass (11 port(s) traced against 15 requirement(s); 11 covered by companion/SDD evidence)",
+        "D10 pass (5 input port(s) checked)"
+      ]
+    },
+    {
+      "id": "2.14",
+      "section": "2",
+      "text": "Are port directions and types as expected?",
+      "status": "NO",
+      "notes": [
+        "D7: port 'bufferAllocate' is documented with type 'output array[N]' but FPP declares Fw.BufferGet",
+        "D7: port 'bufferDeallocate' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataInReturn' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataOut' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataReturnIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "... 5 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D7: port 'bufferAllocate' is documented with type 'output array[N]' but FPP declares Fw.BufferGet",
+        "D7: port 'bufferDeallocate' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataInReturn' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataOut' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataReturnIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "... 5 more"
+      ]
+    },
+    {
+      "id": "2.15",
+      "section": "2",
+      "text": "Is the component type as expected (passive, queued or active)?",
+      "status": "YES",
+      "notes": [
+        "D9 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D9 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.16",
+      "section": "2",
+      "text": "Are all the component requirements mapped to design description and/or artifacts?",
+      "status": "NO",
+      "notes": [
+        "D5: requirement 'CFDP-001' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:736) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'CFDP-002' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:737) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'CFDP-003' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:738) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'CFDP-004' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:739) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'CFDP-005' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:740) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'CFDP-006' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:741) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "... 9 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D5: requirement 'CFDP-001' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:736) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'CFDP-002' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:737) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'CFDP-003' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:738) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'CFDP-004' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:739) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'CFDP-005' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:740) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'CFDP-006' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:741) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "... 9 more"
+      ]
+    },
+    {
+      "id": "2.17",
+      "section": "2",
+      "text": "Does the component FPP compile and generate auto-code?",
+      "status": "YES",
+      "notes": [
+        "D6 pass (6 FPP file(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D6 pass (6 FPP file(s) checked)"
+      ]
+    },
+    {
+      "id": "3.1",
+      "section": "3",
+      "text": "Are all component source dependencies listed in the CMakeLists.txt file for the component?",
+      "status": "NO",
+      "notes": [
+        "I1: dependency 'Fw' (from #include \"Fw/FPrimeBasicTypes.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw)",
+        "I1: dependency 'Fw/Buffer' (from #include \"Fw/Buffer/Buffer.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Buffer)",
+        "I1: dependency 'Fw/Com' (from #include \"Fw/Com/ComPacket.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Com)",
+        "I1: dependency 'Fw/Prm' (from #include \"Fw/Prm/ParamValid.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Prm)",
+        "I1: dependency 'Os' (from #include \"Os/QueueString.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Os)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "I1: dependency 'Fw' (from #include \"Fw/FPrimeBasicTypes.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw)",
+        "I1: dependency 'Fw/Buffer' (from #include \"Fw/Buffer/Buffer.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Buffer)",
+        "I1: dependency 'Fw/Com' (from #include \"Fw/Com/ComPacket.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Com)",
+        "I1: dependency 'Fw/Prm' (from #include \"Fw/Prm/ParamValid.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Prm)",
+        "I1: dependency 'Os' (from #include \"Os/QueueString.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Os)"
+      ]
+    },
+    {
+      "id": "3.2",
+      "section": "3",
+      "text": "Does the component compile without warnings for all required targets?",
+      "status": "UNCHECKED",
+      "notes": [
+        "I2 not run: not done yet: no build output to scan (the module was not built by this run)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "I2 not run: not done yet: no build output to scan (the module was not built by this run)"
+      ]
+    },
+    {
+      "id": "3.3",
+      "section": "3",
+      "text": "Are all loops properly terminated/bounded?",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Channel.cpp:767 The loop counter num_ts is not always incremented in the loop body.",
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Channel.cpp:879 This loop does not have a fixed bound.",
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Chunk.cpp:199 The loop counter count is not always decremented in the loop body.",
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Engine.cpp:135 This loop does not have a fixed bound.",
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Engine.cpp:495 This loop does not have a fixed bound.",
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Engine.cpp:512 This loop does not have a fixed bound.",
+        "... 4 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Channel.cpp:767 The loop counter num_ts is not always incremented in the loop body.",
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Channel.cpp:879 This loop does not have a fixed bound.",
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Chunk.cpp:199 The loop counter count is not always decremented in the loop body.",
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Engine.cpp:135 This loop does not have a fixed bound.",
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Engine.cpp:495 This loop does not have a fixed bound.",
+        "`cpp/fprime/jpl-c/loop-bounds` Svc/Ccsds/CfdpManager/Engine.cpp:512 This loop does not have a fixed bound.",
+        "... 4 more"
+      ]
+    },
+    {
+      "id": "3.4",
+      "section": "3",
+      "text": "Has gating been provided for any potential cyclic error/status messages (e.g. log messages, events)?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/unthrottled-cyclic-event` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/unthrottled-cyclic-event` 0 findings"
+      ]
+    },
+    {
+      "id": "3.5",
+      "section": "3",
+      "text": "Do all switch statements have a break after each case and terminate with a default case?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/switch-default` 0 findings",
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/switch-default` 0 findings",
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
+      ]
+    },
+    {
+      "id": "3.6",
+      "section": "3",
+      "text": "Verify all non-empty case statements that fall through to the following case statement are explicitly commented as such",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
+      ]
+    },
+    {
+      "id": "3.7",
+      "section": "3",
+      "text": "Are all variables locally defined unless global or specific visibility is required?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/global-mutable-variable` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/global-mutable-variable` 0 findings"
+      ]
+    },
+    {
+      "id": "3.8",
+      "section": "3",
+      "text": "Are all class members defined appropriately using private, public and protected keywords?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/public-data-member` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/public-data-member` 0 findings"
+      ]
+    },
+    {
+      "id": "3.9",
+      "section": "3",
+      "text": "Verify that no floating point expressions are tested for equality/inequality",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/float-equality` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/float-equality` 0 findings"
+      ]
+    },
+    {
+      "id": "3.10",
+      "section": "3",
+      "text": "Is the precision of floating point numbers sufficient to ensure accuracy and floating-point equivalence is evaluated with margin (i.e. safe floating-point usage), and is not used in a loop control?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/float-narrowing` 0 findings",
+        "`cpp/fprime/float-loop-control` 0 findings",
+        "`cpp/fprime/float-equality` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/float-narrowing` 0 findings",
+        "`cpp/fprime/float-loop-control` 0 findings",
+        "`cpp/fprime/float-equality` 0 findings"
+      ]
+    },
+    {
+      "id": "3.11",
+      "section": "3",
+      "text": "Are all variables initialized before use?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/uninitialized-member` 0 findings",
+        "`cpp/uninitialized-local` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/uninitialized-member` 0 findings",
+        "`cpp/uninitialized-local` 0 findings"
+      ]
+    },
+    {
+      "id": "3.12",
+      "section": "3",
+      "text": "Are the priorities of all data products produced by the component configurable via command(s) or parameter(s)?",
+      "status": "N/A",
+      "notes": [
+        "I3: no data product containers declared"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "I3: no data product containers declared"
+      ]
+    },
+    {
+      "id": "3.13",
+      "section": "3",
+      "text": "Are all commands acknowledged with success/failure?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/command-response` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/command-response` 0 findings"
+      ]
+    },
+    {
+      "id": "3.14",
+      "section": "3",
+      "text": "Do all validation failure cases for port and command handlers include a return statement to avoid unintended code execution beyond validation failures?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/validation-failure-return` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/validation-failure-return` 0 findings"
+      ]
+    },
+    {
+      "id": "3.15",
+      "section": "3",
+      "text": "Are all internal port interfaces invoked via the auto-coded internal port invoke() function?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/internal-port-invoke` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/internal-port-invoke` 0 findings"
+      ]
+    },
+    {
+      "id": "3.16",
+      "section": "3",
+      "text": "All pointer arguments to functions are checked to be not nullptr using FW_ASSERT",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:495 Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:496 Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:604 Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:607 Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:608 Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:617 Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "... 63 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:495 Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:496 Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:604 Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:607 Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:608 Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "`cpp/fprime/checking-parameter-values` Svc/Ccsds/CfdpManager/Channel.cpp:617 Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "... 63 more"
+      ]
+    },
+    {
+      "id": "3.17",
+      "section": "3",
+      "text": "Assumptions on software state are validated using FW_ASSERT.",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:174 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:213 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:336 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:353 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:457 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:477 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "... 23 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:174 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:213 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:336 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:353 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:457 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/Ccsds/CfdpManager/Channel.cpp:477 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "... 23 more"
+      ]
+    },
+    {
+      "id": "3.18",
+      "section": "3",
+      "text": "Assertions shall not be used to validate state that could be dependent on hardware or user input.",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/assert-on-untrusted-input` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/assert-on-untrusted-input` 0 findings"
+      ]
+    },
+    {
+      "id": "3.19",
+      "section": "3",
+      "text": "Verify all ISR code is free of floating point operations",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-float-in-isr` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-float-in-isr` 0 findings"
+      ]
+    },
+    {
+      "id": "3.20",
+      "section": "3",
+      "text": "Has the ISR code been optimized to minimize length/execution time?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/isr-complexity` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/isr-complexity` 0 findings"
+      ]
+    },
+    {
+      "id": "3.21",
+      "section": "3",
+      "text": "Verify any software state that's expected upon receive of an interrupt is configured prior to enabling/setting conditions that would allow the interrupt to trigger.",
+      "status": "REVIEW",
+      "notes": [
+        "CL-1: ISR state before enable (3.21): for every ISR-named function (*_isr, *interrupt_handler*, *_irq*) find the code that enables its interrupt; every variable the ISR reads or writes must be assigned on a path that completes before that enable call."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-1: ISR state before enable (3.21): for every ISR-named function (*_isr, *interrupt_handler*, *_irq*) find the code that enables its interrupt; every variable the ISR reads or writes must be assigned on a path that completes before that enable call."
+      ]
+    },
+    {
+      "id": "3.22",
+      "section": "3",
+      "text": "Verify there are no blocking operations in ISRs",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-blocking-in-isr` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-blocking-in-isr` 0 findings"
+      ]
+    },
+    {
+      "id": "3.23",
+      "section": "3",
+      "text": "Verify any relevant interrupt enables and interrupts are cleared during initialization and re-enabled selectively as needed.",
+      "status": "REVIEW",
+      "notes": [
+        "CL-2: Interrupt enables cleared at init (3.23): in the constructor/init/configure/preamble, interrupt-enable bits must be explicitly cleared or masked before peripheral configuration, not assumed clear from reset."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-2: Interrupt enables cleared at init (3.23): in the constructor/init/configure/preamble, interrupt-enable bits must be explicitly cleared or masked before peripheral configuration, not assumed clear from reset."
+      ]
+    },
+    {
+      "id": "3.24",
+      "section": "3",
+      "text": "Are RateGroup schedule calls non-blocking?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-blocking-in-sched-handler` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-blocking-in-sched-handler` 0 findings"
+      ]
+    },
+    {
+      "id": "3.25",
+      "section": "3",
+      "text": "Verify no synchronous file access is done within a critical region (e.g. SchedIn)",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-file-access-in-critical` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-file-access-in-critical` 0 findings"
+      ]
+    },
+    {
+      "id": "3.26",
+      "section": "3",
+      "text": "Verify that all loops and if/else statements are compound statements (i.e. always use brackets {})",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/compound-statements` Svc/Ccsds/CfdpManager/Utils.cpp:52 The body of this else clause is not a compound statement (missing braces)."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/compound-statements` Svc/Ccsds/CfdpManager/Utils.cpp:52 The body of this else clause is not a compound statement (missing braces)."
+      ]
+    },
+    {
+      "id": "3.27",
+      "section": "3",
+      "text": "Verify that all divisions first check for small numbers (including zero)",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/division-guard` 0 findings",
+        "`cpp/fprime/float-division-guard` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/division-guard` 0 findings",
+        "`cpp/fprime/float-division-guard` 0 findings"
+      ]
+    },
+    {
+      "id": "3.28",
+      "section": "3",
+      "text": "Verify all array accesses are checked to be within array index bounds",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/Channel.cpp:113 Index m_channelId is not checked against the array bounds before this access.",
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/Channel.cpp:114 Index m_channelId is not checked against the array bounds before this access.",
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/Channel.cpp:416 Index q_index is not checked against the array bounds before this access.",
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/Channel.cpp:505 Index q_index is not checked against the array bounds before this access.",
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/Channel.cpp:544 Index q_index is not checked against the array bounds before this access.",
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/TransactionTx.cpp:814 Index sub_state is not checked against the array bounds before this access.",
+        "... 69 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/Channel.cpp:113 Index m_channelId is not checked against the array bounds before this access.",
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/Channel.cpp:114 Index m_channelId is not checked against the array bounds before this access.",
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/Channel.cpp:416 Index q_index is not checked against the array bounds before this access.",
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/Channel.cpp:505 Index q_index is not checked against the array bounds before this access.",
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/Channel.cpp:544 Index q_index is not checked against the array bounds before this access.",
+        "`cpp/fprime/unchecked-array-index` Svc/Ccsds/CfdpManager/TransactionTx.cpp:814 Index sub_state is not checked against the array bounds before this access.",
+        "... 69 more"
+      ]
+    },
+    {
+      "id": "3.29",
+      "section": "3",
+      "text": "Verify there are no function declarations within a function.",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-function-decl-in-function` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-function-decl-in-function` 0 findings"
+      ]
+    },
+    {
+      "id": "3.30",
+      "section": "3",
+      "text": "Verify that the three expressions in all for statements only concern flow control",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/for-header-flow-control` Svc/Ccsds/CfdpManager/Channel.cpp:150 This for-statement header expression modifies the non-loop-control variable cw."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/for-header-flow-control` Svc/Ccsds/CfdpManager/Channel.cpp:150 This for-statement header expression modifies the non-loop-control variable cw."
+      ]
+    },
+    {
+      "id": "3.31",
+      "section": "3",
+      "text": "Verify that there are no dependencies on signed integer overflow behavior",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/signed-overflow` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/signed-overflow` 0 findings"
+      ]
+    },
+    {
+      "id": "3.32",
+      "section": "3",
+      "text": "Verify return values are used or voided otherwise.",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Chunk.cpp:60 The return value of non-void function memset is not checked.",
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Chunk.cpp:167 The return value of non-void function memmove is not checked.",
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Chunk.cpp:169 The return value of non-void function memcpy is not checked.",
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Chunk.cpp:179 The return value of non-void function memmove is not checked.",
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Chunk.cpp:188 The return value of non-void function memmove is not checked.",
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Engine.cpp:256 The return value of non-void function appendTlv is not checked.",
+        "... 34 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Chunk.cpp:60 The return value of non-void function memset is not checked.",
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Chunk.cpp:167 The return value of non-void function memmove is not checked.",
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Chunk.cpp:169 The return value of non-void function memcpy is not checked.",
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Chunk.cpp:179 The return value of non-void function memmove is not checked.",
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Chunk.cpp:188 The return value of non-void function memmove is not checked.",
+        "`cpp/fprime/jpl-c/checking-return-values` Svc/Ccsds/CfdpManager/Engine.cpp:256 The return value of non-void function appendTlv is not checked.",
+        "... 34 more"
+      ]
+    },
+    {
+      "id": "3.33",
+      "section": "3",
+      "text": "Verify units are incorporated into variable name, where applicable",
+      "status": "REVIEW",
+      "notes": [
+        "CL-3: Units in names (3.33): every variable, member, parameter, telemetry channel and command argument carrying a physical quantity must encode its unit in the name (timeoutMs, angleRad, sizeBytes) or in an FPP annotation."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-3: Units in names (3.33): every variable, member, parameter, telemetry channel and command argument carrying a physical quantity must encode its unit in the name (timeoutMs, angleRad, sizeBytes) or in an FPP annotation."
+      ]
+    },
+    {
+      "id": "3.34",
+      "section": "3",
+      "text": "Verify that all invariant numbers are in enums, static constexpr or #defines. Enums or static constexpr must be used unless #define is only way to specify constant.",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/magic-numbers` Svc/Ccsds/CfdpManager/Types/MetadataPdu.cpp:124 Magic number 6; consider a named constant (enum, static constexpr, or #define).",
+        "`cpp/fprime/magic-numbers` Svc/Ccsds/CfdpManager/Types/MetadataPdu.cpp:181 Magic number 6; consider a named constant (enum, static constexpr, or #define).",
+        "`cpp/fprime/magic-numbers` Svc/Ccsds/CfdpManager/Types/PduHeader.cpp:125 Magic number 5; consider a named constant (enum, static constexpr, or #define).",
+        "`cpp/fprime/magic-numbers` Svc/Ccsds/CfdpManager/Types/PduHeader.cpp:188 Magic number 5; consider a named constant (enum, static constexpr, or #define).",
+        "`cpp/fprime/define-constant` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/magic-numbers` Svc/Ccsds/CfdpManager/Types/MetadataPdu.cpp:124 Magic number 6; consider a named constant (enum, static constexpr, or #define).",
+        "`cpp/fprime/magic-numbers` Svc/Ccsds/CfdpManager/Types/MetadataPdu.cpp:181 Magic number 6; consider a named constant (enum, static constexpr, or #define).",
+        "`cpp/fprime/magic-numbers` Svc/Ccsds/CfdpManager/Types/PduHeader.cpp:125 Magic number 5; consider a named constant (enum, static constexpr, or #define).",
+        "`cpp/fprime/magic-numbers` Svc/Ccsds/CfdpManager/Types/PduHeader.cpp:188 Magic number 5; consider a named constant (enum, static constexpr, or #define).",
+        "`cpp/fprime/define-constant` 0 findings"
+      ]
+    },
+    {
+      "id": "3.35",
+      "section": "3",
+      "text": "Verify no use of printf",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-printf` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-printf` 0 findings"
+      ]
+    },
+    {
+      "id": "3.36",
+      "section": "3",
+      "text": "Does the component use platform independent standard data types (e.g. I32, F32 etc.) rather than primitive data types (e.g. int, float etc.)?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/jpl-c/basic-int-types` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/jpl-c/basic-int-types` 0 findings"
+      ]
+    },
+    {
+      "id": "3.37",
+      "section": "3",
+      "text": "Does the component pass static analysis?",
+      "status": "NO",
+      "notes": [
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:495: [medium] cpp/fprime/checking-parameter-values: Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:496: [medium] cpp/fprime/checking-parameter-values: Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:604: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:607: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:608: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:617: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "... 155 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:495: [medium] cpp/fprime/checking-parameter-values: Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:496: [medium] cpp/fprime/checking-parameter-values: Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:604: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:607: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:608: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "I4: Svc/Ccsds/CfdpManager/Channel.cpp:617: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "... 155 more"
+      ]
+    },
+    {
+      "id": "3.38",
+      "section": "3",
+      "text": "Does the implementation address all component requirements and remains consistent with the documented design?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-4: Implementation matches requirements and design (3.38): for each requirement row locate the handler(s) that satisfy it and confirm the behaviour including each error path the SDD describes; report requirements with no implementing code and handler behaviour the SDD does not describe."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-4: Implementation matches requirements and design (3.38): for each requirement row locate the handler(s) that satisfy it and confirm the behaviour including each error path the SDD describes; report requirements with no implementing code and handler behaviour the SDD does not describe."
+      ]
+    },
+    {
+      "id": "4.1",
+      "section": "4",
+      "text": "Have all test output/results been published?",
+      "status": "UNCHECKED",
+      "notes": [
+        "U1 not run: not done yet: no published unit-test artifacts given (--artifacts-dir)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "U1 not run: not done yet: no published unit-test artifacts given (--artifacts-dir)"
+      ]
+    },
+    {
+      "id": "4.2",
+      "section": "4",
+      "text": "Are all component unit test source dependencies listed in the CMakeLists.txt file for the component?",
+      "status": "NO",
+      "notes": [
+        "U3: unit-test dependency 'Fw/Com' (from #include \"Fw/Com/ComPacket.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "U3: unit-test dependency 'Fw/Types' (from #include \"Fw/Types/StringUtils.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "U3: unit-test dependency 'Os' (from #include \"Os/File.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "U3: unit-test dependency 'Fw/Com' (from #include \"Fw/Com/ComPacket.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "U3: unit-test dependency 'Fw/Types' (from #include \"Fw/Types/StringUtils.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "U3: unit-test dependency 'Os' (from #include \"Os/File.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)"
+      ]
+    },
+    {
+      "id": "4.3",
+      "section": "4",
+      "text": "Have input data ranges been tested for boundary conditions?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-5: Boundary tests (4.3): for each bounded quantity (array sizes, FW_ASSERT limits, configuration constants, command-argument ranges, queue depths) a unit test must exercise the limit value and one past it."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-5: Boundary tests (4.3): for each bounded quantity (array sizes, FW_ASSERT limits, configuration constants, command-argument ranges, queue depths) a unit test must exercise the limit value and one past it."
+      ]
+    },
+    {
+      "id": "4.4",
+      "section": "4",
+      "text": "Do the unit tests pass a memory leak check?",
+      "status": "UNCHECKED",
+      "notes": [
+        "U4 not run: not done yet: the leak check (unit-test executable under LeakSanitizer/valgrind) has not been run"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "U4 not run: not done yet: the leak check (unit-test executable under LeakSanitizer/valgrind) has not been run"
+      ]
+    },
+    {
+      "id": "4.5",
+      "section": "4",
+      "text": "Is there sufficient code coverage?",
+      "status": "UNCHECKED",
+      "notes": [
+        "U5 not run: not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "U5 not run: not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+      ]
+    },
+    {
+      "id": "5.1",
+      "section": "5",
+      "text": "Verify no TBDs, TODOs or printfs in the code (no incomplete code).",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/incomplete-code` Svc/Ccsds/CfdpManager/TransactionRx.cpp:586 Comment contains the incomplete-code marker TODO.",
+        "`cpp/fprime/no-printf` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/incomplete-code` Svc/Ccsds/CfdpManager/TransactionRx.cpp:586 Comment contains the incomplete-code marker TODO.",
+        "`cpp/fprime/no-printf` 0 findings"
+      ]
+    },
+    {
+      "id": "5.2",
+      "section": "5",
+      "text": "Verify that component can be instantiated, connected, and compiled along with the Topology for all applicable targets.",
+      "status": "UNCHECKED",
+      "notes": [
+        "C1 not run: not done yet: no topology build performed by this run (pass --deployment with --build, or the process builds the deployment)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "C1 not run: not done yet: no topology build performed by this run (pass --deployment with --build, or the process builds the deployment)"
+      ]
+    },
+    {
+      "id": "5.3",
+      "section": "5",
+      "text": "Verify that the flight deployment with component instantiation/connections runs successfully on a hardware platform. Indicate hardware platform used for checkout in Notes.",
+      "status": "NO",
+      "notes": [
+        "Human: Run the flight deployment that instantiates this component on the target hardware and record platform, deployment, commit, date, result and tester in docs/hardware-run.md (check C2 validates the record).",
+        "C2: no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "Human: Run the flight deployment that instantiates this component on the target hardware and record platform, deployment, commit, date, result and tester in docs/hardware-run.md (check C2 validates the record).",
+        "C2: no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)"
+      ]
+    },
+    {
+      "id": "5.4",
+      "section": "5",
+      "text": "Update the SDD to accurately reflect the final state of the component. Add any additional design detail, including any known idiosyncrasies.",
+      "status": "NO",
+      "notes": [
+        "D7: port 'bufferAllocate' is documented with type 'output array[N]' but FPP declares Fw.BufferGet",
+        "D7: port 'bufferDeallocate' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataInReturn' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataOut' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataReturnIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "... 10 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D7: port 'bufferAllocate' is documented with type 'output array[N]' but FPP declares Fw.BufferGet",
+        "D7: port 'bufferDeallocate' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataInReturn' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataOut' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "D7: port 'dataReturnIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "... 10 more"
+      ]
+    },
+    {
+      "id": "5.5",
+      "section": "5",
+      "text": "Validate that CI passes.",
+      "status": "UNCHECKED",
+      "notes": [
+        "C3 not run: not done yet: CI status not consulted (needs the repository, the commit and GITHUB_TOKEN)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "C3 not run: not done yet: CI status not consulted (needs the repository, the commit and GITHUB_TOKEN)"
+      ]
+    }
+  ],
+  "queue": [],
+  "checks": {
+    "R1": {
+      "id": "R1",
+      "name": "Requirement per command",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "command 'SendFile' has no requirement referencing it (add a requirement mentioning 'SendFile')",
+        "command 'PollDirectory' has no requirement referencing it (add a requirement mentioning 'PollDirectory')",
+        "command 'StopPollDirectory' has no requirement referencing it (add a requirement mentioning 'StopPollDirectory')",
+        "command 'SetChannelFlow' has no requirement referencing it (add a requirement mentioning 'SetChannelFlow')",
+        "command 'SuspendResumeTransaction' has no requirement referencing it (add a requirement mentioning 'SuspendResumeTransaction')",
+        "command 'CancelTransaction' has no requirement referencing it (add a requirement mentioning 'CancelTransaction')",
+        "command 'AbandonTransaction' has no requirement referencing it (add a requirement mentioning 'AbandonTransaction')",
+        "command 'ResetCounters' has no requirement referencing it (add a requirement mentioning 'ResetCounters')"
+      ],
+      "detail": "9 command(s) traced against 15 requirement(s)"
+    },
+    "R2": {
+      "id": "R2",
+      "name": "Requirement per telemetry channel",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "telemetry channel 'ChannelTelemetry' has no requirement referencing it (add a requirement mentioning 'ChannelTelemetry')",
+        "telemetry channel 'PRM_LOCAL_EID' has no requirement referencing it (add a requirement mentioning 'PRM_LOCAL_EID')",
+        "telemetry channel 'PRM_OUTGOING_FILE_CHUNK_SIZE' has no requirement referencing it (add a requirement mentioning 'PRM_OUTGOING_FILE_CHUNK_SIZE')",
+        "telemetry channel 'PRM_RX_CRC_CALC_BYTES_PER_CYCLE' has no requirement referencing it (add a requirement mentioning 'PRM_RX_CRC_CALC_BYTES_PER_CYCLE')",
+        "telemetry channel 'PRM_POST_INACTIVITY_SEND_RETRIES' has no requirement referencing it (add a requirement mentioning 'PRM_POST_INACTIVITY_SEND_RETRIES')",
+        "telemetry channel 'PRM_FILE_IN_DEFAULT_CHANNEL' has no requirement referencing it (add a requirement mentioning 'PRM_FILE_IN_DEFAULT_CHANNEL')",
+        "telemetry channel 'PRM_FILE_IN_DEFAULT_DEST_ENTITY_ID' has no requirement referencing it (add a requirement mentioning 'PRM_FILE_IN_DEFAULT_DEST_ENTITY_ID')",
+        "telemetry channel 'PRM_FILE_IN_DEFAULT_CLASS' has no requirement referencing it (add a requirement mentioning 'PRM_FILE_IN_DEFAULT_CLASS')",
+        "telemetry channel 'PRM_FILE_IN_DEFAULT_KEEP' has no requirement referencing it (add a requirement mentioning 'PRM_FILE_IN_DEFAULT_KEEP')",
+        "telemetry channel 'PRM_FILE_IN_DEFAULT_PRIORITY' has no requirement referencing it (add a requirement mentioning 'PRM_FILE_IN_DEFAULT_PRIORITY')",
+        "telemetry channel 'PRM_CHANNEL_CONFIG' has no requirement referencing it (add a requirement mentioning 'PRM_CHANNEL_CONFIG')"
+      ],
+      "detail": "11 telemetry channel(s) traced against 15 requirement(s)"
+    },
+    "R3": {
+      "id": "R3",
+      "name": "Requirement per event",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "event 'BuffersExhausted' has no requirement referencing it (add a requirement mentioning 'BuffersExhausted')",
+        "event 'InvalidChannel' has no requirement referencing it (add a requirement mentioning 'InvalidChannel')",
+        "event 'TxFileQueued' has no requirement referencing it (add a requirement mentioning 'TxFileQueued')",
+        "event 'UnsupportedSendFileArguments' has no requirement referencing it (add a requirement mentioning 'UnsupportedSendFileArguments')",
+        "event 'SendFileInitiateFail' has no requirement referencing it (add a requirement mentioning 'SendFileInitiateFail')",
+        "event 'PlaybackInitiated' has no requirement referencing it (add a requirement mentioning 'PlaybackInitiated')",
+        "event 'PollDirInitiated' has no requirement referencing it (add a requirement mentioning 'PollDirInitiated')",
+        "event 'PollDirStopped' has no requirement referencing it (add a requirement mentioning 'PollDirStopped')",
+        "event 'PollDirBusy' has no requirement referencing it (add a requirement mentioning 'PollDirBusy')",
+        "event 'PollDirNotActive' has no requirement referencing it (add a requirement mentioning 'PollDirNotActive')",
+        "event 'SetFlowState' has no requirement referencing it (add a requirement mentioning 'SetFlowState')",
+        "event 'InvalidChannelPoll' has no requirement referencing it (add a requirement mentioning 'InvalidChannelPoll')",
+        "event 'InvalidPollInterval' has no requirement referencing it (add a requirement mentioning 'InvalidPollInterval')",
+        "event 'FailKeepFileMove' has no requirement referencing it (add a requirement mentioning 'FailKeepFileMove')",
+        "event 'FailPollFileMove' has no requirement referencing it (add a requirement mentioning 'FailPollFileMove')",
+        "event 'FailPduHeaderDeserialization' has no requirement referencing it (add a requirement mentioning 'FailPduHeaderDeserialization')",
+        "event 'FailPduSerialization' has no requirement referencing it (add a requirement mentioning 'FailPduSerialization')",
+        "event 'FailMetadataPduDeserialization' has no requirement referencing it (add a requirement mentioning 'FailMetadataPduDeserialization')",
+        "event 'FailFileDataPduDeserialization' has no requirement referencing it (add a requirement mentioning 'FailFileDataPduDeserialization')",
+        "event 'FailEofPduDeserialization' has no requirement referencing it (add a requirement mentioning 'FailEofPduDeserialization')",
+        "event 'FailAckPduDeserialization' has no requirement referencing it (add a requirement mentioning 'FailAckPduDeserialization')",
+        "event 'FailFinPduDeserialization' has no requirement referencing it (add a requirement mentioning 'FailFinPduDeserialization')",
+        "event 'FailNakPduDeserialization' has no requirement referencing it (add a requirement mentioning 'FailNakPduDeserialization')",
+        "event 'RxAckLimitReached' has no requirement referencing it (add a requirement mentioning 'RxAckLimitReached')",
+        "event 'RxTempFileCreated' has no requirement referencing it (add a requirement mentioning 'RxTempFileCreated')",
+        "event 'RxFileCreateFailed' has no requirement referencing it (add a requirement mentioning 'RxFileCreateFailed')",
+        "event 'RxDestPathRejected' has no requirement referencing it (add a requirement mentioning 'RxDestPathRejected')",
+        "event 'RxCrcMismatch' has no requirement referencing it (add a requirement mentioning 'RxCrcMismatch')",
+        "event 'RxNakLimitReached' has no requirement referencing it (add a requirement mentioning 'RxNakLimitReached')",
+        "event 'RxSeekFailed' has no requirement referencing it (add a requirement mentioning 'RxSeekFailed')",
+        "event 'RxWriteFailed' has no requirement referencing it (add a requirement mentioning 'RxWriteFailed')",
+        "event 'RxFileDataOutOfBounds' has no requirement referencing it (add a requirement mentioning 'RxFileDataOutOfBounds')",
+        "event 'RxFileSizeMismatch' has no requirement referencing it (add a requirement mentioning 'RxFileSizeMismatch')",
+        "event 'RxEofCancelReceived' has no requirement referencing it (add a requirement mentioning 'RxEofCancelReceived')",
+        "event 'RxEofWithError' has no requirement referencing it (add a requirement mentioning 'RxEofWithError')",
+        "event 'RxSeekCrcFailed' has no requirement referencing it (add a requirement mentioning 'RxSeekCrcFailed')",
+        "event 'RxReadCrcFailed' has no requirement referencing it (add a requirement mentioning 'RxReadCrcFailed')",
+        "event 'RxEofMdSizeMismatch' has no requirement referencing it (add a requirement mentioning 'RxEofMdSizeMismatch')",
+        "event 'RxFileRenameFailed' has no requirement referencing it (add a requirement mentioning 'RxFileRenameFailed')",
+        "event 'RxFileReopenFailed' has no requirement referencing it (add a requirement mentioning 'RxFileReopenFailed')",
+        "event 'RxInactivityTimeout' has no requirement referencing it (add a requirement mentioning 'RxInactivityTimeout')",
+        "event 'RxInvalidDirectiveCode' has no requirement referencing it (add a requirement mentioning 'RxInvalidDirectiveCode')",
+        "event 'TxAckLimitReached' has no requirement referencing it (add a requirement mentioning 'TxAckLimitReached')",
+        "event 'TxInactivityTimeout' has no requirement referencing it (add a requirement mentioning 'TxInactivityTimeout')",
+        "event 'TxZeroLengthFile' has no requirement referencing it (add a requirement mentioning 'TxZeroLengthFile')",
+        "event 'TxFileOpenFailed' has no requirement referencing it (add a requirement mentioning 'TxFileOpenFailed')",
+        "event 'TxFileSeekFailed' has no requirement referencing it (add a requirement mentioning 'TxFileSeekFailed')",
+        "event 'TxSendMetadataFailed' has no requirement referencing it (add a requirement mentioning 'TxSendMetadataFailed')",
+        "event 'TxEarlyFinReceived' has no requirement referencing it (add a requirement mentioning 'TxEarlyFinReceived')",
+        "event 'TxInvalidNakPdu' has no requirement referencing it (add a requirement mentioning 'TxInvalidNakPdu')",
+        "event 'TxInvalidSegmentRequests' has no requirement referencing it (add a requirement mentioning 'TxInvalidSegmentRequests')",
+        "event 'TxNonFileDirectivePduReceived' has no requirement referencing it (add a requirement mentioning 'TxNonFileDirectivePduReceived')",
+        "event 'TxInvalidDirectiveCode' has no requirement referencing it (add a requirement mentioning 'TxInvalidDirectiveCode')",
+        "event 'TxFileTransferStarted' has no requirement referencing it (add a requirement mentioning 'TxFileTransferStarted')",
+        "event 'TxFileTransferCompleted' has no requirement referencing it (add a requirement mentioning 'TxFileTransferCompleted')",
+        "event 'TxFileTransferFailed' has no requirement referencing it (add a requirement mentioning 'TxFileTransferFailed')",
+        "event 'RxFileTransferCompleted' has no requirement referencing it (add a requirement mentioning 'RxFileTransferCompleted')",
+        "event 'RxFileTransferFailed' has no requirement referencing it (add a requirement mentioning 'RxFileTransferFailed')",
+        "event 'MetadataReceived' has no requirement referencing it (add a requirement mentioning 'MetadataReceived')",
+        "event 'FileDataSegmentMetadata' has no requirement referencing it (add a requirement mentioning 'FileDataSegmentMetadata')",
+        "event 'ChunklistUnavailable' has no requirement referencing it (add a requirement mentioning 'ChunklistUnavailable')",
+        "event 'UnhandledPduInIdleState' has no requirement referencing it (add a requirement mentioning 'UnhandledPduInIdleState')",
+        "event 'RxTransactionLimitReached' has no requirement referencing it (add a requirement mentioning 'RxTransactionLimitReached')",
+        "event 'InvalidDestinationEid' has no requirement referencing it (add a requirement mentioning 'InvalidDestinationEid')",
+        "event 'MaxTxTransactionsReached' has no requirement referencing it (add a requirement mentioning 'MaxTxTransactionsReached')",
+        "event 'PlaybackDirOpenFailed' has no requirement referencing it (add a requirement mentioning 'PlaybackDirOpenFailed')",
+        "event 'PlaybackDirSlotUnavailable' has no requirement referencing it (add a requirement mentioning 'PlaybackDirSlotUnavailable')",
+        "event 'DanglingFileHandleClosed' has no requirement referencing it (add a requirement mentioning 'DanglingFileHandleClosed')",
+        "event 'PlaybackDirReadFailed' has no requirement referencing it (add a requirement mentioning 'PlaybackDirReadFailed')",
+        "event 'PlaybackSourcePathTooLong' has no requirement referencing it (add a requirement mentioning 'PlaybackSourcePathTooLong')",
+        "event 'PlaybackDestinationPathTooLong' has no requirement referencing it (add a requirement mentioning 'PlaybackDestinationPathTooLong')",
+        "event 'ResetFreedTransaction' has no requirement referencing it (add a requirement mentioning 'ResetFreedTransaction')",
+        "event 'FileRemoveFailed' has no requirement referencing it (add a requirement mentioning 'FileRemoveFailed')",
+        "event 'TransactionSuspended' has no requirement referencing it (add a requirement mentioning 'TransactionSuspended')",
+        "event 'TransactionResumed' has no requirement referencing it (add a requirement mentioning 'TransactionResumed')",
+        "event 'TransactionCanceled' has no requirement referencing it (add a requirement mentioning 'TransactionCanceled')",
+        "event 'TransactionAbandoned' has no requirement referencing it (add a requirement mentioning 'TransactionAbandoned')",
+        "event 'TransactionNotFound' has no requirement referencing it (add a requirement mentioning 'TransactionNotFound')",
+        "event 'ResetCounters' has no requirement referencing it (add a requirement mentioning 'ResetCounters')",
+        "event 'TxLateFinAcked' has no requirement referencing it (add a requirement mentioning 'TxLateFinAcked')"
+      ],
+      "detail": "80 event(s) traced against 15 requirement(s)"
+    },
+    "R4": {
+      "id": "R4",
+      "name": "Requirement per parameter",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "parameter 'LocalEid' has no requirement referencing it (add a requirement mentioning 'LocalEid')",
+        "parameter 'OutgoingFileChunkSize' has no requirement referencing it (add a requirement mentioning 'OutgoingFileChunkSize')",
+        "parameter 'RxCrcCalcBytesPerCycle' has no requirement referencing it (add a requirement mentioning 'RxCrcCalcBytesPerCycle')",
+        "parameter 'PostInactivitySendRetries' has no requirement referencing it (add a requirement mentioning 'PostInactivitySendRetries')",
+        "parameter 'FileInDefaultChannel' has no requirement referencing it (add a requirement mentioning 'FileInDefaultChannel')",
+        "parameter 'FileInDefaultDestEntityId' has no requirement referencing it (add a requirement mentioning 'FileInDefaultDestEntityId')",
+        "parameter 'FileInDefaultClass' has no requirement referencing it (add a requirement mentioning 'FileInDefaultClass')",
+        "parameter 'FileInDefaultKeep' has no requirement referencing it (add a requirement mentioning 'FileInDefaultKeep')",
+        "parameter 'FileInDefaultPriority' has no requirement referencing it (add a requirement mentioning 'FileInDefaultPriority')"
+      ],
+      "detail": "10 parameter(s) traced against 15 requirement(s)"
+    },
+    "R5": {
+      "id": "R5",
+      "name": "Requirement per data product",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "no data products declared in the FPP model"
+    },
+    "R6": {
+      "id": "R6",
+      "name": "Requirement per port/interface",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "11 port(s) traced against 15 requirement(s); 11 covered by companion/SDD evidence"
+    },
+    "R7": {
+      "id": "R7",
+      "name": "Requirement parent traceability",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "requirement 'CFDP-001' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:736) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-002' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:737) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-003' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:738) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-004' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:739) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-005' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:740) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-006' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:741) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-007' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:742) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-008' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:743) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-009' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:744) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-010' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:745) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-011' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:746) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-012' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:747) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-013' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:748) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-014' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:749) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'CFDP-015' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:750) has no parent trace (add a Parent/Trace column entry linking a parent requirement)"
+      ],
+      "detail": "15 requirement(s) checked"
+    },
+    "R8": {
+      "id": "R8",
+      "name": "Requirement verification method",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "15 requirement(s) checked"
+    },
+    "D1": {
+      "id": "D1",
+      "name": "Input port handlers defined",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "5 input port(s) checked"
+    },
+    "D2": {
+      "id": "D2",
+      "name": "Command handlers defined",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "9 command(s) checked"
+    },
+    "D3": {
+      "id": "D3",
+      "name": "State machine actions defined",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "no state machines declared"
+    },
+    "D4": {
+      "id": "D4",
+      "name": "Data product containers have default priority",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "no data product containers declared"
+    },
+    "D5": {
+      "id": "D5",
+      "name": "Requirements mapped to design artifacts",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "requirement 'CFDP-001' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:736) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-002' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:737) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-003' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:738) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-004' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:739) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-005' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:740) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-006' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:741) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-007' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:742) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-008' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:743) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-009' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:744) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-010' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:745) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-011' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:746) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-012' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:747) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-013' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:748) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-014' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:749) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'CFDP-015' (/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager/docs/sdd.md:750) is not mapped to any design artifact (add a Design column entry or reference it in a design section)"
+      ],
+      "detail": "15 requirement(s) checked"
+    },
+    "D7": {
+      "id": "D7",
+      "name": "SDD port table matches FPP",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "port 'bufferAllocate' is documented with type 'output array[N]' but FPP declares Fw.BufferGet",
+        "port 'bufferDeallocate' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "port 'dataIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "port 'dataInReturn' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "port 'dataOut' is documented with type 'output array[N]' but FPP declares Fw.BufferSend",
+        "port 'dataReturnIn' is documented with type 'async input array[N]' but FPP declares Fw.BufferSend",
+        "port 'fileDoneOut' is documented with type 'output' but FPP declares Svc.SendFileComplete",
+        "port 'fileIn' is documented with type 'guarded input' but FPP declares Svc.SendFileRequest",
+        "port 'pingIn' is documented with type 'async input' but FPP declares Svc.Ping",
+        "port 'pingOut' is documented with type 'output' but FPP declares Svc.Ping",
+        "port 'run1Hz' is documented with type 'async input' but FPP declares Svc.Sched"
+      ],
+      "detail": "11 port(s) checked"
+    },
+    "D8": {
+      "id": "D8",
+      "name": "SDD dictionary tables match FPP",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "no command table in SDD (9 declared in FPP)",
+        "telemetry channel 'ChannelTelemetry' is missing from the SDD telemetry channel table",
+        "event 'RxFileDataOutOfBounds' is missing from the SDD event table"
+      ],
+      "detail": "110 dictionary item(s) checked"
+    },
+    "D9": {
+      "id": "D9",
+      "name": "SDD design sections present",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "no External References table (Document | Identifier | Type | Governs; a 'None' row waives), no cited datasheet/ICD/FDD, and no external-interfaces section"
+      ],
+      "detail": ""
+    },
+    "D10": {
+      "id": "D10",
+      "name": "Input port behaviour documented",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "5 input port(s) checked"
+    },
+    "I1": {
+      "id": "I1",
+      "name": "Source dependencies listed in CMakeLists",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "dependency 'Fw' (from #include \"Fw/FPrimeBasicTypes.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw)",
+        "dependency 'Fw/Buffer' (from #include \"Fw/Buffer/Buffer.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Buffer)",
+        "dependency 'Fw/Com' (from #include \"Fw/Com/ComPacket.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Com)",
+        "dependency 'Fw/Prm' (from #include \"Fw/Prm/ParamValid.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Prm)",
+        "dependency 'Os' (from #include \"Os/QueueString.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Os)"
+      ],
+      "detail": "7 dependency module(s) checked; 1 provided by FPP/implicit framework dependencies"
+    },
+    "I3": {
+      "id": "I3",
+      "name": "Data product priorities configurable",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "no data product containers declared"
+    },
+    "U3": {
+      "id": "U3",
+      "name": "Unit-test dependencies in CMakeLists",
+      "category": "unit-testing",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "unit-test dependency 'Fw/Com' (from #include \"Fw/Com/ComPacket.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "unit-test dependency 'Fw/Types' (from #include \"Fw/Types/StringUtils.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "unit-test dependency 'Os' (from #include \"Os/File.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)"
+      ],
+      "detail": "4 dependency module(s) checked"
+    },
+    "C2": {
+      "id": "C2",
+      "name": "Hardware run record",
+      "category": "close-out",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)"
+      ],
+      "detail": ""
+    },
+    "D6": {
+      "id": "D6",
+      "name": "FPP compiles and generates auto-code",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "6 FPP file(s) checked"
+    },
+    "I4": {
+      "id": "I4",
+      "name": "Passes static analysis",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "fail",
+      "failures": [
+        "Svc/Ccsds/CfdpManager/Channel.cpp:495: [medium] cpp/fprime/checking-parameter-values: Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:496: [medium] cpp/fprime/checking-parameter-values: Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:604: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:607: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:608: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:617: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:847: [medium] cpp/fprime/checking-parameter-values: Parameter counter is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:167: [medium] cpp/fprime/checking-parameter-values: Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:169: [medium] cpp/fprime/checking-parameter-values: Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:217: [medium] cpp/fprime/checking-parameter-values: Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:217: [medium] cpp/fprime/checking-parameter-values: Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:258: [medium] cpp/fprime/checking-parameter-values: Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:258: [medium] cpp/fprime/checking-parameter-values: Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:282: [medium] cpp/fprime/checking-parameter-values: Parameter i is used as an array index or divisor without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:44: [medium] cpp/fprime/checking-parameter-values: Parameter node is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:45: [medium] cpp/fprime/checking-parameter-values: Parameter node is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Clist.hpp:81: [medium] cpp/fprime/checking-parameter-values: Parameter member_ptr is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:106: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:106: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:106: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:107: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:139: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:144: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:147: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:150: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:153: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:186: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:222: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:233: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:237: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:239: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:243: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:245: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:246: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:248: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:249: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:313: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:314: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:315: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:334: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:342: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:483: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:530: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:536: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:591: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:595: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:596: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:654: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:823: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:829: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:830: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:831: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:833: [medium] cpp/fprime/checking-parameter-values: Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:922: [medium] cpp/fprime/checking-parameter-values: Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:928: [medium] cpp/fprime/checking-parameter-values: Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:929: [medium] cpp/fprime/checking-parameter-values: Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:930: [medium] cpp/fprime/checking-parameter-values: Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:931: [medium] cpp/fprime/checking-parameter-values: Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:932: [medium] cpp/fprime/checking-parameter-values: Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:933: [medium] cpp/fprime/checking-parameter-values: Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:936: [medium] cpp/fprime/checking-parameter-values: Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:937: [medium] cpp/fprime/checking-parameter-values: Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:957: [medium] cpp/fprime/checking-parameter-values: Parameter chan is used as an array index or divisor without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:1216: [medium] cpp/fprime/checking-parameter-values: Parameter chan_num is used as an array index or divisor without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:283: [medium] cpp/fprime/checking-parameter-values: Parameter cont is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:787: [medium] cpp/fprime/checking-parameter-values: Parameter dispatch is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:814: [medium] cpp/fprime/checking-parameter-values: Parameter dispatch is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:826: [medium] cpp/fprime/checking-parameter-values: Parameter dispatch is dereferenced without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Types/NakPdu.hpp:75: [medium] cpp/fprime/checking-parameter-values: Parameter index is used as an array index or divisor without first being checked (e.g. with FW_ASSERT or a condition).",
+        "Svc/Ccsds/CfdpManager/Utils.cpp:52: [medium] cpp/fprime/compound-statements: The body of this else clause is not a compound statement (missing braces).",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:150: [medium] cpp/fprime/for-header-flow-control: This for-statement header expression modifies the non-loop-control variable cw.",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:60: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memset is not checked.",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:167: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memmove is not checked.",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:169: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memcpy is not checked.",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:179: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memmove is not checked.",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:188: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memmove is not checked.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:256: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function appendTlv is not checked.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:326: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function appendTlv is not checked.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:560: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:565: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function sendAck is not checked.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:580: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:625: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:698: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:725: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:727: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function sendFinAckStateless is not checked.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:1212: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function format is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:84: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memset is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:85: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memset is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:103: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memset is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:104: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memset is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:355: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function format is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:493: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:574: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:634: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:674: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:728: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:769: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:814: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function addSegment is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:883: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function addSegment is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:900: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memset is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:1034: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:1068: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:1168: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:61: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memset is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:623: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:668: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:726: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:776: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function setBuffLen is not checked.",
+        "Svc/Ccsds/CfdpManager/Types/Tlv.cpp:21: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memset is not checked.",
+        "Svc/Ccsds/CfdpManager/Types/Tlv.cpp:35: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memcpy is not checked.",
+        "Svc/Ccsds/CfdpManager/Types/Tlv.cpp:149: [medium] cpp/fprime/jpl-c/checking-return-values: The return value of non-void function memset is not checked.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:767: [medium] cpp/fprime/jpl-c/loop-bounds: The loop counter num_ts is not always incremented in the loop body.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:879: [medium] cpp/fprime/jpl-c/loop-bounds: This loop does not have a fixed bound.",
+        "Svc/Ccsds/CfdpManager/Chunk.cpp:199: [medium] cpp/fprime/jpl-c/loop-bounds: The loop counter count is not always decremented in the loop body.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:135: [medium] cpp/fprime/jpl-c/loop-bounds: This loop does not have a fixed bound.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:495: [medium] cpp/fprime/jpl-c/loop-bounds: This loop does not have a fixed bound.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:512: [medium] cpp/fprime/jpl-c/loop-bounds: This loop does not have a fixed bound.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:1204: [medium] cpp/fprime/jpl-c/loop-bounds: This loop does not have a fixed bound.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:930: [medium] cpp/fprime/jpl-c/loop-bounds: The loop counter count_bytes is not always incremented in the loop body.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:930: [medium] cpp/fprime/jpl-c/loop-bounds: The loop counter rx_crc_calc_bytes is not always incremented in the loop body.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:681: [medium] cpp/fprime/jpl-c/loop-bounds: This loop does not have a fixed bound.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:157: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:195: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:114: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:415: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:423: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:629: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:721: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:589: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/TransactionRx.cpp:1081: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:598: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:615: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:636: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:680: [medium] cpp/fprime/jpl-c/no-boolean-side-effects: This Boolean expression is not side-effect free.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:412: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:504: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:540: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:671: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:700: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:705: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:744: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:849: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:51: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:52: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:72: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:73: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:92: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:103: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:104: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:105: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:127: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:128: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Clist.cpp:129: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:1161: [medium] cpp/fprime/jpl-c/use-of-assertions-non-boolean: Assertions should be defined as Boolean tests.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:113: [medium] cpp/fprime/unchecked-array-index: Index m_channelId is not checked against the array bounds before this access.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:114: [medium] cpp/fprime/unchecked-array-index: Index m_channelId is not checked against the array bounds before this access.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:416: [medium] cpp/fprime/unchecked-array-index: Index q_index is not checked against the array bounds before this access.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:505: [medium] cpp/fprime/unchecked-array-index: Index q_index is not checked against the array bounds before this access.",
+        "Svc/Ccsds/CfdpManager/Channel.cpp:544: [medium] cpp/fprime/unchecked-array-index: Index q_index is not checked against the array bounds before this access.",
+        "Svc/Ccsds/CfdpManager/TransactionTx.cpp:814: [medium] cpp/fprime/unchecked-array-index: Index sub_state is not checked against the array bounds before this access.",
+        "Svc/Ccsds/CfdpManager/Engine.cpp:356: [medium] cpp/fprime/unguarded-unsigned-subtraction: Unsigned subtraction from getSize() with no check that it is at least the subtracted constant; this underflows instead of going negative when the size is too small."
+      ],
+      "detail": "208 finding(s) in module; threshold medium"
+    },
+    "I2": {
+      "id": "I2",
+      "name": "Compiles without warnings",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no build output to scan (the module was not built by this run)"
+    },
+    "U5": {
+      "id": "U5",
+      "name": "Sufficient code coverage",
+      "category": "unit-test",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+    },
+    "U4": {
+      "id": "U4",
+      "name": "Unit tests pass a memory leak check",
+      "category": "unit-test",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: the leak check (unit-test executable under LeakSanitizer/valgrind) has not been run"
+    },
+    "C1": {
+      "id": "C1",
+      "name": "Component builds in the topology",
+      "category": "close-out",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no topology build performed by this run (pass --deployment with --build, or the process builds the deployment)"
+    },
+    "U1": {
+      "id": "U1",
+      "name": "Unit-test results published",
+      "category": "unit-test",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no published unit-test artifacts given (--artifacts-dir)"
+    },
+    "C3": {
+      "id": "C3",
+      "name": "CI passes",
+      "category": "close-out",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: CI status not consulted (needs the repository, the commit and GITHUB_TOKEN)"
+    },
+    "SDD": {
+      "id": "SDD",
+      "name": "SDD structural grade",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/Ccsds/CfdpManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "tier gold"
+    }
+  },
+  "codeql": {
+    "ran": true,
+    "tool": "clang-tidy",
+    "reason": "",
+    "rules_run": [
+      "cpp/fprime/assert-on-untrusted-input",
+      "cpp/fprime/checking-parameter-values",
+      "cpp/fprime/command-response",
+      "cpp/fprime/compound-statements",
+      "cpp/fprime/define-constant",
+      "cpp/fprime/division-guard",
+      "cpp/fprime/float-division-guard",
+      "cpp/fprime/float-equality",
+      "cpp/fprime/float-loop-control",
+      "cpp/fprime/float-narrowing",
+      "cpp/fprime/for-header-flow-control",
+      "cpp/fprime/global-mutable-variable",
+      "cpp/fprime/incomplete-code",
+      "cpp/fprime/internal-port-invoke",
+      "cpp/fprime/isr-complexity",
+      "cpp/fprime/jpl-c/basic-int-types",
+      "cpp/fprime/jpl-c/checking-return-values",
+      "cpp/fprime/jpl-c/loop-bounds",
+      "cpp/fprime/jpl-c/multiple-stmts-per-line",
+      "cpp/fprime/jpl-c/multiple-var-decls-per-line",
+      "cpp/fprime/jpl-c/no-boolean-side-effects",
+      "cpp/fprime/jpl-c/non-const-function-pointer",
+      "cpp/fprime/jpl-c/preprocessor-use-ifdef",
+      "cpp/fprime/jpl-c/use-of-assertions-constant",
+      "cpp/fprime/jpl-c/use-of-assertions-density",
+      "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+      "cpp/fprime/jpl-c/use-of-assertions-side-effect",
+      "cpp/fprime/magic-numbers",
+      "cpp/fprime/no-blocking-in-isr",
+      "cpp/fprime/no-blocking-in-sched-handler",
+      "cpp/fprime/no-file-access-in-critical",
+      "cpp/fprime/no-float-in-isr",
+      "cpp/fprime/no-function-decl-in-function",
+      "cpp/fprime/no-printf",
+      "cpp/fprime/public-data-member",
+      "cpp/fprime/signed-overflow",
+      "cpp/fprime/switch-case-fallthrough",
+      "cpp/fprime/switch-default",
+      "cpp/fprime/unchecked-array-index",
+      "cpp/fprime/unguarded-unsigned-subtraction",
+      "cpp/fprime/uninitialized-member",
+      "cpp/fprime/unthrottled-cyclic-event",
+      "cpp/fprime/validation-failure-return",
+      "cpp/uninitialized-local"
+    ],
+    "autocode_findings": 0,
+    "findings": {
+      "cpp/fprime/checking-parameter-values": [
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 495,
+          "message": "Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 496,
+          "message": "Parameter history is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 604,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 607,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 608,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 617,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 847,
+          "message": "Parameter counter is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 167,
+          "message": "Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 169,
+          "message": "Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 217,
+          "message": "Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 217,
+          "message": "Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 258,
+          "message": "Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 258,
+          "message": "Parameter chunk is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 282,
+          "message": "Parameter i is used as an array index or divisor without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 44,
+          "message": "Parameter node is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 45,
+          "message": "Parameter node is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Clist.hpp",
+          "line": 81,
+          "message": "Parameter member_ptr is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 106,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 106,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 106,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 107,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 139,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 144,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 147,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 150,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 153,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 186,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 222,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 233,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 237,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 239,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 243,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 245,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 246,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 248,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 249,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 313,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 314,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 315,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 334,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 342,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 483,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 530,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 536,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 591,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 595,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 596,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 654,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 823,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 829,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 830,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 831,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 833,
+          "message": "Parameter txn is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 922,
+          "message": "Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 928,
+          "message": "Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 929,
+          "message": "Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 930,
+          "message": "Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 931,
+          "message": "Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 932,
+          "message": "Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 933,
+          "message": "Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 936,
+          "message": "Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 937,
+          "message": "Parameter pb is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 957,
+          "message": "Parameter chan is used as an array index or divisor without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 1216,
+          "message": "Parameter chan_num is used as an array index or divisor without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 283,
+          "message": "Parameter cont is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 787,
+          "message": "Parameter dispatch is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 814,
+          "message": "Parameter dispatch is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 826,
+          "message": "Parameter dispatch is dereferenced without first being checked (e.g. with FW_ASSERT or a condition)."
+        },
+        {
+          "rule": "cpp/fprime/checking-parameter-values",
+          "file": "Svc/Ccsds/CfdpManager/Types/NakPdu.hpp",
+          "line": 75,
+          "message": "Parameter index is used as an array index or divisor without first being checked (e.g. with FW_ASSERT or a condition)."
+        }
+      ],
+      "cpp/fprime/compound-statements": [
+        {
+          "rule": "cpp/fprime/compound-statements",
+          "file": "Svc/Ccsds/CfdpManager/Utils.cpp",
+          "line": 52,
+          "message": "The body of this else clause is not a compound statement (missing braces)."
+        }
+      ],
+      "cpp/fprime/for-header-flow-control": [
+        {
+          "rule": "cpp/fprime/for-header-flow-control",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 150,
+          "message": "This for-statement header expression modifies the non-loop-control variable cw."
+        }
+      ],
+      "cpp/fprime/incomplete-code": [
+        {
+          "rule": "cpp/fprime/incomplete-code",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 586,
+          "message": "Comment contains the incomplete-code marker TODO."
+        }
+      ],
+      "cpp/fprime/jpl-c/checking-return-values": [
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 60,
+          "message": "The return value of non-void function memset is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 167,
+          "message": "The return value of non-void function memmove is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 169,
+          "message": "The return value of non-void function memcpy is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 179,
+          "message": "The return value of non-void function memmove is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 188,
+          "message": "The return value of non-void function memmove is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 256,
+          "message": "The return value of non-void function appendTlv is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 326,
+          "message": "The return value of non-void function appendTlv is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 560,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 565,
+          "message": "The return value of non-void function sendAck is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 580,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 625,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 698,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 725,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 727,
+          "message": "The return value of non-void function sendFinAckStateless is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 1212,
+          "message": "The return value of non-void function format is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 84,
+          "message": "The return value of non-void function memset is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 85,
+          "message": "The return value of non-void function memset is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 103,
+          "message": "The return value of non-void function memset is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 104,
+          "message": "The return value of non-void function memset is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 355,
+          "message": "The return value of non-void function format is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 493,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 574,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 634,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 674,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 728,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 769,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 814,
+          "message": "The return value of non-void function addSegment is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 883,
+          "message": "The return value of non-void function addSegment is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 900,
+          "message": "The return value of non-void function memset is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 1034,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 1068,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 1168,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 61,
+          "message": "The return value of non-void function memset is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 623,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 668,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 726,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 776,
+          "message": "The return value of non-void function setBuffLen is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Types/Tlv.cpp",
+          "line": 21,
+          "message": "The return value of non-void function memset is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Types/Tlv.cpp",
+          "line": 35,
+          "message": "The return value of non-void function memcpy is not checked."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/checking-return-values",
+          "file": "Svc/Ccsds/CfdpManager/Types/Tlv.cpp",
+          "line": 149,
+          "message": "The return value of non-void function memset is not checked."
+        }
+      ],
+      "cpp/fprime/jpl-c/loop-bounds": [
+        {
+          "rule": "cpp/fprime/jpl-c/loop-bounds",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 767,
+          "message": "The loop counter num_ts is not always incremented in the loop body."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/loop-bounds",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 879,
+          "message": "This loop does not have a fixed bound."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/loop-bounds",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 199,
+          "message": "The loop counter count is not always decremented in the loop body."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/loop-bounds",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 135,
+          "message": "This loop does not have a fixed bound."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/loop-bounds",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 495,
+          "message": "This loop does not have a fixed bound."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/loop-bounds",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 512,
+          "message": "This loop does not have a fixed bound."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/loop-bounds",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 1204,
+          "message": "This loop does not have a fixed bound."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/loop-bounds",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 930,
+          "message": "The loop counter count_bytes is not always incremented in the loop body."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/loop-bounds",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 930,
+          "message": "The loop counter rx_crc_calc_bytes is not always incremented in the loop body."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/loop-bounds",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 681,
+          "message": "This loop does not have a fixed bound."
+        }
+      ],
+      "cpp/fprime/jpl-c/multiple-var-decls-per-line": [
+        {
+          "rule": "cpp/fprime/jpl-c/multiple-var-decls-per-line",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 102,
+          "message": "Multiple variable declarations on the same line."
+        }
+      ],
+      "cpp/fprime/jpl-c/no-boolean-side-effects": [
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 157,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 195,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 114,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 415,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 423,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 629,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 721,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 589,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 1081,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 598,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 615,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 636,
+          "message": "This Boolean expression is not side-effect free."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/no-boolean-side-effects",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 680,
+          "message": "This Boolean expression is not side-effect free."
+        }
+      ],
+      "cpp/fprime/jpl-c/non-const-function-pointer": [
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 914,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 969,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 125,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 134,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 151,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 157,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 195,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 1190,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 1197,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 807,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 816,
+          "message": "This call does not go through a const function pointer."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/non-const-function-pointer",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 828,
+          "message": "This call does not go through a const function pointer."
+        }
+      ],
+      "cpp/fprime/jpl-c/use-of-assertions-density": [
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 174,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 213,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 336,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 353,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 457,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 477,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 87,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 193,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Chunk.cpp",
+          "line": 275,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 131,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 174,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 534,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 817,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 1178,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 90,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 130,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 156,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/TransactionRx.cpp",
+          "line": 240,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 82,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 418,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 500,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 635,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Types/AckPdu.cpp",
+          "line": 14,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Types/EofPdu.cpp",
+          "line": 14,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Types/FileDataPdu.cpp",
+          "line": 15,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Types/FinPdu.cpp",
+          "line": 14,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Types/NakPdu.cpp",
+          "line": 14,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Types/PduHeader.cpp",
+          "line": 16,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/Ccsds/CfdpManager/Types/PduHeader.cpp",
+          "line": 64,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        }
+      ],
+      "cpp/fprime/jpl-c/use-of-assertions-non-boolean": [
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 412,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 504,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 540,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 671,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 700,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 705,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 744,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 849,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 51,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 52,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 72,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 73,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 92,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 103,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 104,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 105,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 127,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 128,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Clist.cpp",
+          "line": 129,
+          "message": "Assertions should be defined as Boolean tests."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 1161,
+          "message": "Assertions should be defined as Boolean tests."
+        }
+      ],
+      "cpp/fprime/magic-numbers": [
+        {
+          "rule": "cpp/fprime/magic-numbers",
+          "file": "Svc/Ccsds/CfdpManager/Types/MetadataPdu.cpp",
+          "line": 124,
+          "message": "Magic number 6; consider a named constant (enum, static constexpr, or #define)."
+        },
+        {
+          "rule": "cpp/fprime/magic-numbers",
+          "file": "Svc/Ccsds/CfdpManager/Types/MetadataPdu.cpp",
+          "line": 181,
+          "message": "Magic number 6; consider a named constant (enum, static constexpr, or #define)."
+        },
+        {
+          "rule": "cpp/fprime/magic-numbers",
+          "file": "Svc/Ccsds/CfdpManager/Types/PduHeader.cpp",
+          "line": 125,
+          "message": "Magic number 5; consider a named constant (enum, static constexpr, or #define)."
+        },
+        {
+          "rule": "cpp/fprime/magic-numbers",
+          "file": "Svc/Ccsds/CfdpManager/Types/PduHeader.cpp",
+          "line": 188,
+          "message": "Magic number 5; consider a named constant (enum, static constexpr, or #define)."
+        }
+      ],
+      "cpp/fprime/unchecked-array-index": [
+        {
+          "rule": "cpp/fprime/unchecked-array-index",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 113,
+          "message": "Index m_channelId is not checked against the array bounds before this access."
+        },
+        {
+          "rule": "cpp/fprime/unchecked-array-index",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 114,
+          "message": "Index m_channelId is not checked against the array bounds before this access."
+        },
+        {
+          "rule": "cpp/fprime/unchecked-array-index",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 416,
+          "message": "Index q_index is not checked against the array bounds before this access."
+        },
+        {
+          "rule": "cpp/fprime/unchecked-array-index",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 505,
+          "message": "Index q_index is not checked against the array bounds before this access."
+        },
+        {
+          "rule": "cpp/fprime/unchecked-array-index",
+          "file": "Svc/Ccsds/CfdpManager/Channel.cpp",
+          "line": 544,
+          "message": "Index q_index is not checked against the array bounds before this access."
+        },
+        {
+          "rule": "cpp/fprime/unchecked-array-index",
+          "file": "Svc/Ccsds/CfdpManager/TransactionTx.cpp",
+          "line": 814,
+          "message": "Index sub_state is not checked against the array bounds before this access."
+        }
+      ],
+      "cpp/fprime/unguarded-unsigned-subtraction": [
+        {
+          "rule": "cpp/fprime/unguarded-unsigned-subtraction",
+          "file": "Svc/Ccsds/CfdpManager/Engine.cpp",
+          "line": 356,
+          "message": "Unsigned subtraction from getSize() with no check that it is at least the subtracted constant; this underflows instead of going negative when the size is too small."
+        }
+      ],
+      "cpp/fprime/unthrottled-cyclic-event": [],
+      "cpp/fprime/switch-default": [],
+      "cpp/fprime/switch-case-fallthrough": [],
+      "cpp/fprime/global-mutable-variable": [],
+      "cpp/fprime/public-data-member": [],
+      "cpp/fprime/float-equality": [],
+      "cpp/fprime/float-narrowing": [],
+      "cpp/fprime/float-loop-control": [],
+      "cpp/fprime/uninitialized-member": [],
+      "cpp/uninitialized-local": [],
+      "cpp/fprime/command-response": [],
+      "cpp/fprime/validation-failure-return": [],
+      "cpp/fprime/internal-port-invoke": [],
+      "cpp/fprime/assert-on-untrusted-input": [],
+      "cpp/fprime/no-float-in-isr": [],
+      "cpp/fprime/isr-complexity": [],
+      "cpp/fprime/no-blocking-in-isr": [],
+      "cpp/fprime/no-blocking-in-sched-handler": [],
+      "cpp/fprime/no-file-access-in-critical": [],
+      "cpp/fprime/division-guard": [],
+      "cpp/fprime/float-division-guard": [],
+      "cpp/fprime/no-function-decl-in-function": [],
+      "cpp/fprime/signed-overflow": [],
+      "cpp/fprime/define-constant": [],
+      "cpp/fprime/no-printf": [],
+      "cpp/fprime/jpl-c/basic-int-types": []
+    }
+  }
+}

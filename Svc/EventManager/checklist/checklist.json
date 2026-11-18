@@ -1,0 +1,1663 @@
+{
+  "schema_version": 2,
+  "tool": {
+    "name": "fprime-auto-checklist",
+    "version": "0.2.2"
+  },
+  "checklist_version": "1.2.0",
+  "module": "Svc/EventManager",
+  "component": "EventManager",
+  "project": "/home/runner/work/fprime/fprime",
+  "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+  "fingerprints": {
+    "1": "ea6093ab8456",
+    "2": "0fc6eda3c6e6",
+    "3": "61950a34d286",
+    "4": "2ebd4ded00da",
+    "5": "2a68e9af1ad9"
+  },
+  "stage": null,
+  "summary": {
+    "YES": 39,
+    "NO": 14,
+    "N/A": 3,
+    "REVIEW": 11,
+    "UNCHECKED": 6
+  },
+  "items": [
+    {
+      "id": "1.1",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD that define the component's expected operational behaviors?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.2",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD that define input data expected to be received and handled by the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.3",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD that define output data expected to be produced by the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.4",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD for all relevant memory usage constraints for the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.5",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD for all relevant hardware I/O usage constraints for the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.6",
+      "section": "1",
+      "text": "Do requirements exist in the component SDD for all relevant runtime performance constraints for the component?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-6: Requirement coverage (1.1-1.6): read every requirement in the SDD and decide whether the aspect this item names (behavior, input data, output data, memory, hardware I/O, runtime performance) is constrained by at least one of them, or is explicitly declared not applicable with a rationale. Deciding which aspect a shall-statement constrains is a judgement; no column or keyword convention is imposed on the requirements table. R1-R6 (traceability of ports, commands, events, telemetry and parameters to requirements) and R8 (1.7) remain tool-checked."
+      ]
+    },
+    {
+      "id": "1.7",
+      "section": "1",
+      "text": "Does every requirement specify a verification method?",
+      "status": "YES",
+      "notes": [
+        "R8 pass (4 requirement(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "R8 pass (4 requirement(s) checked)"
+      ]
+    },
+    {
+      "id": "1.8",
+      "section": "1",
+      "text": "Are there any relevant external interface or functional requirements documented elsewhere such as ICDs/FDDs? If so, please specify in notes.",
+      "status": "YES",
+      "notes": [
+        "D9 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D9 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.1",
+      "section": "2",
+      "text": "Is the high level component functionality documented/described in the SDD?",
+      "status": "YES",
+      "notes": [
+        "SDD pass (tier gold)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "SDD pass (tier gold)"
+      ]
+    },
+    {
+      "id": "2.2",
+      "section": "2",
+      "text": "Is the component block diagram documented in the SDD and consistent with the FPP model?",
+      "status": "YES",
+      "notes": [
+        "D9 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D9 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.3",
+      "section": "2",
+      "text": "Is the component port table documented in the SDD and consistent with the FPP model?",
+      "status": "NO",
+      "notes": [
+        "D7: port 'FatalAnnounce' (output output Svc.FatalEvent) is missing from the SDD port table",
+        "D7: port 'LogRecv' (sync input Fw.Log) is missing from the SDD port table",
+        "D7: port 'PktSend' (output output Fw.Com) is missing from the SDD port table",
+        "D7: port 'pingIn' (async input Svc.Ping) is missing from the SDD port table",
+        "D7: port 'pingOut' (output output Svc.Ping) is missing from the SDD port table",
+        "D7: port 'run' (sync input Svc.Sched) is missing from the SDD port table",
+        "... 7 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D7: port 'FatalAnnounce' (output output Svc.FatalEvent) is missing from the SDD port table",
+        "D7: port 'LogRecv' (sync input Fw.Log) is missing from the SDD port table",
+        "D7: port 'PktSend' (output output Fw.Com) is missing from the SDD port table",
+        "D7: port 'pingIn' (async input Svc.Ping) is missing from the SDD port table",
+        "D7: port 'pingOut' (output output Svc.Ping) is missing from the SDD port table",
+        "D7: port 'run' (sync input Svc.Sched) is missing from the SDD port table",
+        "... 7 more"
+      ]
+    },
+    {
+      "id": "2.4",
+      "section": "2",
+      "text": "Are the component input port behaviors described in the SDD?",
+      "status": "NO",
+      "notes": [
+        "D10: input port 'pingIn' is not described in SDD prose (only in a table, or absent)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D10: input port 'pingIn' is not described in SDD prose (only in a table, or absent)"
+      ]
+    },
+    {
+      "id": "2.5",
+      "section": "2",
+      "text": "Are the component input port handlers defined?",
+      "status": "YES",
+      "notes": [
+        "D1 pass (3 input port(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D1 pass (3 input port(s) checked)"
+      ]
+    },
+    {
+      "id": "2.6",
+      "section": "2",
+      "text": "Are the component command handlers defined?",
+      "status": "YES",
+      "notes": [
+        "D2 pass (3 command(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D2 pass (3 command(s) checked)"
+      ]
+    },
+    {
+      "id": "2.7",
+      "section": "2",
+      "text": "Are the component sequence diagrams documented?",
+      "status": "NO",
+      "notes": [
+        "D9: no sequence diagram (add a mermaid sequenceDiagram, or state 'Sequence diagrams: N/A' with rationale)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D9: no sequence diagram (add a mermaid sequenceDiagram, or state 'Sequence diagrams: N/A' with rationale)"
+      ]
+    },
+    {
+      "id": "2.8",
+      "section": "2",
+      "text": "Are component state machines and use-cases described in the SDD?",
+      "status": "YES",
+      "notes": [
+        "D9 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D9 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.9",
+      "section": "2",
+      "text": "Are the state machine actions defined?",
+      "status": "N/A",
+      "notes": [
+        "D3: no state machines declared"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "D3: no state machines declared"
+      ]
+    },
+    {
+      "id": "2.10",
+      "section": "2",
+      "text": "Are component commands, telemetry, events and parameters documented in the SDD (and consistent with the FPP model)?",
+      "status": "NO",
+      "notes": [
+        "D8: no command table in SDD (3 declared in FPP)",
+        "D8: no telemetry channel table in SDD (1 declared in FPP)",
+        "D8: no event table in SDD (5 declared in FPP)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D8: no command table in SDD (3 declared in FPP)",
+        "D8: no telemetry channel table in SDD (1 declared in FPP)",
+        "D8: no event table in SDD (5 declared in FPP)"
+      ]
+    },
+    {
+      "id": "2.11",
+      "section": "2",
+      "text": "Are component data products documented and consistent with the FPP model?",
+      "status": "YES",
+      "notes": [
+        "D8 pass (no failures concern this item)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D8 pass (no failures concern this item)"
+      ]
+    },
+    {
+      "id": "2.12",
+      "section": "2",
+      "text": "Are all data product containers assigned a default priority?",
+      "status": "N/A",
+      "notes": [
+        "D4: no data product containers declared"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "D4: no data product containers declared"
+      ]
+    },
+    {
+      "id": "2.13",
+      "section": "2",
+      "text": "Does each component port in the FPP model have a known/planned use-case?",
+      "status": "NO",
+      "notes": [
+        "R6: port 'LogRecv' has no requirement referencing it (add a requirement mentioning 'LogRecv')",
+        "R6: port 'run' has no requirement referencing it (add a requirement mentioning 'run')",
+        "R6: port 'pingIn' has no requirement referencing it (add a requirement mentioning 'pingIn')",
+        "R6: port 'PktSend' has no requirement referencing it (add a requirement mentioning 'PktSend')",
+        "R6: port 'pingOut' has no requirement referencing it (add a requirement mentioning 'pingOut')",
+        "D10: input port 'pingIn' is not described in SDD prose (only in a table, or absent)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "R6: port 'LogRecv' has no requirement referencing it (add a requirement mentioning 'LogRecv')",
+        "R6: port 'run' has no requirement referencing it (add a requirement mentioning 'run')",
+        "R6: port 'pingIn' has no requirement referencing it (add a requirement mentioning 'pingIn')",
+        "R6: port 'PktSend' has no requirement referencing it (add a requirement mentioning 'PktSend')",
+        "R6: port 'pingOut' has no requirement referencing it (add a requirement mentioning 'pingOut')",
+        "D10: input port 'pingIn' is not described in SDD prose (only in a table, or absent)"
+      ]
+    },
+    {
+      "id": "2.14",
+      "section": "2",
+      "text": "Are port directions and types as expected?",
+      "status": "NO",
+      "notes": [
+        "D7: port 'FatalAnnounce' (output output Svc.FatalEvent) is missing from the SDD port table",
+        "D7: port 'LogRecv' (sync input Fw.Log) is missing from the SDD port table",
+        "D7: port 'PktSend' (output output Fw.Com) is missing from the SDD port table",
+        "D7: port 'pingIn' (async input Svc.Ping) is missing from the SDD port table",
+        "D7: port 'pingOut' (output output Svc.Ping) is missing from the SDD port table",
+        "D7: port 'run' (sync input Svc.Sched) is missing from the SDD port table",
+        "... 7 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D7: port 'FatalAnnounce' (output output Svc.FatalEvent) is missing from the SDD port table",
+        "D7: port 'LogRecv' (sync input Fw.Log) is missing from the SDD port table",
+        "D7: port 'PktSend' (output output Fw.Com) is missing from the SDD port table",
+        "D7: port 'pingIn' (async input Svc.Ping) is missing from the SDD port table",
+        "D7: port 'pingOut' (output output Svc.Ping) is missing from the SDD port table",
+        "D7: port 'run' (sync input Svc.Sched) is missing from the SDD port table",
+        "... 7 more"
+      ]
+    },
+    {
+      "id": "2.15",
+      "section": "2",
+      "text": "Is the component type as expected (passive, queued or active)?",
+      "status": "NO",
+      "notes": [
+        "D9: SDD does not state that EventManager is an active component"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D9: SDD does not state that EventManager is an active component"
+      ]
+    },
+    {
+      "id": "2.16",
+      "section": "2",
+      "text": "Are all the component requirements mapped to design description and/or artifacts?",
+      "status": "NO",
+      "notes": [
+        "D5: requirement 'AL-001' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:15) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'AL-002' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:16) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'AL-003' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:17) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'AL-004' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:18) is not mapped to any design artifact (add a Design column entry or reference it in a design section)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D5: requirement 'AL-001' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:15) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'AL-002' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:16) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'AL-003' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:17) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "D5: requirement 'AL-004' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:18) is not mapped to any design artifact (add a Design column entry or reference it in a design section)"
+      ]
+    },
+    {
+      "id": "2.17",
+      "section": "2",
+      "text": "Does the component FPP compile and generate auto-code?",
+      "status": "YES",
+      "notes": [
+        "D6 pass (1 FPP file(s) checked)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "D6 pass (1 FPP file(s) checked)"
+      ]
+    },
+    {
+      "id": "3.1",
+      "section": "3",
+      "text": "Are all component source dependencies listed in the CMakeLists.txt file for the component?",
+      "status": "NO",
+      "notes": [
+        "I1: dependency 'Fw/DataStructures' (from #include \"Fw/DataStructures/ArraySet.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_DataStructures)",
+        "I1: dependency 'Fw/Log' (from #include \"Fw/Log/LogPacket.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Log)",
+        "I1: dependency 'Fw/Logger' (from #include \"Fw/Logger/Logger.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Logger)",
+        "I1: dependency 'Os' (from #include \"Os/File.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Os)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "I1: dependency 'Fw/DataStructures' (from #include \"Fw/DataStructures/ArraySet.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_DataStructures)",
+        "I1: dependency 'Fw/Log' (from #include \"Fw/Log/LogPacket.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Log)",
+        "I1: dependency 'Fw/Logger' (from #include \"Fw/Logger/Logger.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Logger)",
+        "I1: dependency 'Os' (from #include \"Os/File.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Os)"
+      ]
+    },
+    {
+      "id": "3.2",
+      "section": "3",
+      "text": "Does the component compile without warnings for all required targets?",
+      "status": "UNCHECKED",
+      "notes": [
+        "I2 not run: not done yet: no build output to scan (the module was not built by this run)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "I2 not run: not done yet: no build output to scan (the module was not built by this run)"
+      ]
+    },
+    {
+      "id": "3.3",
+      "section": "3",
+      "text": "Are all loops properly terminated/bounded?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/jpl-c/loop-bounds` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/jpl-c/loop-bounds` 0 findings"
+      ]
+    },
+    {
+      "id": "3.4",
+      "section": "3",
+      "text": "Has gating been provided for any potential cyclic error/status messages (e.g. log messages, events)?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/unthrottled-cyclic-event` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/unthrottled-cyclic-event` 0 findings"
+      ]
+    },
+    {
+      "id": "3.5",
+      "section": "3",
+      "text": "Do all switch statements have a break after each case and terminate with a default case?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/switch-default` 0 findings",
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/switch-default` 0 findings",
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
+      ]
+    },
+    {
+      "id": "3.6",
+      "section": "3",
+      "text": "Verify all non-empty case statements that fall through to the following case statement are explicitly commented as such",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
+      ]
+    },
+    {
+      "id": "3.7",
+      "section": "3",
+      "text": "Are all variables locally defined unless global or specific visibility is required?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/global-mutable-variable` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/global-mutable-variable` 0 findings"
+      ]
+    },
+    {
+      "id": "3.8",
+      "section": "3",
+      "text": "Are all class members defined appropriately using private, public and protected keywords?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/public-data-member` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/public-data-member` 0 findings"
+      ]
+    },
+    {
+      "id": "3.9",
+      "section": "3",
+      "text": "Verify that no floating point expressions are tested for equality/inequality",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/float-equality` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/float-equality` 0 findings"
+      ]
+    },
+    {
+      "id": "3.10",
+      "section": "3",
+      "text": "Is the precision of floating point numbers sufficient to ensure accuracy and floating-point equivalence is evaluated with margin (i.e. safe floating-point usage), and is not used in a loop control?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/float-narrowing` 0 findings",
+        "`cpp/fprime/float-loop-control` 0 findings",
+        "`cpp/fprime/float-equality` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/float-narrowing` 0 findings",
+        "`cpp/fprime/float-loop-control` 0 findings",
+        "`cpp/fprime/float-equality` 0 findings"
+      ]
+    },
+    {
+      "id": "3.11",
+      "section": "3",
+      "text": "Are all variables initialized before use?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/uninitialized-member` 0 findings",
+        "`cpp/uninitialized-local` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/uninitialized-member` 0 findings",
+        "`cpp/uninitialized-local` 0 findings"
+      ]
+    },
+    {
+      "id": "3.12",
+      "section": "3",
+      "text": "Are the priorities of all data products produced by the component configurable via command(s) or parameter(s)?",
+      "status": "N/A",
+      "notes": [
+        "I3: no data product containers declared"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "N/A",
+      "tool_notes": [
+        "I3: no data product containers declared"
+      ]
+    },
+    {
+      "id": "3.13",
+      "section": "3",
+      "text": "Are all commands acknowledged with success/failure?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/command-response` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/command-response` 0 findings"
+      ]
+    },
+    {
+      "id": "3.14",
+      "section": "3",
+      "text": "Do all validation failure cases for port and command handlers include a return statement to avoid unintended code execution beyond validation failures?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/validation-failure-return` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/validation-failure-return` 0 findings"
+      ]
+    },
+    {
+      "id": "3.15",
+      "section": "3",
+      "text": "Are all internal port interfaces invoked via the auto-coded internal port invoke() function?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/internal-port-invoke` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/internal-port-invoke` 0 findings"
+      ]
+    },
+    {
+      "id": "3.16",
+      "section": "3",
+      "text": "All pointer arguments to functions are checked to be not nullptr using FW_ASSERT",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/checking-parameter-values` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/checking-parameter-values` 0 findings"
+      ]
+    },
+    {
+      "id": "3.17",
+      "section": "3",
+      "text": "Assumptions on software state are validated using FW_ASSERT.",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/EventManager/EventManager.cpp:31 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/EventManager/EventManager.cpp:68 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/EventManager/EventManager.cpp:92 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/EventManager/EventManager.cpp:31 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/EventManager/EventManager.cpp:68 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event.",
+        "`cpp/fprime/jpl-c/use-of-assertions-density` Svc/EventManager/EventManager.cpp:92 All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+      ]
+    },
+    {
+      "id": "3.18",
+      "section": "3",
+      "text": "Assertions shall not be used to validate state that could be dependent on hardware or user input.",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/assert-on-untrusted-input` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/assert-on-untrusted-input` 0 findings"
+      ]
+    },
+    {
+      "id": "3.19",
+      "section": "3",
+      "text": "Verify all ISR code is free of floating point operations",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-float-in-isr` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-float-in-isr` 0 findings"
+      ]
+    },
+    {
+      "id": "3.20",
+      "section": "3",
+      "text": "Has the ISR code been optimized to minimize length/execution time?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/isr-complexity` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/isr-complexity` 0 findings"
+      ]
+    },
+    {
+      "id": "3.21",
+      "section": "3",
+      "text": "Verify any software state that's expected upon receive of an interrupt is configured prior to enabling/setting conditions that would allow the interrupt to trigger.",
+      "status": "REVIEW",
+      "notes": [
+        "CL-1: ISR state before enable (3.21): for every ISR-named function (*_isr, *interrupt_handler*, *_irq*) find the code that enables its interrupt; every variable the ISR reads or writes must be assigned on a path that completes before that enable call."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-1: ISR state before enable (3.21): for every ISR-named function (*_isr, *interrupt_handler*, *_irq*) find the code that enables its interrupt; every variable the ISR reads or writes must be assigned on a path that completes before that enable call."
+      ]
+    },
+    {
+      "id": "3.22",
+      "section": "3",
+      "text": "Verify there are no blocking operations in ISRs",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-blocking-in-isr` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-blocking-in-isr` 0 findings"
+      ]
+    },
+    {
+      "id": "3.23",
+      "section": "3",
+      "text": "Verify any relevant interrupt enables and interrupts are cleared during initialization and re-enabled selectively as needed.",
+      "status": "REVIEW",
+      "notes": [
+        "CL-2: Interrupt enables cleared at init (3.23): in the constructor/init/configure/preamble, interrupt-enable bits must be explicitly cleared or masked before peripheral configuration, not assumed clear from reset."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-2: Interrupt enables cleared at init (3.23): in the constructor/init/configure/preamble, interrupt-enable bits must be explicitly cleared or masked before peripheral configuration, not assumed clear from reset."
+      ]
+    },
+    {
+      "id": "3.24",
+      "section": "3",
+      "text": "Are RateGroup schedule calls non-blocking?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-blocking-in-sched-handler` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-blocking-in-sched-handler` 0 findings"
+      ]
+    },
+    {
+      "id": "3.25",
+      "section": "3",
+      "text": "Verify no synchronous file access is done within a critical region (e.g. SchedIn)",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-file-access-in-critical` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-file-access-in-critical` 0 findings"
+      ]
+    },
+    {
+      "id": "3.26",
+      "section": "3",
+      "text": "Verify that all loops and if/else statements are compound statements (i.e. always use brackets {})",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/compound-statements` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/compound-statements` 0 findings"
+      ]
+    },
+    {
+      "id": "3.27",
+      "section": "3",
+      "text": "Verify that all divisions first check for small numbers (including zero)",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/division-guard` 0 findings",
+        "`cpp/fprime/float-division-guard` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/division-guard` 0 findings",
+        "`cpp/fprime/float-division-guard` 0 findings"
+      ]
+    },
+    {
+      "id": "3.28",
+      "section": "3",
+      "text": "Verify all array accesses are checked to be within array index bounds",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/unchecked-array-index` 0 findings",
+        "`cpp/fprime/checking-parameter-values` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/unchecked-array-index` 0 findings",
+        "`cpp/fprime/checking-parameter-values` 0 findings"
+      ]
+    },
+    {
+      "id": "3.29",
+      "section": "3",
+      "text": "Verify there are no function declarations within a function.",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-function-decl-in-function` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-function-decl-in-function` 0 findings"
+      ]
+    },
+    {
+      "id": "3.30",
+      "section": "3",
+      "text": "Verify that the three expressions in all for statements only concern flow control",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/for-header-flow-control` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/for-header-flow-control` 0 findings"
+      ]
+    },
+    {
+      "id": "3.31",
+      "section": "3",
+      "text": "Verify that there are no dependencies on signed integer overflow behavior",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/signed-overflow` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/signed-overflow` 0 findings"
+      ]
+    },
+    {
+      "id": "3.32",
+      "section": "3",
+      "text": "Verify return values are used or voided otherwise.",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/jpl-c/checking-return-values` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/jpl-c/checking-return-values` 0 findings"
+      ]
+    },
+    {
+      "id": "3.33",
+      "section": "3",
+      "text": "Verify units are incorporated into variable name, where applicable",
+      "status": "REVIEW",
+      "notes": [
+        "CL-3: Units in names (3.33): every variable, member, parameter, telemetry channel and command argument carrying a physical quantity must encode its unit in the name (timeoutMs, angleRad, sizeBytes) or in an FPP annotation."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-3: Units in names (3.33): every variable, member, parameter, telemetry channel and command argument carrying a physical quantity must encode its unit in the name (timeoutMs, angleRad, sizeBytes) or in an FPP annotation."
+      ]
+    },
+    {
+      "id": "3.34",
+      "section": "3",
+      "text": "Verify that all invariant numbers are in enums, static constexpr or #defines. Enums or static constexpr must be used unless #define is only way to specify constant.",
+      "status": "NO",
+      "notes": [
+        "`cpp/fprime/magic-numbers` Svc/EventManager/EventManager.cpp:102 Magic number 5; consider a named constant (enum, static constexpr, or #define).",
+        "`cpp/fprime/define-constant` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "`cpp/fprime/magic-numbers` Svc/EventManager/EventManager.cpp:102 Magic number 5; consider a named constant (enum, static constexpr, or #define).",
+        "`cpp/fprime/define-constant` 0 findings"
+      ]
+    },
+    {
+      "id": "3.35",
+      "section": "3",
+      "text": "Verify no use of printf",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/no-printf` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/no-printf` 0 findings"
+      ]
+    },
+    {
+      "id": "3.36",
+      "section": "3",
+      "text": "Does the component use platform independent standard data types (e.g. I32, F32 etc.) rather than primitive data types (e.g. int, float etc.)?",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/jpl-c/basic-int-types` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/jpl-c/basic-int-types` 0 findings"
+      ]
+    },
+    {
+      "id": "3.37",
+      "section": "3",
+      "text": "Does the component pass static analysis?",
+      "status": "YES",
+      "notes": [
+        "I4 pass (4 finding(s) in module; threshold medium)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "I4 pass (4 finding(s) in module; threshold medium)"
+      ]
+    },
+    {
+      "id": "3.38",
+      "section": "3",
+      "text": "Does the implementation address all component requirements and remains consistent with the documented design?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-4: Implementation matches requirements and design (3.38): for each requirement row locate the handler(s) that satisfy it and confirm the behaviour including each error path the SDD describes; report requirements with no implementing code and handler behaviour the SDD does not describe."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-4: Implementation matches requirements and design (3.38): for each requirement row locate the handler(s) that satisfy it and confirm the behaviour including each error path the SDD describes; report requirements with no implementing code and handler behaviour the SDD does not describe."
+      ]
+    },
+    {
+      "id": "4.1",
+      "section": "4",
+      "text": "Have all test output/results been published?",
+      "status": "UNCHECKED",
+      "notes": [
+        "U1 not run: not done yet: no published unit-test artifacts given (--artifacts-dir)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "U1 not run: not done yet: no published unit-test artifacts given (--artifacts-dir)"
+      ]
+    },
+    {
+      "id": "4.2",
+      "section": "4",
+      "text": "Are all component unit test source dependencies listed in the CMakeLists.txt file for the component?",
+      "status": "NO",
+      "notes": [
+        "U3: unit-test dependency 'Fw/Com' (from #include \"Fw/Com/ComBuffer.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "U3: unit-test dependency 'Fw/Obj' (from #include \"Fw/Obj/SimpleObjRegistry.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "U3: unit-test dependency 'Os' (from #include \"Os/IntervalTimer.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "U3: unit-test dependency 'Fw/Com' (from #include \"Fw/Com/ComBuffer.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "U3: unit-test dependency 'Fw/Obj' (from #include \"Fw/Obj/SimpleObjRegistry.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "U3: unit-test dependency 'Os' (from #include \"Os/IntervalTimer.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)"
+      ]
+    },
+    {
+      "id": "4.3",
+      "section": "4",
+      "text": "Have input data ranges been tested for boundary conditions?",
+      "status": "REVIEW",
+      "notes": [
+        "CL-5: Boundary tests (4.3): for each bounded quantity (array sizes, FW_ASSERT limits, configuration constants, command-argument ranges, queue depths) a unit test must exercise the limit value and one past it."
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "REVIEW",
+      "tool_notes": [
+        "CL-5: Boundary tests (4.3): for each bounded quantity (array sizes, FW_ASSERT limits, configuration constants, command-argument ranges, queue depths) a unit test must exercise the limit value and one past it."
+      ]
+    },
+    {
+      "id": "4.4",
+      "section": "4",
+      "text": "Do the unit tests pass a memory leak check?",
+      "status": "UNCHECKED",
+      "notes": [
+        "U4 not run: not done yet: the leak check (unit-test executable under LeakSanitizer/valgrind) has not been run"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "U4 not run: not done yet: the leak check (unit-test executable under LeakSanitizer/valgrind) has not been run"
+      ]
+    },
+    {
+      "id": "4.5",
+      "section": "4",
+      "text": "Is there sufficient code coverage?",
+      "status": "UNCHECKED",
+      "notes": [
+        "U5 not run: not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "U5 not run: not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+      ]
+    },
+    {
+      "id": "5.1",
+      "section": "5",
+      "text": "Verify no TBDs, TODOs or printfs in the code (no incomplete code).",
+      "status": "YES",
+      "notes": [
+        "`cpp/fprime/incomplete-code` 0 findings",
+        "`cpp/fprime/no-printf` 0 findings"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "YES",
+      "tool_notes": [
+        "`cpp/fprime/incomplete-code` 0 findings",
+        "`cpp/fprime/no-printf` 0 findings"
+      ]
+    },
+    {
+      "id": "5.2",
+      "section": "5",
+      "text": "Verify that component can be instantiated, connected, and compiled along with the Topology for all applicable targets.",
+      "status": "UNCHECKED",
+      "notes": [
+        "C1 not run: not done yet: no topology build performed by this run (pass --deployment with --build, or the process builds the deployment)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "C1 not run: not done yet: no topology build performed by this run (pass --deployment with --build, or the process builds the deployment)"
+      ]
+    },
+    {
+      "id": "5.3",
+      "section": "5",
+      "text": "Verify that the flight deployment with component instantiation/connections runs successfully on a hardware platform. Indicate hardware platform used for checkout in Notes.",
+      "status": "NO",
+      "notes": [
+        "Human: Run the flight deployment that instantiates this component on the target hardware and record platform, deployment, commit, date, result and tester in docs/hardware-run.md (check C2 validates the record).",
+        "C2: no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "Human: Run the flight deployment that instantiates this component on the target hardware and record platform, deployment, commit, date, result and tester in docs/hardware-run.md (check C2 validates the record).",
+        "C2: no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)"
+      ]
+    },
+    {
+      "id": "5.4",
+      "section": "5",
+      "text": "Update the SDD to accurately reflect the final state of the component. Add any additional design detail, including any known idiosyncrasies.",
+      "status": "NO",
+      "notes": [
+        "D7: port 'FatalAnnounce' (output output Svc.FatalEvent) is missing from the SDD port table",
+        "D7: port 'LogRecv' (sync input Fw.Log) is missing from the SDD port table",
+        "D7: port 'PktSend' (output output Fw.Com) is missing from the SDD port table",
+        "D7: port 'pingIn' (async input Svc.Ping) is missing from the SDD port table",
+        "D7: port 'pingOut' (output output Svc.Ping) is missing from the SDD port table",
+        "D7: port 'run' (sync input Svc.Sched) is missing from the SDD port table",
+        "... 14 more"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "NO",
+      "tool_notes": [
+        "D7: port 'FatalAnnounce' (output output Svc.FatalEvent) is missing from the SDD port table",
+        "D7: port 'LogRecv' (sync input Fw.Log) is missing from the SDD port table",
+        "D7: port 'PktSend' (output output Fw.Com) is missing from the SDD port table",
+        "D7: port 'pingIn' (async input Svc.Ping) is missing from the SDD port table",
+        "D7: port 'pingOut' (output output Svc.Ping) is missing from the SDD port table",
+        "D7: port 'run' (sync input Svc.Sched) is missing from the SDD port table",
+        "... 14 more"
+      ]
+    },
+    {
+      "id": "5.5",
+      "section": "5",
+      "text": "Validate that CI passes.",
+      "status": "UNCHECKED",
+      "notes": [
+        "C3 not run: not done yet: CI status not consulted (needs the repository, the commit and GITHUB_TOKEN)"
+      ],
+      "commit": "7ec169e2636ab13ed185bacd2c3c0130f8f0bafe",
+      "kind": "tool",
+      "tool_status": "UNCHECKED",
+      "tool_notes": [
+        "C3 not run: not done yet: CI status not consulted (needs the repository, the commit and GITHUB_TOKEN)"
+      ]
+    }
+  ],
+  "queue": [],
+  "checks": {
+    "R1": {
+      "id": "R1",
+      "name": "Requirement per command",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "command 'SET_EVENT_FILTER' has no requirement referencing it (add a requirement mentioning 'SET_EVENT_FILTER')",
+        "command 'SET_ID_FILTER' has no requirement referencing it (add a requirement mentioning 'SET_ID_FILTER')",
+        "command 'DUMP_FILTER_STATE' has no requirement referencing it (add a requirement mentioning 'DUMP_FILTER_STATE')"
+      ],
+      "detail": "3 command(s) traced against 4 requirement(s)"
+    },
+    "R2": {
+      "id": "R2",
+      "name": "Requirement per telemetry channel",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "telemetry channel 'EventsDropped' has no requirement referencing it (add a requirement mentioning 'EventsDropped')"
+      ],
+      "detail": "1 telemetry channel(s) traced against 4 requirement(s)"
+    },
+    "R3": {
+      "id": "R3",
+      "name": "Requirement per event",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "event 'SEVERITY_FILTER_STATE' has no requirement referencing it (add a requirement mentioning 'SEVERITY_FILTER_STATE')",
+        "event 'ID_FILTER_ENABLED' has no requirement referencing it (add a requirement mentioning 'ID_FILTER_ENABLED')",
+        "event 'ID_FILTER_LIST_FULL' has no requirement referencing it (add a requirement mentioning 'ID_FILTER_LIST_FULL')",
+        "event 'ID_FILTER_REMOVED' has no requirement referencing it (add a requirement mentioning 'ID_FILTER_REMOVED')",
+        "event 'ID_FILTER_NOT_FOUND' has no requirement referencing it (add a requirement mentioning 'ID_FILTER_NOT_FOUND')"
+      ],
+      "detail": "5 event(s) traced against 4 requirement(s)"
+    },
+    "R4": {
+      "id": "R4",
+      "name": "Requirement per parameter",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "no parameters declared in the FPP model"
+    },
+    "R5": {
+      "id": "R5",
+      "name": "Requirement per data product",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "no data products declared in the FPP model"
+    },
+    "R6": {
+      "id": "R6",
+      "name": "Requirement per port/interface",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "port 'LogRecv' has no requirement referencing it (add a requirement mentioning 'LogRecv')",
+        "port 'run' has no requirement referencing it (add a requirement mentioning 'run')",
+        "port 'pingIn' has no requirement referencing it (add a requirement mentioning 'pingIn')",
+        "port 'PktSend' has no requirement referencing it (add a requirement mentioning 'PktSend')",
+        "port 'pingOut' has no requirement referencing it (add a requirement mentioning 'pingOut')"
+      ],
+      "detail": "6 port(s) traced against 4 requirement(s)"
+    },
+    "R7": {
+      "id": "R7",
+      "name": "Requirement parent traceability",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "requirement 'AL-001' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:15) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'AL-002' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:16) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'AL-003' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:17) has no parent trace (add a Parent/Trace column entry linking a parent requirement)",
+        "requirement 'AL-004' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:18) has no parent trace (add a Parent/Trace column entry linking a parent requirement)"
+      ],
+      "detail": "4 requirement(s) checked"
+    },
+    "R8": {
+      "id": "R8",
+      "name": "Requirement verification method",
+      "category": "requirements",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "4 requirement(s) checked"
+    },
+    "D1": {
+      "id": "D1",
+      "name": "Input port handlers defined",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "3 input port(s) checked"
+    },
+    "D2": {
+      "id": "D2",
+      "name": "Command handlers defined",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "3 command(s) checked"
+    },
+    "D3": {
+      "id": "D3",
+      "name": "State machine actions defined",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "no state machines declared"
+    },
+    "D4": {
+      "id": "D4",
+      "name": "Data product containers have default priority",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "no data product containers declared"
+    },
+    "D5": {
+      "id": "D5",
+      "name": "Requirements mapped to design artifacts",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "requirement 'AL-001' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:15) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'AL-002' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:16) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'AL-003' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:17) is not mapped to any design artifact (add a Design column entry or reference it in a design section)",
+        "requirement 'AL-004' (/home/runner/work/fprime/fprime/Svc/EventManager/docs/sdd.md:18) is not mapped to any design artifact (add a Design column entry or reference it in a design section)"
+      ],
+      "detail": "4 requirement(s) checked"
+    },
+    "D7": {
+      "id": "D7",
+      "name": "SDD port table matches FPP",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "port 'FatalAnnounce' (output output Svc.FatalEvent) is missing from the SDD port table",
+        "port 'LogRecv' (sync input Fw.Log) is missing from the SDD port table",
+        "port 'PktSend' (output output Fw.Com) is missing from the SDD port table",
+        "port 'pingIn' (async input Svc.Ping) is missing from the SDD port table",
+        "port 'pingOut' (output output Svc.Ping) is missing from the SDD port table",
+        "port 'run' (sync input Svc.Sched) is missing from the SDD port table",
+        "SDD port table lists '[`Fw::Com`]', which is not a port in the FPP model",
+        "SDD port table lists '[`Fw::Log`]', which is not a port in the FPP model",
+        "SDD port table lists '[`Fw::Tlm`]', which is not a port in the FPP model",
+        "SDD port table lists '[`Svc::FatalEvent`]', which is not a port in the FPP model",
+        "SDD port table lists '[`Svc::Ping`]', which is not a port in the FPP model",
+        "SDD port table lists '[`Svc::Sched`]', which is not a port in the FPP model",
+        "SDD port table lists 'n', which is not a port in the FPP model"
+      ],
+      "detail": "6 port(s) checked"
+    },
+    "D8": {
+      "id": "D8",
+      "name": "SDD dictionary tables match FPP",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "no command table in SDD (3 declared in FPP)",
+        "no telemetry channel table in SDD (1 declared in FPP)",
+        "no event table in SDD (5 declared in FPP)"
+      ],
+      "detail": "9 dictionary item(s) checked"
+    },
+    "D9": {
+      "id": "D9",
+      "name": "SDD design sections present",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "no sequence diagram (add a mermaid sequenceDiagram, or state 'Sequence diagrams: N/A' with rationale)",
+        "SDD does not state that EventManager is an active component",
+        "no External References table (Document | Identifier | Type | Governs; a 'None' row waives), no cited datasheet/ICD/FDD, and no external-interfaces section"
+      ],
+      "detail": ""
+    },
+    "D10": {
+      "id": "D10",
+      "name": "Input port behaviour documented",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "input port 'pingIn' is not described in SDD prose (only in a table, or absent)"
+      ],
+      "detail": "3 input port(s) checked"
+    },
+    "I1": {
+      "id": "I1",
+      "name": "Source dependencies listed in CMakeLists",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "dependency 'Fw/DataStructures' (from #include \"Fw/DataStructures/ArraySet.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_DataStructures)",
+        "dependency 'Fw/Log' (from #include \"Fw/Log/LogPacket.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Log)",
+        "dependency 'Fw/Logger' (from #include \"Fw/Logger/Logger.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Fw_Logger)",
+        "dependency 'Os' (from #include \"Os/File.hpp\") is not declared in CMakeLists.txt (add it to DEPENDS as Os)"
+      ],
+      "detail": "5 dependency module(s) checked; 1 provided by FPP/implicit framework dependencies"
+    },
+    "I3": {
+      "id": "I3",
+      "name": "Data product priorities configurable",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "no data product containers declared"
+    },
+    "U3": {
+      "id": "U3",
+      "name": "Unit-test dependencies in CMakeLists",
+      "category": "unit-testing",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "unit-test dependency 'Fw/Com' (from #include \"Fw/Com/ComBuffer.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "unit-test dependency 'Fw/Obj' (from #include \"Fw/Obj/SimpleObjRegistry.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)",
+        "unit-test dependency 'Os' (from #include \"Os/IntervalTimer.hpp\") is not declared in the module's CMake files (add it to UT_DEPENDS/DEPENDS)"
+      ],
+      "detail": "3 dependency module(s) checked"
+    },
+    "C2": {
+      "id": "C2",
+      "name": "Hardware run record",
+      "category": "close-out",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "fail",
+      "failures": [
+        "no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)"
+      ],
+      "detail": ""
+    },
+    "D6": {
+      "id": "D6",
+      "name": "FPP compiles and generates auto-code",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "1 FPP file(s) checked"
+    },
+    "I4": {
+      "id": "I4",
+      "name": "Passes static analysis",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "4 finding(s) in module; threshold medium"
+    },
+    "I2": {
+      "id": "I2",
+      "name": "Compiles without warnings",
+      "category": "implementation",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no build output to scan (the module was not built by this run)"
+    },
+    "U5": {
+      "id": "U5",
+      "name": "Sufficient code coverage",
+      "category": "unit-test",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+    },
+    "U4": {
+      "id": "U4",
+      "name": "Unit tests pass a memory leak check",
+      "category": "unit-test",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: the leak check (unit-test executable under LeakSanitizer/valgrind) has not been run"
+    },
+    "C1": {
+      "id": "C1",
+      "name": "Component builds in the topology",
+      "category": "close-out",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no topology build performed by this run (pass --deployment with --build, or the process builds the deployment)"
+    },
+    "U1": {
+      "id": "U1",
+      "name": "Unit-test results published",
+      "category": "unit-test",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: no published unit-test artifacts given (--artifacts-dir)"
+    },
+    "C3": {
+      "id": "C3",
+      "name": "CI passes",
+      "category": "close-out",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "skip",
+      "failures": [],
+      "detail": "not done yet: CI status not consulted (needs the repository, the commit and GITHUB_TOKEN)"
+    },
+    "SDD": {
+      "id": "SDD",
+      "name": "SDD structural grade",
+      "category": "design",
+      "module": "/home/runner/work/fprime/fprime/Svc/EventManager",
+      "status": "pass",
+      "failures": [],
+      "detail": "tier gold"
+    }
+  },
+  "codeql": {
+    "ran": true,
+    "tool": "clang-tidy",
+    "reason": "",
+    "rules_run": [
+      "cpp/fprime/assert-on-untrusted-input",
+      "cpp/fprime/checking-parameter-values",
+      "cpp/fprime/command-response",
+      "cpp/fprime/compound-statements",
+      "cpp/fprime/define-constant",
+      "cpp/fprime/division-guard",
+      "cpp/fprime/float-division-guard",
+      "cpp/fprime/float-equality",
+      "cpp/fprime/float-loop-control",
+      "cpp/fprime/float-narrowing",
+      "cpp/fprime/for-header-flow-control",
+      "cpp/fprime/global-mutable-variable",
+      "cpp/fprime/incomplete-code",
+      "cpp/fprime/internal-port-invoke",
+      "cpp/fprime/isr-complexity",
+      "cpp/fprime/jpl-c/basic-int-types",
+      "cpp/fprime/jpl-c/checking-return-values",
+      "cpp/fprime/jpl-c/loop-bounds",
+      "cpp/fprime/jpl-c/multiple-stmts-per-line",
+      "cpp/fprime/jpl-c/multiple-var-decls-per-line",
+      "cpp/fprime/jpl-c/no-boolean-side-effects",
+      "cpp/fprime/jpl-c/non-const-function-pointer",
+      "cpp/fprime/jpl-c/preprocessor-use-ifdef",
+      "cpp/fprime/jpl-c/use-of-assertions-constant",
+      "cpp/fprime/jpl-c/use-of-assertions-density",
+      "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+      "cpp/fprime/jpl-c/use-of-assertions-side-effect",
+      "cpp/fprime/magic-numbers",
+      "cpp/fprime/no-blocking-in-isr",
+      "cpp/fprime/no-blocking-in-sched-handler",
+      "cpp/fprime/no-file-access-in-critical",
+      "cpp/fprime/no-float-in-isr",
+      "cpp/fprime/no-function-decl-in-function",
+      "cpp/fprime/no-printf",
+      "cpp/fprime/public-data-member",
+      "cpp/fprime/signed-overflow",
+      "cpp/fprime/switch-case-fallthrough",
+      "cpp/fprime/switch-default",
+      "cpp/fprime/unchecked-array-index",
+      "cpp/fprime/unguarded-unsigned-subtraction",
+      "cpp/fprime/uninitialized-member",
+      "cpp/fprime/unthrottled-cyclic-event",
+      "cpp/fprime/validation-failure-return",
+      "cpp/uninitialized-local"
+    ],
+    "autocode_findings": 0,
+    "findings": {
+      "cpp/fprime/jpl-c/use-of-assertions-density": [
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/EventManager/EventManager.cpp",
+          "line": 31,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/EventManager/EventManager.cpp",
+          "line": 68,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        },
+        {
+          "rule": "cpp/fprime/jpl-c/use-of-assertions-density",
+          "file": "Svc/EventManager/EventManager.cpp",
+          "line": 92,
+          "message": "All functions of more than 10 lines should have at least one assertion, unless they handle errors by returning a status enum or bool, or by emitting a WARNING/FATAL event."
+        }
+      ],
+      "cpp/fprime/magic-numbers": [
+        {
+          "rule": "cpp/fprime/magic-numbers",
+          "file": "Svc/EventManager/EventManager.cpp",
+          "line": 102,
+          "message": "Magic number 5; consider a named constant (enum, static constexpr, or #define)."
+        }
+      ],
+      "cpp/fprime/jpl-c/loop-bounds": [],
+      "cpp/fprime/unthrottled-cyclic-event": [],
+      "cpp/fprime/switch-default": [],
+      "cpp/fprime/switch-case-fallthrough": [],
+      "cpp/fprime/global-mutable-variable": [],
+      "cpp/fprime/public-data-member": [],
+      "cpp/fprime/float-equality": [],
+      "cpp/fprime/float-narrowing": [],
+      "cpp/fprime/float-loop-control": [],
+      "cpp/fprime/uninitialized-member": [],
+      "cpp/uninitialized-local": [],
+      "cpp/fprime/command-response": [],
+      "cpp/fprime/validation-failure-return": [],
+      "cpp/fprime/internal-port-invoke": [],
+      "cpp/fprime/checking-parameter-values": [],
+      "cpp/fprime/assert-on-untrusted-input": [],
+      "cpp/fprime/no-float-in-isr": [],
+      "cpp/fprime/isr-complexity": [],
+      "cpp/fprime/no-blocking-in-isr": [],
+      "cpp/fprime/no-blocking-in-sched-handler": [],
+      "cpp/fprime/no-file-access-in-critical": [],
+      "cpp/fprime/compound-statements": [],
+      "cpp/fprime/division-guard": [],
+      "cpp/fprime/float-division-guard": [],
+      "cpp/fprime/unchecked-array-index": [],
+      "cpp/fprime/no-function-decl-in-function": [],
+      "cpp/fprime/for-header-flow-control": [],
+      "cpp/fprime/signed-overflow": [],
+      "cpp/fprime/jpl-c/checking-return-values": [],
+      "cpp/fprime/define-constant": [],
+      "cpp/fprime/no-printf": [],
+      "cpp/fprime/jpl-c/basic-int-types": [],
+      "cpp/fprime/incomplete-code": []
+    }
+  }
+}
