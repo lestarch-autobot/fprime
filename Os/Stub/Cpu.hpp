@@ -2,7 +2,7 @@
 // \title Os/Stub/Cpu.hpp
 // \brief stub implementation for Os::Cpu, header and test definitions
 // ======================================================================
-#include <Os/Cpu.hpp>
+#include <Os/CpuInterface.hpp>
 #include <cstdio>
 #ifndef OS_Stub_Cpu_HPP
 #define OS_Stub_Cpu_HPP

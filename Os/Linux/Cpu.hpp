@@ -2,8 +2,7 @@
 // \title Os/Linux/Cpu.hpp
 // \brief Linux implementation for Os::Cpu, header and test definitions
 // ======================================================================
-#include <Os/Cpu.hpp>
-#include <Os/File.hpp>
+#include <Os/CpuInterface.hpp>
 #ifndef OS_Linux_Cpu_HPP
 #define OS_Linux_Cpu_HPP
 
@@ -59,7 +58,7 @@ class LinuxCpu : public CpuInterface {
     //! \param cpu_index: index for CPU to read. Default: 0
     //! \return:  ERROR when error occurs, OK otherwise.
     //!
-    Status _getTicks(Os::Cpu::Ticks& ticks, FwSizeType cpu_index) override;
+    Status _getTicks(CpuInterface::Ticks& ticks, FwSizeType cpu_index) override;
 
     //! \brief returns the raw console handle
     //!

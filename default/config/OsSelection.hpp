@@ -87,6 +87,20 @@
 //     }  // namespace Os
 //     #define OS_MUTEX_HEADER "Va416x0/Os/AtomicMutex/AtomicMutex.hpp"
 //     #define OS_CONDITION_VARIABLE_HEADER "Os/Stub/ConditionVariable.hpp"
+//
+// ----------------------------------------------------------------------
+// Cpu
+//
+// A compile-time selection MUST derive from Os::CpuInterface and be default
+// constructible: the singleton and the static init()/getCount()/getTicks()
+// functions are defined once on CpuInterface in terms of Os::Cpu. The module
+// providing the selected class must still be in the link (see above).
+//
+// Example compile-time selection override:
+//
+//     namespace Os { namespace Linux { namespace Cpu { class LinuxCpu; } } }
+//     namespace Os { using Cpu = Os::Linux::Cpu::LinuxCpu; }
+//     #define OS_CPU_HEADER "Os/Linux/Cpu.hpp"
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
@@ -104,10 +118,14 @@ using Mutex = DelegateMutex;
 class DelegateConditionVariable;
 using ConditionVariable = DelegateConditionVariable;
 
+class DelegateCpu;
+using Cpu = DelegateCpu;
+
 }  // namespace Os
 
 #define OS_RAW_TIME_HEADER <Os/DelegateRawTime.hpp>
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_CPU_HEADER <Os/DelegateCpu.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP

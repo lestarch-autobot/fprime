@@ -2,7 +2,7 @@
 // \title Os/Stub/test/Cpu.hpp
 // \brief test stub implementation for Os::Cpu, header and test definitions
 // ======================================================================
-#include <Os/Cpu.hpp>
+#include <Os/CpuInterface.hpp>
 #include <cstdio>
 #ifndef OS_Stub_Test_Cpu_HPP
 #define OS_Stub_Test_Cpu_HPP
@@ -27,7 +27,7 @@ struct StaticData {
     FwSizeType index = 0;
 
     //! Ticks test
-    Os::Cpu::Ticks ticks;
+    CpuInterface::Ticks ticks;
 
     //! Status out
     CpuInterface::Status status_out;
@@ -80,7 +80,7 @@ class TestCpu : public CpuInterface {
     //! \param cpu_index: index for CPU to read. Default: 0
     //! \return:  ERROR when error occurs, OK otherwise.
     //!
-    Status _getTicks(Os::Cpu::Ticks& ticks, FwSizeType cpu_index) override;
+    Status _getTicks(CpuInterface::Ticks& ticks, FwSizeType cpu_index) override;
 
     //! \brief returns the raw console handle
     //!
