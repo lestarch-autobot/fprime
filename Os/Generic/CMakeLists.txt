@@ -12,6 +12,7 @@ register_fprime_module(
     Fw_Types
     Os_Generic_Types
     Os_CountingSemaphore
+    Os_Queue
 )
 register_fprime_implementation(
     Os_Generic_PriorityMemQueue
@@ -49,6 +50,7 @@ register_fprime_module(
   DEPENDS
     Fw_Types
     Os_Generic_Types
+    Os_Queue
 )
 register_fprime_implementation(
     Os_Generic_PriorityQueue
@@ -91,6 +93,7 @@ register_fprime_module(
     Fw_Types
     Fw_Time
     Os
+    Os_Queue
 )
 register_fprime_implementation(
     Os_Generic_LocklessPriorityQueue
@@ -140,3 +143,20 @@ if (TARGET LocklessPriorityQueueTsanTest)
     endif()
     target_include_directories(LocklessPriorityQueueTsanTest PRIVATE "${CMAKE_CURRENT_LIST_DIR}/test/ut")
 endif()
+
+#### Queue implementations used directly (as a compile-time Os::Queue alias would) ####
+register_fprime_ut(
+    QueueDirectImplementationTest
+  SOURCES
+    "${CMAKE_CURRENT_LIST_DIR}/../test/ut/queue/DirectImplementationTests.cpp"
+  DEPENDS
+    Fw_Types
+    Fw_Time
+    Os
+    Os_Generic_PriorityQueue_Implementation
+    Os_Generic_LocklessPriorityQueue_Implementation
+    Os_Generic_PriorityMemQueue_Implementation
+    Os_Queue_Stub_Implementation
+  CHOOSES_IMPLEMENTATIONS
+    Os_Generic_PriorityQueue
+)

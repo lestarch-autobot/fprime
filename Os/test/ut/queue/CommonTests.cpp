@@ -179,14 +179,14 @@ TEST(InterfaceUninitialized, ReceiveBuffer) {
 TEST(InterfaceInvalid, CreateInvalidDepth) {
     Os::Queue queue;
     Fw::String name = "My queue";
-    ASSERT_DEATH_IF_SUPPORTED(queue.create(0, name, 0, 10), "Assert:.*Queue\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(queue.create(0, name, 0, 10), "Assert:.*Queue.*\\.cpp");
     queue.teardown();
 }
 
 TEST(InterfaceInvalid, CreateInvalidSize) {
     Os::Queue queue;
     Fw::String name = "My queue";
-    ASSERT_DEATH_IF_SUPPORTED(queue.create(0, name, 10, 0), "Assert:.*Queue\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(queue.create(0, name, 10, 0), "Assert:.*Queue.*\\.cpp");
     queue.teardown();
 }
 
@@ -196,7 +196,7 @@ TEST(InterfaceInvalid, SendPointerNull) {
     const FwSizeType messageSize = 200;
     const FwQueuePriorityType priority = 127;
     ASSERT_DEATH_IF_SUPPORTED(queue.send(nullptr, messageSize, priority, Os::QueueInterface::BlockingType::BLOCKING),
-                              "Assert:.*Queue\\.cpp");
+                              "Assert:.*Queue.*\\.cpp");
     queue.teardown();
 }
 
@@ -207,7 +207,7 @@ TEST(InterfaceInvalid, SendInvalidEnum) {
     const FwQueuePriorityType priority = 127;
     Os::QueueInterface::BlockingType blockingType =
         static_cast<Os::QueueInterface::BlockingType>(Os::QueueInterface::BlockingType::BLOCKING + 1);
-    ASSERT_DEATH_IF_SUPPORTED(queue.send(nullptr, messageSize, priority, blockingType), "Assert:.*Queue\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(queue.send(nullptr, messageSize, priority, blockingType), "Assert:.*Queue.*\\.cpp");
     queue.teardown();
 }
 
@@ -218,7 +218,7 @@ TEST(InterfaceInvalid, ReceivePointerNull) {
     FwQueuePriorityType priority;
     ASSERT_DEATH_IF_SUPPORTED(
         queue.receive(nullptr, size, Os::QueueInterface::BlockingType::NONBLOCKING, size, priority),
-        "Assert:.*Queue\\.cpp");
+        "Assert:.*Queue.*\\.cpp");
     queue.teardown();
 }
 
@@ -229,7 +229,7 @@ TEST(InterfaceInvalid, ReceiveInvalidEnum) {
     FwQueuePriorityType priority;
     Os::QueueInterface::BlockingType blockingType =
         static_cast<Os::QueueInterface::BlockingType>(Os::QueueInterface::BlockingType::BLOCKING + 1);
-    ASSERT_DEATH_IF_SUPPORTED(queue.receive(nullptr, size, blockingType, size, priority), "Assert:.*Queue\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(queue.receive(nullptr, size, blockingType, size, priority), "Assert:.*Queue.*\\.cpp");
     queue.teardown();
 }
 

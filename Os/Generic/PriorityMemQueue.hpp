@@ -191,6 +191,10 @@ class PriorityMemQueue : public Os::QueueInterface {
     //! Note: this is a helper to allow this to be called from the destructor.
     void teardownInternal();
 
+    // Bring the common send/receive overloads of the interface back into scope
+    using QueueInterface::receive;
+    using QueueInterface::send;
+
     //! \brief send a message into the queue
     //!
     //! Send a message into the queue, providing the message data, size, priority, and blocking type. When

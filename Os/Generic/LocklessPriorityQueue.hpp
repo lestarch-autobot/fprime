@@ -240,6 +240,10 @@ class LocklessPriorityQueue final : public Os::QueueInterface {
     //! or `teardown` (including from ISR context) is in flight when this is invoked.
     void teardown() override;
 
+    // Bring the common send/receive overloads of the interface back into scope
+    using QueueInterface::receive;
+    using QueueInterface::send;
+
     //! \brief send a message into the queue
     //!
     //! When `blockType` is `NONBLOCKING`, the operation completes in time bounded by

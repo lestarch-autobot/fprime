@@ -2108,7 +2108,7 @@ TEST_F(PriorityMemQueueTestFixture, BlockingReceiveUnblock) {
     queue.teardown();
 }
 
-// Double create without teardown test - verify assertion on second create
+// Double create without teardown test - verify second create is rejected
 TEST_F(PriorityMemQueueTestFixture, DoubleCreateAssertion) {
     Os::Generic::PriorityMemQueue::configure(configs, 1, false,
                                              Fw::MemoryAllocation::MemoryAllocatorType::OS_GENERIC_PRIORITY_QUEUE);
@@ -2117,8 +2117,11 @@ TEST_F(PriorityMemQueueTestFixture, DoubleCreateAssertion) {
     ASSERT_EQ(Os::QueueInterface::Status::OP_OK,
               queue.create(QUEUE_ID, Fw::String("Test1"), QUEUE_DEPTH, MESSAGE_SIZE));
 
-    // Second create without teardown should assert (fail-fast design)
-    ASSERT_DEATH_IF_SUPPORTED({ queue.create(QUEUE_ID, Fw::String("Test2"), QUEUE_DEPTH, MESSAGE_SIZE); }, "Assertion");
+    // Second create without teardown is rejected by the common Os::QueueInterface create checks, as it is through
+    // Os::Queue, and leaves the created queue untouched
+    ASSERT_EQ(Os::QueueInterface::Status::ALREADY_CREATED,
+              queue.create(QUEUE_ID, Fw::String("Test2"), QUEUE_DEPTH, MESSAGE_SIZE));
+    ASSERT_STREQ("Test1", queue.getName().toChar());
 
     queue.teardown();
 }

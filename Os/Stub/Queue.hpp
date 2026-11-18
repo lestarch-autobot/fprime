@@ -48,6 +48,10 @@ class StubQueue : public QueueInterface {
     //! Allow for queues to deallocate resources as part of system shutdown.
     void teardown() override;
 
+    // Bring the common send/receive overloads of the interface back into scope
+    using QueueInterface::receive;
+    using QueueInterface::send;
+
     //! \brief send a message into the queue
     //!
     //! Send a message into the queue, providing the message data, size, priority, and blocking type. When
