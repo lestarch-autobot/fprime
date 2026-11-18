@@ -323,8 +323,9 @@ class TaskInterface {
     // directly as the Os::Task alias (compile-time selection, see config/OsSelection.hpp).
     //
     // The bookkeeping is performed only when the calling class is the configured Os::Task. When the
-    // implementation is instead owned by an Os::DelegateTask, or is constructed on its own, the bookkeeping
-    // belongs to the owner and the helpers pass through without effect.
+    // implementation is instead owned by an Os::DelegateTask the bookkeeping belongs to the DelegateTask and
+    // the helpers pass through without effect. The configured Os::Task must be the class that calls the
+    // helpers: aliasing Os::Task to a class derived from an implementation is rejected at compile time.
     // ------------------------------------------------------------------
 
     //! \brief common actions required before an implementation starts a task
@@ -409,6 +410,10 @@ class TaskInterface {
     //! \return self when the calling class is the configured Os::Task, nullptr otherwise
     template <class Impl>
     static Task* asTask(Impl* self) {
+        // An Os::Task derived from an implementation would silently skip the bookkeeping
+        static_assert(std::is_same<typename std::remove_cv<Impl>::type, Task>::value ||
+                          (not std::is_base_of<typename std::remove_cv<Impl>::type, Task>::value),
+                      "Os::Task must be the class that calls the TaskInterface helpers, not a class derived from it");
         FW_ASSERT(self != nullptr);
         // void* round trip is exact: it is only converted back to the type it came from
         return std::is_same<typename std::remove_cv<Impl>::type, Task>::value

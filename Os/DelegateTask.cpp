@@ -4,6 +4,7 @@
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
 #include <Os/DelegateTask.hpp>
+#include <Os/Task.hpp>  // completes Os::Task for the TaskInterface helpers
 
 namespace Os {
 
