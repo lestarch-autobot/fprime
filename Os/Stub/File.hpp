@@ -16,6 +16,8 @@ struct StubFileHandle : public FileHandle {};
 //!
 //! Stub implementation of `FileInterface` for use as a delegate class handling error-only file operations.
 //!
+//! Since `open` never succeeds, the open/closed check in every other operation returns NOT_OPENED first.
+//!
 class StubFile : public FileInterface {
   public:
     //! \brief constructor
