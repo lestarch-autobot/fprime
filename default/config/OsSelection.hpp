@@ -100,6 +100,8 @@
 // (e.g. FW_ASSERT on nullptr paths) as there is no delegate in front of it.
 // The module providing the aliased class must still be in the link (see the
 // Mutex note above).
+// An aliased implementation may have a public constructor: use it only through
+// Os::FileSystem::getSingleton() and the static functions.
 //
 // Example compile-time selection override:
 //

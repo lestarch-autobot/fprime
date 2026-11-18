@@ -28,7 +28,7 @@
 #include "Os/FileSystemInterface.hpp"
 
 #ifndef OS_FILE_SYSTEM_HEADER
-#error "OS_FILE_SYSTEM_HEADER must be defined in config/OsSelection.hpp"
+#error "config/OsSelection.hpp must define the Os::FileSystem alias and OS_FILE_SYSTEM_HEADER"
 #endif
 #include OS_FILE_SYSTEM_HEADER
 
