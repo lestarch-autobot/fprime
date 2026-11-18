@@ -4,7 +4,7 @@
 // ======================================================================
 #ifndef OS_STUB_COUNTING_SEMAPHORE_HPP
 #define OS_STUB_COUNTING_SEMAPHORE_HPP
-#include <Os/CountingSemaphore.hpp>
+#include <Os/CountingSemaphoreInterface.hpp>
 
 namespace Os {
 namespace Stub {
@@ -12,7 +12,7 @@ namespace Semaphore {
 
 struct StubCountingSemaphoreHandle : public CountingSemaphoreHandle {};
 
-class StubCountingSemaphore : public CountingSemaphoreInterface {
+class StubCountingSemaphore final : public CountingSemaphoreInterface {
   public:
     explicit StubCountingSemaphore(U32 initial_count);
 
@@ -20,15 +20,15 @@ class StubCountingSemaphore : public CountingSemaphoreInterface {
 
     StubCountingSemaphore(const StubCountingSemaphore& other) = delete;
 
-    CountingSemaphoreInterface& operator=(const CountingSemaphoreInterface& other) = delete;
+    StubCountingSemaphore& operator=(const StubCountingSemaphore& other) = delete;
 
-    StubCountingSemaphore::Status wait() override;
+    Status wait() override;
 
-    StubCountingSemaphore::Status waitTimeout(const Fw::TimeInterval& interval) override;
+    Status waitTimeout(const Fw::TimeInterval& interval) override;
 
-    StubCountingSemaphore::Status tryWait() override;
+    Status tryWait() override;
 
-    StubCountingSemaphore::Status post() override;
+    Status post() override;
 
     CountingSemaphoreHandle* getHandle() override;
 

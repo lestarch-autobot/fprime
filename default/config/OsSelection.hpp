@@ -2,8 +2,8 @@
 // \title config/OsSelection.hpp
 // \brief configured selection of Os OSAL implementations
 //
-// This header configures how the Os services below (RawTime, Mutex, and
-// ConditionVariable) resolve to concrete implementations. Two mechanisms are
+// This header configures how the Os services below (RawTime, Mutex,
+// ConditionVariable, and CountingSemaphore) resolve to concrete implementations. Two mechanisms are
 // available:
 //
 // 1. Link-time selection (default): each service aliases to an Os::Delegate*
@@ -87,6 +87,21 @@
 //     }  // namespace Os
 //     #define OS_MUTEX_HEADER "Va416x0/Os/AtomicMutex/AtomicMutex.hpp"
 //     #define OS_CONDITION_VARIABLE_HEADER "Os/Stub/ConditionVariable.hpp"
+//
+// ----------------------------------------------------------------------
+// CountingSemaphore
+//
+// Selected independently of the other services. A compile-time selection MUST
+// derive from Os::CountingSemaphoreInterface, be constructible from a U32
+// initial count, and not be copyable (Os/CountingSemaphore.hpp static_asserts
+// all three). The aliased class must still be in the link (see the Mutex note
+// above).
+//
+// Example compile-time selection override:
+//
+//     namespace Os { namespace Posix { namespace Semaphore { class PosixCountingSemaphore; } } }
+//     namespace Os { using CountingSemaphore = Os::Posix::Semaphore::PosixCountingSemaphore; }
+//     #define OS_COUNTING_SEMAPHORE_HEADER "Os/Posix/CountingSemaphore.hpp"
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
@@ -104,10 +119,14 @@ using Mutex = DelegateMutex;
 class DelegateConditionVariable;
 using ConditionVariable = DelegateConditionVariable;
 
+class DelegateCountingSemaphore;
+using CountingSemaphore = DelegateCountingSemaphore;
+
 }  // namespace Os
 
 #define OS_RAW_TIME_HEADER <Os/DelegateRawTime.hpp>
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_COUNTING_SEMAPHORE_HEADER <Os/DelegateCountingSemaphore.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP
