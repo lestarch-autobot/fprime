@@ -3,6 +3,8 @@
 // \brief tests using stub implementation for Os::File interface testing
 // ======================================================================
 #include <gtest/gtest.h>
+#include "Fw/Logger/Logger.hpp"
+#include "Fw/Types/String.hpp"
 #include "Os/Console.hpp"
 #include "Os/Stub/test/Console.hpp"
 
@@ -45,6 +47,38 @@ TEST(Interface, Write) {
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.message, message);
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, 6);
+}
+
+TEST(Interface, WriteNullMessage) {
+    Os::Console console;
+    console.writeMessage(nullptr, 0);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
+    // intentional death test
+    ASSERT_DEATH(console.writeMessage(nullptr, 1), "Assert: ");
+}
+
+TEST(Interface, SingletonWrite) {
+    const char* message = "hello";
+    Os::Console::init();
+    Os::Console::write(message, 6);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.message, message);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, 6);
+    const Fw::String string("string");
+    Os::Console::write(string);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.message, string.toChar());
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, string.length());
+    ASSERT_EQ(&Os::Console::getSingleton(), &Os::Console::getSingleton());
+}
+
+TEST(Interface, SingletonRegistersLogger) {
+    const Fw::String logged("logged");
+    Os::Console::init();
+    Os::Stub::Console::Test::StaticData::data.lastCalled = Os::Stub::Console::Test::StaticData::NONE_FN;
+    Fw::Logger::log(logged);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.message, logged.toChar());
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, logged.length());
 }
 
 int main(int argc, char** argv) {

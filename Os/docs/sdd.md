@@ -208,8 +208,8 @@ namespace Os {
 **Additional requirements for singleton services.** `Console`, `FileSystem`, `Cpu` and `Memory` expose
 static convenience wrappers that resolve through `Os::<Service>::getSingleton()`, and `Os::init()`
 (`Os/Os.cpp`) calls `Os::<Service>::init()`. The `FileSystem`, `Cpu` and `Memory` static wrappers are
-declared on the interface class (`Console`'s `write()` statics are not, see below), and `init()` and
-`getSingleton()` are declared on no interface, so a compile-time alias for one of these services MUST
+declared on the interface class, and `init()` and `getSingleton()` are declared on no interface
+(`Console` is the exception, see below), so a compile-time alias for one of these services MUST
 additionally provide:
 
 ```c++
@@ -217,11 +217,11 @@ static void init();               //!< called by Os::init()
 static <Impl>& getSingleton();    //!< backing instance for the static convenience API
 ```
 
-`Os/Stub/FileSystem.hpp` shows the minimal shape. `Console` additionally needs `static void
-write(const CHAR*, FwSizeType)` / `static void write(const Fw::ConstStringBase&)`, and its
-`getSingleton()` is responsible for the one-time `Fw::Logger::registerLogger()` call — omitting it
-silently drops all `Fw::Logger` output. Without these, the build fails to link (or, for the logger,
-loses output at runtime) rather than failing at compile time.
+`Os/Stub/FileSystem.hpp` shows the minimal shape. Without these, the build fails to link rather than
+failing at compile time. `Console` needs neither: `ConsoleInterface` provides `init()`, `getSingleton()`
+(which performs the one-time `Fw::Logger::registerLogger()` call) and the `write()` statics, so a
+compile-time `Os::Console` alias inherits them and only has to be default-constructible. Every
+`writeMessage(const CHAR*, FwSizeType)` implementation asserts `message != nullptr || size == 0` itself.
 
 **Additional requirements for `Os::File`.** `FileInterface` tracks open mode in a non-virtual
 `m_mode` member maintained by `DelegateFile`, and its CRC methods (`calculateCrc`,

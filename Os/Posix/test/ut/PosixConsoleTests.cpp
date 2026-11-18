@@ -24,6 +24,12 @@ TEST(OffNominal, SwitchStream) {
                                                Os::Posix::Console::PosixConsole::Stream>(3)),
                  "Posix/|\\Console.cpp:33");
 }
+TEST(OffNominal, WriteNullMessage) {
+    Os::Posix::Console::PosixConsole posix_console;
+    posix_console.writeMessage(nullptr, 0);
+    // intentional death test
+    ASSERT_DEATH(posix_console.writeMessage(nullptr, 1), "Assert: ");
+}
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);

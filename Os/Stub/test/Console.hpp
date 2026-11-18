@@ -57,7 +57,9 @@ class TestConsole : public ConsoleInterface {
     TestConsole(const TestConsole& other);
 
     //! \brief assignment operator that copies the internal representation
-    TestConsole& operator=(const TestConsole& other) = delete;
+    //!
+    //! Recorded as CONSTRUCT_COPY_FN, as DelegateConsole assigns by copy-constructing its delegate.
+    TestConsole& operator=(const TestConsole& other);
 
     //! \brief destructor
     //!

@@ -44,29 +44,6 @@ class DelegateConsole final : public ConsoleInterface {
     //!
     ConsoleHandle* getHandle() override;
 
-    //! \brief write message to console
-    //!
-    //! Write a message to the console as stored as a ConstStringBase type
-    //!
-    //! \param message: raw message to write (ConstStringBase)
-    static void write(const Fw::ConstStringBase& message);
-
-    //! \brief write message to the global console
-    //!
-    //! Write a message to the console with a bounded size. This will delegate to the global singleton
-    //! implementation.
-    //!
-    //! \param message: raw message to write
-    //! \param size: size of the message to write to the console
-    static void write(const CHAR* message, const FwSizeType size);
-
-    //! \brief initialize singleton
-    static void init();
-
-    //! \brief get a reference to singleton
-    //! \return reference to singleton
-    static DelegateConsole& getSingleton();
-
   private:
     // This section is used to store the implementation-defined console handle. To Os::Console and fprime, this type
     // is opaque and thus normal allocation cannot be done. Instead, we allow the implementor to store then handle

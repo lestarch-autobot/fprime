@@ -10,6 +10,14 @@
 #include <Os/Os.hpp>
 #include "config/OsSelection.hpp"
 
+// A project config/OsSelection.hpp that predates the Console selection does not declare Os::Console
+#ifndef OS_CONSOLE_HEADER
+namespace Os {
+class DelegateConsole;
+using Console = DelegateConsole;
+}  // namespace Os
+#endif
+
 namespace Os {
 //! \brief Base class for storing implementation specific handle information
 struct ConsoleHandle {};
@@ -26,6 +34,8 @@ class ConsoleInterface : public Fw::Logger {
     //! \brief write message to console
     //!
     //! Write a message to the console with a bounded size.
+    //!
+    //! Implementations must assert that `message` is not null unless `size` is 0.
     //!
     //! \param message: raw message to write
     //! \param size: size of the message to write to the console
@@ -75,6 +85,32 @@ class ConsoleInterface : public Fw::Logger {
     //!
     //! \param message: raw message to write (ConstStringBase)
     void writeMessage(const Fw::ConstStringBase& message) override;
+
+    //! \brief write message to the global console
+    //!
+    //! Write a message to the console as stored as a ConstStringBase type
+    //!
+    //! \param message: raw message to write (ConstStringBase)
+    static void write(const Fw::ConstStringBase& message);
+
+    //! \brief write message to the global console
+    //!
+    //! Write a message to the console with a bounded size. This will delegate to the global singleton
+    //! implementation.
+    //!
+    //! \param message: raw message to write
+    //! \param size: size of the message to write to the console
+    static void write(const CHAR* message, const FwSizeType size);
+
+    //! \brief initialize singleton
+    static void init();
+
+    //! \brief get a reference to singleton
+    //!
+    //! The singleton is registered as the Fw::Logger on first access.
+    //!
+    //! \return reference to singleton
+    static Console& getSingleton();
 };
 }  // namespace Os
 

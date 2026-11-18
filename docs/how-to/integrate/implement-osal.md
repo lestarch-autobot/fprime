@@ -394,8 +394,9 @@ For the services that have been split into an alias header plus an interface hea
 > The steps above cover *link-time* selection, where your class is reached through the generated
 > `getDelegate()` factory. If instead you alias `Os::<Service>` directly to your class
 > (*compile-time* selection, see [`Os/docs/sdd.md` §5.2.2](../../../Os/docs/sdd.md#522-compile-time-selection-performance-optimization)),
-> inheriting from the interface is not sufficient: singleton services (`Console`, `FileSystem`,
-> `Cpu`, `Memory`) must also supply `static void init()` and `static <Impl>& getSingleton()`, and
+> inheriting from the interface is not sufficient: singleton services (`FileSystem`, `Cpu`,
+> `Memory`; `Console` inherits these from `ConsoleInterface`) must also supply `static void init()`
+> and `static <Impl>& getSingleton()`, and
 > `Os::File`/`Os::Directory` must maintain the base class's mode/open state and, for `File`,
 > override the CRC methods. See the "Additional requirements" notes in `Os/docs/sdd.md` §5.2.2.
 

@@ -30,37 +30,11 @@ DelegateConsole& DelegateConsole::operator=(const DelegateConsole& other) {
 
 void DelegateConsole::writeMessage(const CHAR* message, const FwSizeType size) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<ConsoleInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(message != nullptr || size == 0);
     this->m_delegate.writeMessage(message, size);
 }
 
 ConsoleHandle* DelegateConsole::getHandle() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<ConsoleInterface*>(&this->m_handle_storage[0]));
     return this->m_delegate.getHandle();
-}
-
-void DelegateConsole::write(const CHAR* message, const FwSizeType size) {
-    DelegateConsole::getSingleton().writeMessage(message, size);
-}
-
-void DelegateConsole::write(const Fw::ConstStringBase& message) {
-    DelegateConsole::getSingleton().writeMessage(message.toChar(), message.length());
-}
-
-void DelegateConsole::init() {
-    // Force trigger on the fly singleton setup
-    (void)DelegateConsole::getSingleton();
-}
-
-DelegateConsole& DelegateConsole::getSingleton() {
-    static DelegateConsole s_singleton;
-    // Registration happens once: re-registering on every access would silently replace a
-    // logger the project registered after the console singleton was first used
-    static bool s_registered = false;
-    if (not s_registered) {
-        s_registered = true;
-        Fw::Logger::registerLogger(&s_singleton);
-    }
-    return s_singleton;
 }
 }  // namespace Os
