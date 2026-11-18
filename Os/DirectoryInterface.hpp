@@ -156,15 +156,15 @@ class DirectoryInterface {
   protected:
     //! \brief set whether the directory is currently tracked as open
     //!
-    //! Provided for subclasses (e.g. link-time delegates) whose `open`/`close` overrides must update the open
-    //! state tracked by this base class.
+    //! Called from `open`/`close` by the link-time delegate and by every implementation usable as a direct
+    //! alias, to update the open state tracked by this base class.
     //!
     //! \param is_open: new open state to track
     //!
     void setOpen(bool is_open);
 
   private:
-    bool m_is_open = false;  //!< Flag indicating if the directory has been open
+    bool m_is_open = false;  //!< Flag indicating if the directory is open
 };
 }  // namespace Os
 

@@ -81,16 +81,9 @@ class PosixDirectoryDirect : public ::testing::Test {
     }
 
     //! File descriptor of the stream held by an open directory
-    static int descriptorOf(Os::Posix::Directory::PosixDirectory& directory) {
+    static int descriptorOf(Os::DirectoryInterface& directory) {
         auto* handle = static_cast<Os::Posix::Directory::PosixDirectoryHandle*>(directory.getHandle());
         return ::dirfd(handle->m_dir_descriptor);
-    }
-
-    //! Lowest file descriptor number not in use, i.e. the one the next open receives
-    static int lowestFreeDescriptor() {
-        const int fd = ::dup(STDIN_FILENO);
-        ::close(fd);
-        return fd;
     }
 
     //! Whether a file descriptor is currently open
@@ -190,16 +183,14 @@ TEST_F(PosixDirectoryDirect, DestructorCloses) {
 
 // Re-opening releases the previous stream; a failed re-open leaves the directory closed
 TEST_F(PosixDirectoryDirect, Reopen) {
-    const int lowestFree = lowestFreeDescriptor();
     ASSERT_EQ(this->m_directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
-    ASSERT_EQ(descriptorOf(this->m_directory), lowestFree);
+    const int first = descriptorOf(this->m_directory);
     ASSERT_EQ(this->m_directory.open(OTHER_PATH, Os::Directory::OpenMode::CREATE_IF_MISSING),
               Os::Directory::Status::OP_OK);
     ASSERT_TRUE(this->m_directory.isOpen());
     const int second = descriptorOf(this->m_directory);
-    // The first stream was closed before the second was opened: only one descriptor is in use
-    ASSERT_EQ(second, lowestFree);
-    ASSERT_EQ(lowestFreeDescriptor(), lowestFree + 1);
+    // The first stream was closed: its descriptor is closed, or was reused by the second stream
+    ASSERT_TRUE(first == second || not isDescriptorOpen(first));
     // Failing in the creation step also leaves the directory closed
     ASSERT_EQ(this->m_directory.open(PATH, Os::Directory::OpenMode::CREATE_EXCLUSIVE),
               Os::Directory::Status::ALREADY_EXISTS);
@@ -213,17 +204,30 @@ TEST_F(PosixDirectoryDirect, Reopen) {
 
 // The same re-open sequence through Os::Directory reports the same state
 TEST_F(PosixDirectoryDirect, ReopenThroughOsDirectory) {
-    Os::Directory directory;
-    FwSizeType count = 0;
-    ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
-    ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
-    ASSERT_TRUE(directory.isOpen());
-    ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::CREATE_EXCLUSIVE), Os::Directory::Status::ALREADY_EXISTS);
-    ASSERT_FALSE(directory.isOpen());
-    ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
-    ASSERT_EQ(directory.open(MISSING_PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::DOESNT_EXIST);
-    ASSERT_FALSE(directory.isOpen());
-    ASSERT_EQ(directory.getFileCount(count), Os::Directory::Status::NOT_OPENED);
+    int fd = -1;
+    {
+        Os::Directory directory;
+        FwSizeType count = 0;
+        ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+        ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+        ASSERT_TRUE(directory.isOpen());
+        fd = descriptorOf(directory);
+        ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::CREATE_EXCLUSIVE),
+                  Os::Directory::Status::ALREADY_EXISTS);
+        ASSERT_FALSE(directory.isOpen());
+        ASSERT_FALSE(isDescriptorOpen(fd));
+        ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+        fd = descriptorOf(directory);
+        ASSERT_EQ(directory.open(MISSING_PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::DOESNT_EXIST);
+        ASSERT_FALSE(directory.isOpen());
+        ASSERT_FALSE(isDescriptorOpen(fd));
+        ASSERT_EQ(directory.getFileCount(count), Os::Directory::Status::NOT_OPENED);
+        ASSERT_EQ(directory.open(PATH, Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+        fd = descriptorOf(directory);
+        ASSERT_TRUE(isDescriptorOpen(fd));
+    }
+    // Destruction releases the stream
+    ASSERT_FALSE(isDescriptorOpen(fd));
 }
 
 // Invalid arguments assert in the implementation

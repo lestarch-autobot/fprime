@@ -11,8 +11,8 @@ namespace Os {
 
 //! \brief Directory delegate class
 //!
-//! This class provides a common interface for directory operations, such as reading files in a directory
-//! and getting the number of files in a directory.
+//! Link-time delegate: forwards each operation to the implementation chosen at link time through
+//! `DirectoryInterface::getDelegate`, and performs the argument and open-state checks around it.
 class DelegateDirectory final : public DirectoryInterface {
   public:
     //! \brief Constructor
@@ -41,6 +41,8 @@ class DelegateDirectory final : public DirectoryInterface {
     //! Use OpenMode::READ to open an existing directory and error if the directory is not found
     //! Use OpenMode::CREATE_IF_MISSING to open a directory, creating the directory if it doesn't exist
     //! Use OpenMode::CREATE_EXCLUSIVE to open a directory, creating the directory and erroring if it already exists
+    //!
+    //! Opening an already open directory closes it first; if the open fails the directory is left closed.
     //!
     //! It is invalid to pass `nullptr` as the path.
     //! It is invalid to supply `mode` as a non-enumerated value.
