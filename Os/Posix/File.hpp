@@ -187,6 +187,14 @@ class PosixFile : public FileInterface {
     //!
     static mode_t map_open_create_mode(const U32 create_mode);
 
+    //! \brief Duplicate the descriptor of another file into this one
+    //!
+    //! This object is marked closed when the other file is closed or the duplication fails.
+    //!
+    //! \param other: file whose descriptor is duplicated
+    //!
+    void duplicateDescriptor(const PosixFile& other);
+
   private:
     //! File handle for PosixFile
     PosixFileHandle m_handle;

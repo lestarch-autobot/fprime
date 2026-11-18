@@ -95,6 +95,7 @@ StubFile::Status StubFile::read(U8* buffer, FwSizeType& size, StubFile::WaitType
         size = 0;
         return Status::INVALID_MODE;
     }
+    size = 0;
     Status status = Status::NOT_SUPPORTED;
     return status;
 }
@@ -110,6 +111,7 @@ StubFile::Status StubFile::write(const U8* buffer, FwSizeType& size, StubFile::W
         size = 0;
         return Status::INVALID_MODE;
     }
+    size = 0;
     Status status = Status::NOT_SUPPORTED;
     return status;
 }

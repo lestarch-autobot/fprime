@@ -8,7 +8,8 @@ constant FW_CONSOLE_HANDLE_MAX_SIZE = 24
 @ Maximum size of a handle for Os::Task
 constant FW_TASK_HANDLE_MAX_SIZE = 40
 
-@ Maximum size of a handle for Os::File
+@ Maximum size of a handle for Os::File. Must hold the implementation, which includes the
+@ Os::FileInterface state: virtual table pointer, open mode, and CRC hash handle
 constant FW_FILE_HANDLE_MAX_SIZE = 24
 
 @ Maximum size of a handle for Os::Mutex

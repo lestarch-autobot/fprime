@@ -9,7 +9,6 @@
 #include <type_traits>
 
 #include <Fw/Types/Assert.hpp>
-#include <Os/File.hpp>
 #include <Os/Posix/File.hpp>
 #include <Os/Posix/error.hpp>
 
@@ -56,22 +55,34 @@ static_assert(std::numeric_limits<FwSizeType>::max() >= std::numeric_limits<size
 //!\brief default copy constructor
 PosixFile::PosixFile(const PosixFile& other) : FileInterface(other) {
     // Must properly duplicate the file handle
-    this->m_handle.m_file_descriptor = fcntl(other.m_handle.m_file_descriptor, F_DUPFD, 0);
+    this->duplicateDescriptor(other);
 }
 
 PosixFile::~PosixFile() {
     // Matches the behavior of the delegating Os::File: an open file is closed on destruction
+    // Qualified call: overrides in derived classes are not reachable from a destructor
     if (this->m_mode != OPEN_NO_MODE) {
-        this->close();
+        this->PosixFile::close();
+    }
+}
+
+void PosixFile::duplicateDescriptor(const PosixFile& other) {
+    this->m_handle.m_file_descriptor = PosixFileHandle::INVALID_FILE_DESCRIPTOR;
+    if (other.m_mode != OPEN_NO_MODE) {
+        this->m_handle.m_file_descriptor = fcntl(other.m_handle.m_file_descriptor, F_DUPFD, 0);
+    }
+    // A failed duplication must not leave this object reporting an open file
+    if (this->m_handle.m_file_descriptor == PosixFileHandle::INVALID_FILE_DESCRIPTOR) {
+        this->markClosed();
     }
 }
 
 PosixFile& PosixFile::operator=(const PosixFile& other) {
     if (this != &other) {
         // Any file currently held must be closed first or its descriptor is orphaned permanently
-        this->close();
+        this->PosixFile::close();
         FileInterface::operator=(other);
-        this->m_handle.m_file_descriptor = fcntl(other.m_handle.m_file_descriptor, F_DUPFD, 0);
+        this->duplicateDescriptor(other);
     }
     return *this;
 }
@@ -173,7 +184,7 @@ PosixFile::Status PosixFile::size(FwSizeType& size_result) {
     FwSizeType current_position = 0;
     Status status = this->position(current_position);
     size_result = 0;
-    if (Os::File::Status::OP_OK == status) {
+    if (Status::OP_OK == status) {
         // Must be a coding error if current_position is larger than off_t max in Posix File
         FW_ASSERT(current_position <= OFF_T_MAX_LIMIT);
         // Seek to the end of the file to determine size
@@ -215,11 +226,11 @@ PosixFile::Status PosixFile::preallocate(FwSizeType offset, FwSizeType length) {
     } else if (OPEN_READ == this->m_mode) {
         return Status::INVALID_MODE;
     }
-    PosixFile::Status status = Os::File::Status::NOT_SUPPORTED;
+    PosixFile::Status status = Status::NOT_SUPPORTED;
     // Check for larger size than posix supports
     if ((length > OFF_T_MAX_LIMIT) || (offset > OFF_T_MAX_LIMIT) ||
         (std::numeric_limits<off_t>::max() - length) < offset) {
-        status = Os::File::Status::BAD_SIZE;
+        status = Status::BAD_SIZE;
     }
     // posix_fallocate is only available with the posix C-API post version 200112L, however; it is not guaranteed that
     // this call is properly implemented. This code starts with a status of "NOT_SUPPORTED".  When the standard is met
@@ -233,24 +244,24 @@ PosixFile::Status PosixFile::preallocate(FwSizeType offset, FwSizeType length) {
     }
 #endif
     // When the operation is not supported or posix-API is not sufficient, fallback to a slower algorithm
-    if (Os::File::Status::NOT_SUPPORTED == status) {
+    if (Status::NOT_SUPPORTED == status) {
         // Calculate size
         FwSizeType file_size = 0;
         status = this->size(file_size);
-        if (Os::File::Status::OP_OK == status) {
+        if (Status::OP_OK == status) {
             // Calculate current position
             FwSizeType file_position = 0;
             status = this->position(file_position);
             // Check for overflow in seek calls
             if (file_position > static_cast<FwSizeType>(std::numeric_limits<FwSignedSizeType>::max()) ||
                 file_size > static_cast<FwSizeType>(std::numeric_limits<FwSignedSizeType>::max())) {
-                status = Os::File::Status::BAD_SIZE;
+                status = Status::BAD_SIZE;
             }
             // Only allocate when the file is smaller than the allocation
-            else if ((Os::File::Status::OP_OK == status) && (file_size < (offset + length))) {
+            else if ((Status::OP_OK == status) && (file_size < (offset + length))) {
                 const FwSizeType write_length = (offset + length) - file_size;
                 status = this->seek(static_cast<FwSignedSizeType>(file_size), PosixFile::SeekType::ABSOLUTE);
-                if (Os::File::Status::OP_OK == status) {
+                if (Status::OP_OK == status) {
                     // Fill in zeros past size of file to ensure compatibility with fallocate
                     for (FwSizeType i = 0; i < write_length; i++) {
                         FwSizeType write_size = 1;
@@ -261,7 +272,7 @@ PosixFile::Status PosixFile::preallocate(FwSizeType offset, FwSizeType length) {
                         }
                     }
                     // Return to original position
-                    if (Os::File::Status::OP_OK == status) {
+                    if (Status::OP_OK == status) {
                         status =
                             this->seek(static_cast<FwSignedSizeType>(file_position), PosixFile::SeekType::ABSOLUTE);
                     }
@@ -291,7 +302,7 @@ PosixFile::Status PosixFile::seek(FwSignedSizeType offset, PosixFile::SeekType s
         if (actual == PosixFileHandle::ERROR_RETURN_VALUE) {
             status = Os::Posix::errno_to_file_status(errno_store);
         } else if ((seekType == SeekType::ABSOLUTE) && (actual != offset)) {
-            status = Os::File::Status::OTHER_ERROR;
+            status = Status::OTHER_ERROR;
         }
     }
     return status;

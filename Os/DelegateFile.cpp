@@ -63,7 +63,6 @@ DelegateFile::Status DelegateFile::open(const CHAR* filepath,
 
 void DelegateFile::close() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(this->m_mode < Mode::MAX_OPEN_MODE);
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     this->m_delegate.close();
     this->markClosed();
@@ -115,7 +114,7 @@ DelegateFile::Status DelegateFile::seek(FwSignedSizeType offset, DelegateFile::S
 
 DelegateFile::Status DelegateFile::flush() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(this->m_mode < Mode::MAX_OPEN_MODE);
+    FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
     if (OPEN_NO_MODE == this->m_mode) {
         return DelegateFile::Status::NOT_OPENED;
@@ -128,7 +127,7 @@ DelegateFile::Status DelegateFile::flush() {
 DelegateFile::Status DelegateFile::read(U8* buffer, FwSizeType& size, DelegateFile::WaitType wait) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
     FW_ASSERT(buffer != nullptr);
-    FW_ASSERT(this->m_mode < Mode::MAX_OPEN_MODE);
+    FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
     if (OPEN_NO_MODE == this->m_mode) {
         size = 0;
@@ -143,7 +142,7 @@ DelegateFile::Status DelegateFile::read(U8* buffer, FwSizeType& size, DelegateFi
 DelegateFile::Status DelegateFile::write(const U8* buffer, FwSizeType& size, DelegateFile::WaitType wait) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
     FW_ASSERT(buffer != nullptr);
-    FW_ASSERT(this->m_mode < Mode::MAX_OPEN_MODE);
+    FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
     if (OPEN_NO_MODE == this->m_mode) {
         size = 0;

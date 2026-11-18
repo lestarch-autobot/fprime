@@ -2,8 +2,8 @@
 // \title config/OsSelection.hpp
 // \brief configured selection of Os OSAL implementations
 //
-// This header configures how the Os services below (RawTime, Mutex, and
-// ConditionVariable) resolve to concrete implementations. Two mechanisms are
+// This header configures how the Os services below (RawTime, Mutex,
+// ConditionVariable, and File) resolve to concrete implementations. Two mechanisms are
 // available:
 //
 // 1. Link-time selection (default): each service aliases to an Os::Delegate*
@@ -87,6 +87,30 @@
 //     }  // namespace Os
 //     #define OS_MUTEX_HEADER "Va416x0/Os/AtomicMutex/AtomicMutex.hpp"
 //     #define OS_CONDITION_VARIABLE_HEADER "Os/Stub/ConditionVariable.hpp"
+//
+// ----------------------------------------------------------------------
+// File
+//
+// WARNING: compile-time selections MUST derive from Os::FileInterface (the
+// open/read/write convenience overloads, seek_absolute(), readline(), isOpen()
+// and the CRC functions are defined there) and MUST:
+//
+// 1. Call markOpen() when open() succeeds and markClosed() in close(); the
+//    functions defined in Os::FileInterface rely on that tracked mode.
+// 2. Perform the argument and state checks that Os::DelegateFile performs
+//    (see Os/Posix/File.cpp); no wrapper performs them for an aliased class.
+// 3. Re-expose the overloads: `using FileInterface::open;` (and read, write).
+//
+// The implementation module providing the aliased class must still be in the
+// link, and the Os_File module always REQUIRES_IMPLEMENTATIONS Os_File. Tests
+// that inject a different file through FileInterface::getDelegate() do not
+// apply to an aliased class.
+//
+// Example compile-time selection override:
+//
+//     namespace Os { namespace Posix { namespace File { class PosixFile; } } }
+//     namespace Os { using File = Os::Posix::File::PosixFile; }
+//     #define OS_FILE_HEADER <Os/Posix/File.hpp>
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP

@@ -430,7 +430,7 @@ class FileInterface {
     //!
     //! 1. Assert that the supplied memory is non-null. e.g `FW_ASSERT(aligned_placement_new_memory != NULL);`
     //! 2. Assert that their implementation fits within FW_HANDLE_MAX_SIZE.
-    //!    e.g. `static_assert(sizeof(PosixFileImplementation) <= sizeof Os::File::m_handle_storage,
+    //!    e.g. `static_assert(sizeof(PosixFileImplementation) <= sizeof(Os::FileHandleStorage),
     //!        "FW_HANDLE_MAX_SIZE too small");`
     //! 3. Assert that their implementation aligns within FW_HANDLE_ALIGNMENT.
     //!    e.g. `static_assert((FW_HANDLE_ALIGNMENT % alignof(PosixFileImplementation)) == 0, "Bad handle alignment");`

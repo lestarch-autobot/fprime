@@ -29,7 +29,7 @@ struct Tester {
 
     //! Assert in File.cpp for searching death text
     static constexpr const char* ASSERT_IN_FILE_CPP =
-        "Assert: \".*/?Os/(.*/)?(File|FileInterface|DelegateFile)\\.cpp:[0-9]+\"";
+        "Assert: \".*/?Os/(FileInterface|DelegateFile|Posix/File|Stub/File)\\.cpp:[0-9]+\"";
 
     // Constructors that ensures the file is always valid
     Tester();
