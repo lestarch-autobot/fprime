@@ -87,6 +87,19 @@
 //     }  // namespace Os
 //     #define OS_MUTEX_HEADER "Va416x0/Os/AtomicMutex/AtomicMutex.hpp"
 //     #define OS_CONDITION_VARIABLE_HEADER "Os/Stub/ConditionVariable.hpp"
+//
+// ----------------------------------------------------------------------
+// Memory
+//
+// A compile-time selection MUST derive from Os::MemoryInterface, which supplies
+// the static init()/getSingleton()/getUsage(), and MUST be default
+// constructible. Its implementation module must still be in the link.
+//
+// Example compile-time selection override:
+//
+//     namespace Os { namespace Linux { namespace Memory { class LinuxMemory; } } }
+//     namespace Os { using Memory = Os::Linux::Memory::LinuxMemory; }
+//     #define OS_MEMORY_HEADER <Os/Linux/Memory.hpp>
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
@@ -104,10 +117,14 @@ using Mutex = DelegateMutex;
 class DelegateConditionVariable;
 using ConditionVariable = DelegateConditionVariable;
 
+class DelegateMemory;
+using Memory = DelegateMemory;
+
 }  // namespace Os
 
 #define OS_RAW_TIME_HEADER <Os/DelegateRawTime.hpp>
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_MEMORY_HEADER <Os/DelegateMemory.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP

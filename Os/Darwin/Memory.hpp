@@ -2,7 +2,7 @@
 // \title Os/Darwin/Memory.hpp
 // \brief Darwin implementation for Os::Memory, header and test definitions
 // ======================================================================
-#include <Os/Memory.hpp>
+#include <Os/MemoryInterface.hpp>
 #ifndef OS_Darwin_Memory_HPP
 #define OS_Darwin_Memory_HPP
 
@@ -44,7 +44,7 @@ class DarwinMemory : public MemoryInterface {
     //!
     //! \param memory_usage: (output) data structure used to store memory usage
     //! \return:  ERROR when error occurs, OK otherwise.
-    Status _getUsage(Os::Memory::Usage& memory_usage) override;
+    Status _getUsage(Usage& memory_usage) override;
 
     //! \brief returns the raw console handle
     //!

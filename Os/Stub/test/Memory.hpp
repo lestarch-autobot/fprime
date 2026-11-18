@@ -2,7 +2,7 @@
 // \title Os/Stub/test/Memory.hpp
 // \brief test stub implementation for Os::Memory, header and test definitions
 // ======================================================================
-#include <Os/Memory.hpp>
+#include <Os/MemoryInterface.hpp>
 #include <cstdio>
 #ifndef OS_Stub_Test_Memory_HPP
 #define OS_Stub_Test_Memory_HPP
@@ -27,7 +27,7 @@ struct StaticData {
     FwSizeType index = 0;
 
     //! Ticks test
-    Os::Memory::Usage usage;
+    Os::MemoryInterface::Usage usage;
 
     //! Status out
     MemoryInterface::Status status_out;
@@ -66,7 +66,7 @@ class TestMemory : public MemoryInterface {
     //!
     //! \param memory_usage: (output) data structure used to store memory usage
     //! \return:  ERROR when error occurs, OK otherwise.
-    Status _getUsage(Os::Memory::Usage& memory_usage) override;
+    Status _getUsage(Usage& memory_usage) override;
 
     //! \brief returns the raw console handle
     //!
