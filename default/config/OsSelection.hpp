@@ -2,8 +2,8 @@
 // \title config/OsSelection.hpp
 // \brief configured selection of Os OSAL implementations
 //
-// This header configures how the Os services below (RawTime, Mutex, and
-// ConditionVariable) resolve to concrete implementations. Two mechanisms are
+// This header configures how the Os services below (RawTime, Mutex,
+// ConditionVariable, and Console) resolve to concrete implementations. Two mechanisms are
 // available:
 //
 // 1. Link-time selection (default): each service aliases to an Os::Delegate*

@@ -3,6 +3,7 @@
 // \brief tests using stub implementation for Os::Console interface testing
 // ======================================================================
 #include <gtest/gtest.h>
+#include "Fw/Logger/Logger.hpp"
 #include "Fw/Types/String.hpp"
 #include "Os/Console.hpp"
 #include "Os/Stub/test/Console.hpp"
@@ -62,6 +63,30 @@ TEST(Interface, WriteMessageString) {
 TEST(Interface, WriteMessageNull) {
     Os::Console console;
     ASSERT_DEATH(console.writeMessage(nullptr, 5), "Assert: ");
+}
+
+// A logger that records whether it received a message
+class RecordingLogger : public Fw::Logger {
+  public:
+    void writeMessage(const Fw::ConstStringBase& message) override { this->m_called = true; }
+    bool m_called = false;
+};
+
+// The singleton registers itself as the Fw::Logger exactly once and never replaces a logger registered afterwards
+TEST(Interface, SingletonLoggerRegistration) {
+    Os::Console::init();
+    Os::Stub::Console::Test::StaticData::data.lastCalled = Os::Stub::Console::Test::StaticData::NONE_FN;
+    Fw::Logger::log("hello");
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, 5);
+
+    RecordingLogger recorder;
+    Fw::Logger::registerLogger(&recorder);
+    Os::Console::write("direct", 6);
+    Os::Console::init();
+    Fw::Logger::log("hello");
+    ASSERT_TRUE(recorder.m_called);
+    Fw::Logger::registerLogger(&Os::Console::getSingleton());
 }
 
 int main(int argc, char** argv) {

@@ -3,8 +3,12 @@
 // \brief common function implementation for Os::ConsoleInterface
 // ======================================================================
 #include <Os/Console.hpp>
+#include <type_traits>
 
 namespace Os {
+
+static_assert(std::is_base_of<ConsoleInterface, Console>::value,
+              "Os::Console (config/OsSelection.hpp) must derive from Os::ConsoleInterface");
 
 void ConsoleInterface::writeMessage(const Fw::ConstStringBase& message) {
     this->writeMessage(message.toChar(), message.length());

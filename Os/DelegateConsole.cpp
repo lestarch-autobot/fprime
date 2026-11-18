@@ -17,7 +17,9 @@ DelegateConsole::~DelegateConsole() {
 }
 
 DelegateConsole::DelegateConsole(const DelegateConsole& other)
-    : m_handle_storage(), m_delegate(*ConsoleInterface::getDelegate(m_handle_storage, &other.m_delegate)) {
+    : ConsoleInterface(other),
+      m_handle_storage(),
+      m_delegate(*ConsoleInterface::getDelegate(m_handle_storage, &other.m_delegate)) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<ConsoleInterface*>(&this->m_handle_storage[0]));
 }
 

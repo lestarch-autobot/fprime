@@ -32,8 +32,9 @@ TEST(OffNominal, SwitchStream) {
 // Redirect the console under test to a temporary file and return that file
 static FILE* redirectToTemporaryFile(Os::Posix::Console::PosixConsole& posix_console) {
     FILE* capture = ::tmpfile();
-    EXPECT_NE(capture, nullptr);
-    static_cast<Os::Posix::Console::PosixConsoleHandle*>(posix_console.getHandle())->m_file_descriptor = capture;
+    if (capture != nullptr) {
+        static_cast<Os::Posix::Console::PosixConsoleHandle*>(posix_console.getHandle())->m_file_descriptor = capture;
+    }
     return capture;
 }
 
@@ -74,6 +75,7 @@ TEST(Nominal, WriteThroughLogger) {
     ASSERT_NE(capture, nullptr);
     Fw::Logger::registerLogger(&posix_console);
     Fw::Logger::log("value %d\n", 42);
+    // Fw::Logger has no getter to restore the previous logger: unregister so the destroyed console is not used
     Fw::Logger::registerLogger(nullptr);
     ASSERT_EQ(readBackAndClose(capture), "value 42\n");
 }
