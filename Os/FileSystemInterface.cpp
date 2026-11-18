@@ -106,7 +106,7 @@ FileSystemInterface::Status copyFileData(File& source, File& destination, FwSize
 
 void FileSystemInterface::init() {
     // Force trigger on the fly singleton setup
-    (void)FileSystemInterface::getSingleton();
+    (void)Os::FileSystem::getSingleton();
 }
 
 FileSystem& FileSystemInterface::getSingleton() {
