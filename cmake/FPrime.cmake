@@ -215,7 +215,7 @@ function(fprime_setup_included_code)
     fprime_setup_platform()
     # Add "all" target to top level and a target to match all tests
     # The project build target belongs to the root of the build cache even when F Prime is added from a subdirectory
-    fprime_util_metadata_add_project_build_target("all")
+    fprime_util_metadata_setup_project()
     # Decide whether framework and library modules are excluded from "all". When F Prime is the top-level project
     # (the framework building itself) everything is the project and nothing is excluded.
     set(_FP_EXCLUDE_INCLUDED_CODE "${FPRIME_EXCLUDE_LIBRARIES_FROM_ALL}")

@@ -102,6 +102,21 @@ function(fprime_util_metadata_add_project_build_target BUILD_TARGET)
 endfunction()
 
 ####
+# Function `fprime_util_metadata_setup_project`:
+#
+# Sets up the project-level (root of the build cache) metadata: `all` is what `fprime-util build` builds at the project
+# root. Runs once per configure; called when a project is registered (`register_fprime_project`) and when the framework
+# and library code is set up (`fprime_setup_included_code`), whichever comes first.
+####
+function(fprime_util_metadata_setup_project)
+    get_property(_FPRIME_PROJECT_METADATA_SETUP GLOBAL PROPERTY FPRIME__INTERNAL_PROJECT_METADATA_SETUP)
+    if (NOT _FPRIME_PROJECT_METADATA_SETUP)
+        set_property(GLOBAL PROPERTY FPRIME__INTERNAL_PROJECT_METADATA_SETUP ON)
+        fprime_util_metadata_add_project_build_target("all")
+    endif()
+endfunction()
+
+####
 # Function `fprime_util_metadata_add_project_test`:
 #
 # Adds a test to the project-level (root of the build cache) metadata, i.e. the tests run by `fprime-util check` at the
