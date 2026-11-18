@@ -171,8 +171,8 @@ endmacro(fprime_initialize_build_system)
 # registered. Resets the fprime-util metadata of the calling directory, so nothing may register in it before this call.
 #
 # Decides whether the framework and library modules registered here are excluded from `all` (global property
-# FPRIME_EXCLUDING_INCLUDED_CODE: `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL`, forced OFF when F Prime is the top-level project)
-# and writes the project-level fprime-util test metadata at the root of the build cache accordingly.
+# FPRIME_EXCLUDING_INCLUDED_CODE: `FPRIME_EXCLUDE_LIBRARIES_FROM_ALL`, forced OFF when F Prime is the top-level project).
+# Unit tests built by `all` are labeled and listed at the root of the build cache by `ut_add_ctest`.
 ####
 function(fprime_setup_included_code)
     # The calling directory (e.g. "F-Prime") has no add_fprime_subdirectory parent to reset its metadata
@@ -229,10 +229,6 @@ function(fprime_setup_included_code)
     # Build the `universe` target from every registered module once the whole project has been configured
     if (NOT FPRIME_IS_SUB_BUILD)
         cmake_language(DEFER DIRECTORY "${CMAKE_SOURCE_DIR}" CALL fprime__internal_setup_universe_target)
-    endif()
-    if (BUILD_TESTING AND NOT _FP_EXCLUDE_INCLUDED_CODE)
-        # Every unit test belongs to the project; otherwise ut_add_ctest lists the project's tests individually
-        fprime_util_metadata_add_project_test(".*")
     endif()
     # Modules registered while this is set belong to the framework or a library, not to the project
     set(FPRIME__INTERNAL_INCLUDED_CODE ON)

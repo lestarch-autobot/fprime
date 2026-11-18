@@ -28,9 +28,12 @@ cmake --build . --target universe   # everything the build system knows about
 ```
 
 In unit-test builds (`BUILD_TESTING=ON`) every test carries the CTest label `fprime_universe`, and the tests built by
-`all` also carry `fprime_project`. `ctest -L fprime_project` runs the project's tests only, and `fprime-util check` at
-the project root runs exactly those tests. `fprime-util check --all` runs CTest without a filter, i.e. every test. fprime-tools releases after 4.4.0
-also offer `fprime-util build --project` and `check --project` to do the same from any directory of the project.
+`all` also carry `fprime_project`. `ctest -L fprime_project` runs the project's tests only and `ctest -L fprime_universe`
+runs every test. The label names are recorded in the CMake cache as `FPRIME_PROJECT_TEST_LABEL` and
+`FPRIME_UNIVERSE_TEST_LABEL`. fprime-tools releases after 4.4.0 run by these labels: `fprime-util check` at the project
+root and `fprime-util check --project` (from any directory of the project) run the `fprime_project` tests, and
+`fprime-util check --all` runs the `fprime_universe` tests. The tests built by `all` are also listed by name in the
+root `tests.fprime-util`, which earlier fprime-util versions use to select the same tests with a `ctest -R` expression.
 
 A module may exclude itself regardless of this option with the `EXCLUDE_FROM_ALL` argument of its `register_fprime_*`
 call (or of `add_fprime_subdirectory`). `EXCLUDE_FROM_ALL` has its CMake meaning however it was set: the module is left

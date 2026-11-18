@@ -113,7 +113,7 @@ def test_option_off_builds_everything(EVERYTHING_BUILD):
 
 
 def test_excluded_unit_tests_labeled(PROJECT_UT_CONFIGURE):
-    """Every test is labeled fprime_universe, only project tests fprime_project; root metadata is not the catch-all"""
+    """Every test is labeled fprime_universe, only project tests fprime_project and listed in the root metadata"""
     cmake.assert_process_success(PROJECT_UT_CONFIGURE, errors_ok=True)
     return_code, universe, _ = cmake.subprocess_helper(
         ["ctest", "-N", "-L", "fprime_universe"], PROJECT_UT_CONFIGURE["build"]
@@ -136,7 +136,7 @@ def test_excluded_unit_tests_labeled(PROJECT_UT_CONFIGURE):
     root_tests = (
         (PROJECT_UT_CONFIGURE["build"] / "tests.fprime-util").read_text().split()
     )
-    assert ".*" not in root_tests, "Root test metadata still lists every test"
+    assert PROJECT_TEST in root_tests, "Project test not listed as a project test"
     assert (
         "Fw_Types_ut_exe" not in root_tests
     ), "Framework test listed as a project test"
@@ -163,4 +163,6 @@ def test_framework_top_level_forces_option_off(FRAMEWORK_UT_CONFIGURE):
     root_tests = (
         (FRAMEWORK_UT_CONFIGURE["build"] / "tests.fprime-util").read_text().split()
     )
-    assert root_tests == [".*"]
+    assert "Fw_Types_ut_exe" in root_tests, "Framework test not listed as a project test"
+    assert ".*" not in root_tests, "Root test metadata still carries the catch-all"
+    assert len(root_tests) == len(set(root_tests)), "Root test metadata lists a test twice"
