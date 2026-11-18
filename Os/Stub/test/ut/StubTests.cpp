@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <Fw/Types/String.hpp>
 #include <Os/Condition.hpp>
 #include <Os/Console.hpp>
 #include <Os/Cpu.hpp>
@@ -9,6 +10,7 @@
 #include <Os/Mutex.hpp>
 #include <Os/Queue.hpp>
 #include <Os/RawTime.hpp>
+#include <Os/Stub/Console.hpp>
 #include <Os/Task.hpp>
 
 TEST(Stub, File) {
@@ -33,6 +35,22 @@ TEST(Stub, Mutex) {
 
 TEST(Stub, Console) {
     Os::Console _;
+}
+
+// The stub console discards messages, including through the ConstStringBase overload of Os::ConsoleInterface
+TEST(Stub, ConsoleWrite) {
+    Os::Stub::Console::StubConsole stub_console;
+    const Fw::String message("discarded");
+    stub_console.writeMessage(message);
+    stub_console.writeMessage("discarded", 9);
+    stub_console.writeMessage(nullptr, 0);
+    ASSERT_NE(stub_console.getHandle(), nullptr);
+}
+
+// A nullptr message with a non-zero size is a coding error
+TEST(Stub, ConsoleWriteNull) {
+    Os::Stub::Console::StubConsole stub_console;
+    ASSERT_DEATH(stub_console.writeMessage(nullptr, 5), "Assert: ");
 }
 
 TEST(Stub, FileSystem) {

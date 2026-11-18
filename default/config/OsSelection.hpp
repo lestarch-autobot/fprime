@@ -87,6 +87,21 @@
 //     }  // namespace Os
 //     #define OS_MUTEX_HEADER "Va416x0/Os/AtomicMutex/AtomicMutex.hpp"
 //     #define OS_CONDITION_VARIABLE_HEADER "Os/Stub/ConditionVariable.hpp"
+//
+// ----------------------------------------------------------------------
+// Console
+//
+// A compile-time selection MUST derive from Os::ConsoleInterface, which
+// supplies the Fw::Logger behavior and the static write()/init()/
+// getSingleton() functions, and MUST be default constructible because the
+// singleton is an instance of the selected class. The implementation module
+// providing the class must still be in the link (see the Mutex note above).
+//
+// Example compile-time selection override:
+//
+//     namespace Os { namespace Posix { namespace Console { class PosixConsole; } } }
+//     namespace Os { using Console = Os::Posix::Console::PosixConsole; }
+//     #define OS_CONSOLE_HEADER "Os/Posix/Console.hpp"
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
@@ -104,10 +119,14 @@ using Mutex = DelegateMutex;
 class DelegateConditionVariable;
 using ConditionVariable = DelegateConditionVariable;
 
+class DelegateConsole;
+using Console = DelegateConsole;
+
 }  // namespace Os
 
 #define OS_RAW_TIME_HEADER <Os/DelegateRawTime.hpp>
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_CONSOLE_HEADER <Os/DelegateConsole.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP

@@ -1,8 +1,9 @@
 // ======================================================================
-// \title Os/Stub/test/ut/StubFileTests.cpp
-// \brief tests using stub implementation for Os::File interface testing
+// \title Os/Stub/test/ut/StubConsoleTests.cpp
+// \brief tests using stub implementation for Os::Console interface testing
 // ======================================================================
 #include <gtest/gtest.h>
+#include "Fw/Types/String.hpp"
 #include "Os/Console.hpp"
 #include "Os/Stub/test/Console.hpp"
 
@@ -45,6 +46,22 @@ TEST(Interface, Write) {
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.message, message);
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, 6);
+}
+
+// The ConstStringBase overload supplied by Os::ConsoleInterface reaches the delegate implementation
+TEST(Interface, WriteMessageString) {
+    Os::Console console;
+    const Fw::String message("hello");
+    console.writeMessage(message);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.message, message.toChar());
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, 5);
+}
+
+// A nullptr message with a non-zero size is a coding error caught before reaching the delegate
+TEST(Interface, WriteMessageNull) {
+    Os::Console console;
+    ASSERT_DEATH(console.writeMessage(nullptr, 5), "Assert: ");
 }
 
 int main(int argc, char** argv) {

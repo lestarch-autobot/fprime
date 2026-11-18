@@ -2,7 +2,7 @@
 // \title Os/Posix/DefaultConsole.cpp
 // \brief sets default Os::Console to posix implementation via linker
 // ======================================================================
-#include "Os/Console.hpp"
+#include "Os/ConsoleInterface.hpp"
 #include "Os/Delegate.hpp"
 #include "Os/Posix/Console.hpp"
 

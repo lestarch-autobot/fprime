@@ -2,10 +2,11 @@
 // \title Os/Posix/Console.hpp
 // \brief posix implementation for Os::Console, header and test definitions
 // ======================================================================
-#include <Os/Console.hpp>
-#include <cstdio>
 #ifndef OS_POSIX_Console_HPP
 #define OS_POSIX_Console_HPP
+
+#include <Os/ConsoleInterface.hpp>
+#include <cstdio>
 
 namespace Os {
 namespace Posix {
@@ -49,6 +50,9 @@ class PosixConsole : public ConsoleInterface {
     // Functions overrides
     // ------------------------------------
 
+    // Keep the common ConstStringBase overload visible alongside the override below
+    using ConsoleInterface::writeMessage;
+
     //! \brief write message to console
     //!
     //! Write a message to the console with a bounded size. This will use the active file descriptor as the output
@@ -74,7 +78,7 @@ class PosixConsole : public ConsoleInterface {
     void setOutputStream(Stream stream);
 
   private:
-    //! File handle for PosixFile
+    //! Handle for PosixConsole
     PosixConsoleHandle m_handle;
 };
 }  // namespace Console

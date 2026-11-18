@@ -2,7 +2,7 @@
 // \title Os/Stub/DefaultConsole.cpp
 // \brief sets default Os::Console to stub implementation via linker
 // ======================================================================
-#include "Os/Console.hpp"
+#include "Os/ConsoleInterface.hpp"
 #include "Os/Delegate.hpp"
 #include "Os/Stub/Console.hpp"
 
