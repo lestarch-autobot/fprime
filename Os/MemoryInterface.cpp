@@ -7,7 +7,7 @@
 namespace Os {
 
 void MemoryInterface::init() {
-    (void)MemoryInterface::getSingleton();
+    (void)Os::Memory::getSingleton();
 }
 
 Memory& MemoryInterface::getSingleton() {
