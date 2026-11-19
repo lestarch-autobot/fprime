@@ -23,6 +23,7 @@ register_fprime_ut(
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/SeqSchedulerTester.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/SeqSchedulerTestMain.cpp"
   DEPENDS
+    Fw_Types
     STest
   UT_AUTO_HELPERS
 )

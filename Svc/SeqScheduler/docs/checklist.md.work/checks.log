@@ -1,5 +1,4 @@
 prepare-build: fprime-util build in /home/ubuntu/campaign/uut/Svc/SeqScheduler rc 0; output in prepare-build.log
-clang-tidy: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first
 FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'LOAD_TABLE' has no requirement referencing it (add a requirement mentioning 'LOAD_TABLE')
 FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SAVE_TABLE' has no requirement referencing it (add a requirement mentioning 'SAVE_TABLE')
 FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_ROW_ENABLED' has no requirement referencing it (add a requirement mentioning 'SET_ROW_ENABLED')
@@ -108,20 +107,8 @@ FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqSchedu
 FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-061' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:71) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
 FAIL [R7] Requirement parent traceability: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 56 problem(s) found
 PASS [R8] Requirement verification method: /home/ubuntu/campaign/uut/Svc/SeqScheduler (56 requirement(s) checked)
-FAIL [D1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: input port 'run' (sync) has no 'run_handler' override in the implementation
-FAIL [D1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: input port 'seqDoneIn' (async) has no 'seqDoneIn_handler' override in the implementation
-FAIL [D1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: input port 'queryIn' (guarded) has no 'queryIn_handler' override in the implementation
-FAIL [D1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: input port 'pingIn' (async) has no 'pingIn_handler' override in the implementation
-FAIL [D1] Input port handlers defined: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 4 problem(s) found
-FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'LOAD_TABLE' has no 'LOAD_TABLE_cmdHandler' in the implementation
-FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SAVE_TABLE' has no 'SAVE_TABLE_cmdHandler' in the implementation
-FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_ROW_ENABLED' has no 'SET_ROW_ENABLED_cmdHandler' in the implementation
-FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_SEQ_ENABLED' has no 'SET_SEQ_ENABLED_cmdHandler' in the implementation
-FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_ROW' has no 'SET_ROW_cmdHandler' in the implementation
-FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'DUMP_TABLE' has no 'DUMP_TABLE_cmdHandler' in the implementation
-FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'REPORT_ACTIVE_ROW' has no 'REPORT_ACTIVE_ROW_cmdHandler' in the implementation
-FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_ENABLED' has no 'SET_ENABLED_cmdHandler' in the implementation
-FAIL [D2] Command handlers defined: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 8 problem(s) found
+PASS [D1] Input port handlers defined: /home/ubuntu/campaign/uut/Svc/SeqScheduler (4 input port(s) checked)
+PASS [D2] Command handlers defined: /home/ubuntu/campaign/uut/Svc/SeqScheduler (8 command(s) checked)
 SKIP [D3] State machine actions defined: /home/ubuntu/campaign/uut/Svc/SeqScheduler: no state machines declared
 PASS [D4] Data product containers have default priority: /home/ubuntu/campaign/uut/Svc/SeqScheduler (1 container(s) checked)
 PASS [D5] Requirements mapped to design artifacts: /home/ubuntu/campaign/uut/Svc/SeqScheduler (56 requirement(s) checked)
@@ -129,14 +116,17 @@ PASS [D7] SDD port table matches FPP: /home/ubuntu/campaign/uut/Svc/SeqScheduler
 PASS [D8] SDD dictionary tables match FPP: /home/ubuntu/campaign/uut/Svc/SeqScheduler (47 dictionary item(s) checked)
 PASS [D9] SDD design sections present: /home/ubuntu/campaign/uut/Svc/SeqScheduler (external references table: None (declared))
 PASS [D10] Input port behaviour documented: /home/ubuntu/campaign/uut/Svc/SeqScheduler (4 input port(s) checked)
-SKIP [I1] Source dependencies listed in CMakeLists: /home/ubuntu/campaign/uut/Svc/SeqScheduler: no C++ sources found
+PASS [I1] Source dependencies listed in CMakeLists: /home/ubuntu/campaign/uut/Svc/SeqScheduler (3 dependency module(s) checked; 1 provided by FPP/implicit framework dependencies)
 FAIL [I3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: container 'TableContainer' priority is not configurable: no command or parameter mentioning 'priority' found
 FAIL [I3] Data product priorities configurable: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 1 problem(s) found
-SKIP [U3] Unit-test dependencies in CMakeLists: /home/ubuntu/campaign/uut/Svc/SeqScheduler: no unit-test sources found
+PASS [U3] Unit-test dependencies in CMakeLists: /home/ubuntu/campaign/uut/Svc/SeqScheduler (5 dependency module(s) checked)
 FAIL [C2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)
 FAIL [C2] Hardware run record: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 1 problem(s) found
+fpp-depend: 2 build caches found, using /home/ubuntu/campaign/uut/build-fprime-automatic-native/locs.fpp
 PASS [D6] FPP compiles and generates auto-code: /home/ubuntu/campaign/uut/Svc/SeqScheduler (1 FPP file(s) checked)
+PASS [I4] Passes static analysis: /home/ubuntu/campaign/uut/Svc/SeqScheduler (0 finding(s) in module; threshold medium)
 PASS [I2] Compiles without warnings: /home/ubuntu/campaign/uut/Svc/SeqScheduler (1 log(s) scanned)
-previous checklist ../out/checklist-prev.md: 6 recorded decision(s) applied (6 stale), 0 audit(s) lapsed []
-previous checklist ../out/checklist-prev.md: carried 0 Markdown review decision(s) []
-stage design: 6 row(s) queued for review, 5 deferred
+PASS [U5] Sufficient code coverage: /home/ubuntu/campaign/uut/Svc/SeqScheduler (line coverage 98.48% (threshold 80.00%))
+previous checklist Svc/SeqScheduler/docs/checklist.md: 11 recorded decision(s) applied (0 stale), 0 audit(s) lapsed []
+previous checklist Svc/SeqScheduler/docs/checklist.md: carried 0 Markdown review decision(s) []
+stage implementation: 0 row(s) queued for review, 0 deferred

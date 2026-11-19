@@ -936,6 +936,17 @@ void SeqSchedulerTester::ArgumentErrors() {
     ASSERT_STREQ(this->component.m_table[0].get_fileName().toChar(), "a.bin");
     ASSERT_EQ(this->component.m_table[0].get_time().get_seconds(), T0 + 50);
     ASSERT_FALSE(this->component.m_table[1].get_enabled());
+    // The limits themselves are accepted: the last row, 999999 microseconds, the longest file name a command
+    // carries (FW_CMD_STRING_MAX_SIZE characters; a longer argument is cut to it by the framework)
+    char longest[FW_CMD_STRING_MAX_SIZE + 1];
+    (void)memset(longest, 'n', FW_CMD_STRING_MAX_SIZE);
+    longest[FW_CMD_STRING_MAX_SIZE] = 0;
+    this->cmdSetRow(this->m_rows - 1, Mode::ABSOLUTE, T0 + 500, longest, Policy::WAIT_FOR_RUNNING, 999999);
+    this->assertLastCmd(SeqScheduler::OPCODE_SET_ROW, Fw::CmdResponse::OK);
+    ASSERT_EVENTS_CmdRejected_SIZE(7);
+    ASSERT_EQ(this->component.m_table[this->m_rows - 1].get_time().get_useconds(), 999999U);
+    ASSERT_EQ(this->component.m_table[this->m_rows - 1].get_fileName().length(),
+              static_cast<FwSizeType>(FW_CMD_STRING_MAX_SIZE));
 }
 
 void SeqSchedulerTester::EditsDuringSequence() {
@@ -1034,6 +1045,25 @@ void SeqSchedulerTester::Configure() {
     big.component.cleanup();
     ASSERT_EQ(big.component.m_memory, nullptr);
     big.component.cleanup();  // a second cleanup does nothing
+    // The limits of the row count: 1 and 65535 are taken
+    SeqSchedulerTester one(1);
+    ASSERT_EQ(one.component.m_rows, 1U);
+    one.startEmpty();
+    one.absRow(0, 1, "only.bin");
+    one.tick();
+    one.assertRun(0, 0, "only.bin");
+    SeqSchedulerTester most(65535);
+    ASSERT_EQ(most.component.m_rows, 65535U);
+    ASSERT_EQ(most.component.m_due.getCapacity(), 65535U);
+    // One past each limit, and a tick period of zero, assert
+    big.m_defaultFile = "table.tbl";
+    ASSERT_DEATH(big.component.configure(big.m_defaultFile, 0, TICK_USEC, big.m_allocator, 0), "Assert");
+    ASSERT_DEATH(big.component.configure(big.m_defaultFile, 65536, TICK_USEC, big.m_allocator, 0), "Assert");
+    ASSERT_DEATH(big.component.configure(big.m_defaultFile, 8, 0, big.m_allocator, 0), "Assert");
+    const Fw::String noName("");
+    ASSERT_DEATH(big.component.configure(noName, 8, TICK_USEC, big.m_allocator, 0), "Assert");
+    // A second configure without cleanup asserts
+    ASSERT_DEATH(this->component.configure(this->m_defaultFile, 8, TICK_USEC, this->m_allocator, 0), "Assert");
 }
 
 void SeqSchedulerTester::DefaultTableFile() {

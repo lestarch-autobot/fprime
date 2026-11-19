@@ -175,7 +175,7 @@ default assertion.
 | `m_loadRows` | `Row[m_rows]` | Rows of the file being loaded, copied into `m_table` when the whole file has been checked | no |
 | `m_allocator`, `m_memId` | allocator and its identifier | Given to `configure`; used once to obtain the three arrays above and the storage of `m_due` in one allocation, and by `cleanup` to return it | no |
 | `m_defaultTableFile` | string size `FileNameStringSize` | Table file name given to `configure` | no |
-| `m_tickPeriod` | U32 | Tick period in microseconds given to `configure` | yes |
+| `m_tickPeriodUsec` | U32 | Tick period in microseconds given to `configure` | yes |
 | `m_enabled` | bool | The component is enabled; true at start | yes |
 | `m_loadState` | `NOT_TRIED`, `LOADED_NEW`, `LOADED`, `FAILED` | No load attempted yet; a load succeeded and no tick has been handled since; a load succeeded; the start-up load failed and no load has succeeded since, so the table is empty but for rows set by command. A failed load command leaves the state unchanged | no |
 | `m_tick` | U64 | Number of schedule ticks that have arrived; zero before the first, so the first tick is tick 1 | yes |
@@ -554,6 +554,7 @@ base is first reported.
 | A restart or a `LOAD_TABLE` within `LATE_TOLERANCE_SEC` after a row's due time runs that row a second time. If its first sequence is still running, the row follows its busy policy against it: a `CANCEL_RUNNING` row cancels its own first run. `LATE_TOLERANCE_SEC` must be shorter than the restart time, or a row whose sequence restarts the system is run again at each start | Operator |
 | A `CANCEL_RUNNING` row that is disabled, set again or replaced by a load after its cancel was sent leaves the sequence cancelled and the rows ahead of it skipped, with nothing run in their place | Operator |
 | A component disabled by `SET_ENABLED` is enabled again after a restart | Operator |
+| A file name given by command (`SET_ROW`, `SET_SEQ_ENABLED`) is cut to `FW_CMD_STRING_MAX_SIZE` characters (40 by default) by the framework; a table file carries names of up to `FileNameStringSize` characters | Operator |
 | A row is emptied only by loading a table file that does not hold it; a disabled row is the way to delete a row by command | Operator |
 | The first tick handled after a load emits no `RowSkippedDisabled` and no `RowLate`, however many rows it skips; `RowsSkipped` gives the count. A row that comes due on that very tick and is found late is skipped without its warning | Operator |
 | A due `CANCEL_RUNNING` row skips every due row ahead of it even when no sequence is running: of a `WAIT_FOR_RUNNING` row and a later `CANCEL_RUNNING` row found due on one tick, only the second is run | Table author |

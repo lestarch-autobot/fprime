@@ -249,7 +249,7 @@ class SeqScheduler final : public SeqSchedulerComponentBase {
     FwEnumStoreType m_memId = 0;                        //!< Allocator identifier
     void* m_memory = nullptr;                           //!< The allocation
     Fw::FileNameString m_defaultTableFile;              //!< Table file name given to configure
-    U32 m_tickPeriod = 0;                               //!< Tick period in microseconds
+    U32 m_tickPeriodUsec = 0;                           //!< Tick period in microseconds
     bool m_enabled = true;                              //!< The component is enabled
     LoadState m_loadState = LoadState::NOT_TRIED;       //!< Load state
     U64 m_tick = 0;                                     //!< Schedule ticks that have arrived

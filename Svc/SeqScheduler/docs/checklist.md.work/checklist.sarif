@@ -1,0 +1,739 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "fprime-auto-checklist/clang-tidy",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/LeStarch/fprime-auto-checklist",
+          "properties": {
+            "clangTidyVersion": "15.0.7"
+          },
+          "rules": [
+            {
+              "id": "cpp/fprime/assert-on-untrusted-input",
+              "name": "Assertion on command or parameter input",
+              "shortDescription": {
+                "text": "Assertion on command or parameter input"
+              },
+              "fullDescription": {
+                "text": "FW_ASSERT must not be used to validate data that originates"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-assert-on-untrusted-input"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/basic-int-types",
+              "name": "Use of basic integral type",
+              "shortDescription": {
+                "text": "Use of basic integral type"
+              },
+              "fullDescription": {
+                "text": "Typedefs that indicate size and signedness should be used in place of the basic types."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-basic-int-types"
+              }
+            },
+            {
+              "id": "cpp/fprime/checking-parameter-values",
+              "name": "Unchecked pointer or integer parameter",
+              "shortDescription": {
+                "text": "Unchecked pointer or integer parameter"
+              },
+              "fullDescription": {
+                "text": "Pointer parameters should be checked before being dereferenced,"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-checking-parameter-values"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/checking-return-values",
+              "name": "Unchecked return value",
+              "shortDescription": {
+                "text": "Unchecked return value"
+              },
+              "fullDescription": {
+                "text": "The return value of each non-void function call should be checked for error conditions, or cast to (void) if irrelevant."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-checking-return-values"
+              }
+            },
+            {
+              "id": "cpp/fprime/command-response",
+              "name": "Command handler missing command response",
+              "shortDescription": {
+                "text": "Command handler missing command response"
+              },
+              "fullDescription": {
+                "text": "Every path through a command handler"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-command-response"
+              }
+            },
+            {
+              "id": "cpp/fprime/compound-statements",
+              "name": "Loop or conditional body is not a compound statement",
+              "shortDescription": {
+                "text": "Loop or conditional body is not a compound statement"
+              },
+              "fullDescription": {
+                "text": "The bodies of if/else statements and for/while/do-while loops"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-compound-statements"
+              }
+            },
+            {
+              "id": "cpp/fprime/define-constant",
+              "name": "Numeric constant defined with #define",
+              "shortDescription": {
+                "text": "Numeric constant defined with #define"
+              },
+              "fullDescription": {
+                "text": "Numeric constants should be typed constants (`static const`,"
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-define-constant"
+              }
+            },
+            {
+              "id": "cpp/fprime/division-guard",
+              "name": "Division by unguarded divisor",
+              "shortDescription": {
+                "text": "Division by unguarded divisor"
+              },
+              "fullDescription": {
+                "text": "Integer division and modulo operations whose divisor is a"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-division-guard"
+              }
+            },
+            {
+              "id": "cpp/fprime/float-division-guard",
+              "name": "Floating-point division by unguarded divisor",
+              "shortDescription": {
+                "text": "Floating-point division by unguarded divisor"
+              },
+              "fullDescription": {
+                "text": "A floating-point division whose divisor is a variable should"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-float-division-guard"
+              }
+            },
+            {
+              "id": "cpp/fprime/float-equality",
+              "name": "Floating-point equality comparison",
+              "shortDescription": {
+                "text": "Floating-point equality comparison"
+              },
+              "fullDescription": {
+                "text": "Floating-point values should not be compared with `==` or"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-float-equality"
+              }
+            },
+            {
+              "id": "cpp/fprime/float-loop-control",
+              "name": "Floating-point loop control",
+              "shortDescription": {
+                "text": "Floating-point loop control"
+              },
+              "fullDescription": {
+                "text": "Loops controlled by a floating-point variable or expression"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-float-loop-control"
+              }
+            },
+            {
+              "id": "cpp/fprime/float-narrowing",
+              "name": "Implicit narrowing of double to float",
+              "shortDescription": {
+                "text": "Implicit narrowing of double to float"
+              },
+              "fullDescription": {
+                "text": "Implicitly converting a double-precision value to single"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-float-narrowing"
+              }
+            },
+            {
+              "id": "cpp/fprime/for-header-flow-control",
+              "name": "Side effect in for-statement header unrelated to flow control",
+              "shortDescription": {
+                "text": "Side effect in for-statement header unrelated to flow control"
+              },
+              "fullDescription": {
+                "text": "The init/condition/update expressions of a for statement"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-for-header-flow-control"
+              }
+            },
+            {
+              "id": "cpp/fprime/global-mutable-variable",
+              "name": "Mutable variable with static storage",
+              "shortDescription": {
+                "text": "Mutable variable with static storage"
+              },
+              "fullDescription": {
+                "text": "Variables should be declared local to the smallest scope that"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-global-mutable-variable"
+              }
+            },
+            {
+              "id": "cpp/fprime/incomplete-code",
+              "name": "Incomplete-code marker",
+              "shortDescription": {
+                "text": "Incomplete-code marker"
+              },
+              "fullDescription": {
+                "text": "Comments containing TBD, TODO, or FIXME indicate incomplete"
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-incomplete-code"
+              }
+            },
+            {
+              "id": "cpp/fprime/internal-port-invoke",
+              "name": "Internal port handler called directly",
+              "shortDescription": {
+                "text": "Internal port handler called directly"
+              },
+              "fullDescription": {
+                "text": "Internal port interactions must go through the auto-coded"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-internal-port-invoke"
+              }
+            },
+            {
+              "id": "cpp/fprime/isr-complexity",
+              "name": "Interrupt service routine is not minimal",
+              "shortDescription": {
+                "text": "Interrupt service routine is not minimal"
+              },
+              "fullDescription": {
+                "text": "Interrupt service routines should do the minimum work"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-isr-complexity"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/loop-bounds",
+              "name": "Unbounded loop",
+              "shortDescription": {
+                "text": "Unbounded loop"
+              },
+              "fullDescription": {
+                "text": "All loops should have a fixed upper bound; the counter should also be incremented along all paths within the loop."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-loop-bounds"
+              }
+            },
+            {
+              "id": "cpp/fprime/magic-numbers",
+              "name": "Magic number",
+              "shortDescription": {
+                "text": "Magic number"
+              },
+              "fullDescription": {
+                "text": "Invariant numeric literals used inline or assigned to local"
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-magic-numbers"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/multiple-stmts-per-line",
+              "name": "More than one statement per line",
+              "shortDescription": {
+                "text": "More than one statement per line"
+              },
+              "fullDescription": {
+                "text": "Putting more than one statement on a single line hinders program understanding."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-multiple-stmts-per-line"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/multiple-var-decls-per-line",
+              "name": "Multiple variable declarations on one line",
+              "shortDescription": {
+                "text": "Multiple variable declarations on one line"
+              },
+              "fullDescription": {
+                "text": "There should be no more than one variable declaration per line."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-multiple-var-decls-per-line"
+              }
+            },
+            {
+              "id": "cpp/fprime/no-blocking-in-isr",
+              "name": "Blocking operation in interrupt service routine",
+              "shortDescription": {
+                "text": "Blocking operation in interrupt service routine"
+              },
+              "fullDescription": {
+                "text": "Interrupt service routines must not perform blocking"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-no-blocking-in-isr"
+              }
+            },
+            {
+              "id": "cpp/fprime/no-blocking-in-sched-handler",
+              "name": "Blocking operation in rate-group handler",
+              "shortDescription": {
+                "text": "Blocking operation in rate-group handler"
+              },
+              "fullDescription": {
+                "text": "Rate-group (schedIn) handlers run on the rate group's thread"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-no-blocking-in-sched-handler"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/no-boolean-side-effects",
+              "name": "Side effect in a Boolean expression",
+              "shortDescription": {
+                "text": "Side effect in a Boolean expression"
+              },
+              "fullDescription": {
+                "text": "The evaluation of a Boolean expression shall have no side effects."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-no-boolean-side-effects"
+              }
+            },
+            {
+              "id": "cpp/fprime/no-file-access-in-critical",
+              "name": "Synchronous file access in critical region or rate-group handler",
+              "shortDescription": {
+                "text": "Synchronous file access in critical region or rate-group handler"
+              },
+              "fullDescription": {
+                "text": "Synchronous file I/O has unbounded latency and must not be"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-no-file-access-in-critical"
+              }
+            },
+            {
+              "id": "cpp/fprime/no-float-in-isr",
+              "name": "Floating-point operation in interrupt service routine",
+              "shortDescription": {
+                "text": "Floating-point operation in interrupt service routine"
+              },
+              "fullDescription": {
+                "text": "Interrupt service routines should not use floating-point"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-no-float-in-isr"
+              }
+            },
+            {
+              "id": "cpp/fprime/no-function-decl-in-function",
+              "name": "Function declaration inside a function body",
+              "shortDescription": {
+                "text": "Function declaration inside a function body"
+              },
+              "fullDescription": {
+                "text": "Functions should not be declared within the body of another"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-no-function-decl-in-function"
+              }
+            },
+            {
+              "id": "cpp/fprime/no-printf",
+              "name": "Use of printf family",
+              "shortDescription": {
+                "text": "Use of printf family"
+              },
+              "fullDescription": {
+                "text": "Flight code should not use printf-family functions; use the"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-no-printf"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/non-const-function-pointer",
+              "name": "Use of non-constant function pointer",
+              "shortDescription": {
+                "text": "Use of non-constant function pointer"
+              },
+              "fullDescription": {
+                "text": "Non-constant pointers to functions should not be used."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-non-const-function-pointer"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/preprocessor-use-ifdef",
+              "name": "Conditional compilation",
+              "shortDescription": {
+                "text": "Conditional compilation"
+              },
+              "fullDescription": {
+                "text": "The use of conditional compilation directives must be kept to a minimum -- e.g. for header guards only."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-preprocessor-use-ifdef"
+              }
+            },
+            {
+              "id": "cpp/fprime/public-data-member",
+              "name": "Public data member",
+              "shortDescription": {
+                "text": "Public data member"
+              },
+              "fullDescription": {
+                "text": "Non-static data members of classes with behavior (member"
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-public-data-member"
+              }
+            },
+            {
+              "id": "cpp/fprime/signed-overflow",
+              "name": "Unguarded signed arithmetic that may overflow",
+              "shortDescription": {
+                "text": "Unguarded signed arithmetic that may overflow"
+              },
+              "fullDescription": {
+                "text": "Signed integer overflow is undefined behavior. Signed"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-signed-overflow"
+              }
+            },
+            {
+              "id": "cpp/fprime/switch-case-fallthrough",
+              "name": "Switch case falls through without annotation",
+              "shortDescription": {
+                "text": "Switch case falls through without annotation"
+              },
+              "fullDescription": {
+                "text": "Every non-empty switch case should end in a break (or other"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-switch-case-fallthrough"
+              }
+            },
+            {
+              "id": "cpp/fprime/switch-default",
+              "name": "Switch statement without a default case",
+              "shortDescription": {
+                "text": "Switch statement without a default case"
+              },
+              "fullDescription": {
+                "text": "Every switch statement should have a default case to handle"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-switch-default"
+              }
+            },
+            {
+              "id": "cpp/fprime/unchecked-array-index",
+              "name": "Array index not checked against bounds",
+              "shortDescription": {
+                "text": "Array index not checked against bounds"
+              },
+              "fullDescription": {
+                "text": "A non-constant array index should be checked (condition or"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-unchecked-array-index"
+              }
+            },
+            {
+              "id": "cpp/fprime/unguarded-unsigned-subtraction",
+              "name": "Unguarded unsigned subtraction from a run-time size",
+              "shortDescription": {
+                "text": "Unguarded unsigned subtraction from a run-time size"
+              },
+              "fullDescription": {
+                "text": "Subtracting a compile-time constant from a size obtained at"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-unguarded-unsigned-subtraction"
+              }
+            },
+            {
+              "id": "cpp/fprime/uninitialized-member",
+              "name": "Member not initialized by constructor",
+              "shortDescription": {
+                "text": "Member not initialized by constructor"
+              },
+              "fullDescription": {
+                "text": "Every scalar, pointer, or enum data member should be given a"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-uninitialized-member"
+              }
+            },
+            {
+              "id": "cpp/fprime/unthrottled-cyclic-event",
+              "name": "Unthrottled event in cyclic handler",
+              "shortDescription": {
+                "text": "Unthrottled event in cyclic handler"
+              },
+              "fullDescription": {
+                "text": "Events emitted from a rate-group or other cyclic handler can"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-unthrottled-cyclic-event"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/use-of-assertions-constant",
+              "name": "Constant assertion",
+              "shortDescription": {
+                "text": "Constant assertion"
+              },
+              "fullDescription": {
+                "text": "Assertions should check dynamic properties of pre-/post-conditions and invariants. Assertions that either always succeed or always fail are an error."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-use-of-assertions-constant"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/use-of-assertions-density",
+              "name": "Long function without assertion",
+              "shortDescription": {
+                "text": "Long function without assertion"
+              },
+              "fullDescription": {
+                "text": "All functions of more than 10 lines should have at least one assertion."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-use-of-assertions-density"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+              "name": "Non-boolean assertion",
+              "shortDescription": {
+                "text": "Non-boolean assertion"
+              },
+              "fullDescription": {
+                "text": "Assertions should be defined as Boolean tests, meaning \"assert(p != NULL)\" rather than \"assert(p)\"."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-use-of-assertions-non-boolean"
+              }
+            },
+            {
+              "id": "cpp/fprime/jpl-c/use-of-assertions-side-effect",
+              "name": "Assertion with side effects",
+              "shortDescription": {
+                "text": "Assertion with side effects"
+              },
+              "fullDescription": {
+                "text": "Assertions should not have side-effects -- they may be disabled completely, changing program behavior."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-use-of-assertions-side-effect"
+              }
+            },
+            {
+              "id": "cpp/fprime/validation-failure-return",
+              "name": "Validation failure path does not return",
+              "shortDescription": {
+                "text": "Validation failure path does not return"
+              },
+              "fullDescription": {
+                "text": "In F Prime handlers, a branch that sends a failed command"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "fprime-validation-failure-return"
+              }
+            },
+            {
+              "id": "cpp/uninitialized-local",
+              "name": "Potentially uninitialized local variable",
+              "shortDescription": {
+                "text": "Potentially uninitialized local variable"
+              },
+              "fullDescription": {
+                "text": "Reading from a local variable that has not been assigned to will typically yield garbage."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "clangTidyCheck": "clang-analyzer-core.uninitialized.Assign, clang-analyzer-core.uninitialized.Branch, clang-analyzer-core.uninitialized.CallArgs, clang-analyzer-core.uninitialized.UndefReturn, clang-analyzer-core.UndefinedBinaryOperatorResult"
+              }
+            }
+          ]
+        }
+      },
+      "automationDetails": {
+        "id": "fprime-auto-checklist/clang-tidy/"
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "toolExecutionNotifications": []
+        }
+      ],
+      "originalUriBaseIds": {
+        "%SRCROOT%": {
+          "uri": "file:///home/ubuntu/campaign/uut/"
+        }
+      },
+      "results": []
+    }
+  ]
+}

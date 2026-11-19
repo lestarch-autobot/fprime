@@ -17,13 +17,19 @@ namespace {
 
 constexpr U64 USEC_PER_SEC = 1000000;
 
+//! Largest tick count, in microseconds: a quarter of the signed 64-bit range
+constexpr U64 MAX_TICK_USEC = 0x1FFFFFFFFFFFFFFFULL;
+constexpr I64 MAX_SIGNED_USEC = 0x1FFFFFFFFFFFFFFFLL;
+
 //! Round a size up to a multiple of an alignment
 FwSizeType alignUp(FwSizeType size, FwSizeType alignment) {
+    FW_ASSERT(alignment > 0);
     return ((size + alignment - 1) / alignment) * alignment;
 }
 
 //! Write an unsigned value big-endian
 void putBigEndian(U8* buffer, U64 value, FwSizeType bytes) {
+    FW_ASSERT(buffer != nullptr);
     for (FwSizeType i = 0; i < bytes; i++) {
         buffer[bytes - 1 - i] = static_cast<U8>(value & 0xFF);
         value >>= 8;
@@ -32,6 +38,7 @@ void putBigEndian(U8* buffer, U64 value, FwSizeType bytes) {
 
 //! Read an unsigned value big-endian
 U64 getBigEndian(const U8* buffer, FwSizeType bytes) {
+    FW_ASSERT(buffer != nullptr);
     U64 value = 0;
     for (FwSizeType i = 0; i < bytes; i++) {
         value = (value << 8) | buffer[i];
@@ -77,7 +84,8 @@ void SeqScheduler::configure(const Fw::StringBase& defaultTableFile,
     const FwSizeType tableSize = alignUp(rows * sizeof(SeqScheduler_Row), alignment);
     const FwSizeType rowDueSize = alignUp(rows * sizeof(RowDue), alignment);
     const FwSizeType treeSize = Fw::ExternalRedBlackTreeSet<DueRow>::getByteArraySize(rows);
-    FW_ASSERT(Fw::ExternalRedBlackTreeSet<DueRow>::getByteArrayAlignment() <= alignment);
+    static_assert(Fw::ExternalRedBlackTreeSet<DueRow>::getByteArrayAlignment() <= alignof(std::max_align_t),
+                  "The due-row tree must fit the alignment of the allocation");
     const FwSizeType wanted = 2 * tableSize + rowDueSize + treeSize;
 
     FwSizeType granted = wanted;
@@ -96,12 +104,13 @@ void SeqScheduler::configure(const Fw::StringBase& defaultTableFile,
     this->m_allocator = &allocator;
     this->m_memId = memId;
     this->m_rows = rows;
-    this->m_tickPeriod = tickPeriodUsec;
+    this->m_tickPeriodUsec = tickPeriodUsec;
     this->m_defaultTableFile = defaultTableFile;
 }
 
 void SeqScheduler::cleanup() {
     if (this->m_memory != nullptr) {
+        FW_ASSERT(this->m_allocator != nullptr);
         for (FwSizeType i = 0; i < this->m_rows; i++) {
             this->m_table[i].~SeqScheduler_Row();
             this->m_loadRows[i].~SeqScheduler_Row();
@@ -287,8 +296,9 @@ void SeqScheduler::DUMP_TABLE_cmdHandler(FwOpcodeType opCode, U32 cmdSeq) {
         return;
     }
     FwSizeType sent = 0;
-    while (sent < this->m_rows) {
-        if (this->m_dpContainer.serializeRecord_RowRecord(this->m_table[sent]) != Fw::FW_SERIALIZE_OK) {
+    for (FwSizeType row = 0; row < this->m_rows; row++) {
+        const Fw::SerializeStatus status = this->m_dpContainer.serializeRecord_RowRecord(this->m_table[row]);
+        if (status != Fw::FW_SERIALIZE_OK) {
             break;
         }
         sent++;
@@ -365,6 +375,7 @@ void SeqScheduler::runInternal_internalInterfaceHandler() {
 // ----------------------------------------------------------------------
 
 void SeqScheduler::skipDueRowsWhileDisabled() {
+    FW_ASSERT(this->m_rowDue != nullptr);
     for (FwSizeType row = 0; row < this->m_rows; row++) {
         if (this->m_rowDue[row].due) {
             this->setRowState(row, SeqScheduler_RowState::SKIPPED);
@@ -415,11 +426,14 @@ void SeqScheduler::applyCancelRule() {
     // Forward walk to the last CANCEL_RUNNING row among the due rows
     bool found = false;
     DueRow last;
-    for (auto it = this->m_due.begin(); it != this->m_due.end(); ++it) {
+    auto it = this->m_due.begin();
+    // The tree holds at most one entry per row
+    for (FwSizeType walked = 0; (walked < this->m_rows) && (it != this->m_due.end()); walked++) {
         if (this->m_table[(*it).row].get_busyPolicy() == SeqScheduler_BusyPolicy::CANCEL_RUNNING) {
             found = true;
             last = *it;
         }
+        ++it;
     }
     if (!found) {
         return;
@@ -472,6 +486,7 @@ void SeqScheduler::skipBusyRows() {
 }
 
 void SeqScheduler::writeTelemetry() {
+    FW_ASSERT(this->m_table != nullptr);
     FwSizeType pending = 0;
     FwSizeType executed = 0;
     FwSizeType skipped = 0;
@@ -614,7 +629,8 @@ bool SeqScheduler::readTableFile(const Fw::StringBase& name,
     hash.init();
     U8 buffer[TABLE_FILE_ROW_SIZE];
     FwSizeType size = TABLE_FILE_HEADER_SIZE;
-    if ((file.read(buffer, size) != Os::File::OP_OK) || (size != TABLE_FILE_HEADER_SIZE)) {
+    Os::File::Status status = file.read(buffer, size);
+    if ((status != Os::File::OP_OK) || (size != TABLE_FILE_HEADER_SIZE)) {
         reason = SeqScheduler_LoadFailure::READ;
         file.close();
         return false;
@@ -636,14 +652,16 @@ bool SeqScheduler::readTableFile(const Fw::StringBase& name,
     // Bounded by the 16-bit row count of the file
     for (FwSizeType row = 0; row < fileRows; row++) {
         size = TABLE_FILE_ROW_SIZE;
-        if ((file.read(buffer, size) != Os::File::OP_OK) || (size != TABLE_FILE_ROW_SIZE)) {
+        status = file.read(buffer, size);
+        if ((status != Os::File::OP_OK) || (size != TABLE_FILE_ROW_SIZE)) {
             reason = SeqScheduler_LoadFailure::READ;
             file.close();
             return false;
         }
         hash.update(buffer, TABLE_FILE_ROW_SIZE);
-        if ((row < loadedRows) && (!decodeRow(buffer, this->m_loadRows[row]))) {
-            contentValid = false;
+        if (row < loadedRows) {
+            const bool decoded = decodeRow(buffer, this->m_loadRows[row]);
+            contentValid = contentValid && decoded;
         }
     }
     U8 stored[HASH_DIGEST_LENGTH];
@@ -668,6 +686,7 @@ bool SeqScheduler::readTableFile(const Fw::StringBase& name,
 }
 
 bool SeqScheduler::decodeRow(const U8* buffer, SeqScheduler_Row& row) {
+    FW_ASSERT(buffer != nullptr);
     FwSizeType offset = 0;
     const U64 base = getBigEndian(&buffer[offset], sizeof(FwTimeBaseStoreType));
     offset += sizeof(FwTimeBaseStoreType);
@@ -696,6 +715,7 @@ bool SeqScheduler::decodeRow(const U8* buffer, SeqScheduler_Row& row) {
 }
 
 void SeqScheduler::encodeRow(const SeqScheduler_Row& row, U8* buffer) {
+    FW_ASSERT(buffer != nullptr);
     (void)memset(buffer, 0, TABLE_FILE_ROW_SIZE);
     const Fw::TimeValue& time = row.get_time();
     FwSizeType offset = 0;
@@ -718,7 +738,8 @@ void SeqScheduler::encodeRow(const SeqScheduler_Row& row, U8* buffer) {
 bool SeqScheduler::writeTableFile(const Fw::StringBase& name, FwSizeType rows, SeqScheduler_SaveFailure& reason) {
     // The temporary name is the table file name plus ".tmp", in a string long enough to hold it
     Fw::StringTemplate<FileNameStringSize + 4> tmpName;
-    tmpName.format("%s.tmp", name.toChar());
+    const Fw::FormatStatus formatted = tmpName.format("%s.tmp", name.toChar());
+    FW_ASSERT(formatted == Fw::FormatStatus::SUCCESS, static_cast<FwAssertArgType>(formatted));
     Os::File file;
     if (file.open(tmpName.toChar(), Os::File::OPEN_CREATE, Os::File::OVERWRITE) != Os::File::OP_OK) {
         reason = SeqScheduler_SaveFailure::OPEN;
@@ -757,6 +778,7 @@ bool SeqScheduler::writeTableFile(const Fw::StringBase& name, FwSizeType rows, S
 }
 
 bool SeqScheduler::isEmpty(FwSizeType row) const {
+    FW_ASSERT(row < this->m_rows, static_cast<FwAssertArgType>(row));
     return this->m_table[row].get_fileName().length() == 0;
 }
 
@@ -810,7 +832,7 @@ void SeqScheduler::recordBase(U32 ticks) {
             // The first handled tick may stand for several: the first entry is the base of tick 1
             record.firstTick = 1;
             const U64 now = toUsec(this->m_tickTime.getSeconds(), this->m_tickTime.getUSeconds());
-            const U64 back = static_cast<U64>(ticks - 1) * this->m_tickPeriod;
+            const U64 back = static_cast<U64>(ticks - 1) * this->m_tickPeriodUsec;
             const U64 first = (now > back) ? (now - back) : 0;
             record.firstTime = Fw::Time(base, this->m_tickTime.getContext(), static_cast<U32>(first / USEC_PER_SEC),
                                         static_cast<U32>(first % USEC_PER_SEC));
@@ -836,11 +858,15 @@ const SeqScheduler::BaseRecord* SeqScheduler::findBase(TimeBase base) const {
 }
 
 SeqScheduler::DueInfo SeqScheduler::dueInfo(FwSizeType row) const {
+    FW_ASSERT(row < this->m_rows, static_cast<FwAssertArgType>(row));
+    FW_ASSERT(this->m_tickPeriodUsec > 0);
+    // Tick counts stay far below the range of the signed microsecond values computed from them
+    FW_ASSERT(this->m_tick <= MAX_TICK_USEC / this->m_tickPeriodUsec);
     DueInfo info;
     const SeqScheduler_Row& entry = this->m_table[row];
     const Fw::TimeValue& time = entry.get_time();
     const U64 rowUsec = toUsec(time.get_seconds(), time.get_useconds());
-    const I64 nowTickUsec = static_cast<I64>(this->m_tick * this->m_tickPeriod);
+    const I64 nowTickUsec = static_cast<I64>(this->m_tick * this->m_tickPeriodUsec);
     if (entry.get_mode() == SeqScheduler_TimeMode::ABSOLUTE) {
         if ((this->m_tick == 0) || (this->m_tickTime.getTimeBase() != time.get_timeBase())) {
             return info;
@@ -848,12 +874,20 @@ SeqScheduler::DueInfo SeqScheduler::dueInfo(FwSizeType row) const {
         const U64 nowUsec = toUsec(this->m_tickTime.getSeconds(), this->m_tickTime.getUSeconds());
         info.known = true;
         info.timeDue = Fw::Time(time.get_timeBase(), time.get_timeContext(), time.get_seconds(), time.get_useconds());
+        // Both differences are bounded by 32 bits of seconds, in microseconds
         if (nowUsec >= rowUsec) {
             info.due = true;
             info.lateUsec = nowUsec - rowUsec;
-            info.dueUsec = nowTickUsec - static_cast<I64>(info.lateUsec);
+            FW_ASSERT(info.lateUsec <= MAX_TICK_USEC);
+            const I64 late = static_cast<I64>(info.lateUsec);
+            FW_ASSERT((nowTickUsec >= 0) && (late >= 0) && (late <= MAX_SIGNED_USEC));
+            info.dueUsec = nowTickUsec - late;
         } else {
-            info.dueUsec = nowTickUsec + static_cast<I64>(rowUsec - nowUsec);
+            const U64 aheadUsec = rowUsec - nowUsec;
+            FW_ASSERT(aheadUsec <= MAX_TICK_USEC);
+            const I64 ahead = static_cast<I64>(aheadUsec);
+            FW_ASSERT((nowTickUsec >= 0) && (nowTickUsec <= MAX_SIGNED_USEC) && (ahead <= MAX_SIGNED_USEC));
+            info.dueUsec = nowTickUsec + ahead;
         }
         return info;
     }
@@ -866,14 +900,14 @@ SeqScheduler::DueInfo SeqScheduler::dueInfo(FwSizeType row) const {
     if (origin == nullptr) {
         return info;
     }
-    const U64 delayTicks = (rowUsec + this->m_tickPeriod - 1) / this->m_tickPeriod;
+    const U64 delayTicks = (rowUsec + this->m_tickPeriodUsec - 1) / this->m_tickPeriodUsec;
     const U64 dueTick = origin->firstTick + delayTicks;
     info.known = true;
-    info.dueUsec = static_cast<I64>(dueTick * this->m_tickPeriod);
+    info.dueUsec = static_cast<I64>(dueTick * this->m_tickPeriodUsec);
     info.timeDue = addUsec(origin->firstTime, rowUsec);
     if (this->m_tick >= dueTick) {
         info.due = true;
-        info.lateUsec = (this->m_tick - dueTick) * this->m_tickPeriod;
+        info.lateUsec = (this->m_tick - dueTick) * this->m_tickPeriodUsec;
     }
     return info;
 }
@@ -881,10 +915,11 @@ SeqScheduler::DueInfo SeqScheduler::dueInfo(FwSizeType row) const {
 U64 SeqScheduler::lateToleranceUsec() {
     Fw::ParamValid valid = Fw::ParamValid::INVALID;
     const U64 tolerance = static_cast<U64>(this->paramGet_LATE_TOLERANCE_SEC(valid)) * USEC_PER_SEC;
-    return (tolerance < this->m_tickPeriod) ? this->m_tickPeriod : tolerance;
+    return (tolerance < this->m_tickPeriodUsec) ? this->m_tickPeriodUsec : tolerance;
 }
 
 bool SeqScheduler::upcomingKey(FwSizeType row, DueRow& key, Fw::Time& timeDue) const {
+    FW_ASSERT(row < this->m_rows, static_cast<FwAssertArgType>(row));
     const SeqScheduler_Row& entry = this->m_table[row];
     if ((!this->m_enabled) || (!entry.get_enabled()) || this->isEmpty(row) ||
         (entry.get_state() != SeqScheduler_RowState::PENDING)) {
@@ -938,6 +973,7 @@ bool SeqScheduler::findUpcoming(FwSizeType position, FwSizeType& row, Fw::Time& 
 }
 
 void SeqScheduler::runRow(FwSizeType row) {
+    FW_ASSERT(row < this->m_rows, static_cast<FwAssertArgType>(row));
     const Svc::SeqArgs args;
     this->seqRunOut_out(0, this->m_table[row].get_fileName(), args);
     this->setRowState(row, SeqScheduler_RowState::EXECUTING);

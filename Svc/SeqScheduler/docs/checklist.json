@@ -10,21 +10,21 @@
   "owner": "",
   "contributors": "",
   "project": "/home/ubuntu/campaign/uut",
-  "commit": "9648baf468fcbab1771a393f56fd052a58bf40fe",
+  "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
   "fingerprints": {
-    "1": "53bedbbc90bb",
-    "2": "a9a6817558a3",
-    "3": "e3b0c44298fc",
-    "4": "e3b0c44298fc",
-    "5": "a9a6817558a3"
+    "1": "d2dfcebe38b8",
+    "2": "7d17e8545144",
+    "3": "fe9ace06945a",
+    "4": "e96eea6632d2",
+    "5": "34711b44a469"
   },
-  "stage": "design",
+  "stage": "implementation",
   "summary": {
-    "YES": 22,
-    "NO": 4,
+    "YES": 62,
+    "NO": 2,
     "N/A": 5,
-    "REVIEW": 5,
-    "UNCHECKED": 37
+    "REVIEW": 0,
+    "UNCHECKED": 4
   },
   "items": [
     {
@@ -40,12 +40,12 @@
       "decision": {
         "status": "YES",
         "notes": [
-          "REQ-001 to REQ-061: configuration, load, dispatch, busy policy, late-row skip, edits, save, data product, query."
+          "REQ-001..061 (56 rows) define the behaviours; each named by a unit test of SDD 8.1"
         ],
         "kind": "review",
-        "commit": "9648baf468fcbab1771a393f56fd052a58bf40fe",
-        "fingerprint": "53bedbbc90bb",
-        "stage": "design",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "d2dfcebe38b8",
+        "stage": "implementation",
         "date": "2026-11-19"
       }
     },
@@ -62,12 +62,12 @@
       "decision": {
         "status": "YES",
         "notes": [
-          "Table file and parameters (REQ-001, REQ-003, REQ-044), commands (REQ-027 to REQ-034), completion input (REQ-018), schedule tick (REQ-006, REQ-010)."
+          "REQ-005, 034, 051-053 (table file, commands), REQ-008..011 (time, ticks), REQ-020 (completion report)"
         ],
         "kind": "review",
-        "commit": "9648baf468fcbab1771a393f56fd052a58bf40fe",
-        "fingerprint": "53bedbbc90bb",
-        "stage": "design",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "d2dfcebe38b8",
+        "stage": "implementation",
         "date": "2026-11-19"
       }
     },
@@ -84,12 +84,12 @@
       "decision": {
         "status": "YES",
         "notes": [
-          "Sequencer ports (REQ-012 to REQ-015), data product (REQ-035, REQ-036), query port (REQ-037), events and telemetry (REQ-040, REQ-041)."
+          "REQ-012 (sequence run), REQ-023 (table file), REQ-035 (data product), REQ-041/047 (telemetry), REQ-042 (query)"
         ],
         "kind": "review",
-        "commit": "9648baf468fcbab1771a393f56fd052a58bf40fe",
-        "fingerprint": "53bedbbc90bb",
-        "stage": "design",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "d2dfcebe38b8",
+        "stage": "implementation",
         "date": "2026-11-19"
       }
     },
@@ -106,12 +106,12 @@
       "decision": {
         "status": "YES",
         "notes": [
-          "REQ-004 fixes the table at the row count given to configure, in memory taken once from the allocator."
+          "REQ-004: one allocation from the configure allocator, fixed row count; SDD 3.4 data product bound SeqSchedulerDpMaxBytes"
         ],
         "kind": "review",
-        "commit": "9648baf468fcbab1771a393f56fd052a58bf40fe",
-        "fingerprint": "53bedbbc90bb",
-        "stage": "design",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "d2dfcebe38b8",
+        "stage": "implementation",
         "date": "2026-11-19"
       }
     },
@@ -121,7 +121,7 @@
       "text": "Do requirements exist in the component SDD for all relevant hardware I/O usage constraints for the component?",
       "status": "N/A",
       "notes": [
-        "No hardware I/O: SDD \u00a73.3 has no driver port; files go through the OS file abstraction (\u00a74.2)."
+        "No hardware I/O: no driver port; files go through the OS file abstraction (SDD 4.2)."
       ],
       "tool_status": "REVIEW",
       "tool_notes": [
@@ -130,12 +130,12 @@
       "decision": {
         "status": "N/A",
         "notes": [
-          "No hardware I/O: SDD \u00a73.3 has no driver port; files go through the OS file abstraction (\u00a74.2)."
+          "No hardware I/O: no driver port; files go through the OS file abstraction (SDD 4.2)."
         ],
         "kind": "review",
-        "commit": "9648baf468fcbab1771a393f56fd052a58bf40fe",
-        "fingerprint": "53bedbbc90bb",
-        "stage": "design",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "d2dfcebe38b8",
+        "stage": "implementation",
         "date": "2026-11-19"
       }
     },
@@ -157,9 +157,9 @@
           "The request gives no throughput or latency figure; timing is set by the schedule tick (REQ-010) and LATE_TOLERANCE_SEC (REQ-021, REQ-044)."
         ],
         "kind": "review",
-        "commit": "9648baf468fcbab1771a393f56fd052a58bf40fe",
-        "fingerprint": "53bedbbc90bb",
-        "stage": "design",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "d2dfcebe38b8",
+        "stage": "implementation",
         "date": "2026-11-19"
       }
     },
@@ -245,44 +245,26 @@
       "id": "2.5",
       "section": "2",
       "text": "Are the component input port handlers defined?",
-      "status": "NO",
+      "status": "YES",
       "notes": [
-        "D1: input port 'run' (sync) has no 'run_handler' override in the implementation",
-        "D1: input port 'seqDoneIn' (async) has no 'seqDoneIn_handler' override in the implementation",
-        "D1: input port 'queryIn' (guarded) has no 'queryIn_handler' override in the implementation",
-        "D1: input port 'pingIn' (async) has no 'pingIn_handler' override in the implementation"
+        "D1 pass (4 input port(s) checked)"
       ],
-      "tool_status": "NO",
+      "tool_status": "YES",
       "tool_notes": [
-        "D1: input port 'run' (sync) has no 'run_handler' override in the implementation",
-        "D1: input port 'seqDoneIn' (async) has no 'seqDoneIn_handler' override in the implementation",
-        "D1: input port 'queryIn' (guarded) has no 'queryIn_handler' override in the implementation",
-        "D1: input port 'pingIn' (async) has no 'pingIn_handler' override in the implementation"
+        "D1 pass (4 input port(s) checked)"
       ]
     },
     {
       "id": "2.6",
       "section": "2",
       "text": "Are the component command handlers defined?",
-      "status": "NO",
+      "status": "YES",
       "notes": [
-        "D2: command 'LOAD_TABLE' has no 'LOAD_TABLE_cmdHandler' in the implementation",
-        "D2: command 'SAVE_TABLE' has no 'SAVE_TABLE_cmdHandler' in the implementation",
-        "D2: command 'SET_ROW_ENABLED' has no 'SET_ROW_ENABLED_cmdHandler' in the implementation",
-        "D2: command 'SET_SEQ_ENABLED' has no 'SET_SEQ_ENABLED_cmdHandler' in the implementation",
-        "D2: command 'SET_ROW' has no 'SET_ROW_cmdHandler' in the implementation",
-        "D2: command 'DUMP_TABLE' has no 'DUMP_TABLE_cmdHandler' in the implementation",
-        "... 2 more"
+        "D2 pass (8 command(s) checked)"
       ],
-      "tool_status": "NO",
+      "tool_status": "YES",
       "tool_notes": [
-        "D2: command 'LOAD_TABLE' has no 'LOAD_TABLE_cmdHandler' in the implementation",
-        "D2: command 'SAVE_TABLE' has no 'SAVE_TABLE_cmdHandler' in the implementation",
-        "D2: command 'SET_ROW_ENABLED' has no 'SET_ROW_ENABLED_cmdHandler' in the implementation",
-        "D2: command 'SET_SEQ_ENABLED' has no 'SET_SEQ_ENABLED_cmdHandler' in the implementation",
-        "D2: command 'SET_ROW' has no 'SET_ROW_cmdHandler' in the implementation",
-        "D2: command 'DUMP_TABLE' has no 'DUMP_TABLE_cmdHandler' in the implementation",
-        "... 2 more"
+        "D2 pass (8 command(s) checked)"
       ]
     },
     {
@@ -434,13 +416,13 @@
       "id": "3.1",
       "section": "3",
       "text": "Are all component source dependencies listed in the CMakeLists.txt file for the component?",
-      "status": "N/A",
+      "status": "YES",
       "notes": [
-        "I1: no C++ sources found"
+        "I1 pass (3 dependency module(s) checked; 1 provided by FPP/implicit framework dependencies)"
       ],
-      "tool_status": "N/A",
+      "tool_status": "YES",
       "tool_notes": [
-        "I1: no C++ sources found"
+        "I1 pass (3 dependency module(s) checked; 1 provided by FPP/implicit framework dependencies)"
       ]
     },
     {
@@ -460,125 +442,125 @@
       "id": "3.3",
       "section": "3",
       "text": "Are all loops properly terminated/bounded?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/jpl-c/loop-bounds` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/jpl-c/loop-bounds` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/jpl-c/loop-bounds` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/jpl-c/loop-bounds` 0 findings"
       ]
     },
     {
       "id": "3.4",
       "section": "3",
       "text": "Has gating been provided for any potential cyclic error/status messages (e.g. log messages, events)?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/unthrottled-cyclic-event` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/unthrottled-cyclic-event` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/unthrottled-cyclic-event` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/unthrottled-cyclic-event` 0 findings"
       ]
     },
     {
       "id": "3.5",
       "section": "3",
       "text": "Do all switch statements have a break after each case and terminate with a default case?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/switch-default` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/switch-case-fallthrough` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/switch-default` 0 findings",
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/switch-default` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/switch-case-fallthrough` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/switch-default` 0 findings",
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
       ]
     },
     {
       "id": "3.6",
       "section": "3",
       "text": "Verify all non-empty case statements that fall through to the following case statement are explicitly commented as such",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/switch-case-fallthrough` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/switch-case-fallthrough` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/switch-case-fallthrough` 0 findings"
       ]
     },
     {
       "id": "3.7",
       "section": "3",
       "text": "Are all variables locally defined unless global or specific visibility is required?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/global-mutable-variable` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/global-mutable-variable` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/global-mutable-variable` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/global-mutable-variable` 0 findings"
       ]
     },
     {
       "id": "3.8",
       "section": "3",
       "text": "Are all class members defined appropriately using private, public and protected keywords?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/public-data-member` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/public-data-member` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/public-data-member` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/public-data-member` 0 findings"
       ]
     },
     {
       "id": "3.9",
       "section": "3",
       "text": "Verify that no floating point expressions are tested for equality/inequality",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/float-equality` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/float-equality` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/float-equality` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/float-equality` 0 findings"
       ]
     },
     {
       "id": "3.10",
       "section": "3",
       "text": "Is the precision of floating point numbers sufficient to ensure accuracy and floating-point equivalence is evaluated with margin (i.e. safe floating-point usage), and is not used in a loop control?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/float-narrowing` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/float-loop-control` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/float-equality` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/float-narrowing` 0 findings",
+        "`cpp/fprime/float-loop-control` 0 findings",
+        "`cpp/fprime/float-equality` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/float-narrowing` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/float-loop-control` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/float-equality` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/float-narrowing` 0 findings",
+        "`cpp/fprime/float-loop-control` 0 findings",
+        "`cpp/fprime/float-equality` 0 findings"
       ]
     },
     {
       "id": "3.11",
       "section": "3",
       "text": "Are all variables initialized before use?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/uninitialized-member` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/uninitialized-local` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/uninitialized-member` 0 findings",
+        "`cpp/uninitialized-local` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/uninitialized-member` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/uninitialized-local` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/uninitialized-member` 0 findings",
+        "`cpp/uninitialized-local` 0 findings"
       ]
     },
     {
@@ -598,345 +580,385 @@
       "id": "3.13",
       "section": "3",
       "text": "Are all commands acknowledged with success/failure?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/command-response` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/command-response` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/command-response` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/command-response` 0 findings"
       ]
     },
     {
       "id": "3.14",
       "section": "3",
       "text": "Do all validation failure cases for port and command handlers include a return statement to avoid unintended code execution beyond validation failures?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/validation-failure-return` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/validation-failure-return` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/validation-failure-return` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/validation-failure-return` 0 findings"
       ]
     },
     {
       "id": "3.15",
       "section": "3",
       "text": "Are all internal port interfaces invoked via the auto-coded internal port invoke() function?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/internal-port-invoke` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/internal-port-invoke` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/internal-port-invoke` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/internal-port-invoke` 0 findings"
       ]
     },
     {
       "id": "3.16",
       "section": "3",
       "text": "All pointer arguments to functions are checked to be not nullptr using FW_ASSERT",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/checking-parameter-values` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/checking-parameter-values` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/checking-parameter-values` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/checking-parameter-values` 0 findings"
       ]
     },
     {
       "id": "3.17",
       "section": "3",
       "text": "Assumptions on software state are validated using FW_ASSERT.",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/jpl-c/use-of-assertions-density` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/jpl-c/use-of-assertions-density` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/jpl-c/use-of-assertions-density` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/jpl-c/use-of-assertions-density` 0 findings"
       ]
     },
     {
       "id": "3.18",
       "section": "3",
       "text": "Assertions shall not be used to validate state that could be dependent on hardware or user input.",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/assert-on-untrusted-input` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/assert-on-untrusted-input` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/assert-on-untrusted-input` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/assert-on-untrusted-input` 0 findings"
       ]
     },
     {
       "id": "3.19",
       "section": "3",
       "text": "Verify all ISR code is free of floating point operations",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/no-float-in-isr` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-float-in-isr` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/no-float-in-isr` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-float-in-isr` 0 findings"
       ]
     },
     {
       "id": "3.20",
       "section": "3",
       "text": "Has the ISR code been optimized to minimize length/execution time?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/isr-complexity` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/isr-complexity` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/isr-complexity` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/isr-complexity` 0 findings"
       ]
     },
     {
       "id": "3.21",
       "section": "3",
       "text": "Verify any software state that's expected upon receive of an interrupt is configured prior to enabling/setting conditions that would allow the interrupt to trigger.",
-      "status": "REVIEW",
+      "status": "N/A",
       "notes": [
-        "CL-1: ISR state before enable (3.21): for every ISR-named function (*_isr, *interrupt_handler*, *_irq*) find the code that enables its interrupt; every variable the ISR reads or writes must be assigned on a path that completes before that enable call."
+        "No interrupt service routine in the component."
       ],
       "tool_status": "REVIEW",
       "tool_notes": [
         "CL-1: ISR state before enable (3.21): for every ISR-named function (*_isr, *interrupt_handler*, *_irq*) find the code that enables its interrupt; every variable the ISR reads or writes must be assigned on a path that completes before that enable call."
-      ]
+      ],
+      "decision": {
+        "status": "N/A",
+        "notes": [
+          "No interrupt service routine in the component."
+        ],
+        "kind": "review",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "fe9ace06945a",
+        "stage": "implementation",
+        "date": "2026-11-19"
+      }
     },
     {
       "id": "3.22",
       "section": "3",
       "text": "Verify there are no blocking operations in ISRs",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/no-blocking-in-isr` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-blocking-in-isr` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/no-blocking-in-isr` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-blocking-in-isr` 0 findings"
       ]
     },
     {
       "id": "3.23",
       "section": "3",
       "text": "Verify any relevant interrupt enables and interrupts are cleared during initialization and re-enabled selectively as needed.",
-      "status": "REVIEW",
+      "status": "N/A",
       "notes": [
-        "CL-2: Interrupt enables cleared at init (3.23): in the constructor/init/configure/preamble, interrupt-enable bits must be explicitly cleared or masked before peripheral configuration, not assumed clear from reset."
+        "No interrupt is enabled or used by the component."
       ],
       "tool_status": "REVIEW",
       "tool_notes": [
         "CL-2: Interrupt enables cleared at init (3.23): in the constructor/init/configure/preamble, interrupt-enable bits must be explicitly cleared or masked before peripheral configuration, not assumed clear from reset."
-      ]
+      ],
+      "decision": {
+        "status": "N/A",
+        "notes": [
+          "No interrupt is enabled or used by the component."
+        ],
+        "kind": "review",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "fe9ace06945a",
+        "stage": "implementation",
+        "date": "2026-11-19"
+      }
     },
     {
       "id": "3.24",
       "section": "3",
       "text": "Are RateGroup schedule calls non-blocking?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/no-blocking-in-sched-handler` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-blocking-in-sched-handler` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/no-blocking-in-sched-handler` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-blocking-in-sched-handler` 0 findings"
       ]
     },
     {
       "id": "3.25",
       "section": "3",
       "text": "Verify no synchronous file access is done within a critical region (e.g. SchedIn)",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/no-file-access-in-critical` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-file-access-in-critical` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/no-file-access-in-critical` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-file-access-in-critical` 0 findings"
       ]
     },
     {
       "id": "3.26",
       "section": "3",
       "text": "Verify that all loops and if/else statements are compound statements (i.e. always use brackets {})",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/compound-statements` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/compound-statements` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/compound-statements` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/compound-statements` 0 findings"
       ]
     },
     {
       "id": "3.27",
       "section": "3",
       "text": "Verify that all divisions first check for small numbers (including zero)",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/division-guard` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/float-division-guard` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/division-guard` 0 findings",
+        "`cpp/fprime/float-division-guard` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/division-guard` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/float-division-guard` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/division-guard` 0 findings",
+        "`cpp/fprime/float-division-guard` 0 findings"
       ]
     },
     {
       "id": "3.28",
       "section": "3",
       "text": "Verify all array accesses are checked to be within array index bounds",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/unchecked-array-index` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/checking-parameter-values` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/unchecked-array-index` 0 findings",
+        "`cpp/fprime/checking-parameter-values` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/unchecked-array-index` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/checking-parameter-values` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/unchecked-array-index` 0 findings",
+        "`cpp/fprime/checking-parameter-values` 0 findings"
       ]
     },
     {
       "id": "3.29",
       "section": "3",
       "text": "Verify there are no function declarations within a function.",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/no-function-decl-in-function` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-function-decl-in-function` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/no-function-decl-in-function` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-function-decl-in-function` 0 findings"
       ]
     },
     {
       "id": "3.30",
       "section": "3",
       "text": "Verify that the three expressions in all for statements only concern flow control",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/for-header-flow-control` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/for-header-flow-control` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/for-header-flow-control` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/for-header-flow-control` 0 findings"
       ]
     },
     {
       "id": "3.31",
       "section": "3",
       "text": "Verify that there are no dependencies on signed integer overflow behavior",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/signed-overflow` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/signed-overflow` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/signed-overflow` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/signed-overflow` 0 findings"
       ]
     },
     {
       "id": "3.32",
       "section": "3",
       "text": "Verify return values are used or voided otherwise.",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/jpl-c/checking-return-values` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/jpl-c/checking-return-values` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/jpl-c/checking-return-values` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/jpl-c/checking-return-values` 0 findings"
       ]
     },
     {
       "id": "3.33",
       "section": "3",
       "text": "Verify units are incorporated into variable name, where applicable",
-      "status": "REVIEW",
-      "notes": [
-        "CL-3: Units in names (3.33): every variable, member, parameter, telemetry channel and command argument carrying a physical quantity must encode its unit in the name (timeoutMs, angleRad, sizeBytes) or in an FPP annotation."
-      ],
+      "status": "YES",
+      "notes": [],
       "tool_status": "REVIEW",
       "tool_notes": [
         "CL-3: Units in names (3.33): every variable, member, parameter, telemetry channel and command argument carrying a physical quantity must encode its unit in the name (timeoutMs, angleRad, sizeBytes) or in an FPP annotation."
-      ]
+      ],
+      "decision": {
+        "status": "YES",
+        "notes": [
+          "tickPeriodUsec, m_tickPeriodUsec, dueUsec, lateUsec, LATE_TOLERANCE_SEC, SeqSchedulerDpMaxBytes; times are Fw.TimeValue"
+        ],
+        "kind": "review",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "fe9ace06945a",
+        "stage": "implementation",
+        "date": "2026-11-19"
+      }
     },
     {
       "id": "3.34",
       "section": "3",
       "text": "Verify that all invariant numbers are in enums, static constexpr or #defines. Enums or static constexpr must be used unless #define is only way to specify constant.",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/magic-numbers` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/define-constant` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/magic-numbers` 0 findings",
+        "`cpp/fprime/define-constant` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/magic-numbers` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/define-constant` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/magic-numbers` 0 findings",
+        "`cpp/fprime/define-constant` 0 findings"
       ]
     },
     {
       "id": "3.35",
       "section": "3",
       "text": "Verify no use of printf",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/no-printf` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-printf` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/no-printf` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/no-printf` 0 findings"
       ]
     },
     {
       "id": "3.36",
       "section": "3",
       "text": "Does the component use platform independent standard data types (e.g. I32, F32 etc.) rather than primitive data types (e.g. int, float etc.)?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/jpl-c/basic-int-types` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/jpl-c/basic-int-types` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/jpl-c/basic-int-types` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/jpl-c/basic-int-types` 0 findings"
       ]
     },
     {
       "id": "3.37",
       "section": "3",
       "text": "Does the component pass static analysis?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "I4: check not run"
+        "I4 pass (0 finding(s) in module; threshold medium)"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "I4: check not run"
+        "I4 pass (0 finding(s) in module; threshold medium)"
       ]
     },
     {
       "id": "3.38",
       "section": "3",
       "text": "Does the implementation address all component requirements and remains consistent with the documented design?",
-      "status": "REVIEW",
-      "notes": [
-        "CL-4: Implementation matches requirements and design (3.38): for each requirement row locate the handler(s) that satisfy it and confirm the behaviour including each error path the SDD describes; report requirements with no implementing code and handler behaviour the SDD does not describe."
-      ],
+      "status": "YES",
+      "notes": [],
       "tool_status": "REVIEW",
       "tool_notes": [
         "CL-4: Implementation matches requirements and design (3.38): for each requirement row locate the handler(s) that satisfy it and confirm the behaviour including each error path the SDD describes; report requirements with no implementing code and handler behaviour the SDD does not describe."
-      ]
+      ],
+      "decision": {
+        "status": "YES",
+        "notes": [
+          "56 requirement rows each named by a passing unit test of SDD 8.1 (65 listed == 65 in code); system tests L0-L7 26 PASS on Ref"
+        ],
+        "kind": "review",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "fe9ace06945a",
+        "stage": "implementation",
+        "date": "2026-11-19"
+      }
     },
     {
       "id": "4.1",
@@ -955,27 +977,36 @@
       "id": "4.2",
       "section": "4",
       "text": "Are all component unit test source dependencies listed in the CMakeLists.txt file for the component?",
-      "status": "N/A",
+      "status": "YES",
       "notes": [
-        "U3: no unit-test sources found"
+        "U3 pass (5 dependency module(s) checked)"
       ],
-      "tool_status": "N/A",
+      "tool_status": "YES",
       "tool_notes": [
-        "U3: no unit-test sources found"
+        "U3 pass (5 dependency module(s) checked)"
       ]
     },
     {
       "id": "4.3",
       "section": "4",
       "text": "Have input data ranges been tested for boundary conditions?",
-      "status": "REVIEW",
-      "notes": [
-        "CL-5: Boundary tests (4.3): for each bounded quantity (array sizes, FW_ASSERT limits, configuration constants, command-argument ranges, queue depths) a unit test must exercise the limit value and one past it."
-      ],
+      "status": "YES",
+      "notes": [],
       "tool_status": "REVIEW",
       "tool_notes": [
         "CL-5: Boundary tests (4.3): for each bounded quantity (array sizes, FW_ASSERT limits, configuration constants, command-argument ranges, queue depths) a unit test must exercise the limit value and one past it."
-      ]
+      ],
+      "decision": {
+        "status": "YES",
+        "notes": [
+          "Configure (rows 1, 65535; 0, 65536, tick 0 assert), ArgumentErrors (row index, 999999/1000000 usec, name length), LongTableFile, DumpTruncated, TimeBaseRecordFull, LoadFailures (241-char name)"
+        ],
+        "kind": "review",
+        "commit": "5afc29f1df17724ae61a0a42ac338c3b09ca9361",
+        "fingerprint": "e96eea6632d2",
+        "stage": "implementation",
+        "date": "2026-11-19"
+      }
     },
     {
       "id": "4.4",
@@ -994,28 +1025,28 @@
       "id": "4.5",
       "section": "4",
       "text": "Is there sufficient code coverage?",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "U5 not run: not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+        "U5 pass (line coverage 98.48% (threshold 80.00%))"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "U5 not run: not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+        "U5 pass (line coverage 98.48% (threshold 80.00%))"
       ]
     },
     {
       "id": "5.1",
       "section": "5",
       "text": "Verify no TBDs, TODOs or printfs in the code (no incomplete code).",
-      "status": "UNCHECKED",
+      "status": "YES",
       "notes": [
-        "clang-tidy `cpp/fprime/incomplete-code` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/no-printf` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/incomplete-code` 0 findings",
+        "`cpp/fprime/no-printf` 0 findings"
       ],
-      "tool_status": "UNCHECKED",
+      "tool_status": "YES",
       "tool_notes": [
-        "clang-tidy `cpp/fprime/incomplete-code` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-        "clang-tidy `cpp/fprime/no-printf` not run: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first"
+        "`cpp/fprime/incomplete-code` 0 findings",
+        "`cpp/fprime/no-printf` 0 findings"
       ]
     },
     {
@@ -1263,13 +1294,8 @@
       "name": "Input port handlers defined",
       "category": "design",
       "module": "/home/ubuntu/campaign/uut/Svc/SeqScheduler",
-      "status": "fail",
-      "failures": [
-        "input port 'run' (sync) has no 'run_handler' override in the implementation",
-        "input port 'seqDoneIn' (async) has no 'seqDoneIn_handler' override in the implementation",
-        "input port 'queryIn' (guarded) has no 'queryIn_handler' override in the implementation",
-        "input port 'pingIn' (async) has no 'pingIn_handler' override in the implementation"
-      ],
+      "status": "pass",
+      "failures": [],
       "detail": "4 input port(s) checked"
     },
     "D2": {
@@ -1277,17 +1303,8 @@
       "name": "Command handlers defined",
       "category": "design",
       "module": "/home/ubuntu/campaign/uut/Svc/SeqScheduler",
-      "status": "fail",
-      "failures": [
-        "command 'LOAD_TABLE' has no 'LOAD_TABLE_cmdHandler' in the implementation",
-        "command 'SAVE_TABLE' has no 'SAVE_TABLE_cmdHandler' in the implementation",
-        "command 'SET_ROW_ENABLED' has no 'SET_ROW_ENABLED_cmdHandler' in the implementation",
-        "command 'SET_SEQ_ENABLED' has no 'SET_SEQ_ENABLED_cmdHandler' in the implementation",
-        "command 'SET_ROW' has no 'SET_ROW_cmdHandler' in the implementation",
-        "command 'DUMP_TABLE' has no 'DUMP_TABLE_cmdHandler' in the implementation",
-        "command 'REPORT_ACTIVE_ROW' has no 'REPORT_ACTIVE_ROW_cmdHandler' in the implementation",
-        "command 'SET_ENABLED' has no 'SET_ENABLED_cmdHandler' in the implementation"
-      ],
+      "status": "pass",
+      "failures": [],
       "detail": "8 command(s) checked"
     },
     "D3": {
@@ -1358,9 +1375,9 @@
       "name": "Source dependencies listed in CMakeLists",
       "category": "implementation",
       "module": "/home/ubuntu/campaign/uut/Svc/SeqScheduler",
-      "status": "skip",
+      "status": "pass",
       "failures": [],
-      "detail": "no C++ sources found"
+      "detail": "3 dependency module(s) checked; 1 provided by FPP/implicit framework dependencies"
     },
     "I3": {
       "id": "I3",
@@ -1378,9 +1395,9 @@
       "name": "Unit-test dependencies in CMakeLists",
       "category": "unit-testing",
       "module": "/home/ubuntu/campaign/uut/Svc/SeqScheduler",
-      "status": "skip",
+      "status": "pass",
       "failures": [],
-      "detail": "no unit-test sources found"
+      "detail": "5 dependency module(s) checked"
     },
     "C2": {
       "id": "C2",
@@ -1402,6 +1419,15 @@
       "failures": [],
       "detail": "1 FPP file(s) checked"
     },
+    "I4": {
+      "id": "I4",
+      "name": "Passes static analysis",
+      "category": "implementation",
+      "module": "/home/ubuntu/campaign/uut/Svc/SeqScheduler",
+      "status": "pass",
+      "failures": [],
+      "detail": "0 finding(s) in module; threshold medium"
+    },
     "I2": {
       "id": "I2",
       "name": "Compiles without warnings",
@@ -1414,11 +1440,11 @@
     "U5": {
       "id": "U5",
       "name": "Sufficient code coverage",
-      "category": "unit-test",
+      "category": "unit-testing",
       "module": "/home/ubuntu/campaign/uut/Svc/SeqScheduler",
-      "status": "skip",
+      "status": "pass",
       "failures": [],
-      "detail": "not done yet: no coverage/summary.txt; 'fprime-util check --coverage' has not been run for the module"
+      "detail": "line coverage 98.48% (threshold 80.00%)"
     },
     "U4": {
       "id": "U4",
@@ -1467,11 +1493,92 @@
     }
   },
   "codeql": {
-    "ran": false,
+    "ran": true,
     "tool": "clang-tidy",
-    "reason": "no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first",
-    "rules_run": [],
+    "reason": "",
+    "rules_run": [
+      "cpp/fprime/assert-on-untrusted-input",
+      "cpp/fprime/checking-parameter-values",
+      "cpp/fprime/command-response",
+      "cpp/fprime/compound-statements",
+      "cpp/fprime/define-constant",
+      "cpp/fprime/division-guard",
+      "cpp/fprime/float-division-guard",
+      "cpp/fprime/float-equality",
+      "cpp/fprime/float-loop-control",
+      "cpp/fprime/float-narrowing",
+      "cpp/fprime/for-header-flow-control",
+      "cpp/fprime/global-mutable-variable",
+      "cpp/fprime/incomplete-code",
+      "cpp/fprime/internal-port-invoke",
+      "cpp/fprime/isr-complexity",
+      "cpp/fprime/jpl-c/basic-int-types",
+      "cpp/fprime/jpl-c/checking-return-values",
+      "cpp/fprime/jpl-c/loop-bounds",
+      "cpp/fprime/jpl-c/multiple-stmts-per-line",
+      "cpp/fprime/jpl-c/multiple-var-decls-per-line",
+      "cpp/fprime/jpl-c/no-boolean-side-effects",
+      "cpp/fprime/jpl-c/non-const-function-pointer",
+      "cpp/fprime/jpl-c/preprocessor-use-ifdef",
+      "cpp/fprime/jpl-c/use-of-assertions-constant",
+      "cpp/fprime/jpl-c/use-of-assertions-density",
+      "cpp/fprime/jpl-c/use-of-assertions-non-boolean",
+      "cpp/fprime/jpl-c/use-of-assertions-side-effect",
+      "cpp/fprime/magic-numbers",
+      "cpp/fprime/no-blocking-in-isr",
+      "cpp/fprime/no-blocking-in-sched-handler",
+      "cpp/fprime/no-file-access-in-critical",
+      "cpp/fprime/no-float-in-isr",
+      "cpp/fprime/no-function-decl-in-function",
+      "cpp/fprime/no-printf",
+      "cpp/fprime/public-data-member",
+      "cpp/fprime/signed-overflow",
+      "cpp/fprime/switch-case-fallthrough",
+      "cpp/fprime/switch-default",
+      "cpp/fprime/unchecked-array-index",
+      "cpp/fprime/unguarded-unsigned-subtraction",
+      "cpp/fprime/uninitialized-member",
+      "cpp/fprime/unthrottled-cyclic-event",
+      "cpp/fprime/validation-failure-return",
+      "cpp/uninitialized-local"
+    ],
     "autocode_findings": 0,
-    "findings": {}
+    "findings": {
+      "cpp/fprime/jpl-c/loop-bounds": [],
+      "cpp/fprime/unthrottled-cyclic-event": [],
+      "cpp/fprime/switch-default": [],
+      "cpp/fprime/switch-case-fallthrough": [],
+      "cpp/fprime/global-mutable-variable": [],
+      "cpp/fprime/public-data-member": [],
+      "cpp/fprime/float-equality": [],
+      "cpp/fprime/float-narrowing": [],
+      "cpp/fprime/float-loop-control": [],
+      "cpp/fprime/uninitialized-member": [],
+      "cpp/uninitialized-local": [],
+      "cpp/fprime/command-response": [],
+      "cpp/fprime/validation-failure-return": [],
+      "cpp/fprime/internal-port-invoke": [],
+      "cpp/fprime/checking-parameter-values": [],
+      "cpp/fprime/jpl-c/use-of-assertions-density": [],
+      "cpp/fprime/assert-on-untrusted-input": [],
+      "cpp/fprime/no-float-in-isr": [],
+      "cpp/fprime/isr-complexity": [],
+      "cpp/fprime/no-blocking-in-isr": [],
+      "cpp/fprime/no-blocking-in-sched-handler": [],
+      "cpp/fprime/no-file-access-in-critical": [],
+      "cpp/fprime/compound-statements": [],
+      "cpp/fprime/division-guard": [],
+      "cpp/fprime/float-division-guard": [],
+      "cpp/fprime/unchecked-array-index": [],
+      "cpp/fprime/no-function-decl-in-function": [],
+      "cpp/fprime/for-header-flow-control": [],
+      "cpp/fprime/signed-overflow": [],
+      "cpp/fprime/jpl-c/checking-return-values": [],
+      "cpp/fprime/magic-numbers": [],
+      "cpp/fprime/define-constant": [],
+      "cpp/fprime/no-printf": [],
+      "cpp/fprime/jpl-c/basic-int-types": [],
+      "cpp/fprime/incomplete-code": []
+    }
   }
 }
