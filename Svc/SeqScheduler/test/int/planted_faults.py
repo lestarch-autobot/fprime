@@ -5,8 +5,9 @@ named checks of that test the fault breaks; `fth planted-faults-menu plan.json` 
 menu from these declarations.
 """
 import json
+import re
 
-from fth.registry import planted_fault
+from fth.registry import helper, planted_fault
 
 S = "Ref.seqSched"
 B = "Ref.seqSchedB"
@@ -196,3 +197,52 @@ def missing_file_present(test_id, command_name, args):
     if command_name == S + ".TABLE_FILE_PRM_SET" and args[0] == "missing.tbl":
         return [T_BASE_PATH]
     return None
+
+
+# ----------------------------------------------------------------------
+# Completeness helpers of the STD and STD-ERR groups
+# ----------------------------------------------------------------------
+
+NO_OP_OPCODE = 0x1000000  # CdhCore.cmdDisp.CMD_NO_OP: the only command the sequence files hold
+
+
+@helper("commands_dispatched")
+def commands_dispatched(ctx):
+    """Per opcode, the dispatcher logged one OpCodeDispatched for each command sent in the window.
+
+    A sequence run in the window dispatches its own commands, so CMD_NO_OP may be dispatched more
+    often than it was sent; no other opcode may."""
+    sent, seen = {}, {}
+    for row in ctx.window.cmds:
+        sent[row.opcode] = sent.get(row.opcode, 0) + 1
+    for row in ctx.window.events("cmdDisp.OpCodeDispatched"):
+        found = re.search(r"0x([0-9a-fA-F]+)", row.text)
+        opcode = int(found.group(1), 16) if found else -1
+        seen[opcode] = seen.get(opcode, 0) + 1
+    wrong = [f"0x{op:x}: sent {sent.get(op, 0)}, dispatched {seen.get(op, 0)}" for op in sorted(set(sent) | set(seen))
+             if (seen.get(op, 0) < sent.get(op, 0)) or (op != NO_OP_OPCODE and seen.get(op, 0) != sent.get(op, 0))]
+    return (bool(sent) and not wrong, f"{sum(sent.values())} sent, {sum(seen.values())} dispatched; {wrong}")
+
+
+def _steady(ctx, names):
+    """No sample of the channels in the window differs from the last sample before the window."""
+    wrong = []
+    start = ctx.window.start_marker
+    for name in names:
+        before = [c for c in ctx.record.channels if c.short == name and c.epoch == start.epoch and c.t < start.t]
+        last = before[-1].raw if before else None
+        for row in ctx.window.channel(name):
+            zero = not any(ch.isdigit() and ch != "0" for ch in str(row.raw))
+            if (last is None and not zero) or (last is not None and row.raw != last):
+                wrong.append(f"{name}={row.raw} (before: {last})")
+    return (not wrong, f"{wrong[:3] if wrong else 'steady'}")
+
+
+@helper("events_dropped_steady")
+def events_dropped_steady(ctx):
+    return _steady(ctx, ["events.EventsDropped"])
+
+
+@helper("com_dropped_steady")
+def com_dropped_steady(ctx):
+    return _steady(ctx, ["comQueue.comIngressDropped", "comQueue.comManagedDropped"])

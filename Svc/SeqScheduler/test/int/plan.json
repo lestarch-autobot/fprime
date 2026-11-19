@@ -91,10 +91,19 @@
  },
  "std_complete": [
   "both markers present",
-  "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+  {
+   "helper": "commands_dispatched",
+   "text": "per opcode, every command sent in the window was dispatched once; only CMD_NO_OP, the command the sequence files hold, may be dispatched more often than sent"
+  },
   "event cmdDisp.TooManyCommands count == 0",
-  "no sample of events.EventsDropped in the window differs from the last sample before it; with no earlier sample in the record, any non-zero sample in the window fails (helper)",
-  "no sample of comQueue.comIngressDropped or comQueue.comManagedDropped in the window differs, in any element, from the last sample before it; with no earlier sample in the record, any sample in the window with a non-zero element fails (helper)",
+  {
+   "helper": "events_dropped_steady",
+   "text": "no sample of events.EventsDropped in the window differs from the last sample before it; with no earlier sample in the record, any non-zero sample in the window fails"
+  },
+  {
+   "helper": "com_dropped_steady",
+   "text": "no sample of comQueue.comIngressDropped or comQueue.comManagedDropped in the window differs, in any element, from the last sample before it; with no earlier sample in the record, any sample in the window with a non-zero element fails"
+  },
   "SeqSched samples >= 2",
   "event cmdDisp.OpCodeError count == 0"
  ],
@@ -106,10 +115,19 @@
   ],
   "STD-ERR": [
    "both markers present",
-   "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+   {
+    "helper": "commands_dispatched",
+    "text": "per opcode, every command sent in the window was dispatched once; only CMD_NO_OP, the command the sequence files hold, may be dispatched more often than sent"
+   },
    "event cmdDisp.TooManyCommands count == 0",
-   "no sample of events.EventsDropped in the window differs from the last sample before it; with no earlier sample in the record, any non-zero sample in the window fails (helper)",
-   "no sample of comQueue.comIngressDropped or comQueue.comManagedDropped in the window differs, in any element, from the last sample before it; with no earlier sample in the record, any sample in the window with a non-zero element fails (helper)",
+   {
+    "helper": "events_dropped_steady",
+    "text": "no sample of events.EventsDropped in the window differs from the last sample before it; with no earlier sample in the record, any non-zero sample in the window fails"
+   },
+   {
+    "helper": "com_dropped_steady",
+    "text": "no sample of comQueue.comIngressDropped or comQueue.comManagedDropped in the window differs, in any element, from the last sample before it; with no earlier sample in the record, any sample in the window with a non-zero element fails"
+   },
    "SeqSched samples >= 2"
   ]
  },
