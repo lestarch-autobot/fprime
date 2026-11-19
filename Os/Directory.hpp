@@ -3,7 +3,8 @@
 // \brief public Os::Directory interface and alias
 //
 // This header aggregates all definitions needed to use Os::Directory:
-// the interface, the configured alias, and the concrete delegate type.
+// the interface, the configured alias, and the selected implementation (the
+// link-time delegate by default).
 //
 // The includes below must appear in the order given: each depends on names
 // defined by the one before it, so reordering them will fail to compile.

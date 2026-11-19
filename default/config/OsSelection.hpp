@@ -99,7 +99,9 @@
 // isOpenImpl(), return NOT_OPENED from rewind()/read() when closed,
 // assert the read() buffer, null-terminate what read() writes, close an
 // already open directory before open() opens another (leaving it closed when
-// that open fails), and release its resources on destruction.
+// that open fails), and release its resources on destruction. It must also
+// declare `using DirectoryInterface::read;` so read(Fw::StringBase&) is not
+// hidden by its read(char*, FwSizeType) override.
 // Os::Posix::Directory::PosixDirectory and Os::Stub::Directory::StubDirectory
 // do so.
 //
