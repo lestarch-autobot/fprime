@@ -96,7 +96,7 @@
 // there). No link-time delegate wraps a directly aliased implementation, so
 // the implementation itself MUST perform the checks the delegate otherwise
 // provides: assert the open() arguments, report its open state by overriding
-// isOpen(), return NOT_OPENED from rewind()/read() when closed,
+// isOpenImpl(), return NOT_OPENED from rewind()/read() when closed,
 // assert the read() buffer, null-terminate what read() writes, close an
 // already open directory before open() opens another (leaving it closed when
 // that open fails), and release its resources on destruction.
@@ -107,6 +107,10 @@
 // aliased class must still be in the link (e.g. CHOOSES_IMPLEMENTATIONS
 // Os_File_Posix). Directory shares the Os_File module with File and
 // FileSystem.
+//
+// A project override of this header that defines neither the Os::Directory
+// alias nor OS_DIRECTORY_HEADER keeps the link-time delegate (see
+// Os/Directory.hpp); defining only one of the two is a compile error.
 //
 // Example compile-time selection override:
 //

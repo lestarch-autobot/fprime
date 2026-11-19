@@ -60,6 +60,10 @@ TEST(Stub, DirectoryDirect) {
     ASSERT_STREQ(name.toChar(), "unchanged");
     ASSERT_EQ(directory.getFileCount(count), Os::Directory::Status::NOT_OPENED);
     ASSERT_EQ(count, 7);
+    Fw::String names[2];
+    Fw::ExternalArray<Fw::String> nameArray(names, 2);
+    ASSERT_EQ(directory.readDirectory(nameArray, count), Os::Directory::Status::NOT_OPENED);
+    ASSERT_EQ(count, 7);
     directory.close();
     ASSERT_FALSE(directory.isOpen());
 }

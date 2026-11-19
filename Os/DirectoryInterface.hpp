@@ -53,13 +53,18 @@ class DirectoryInterface {
     DirectoryInterface& operator=(const DirectoryInterface& other) = delete;
 
     //! \brief Check if Directory is open or not
+    //! \return true if Directory is open, false otherwise
+    bool isOpen() const;
+
+    //! \brief report the open state (implementation specific)
     //!
-    //! The open state is owned by the implementation. The link-time delegate tracks it itself, so an
-    //! implementation used only through the delegate may keep this default; an implementation selected
-    //! directly as Os::Directory must override it (enforced in Os/DirectoryInterface.cpp).
+    //! The open state is owned by the implementation; `isOpen` returns what this function reports. The link-time
+    //! delegate tracks the state itself and never asks the implementation it wraps, so an implementation used
+    //! only through the delegate may keep this default, which asserts. An implementation selected directly as
+    //! Os::Directory must override it (enforced in Os/DirectoryInterface.cpp).
     //!
     //! \return true if Directory is open, false otherwise
-    virtual bool isOpen() const;
+    virtual bool isOpenImpl() const;
 
     //! \brief return the underlying Directory handle (implementation specific)
     //! \return internal Directory handle representation

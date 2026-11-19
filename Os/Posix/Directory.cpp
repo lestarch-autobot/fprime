@@ -22,7 +22,7 @@ PosixDirectory::~PosixDirectory() {
     PosixDirectory::close();
 }
 
-bool PosixDirectory::isOpen() const {
+bool PosixDirectory::isOpenImpl() const {
     return this->m_handle.m_dir_descriptor != nullptr;
 }
 

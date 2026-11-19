@@ -31,9 +31,9 @@ class DelegateDirectory final : public DirectoryInterface {
     // Directory operations forwarded to the link-time implementation
     // ------------------------------------------------------------
 
-    //! \brief Check if Directory is open or not
+    //! \brief report the open state tracked by the delegate
     //! \return true if Directory is open, false otherwise
-    bool isOpen() const override;
+    bool isOpenImpl() const override;
 
     // Bring the DirectoryInterface convenience overloads into scope; overriding a
     // single `read` overload below would otherwise hide all of them.

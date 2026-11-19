@@ -40,7 +40,6 @@ TEST_F(Interface, Open) {
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::OPEN_FN);
 }
 
-// Ensure that Os::Directory properly calls the implementation rewind()
 // Destroying an open directory closes the implementation; a closed one is not closed again
 TEST_F(Interface, DestructionClosesOpenDirectory) {
     {
@@ -65,6 +64,7 @@ TEST_F(Interface, ReopenClosesFirst) {
     ASSERT_TRUE(directory.isOpen());
 }
 
+// Ensure that Os::Directory properly calls the implementation rewind()
 TEST_F(Interface, Rewind) {
     Os::Directory directory;
     directory.open("/does/not/matter", Os::Directory::OpenMode::READ);

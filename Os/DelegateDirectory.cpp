@@ -20,7 +20,7 @@ DelegateDirectory::~DelegateDirectory() {
     this->m_delegate.~DirectoryInterface();
 }
 
-bool DelegateDirectory::isOpen() const {
+bool DelegateDirectory::isOpenImpl() const {
     return this->m_is_open;
 }
 

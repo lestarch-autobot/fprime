@@ -130,6 +130,10 @@ TEST_F(PosixDirectoryDirect, ClosedDirectory) {
     ASSERT_STREQ(name.toChar(), "unchanged");
     ASSERT_EQ(this->m_directory.getFileCount(count), Os::Directory::Status::NOT_OPENED);
     ASSERT_EQ(count, 7);
+    Fw::String names[2];
+    Fw::ExternalArray<Fw::String> nameArray(names, 2);
+    ASSERT_EQ(this->m_directory.readDirectory(nameArray, count), Os::Directory::Status::NOT_OPENED);
+    ASSERT_EQ(count, 7);
     // Closing a closed directory is harmless
     this->m_directory.close();
     ASSERT_FALSE(this->m_directory.isOpen());

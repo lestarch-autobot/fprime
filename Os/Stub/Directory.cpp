@@ -37,7 +37,7 @@ void StubDirectory::close() {
     // no-op
 }
 
-bool StubDirectory::isOpen() const {
+bool StubDirectory::isOpenImpl() const {
     return false;
 }
 
