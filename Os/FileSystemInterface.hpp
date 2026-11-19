@@ -14,6 +14,8 @@
 
 // Validate that config/OsSelection.hpp chose a FileSystem selection. It is checked here, not in Os/FileSystem.hpp,
 // because FileSystemInterface names the Os::FileSystem alias itself.
+// Only the macro can be tested: a config that defines the macro without the alias fails at getSingleton() below
+// with 'FileSystem does not name a type'.
 #ifndef OS_FILE_SYSTEM_HEADER
 #error "config/OsSelection.hpp must define the Os::FileSystem alias and OS_FILE_SYSTEM_HEADER"
 #endif
@@ -285,6 +287,7 @@ class FileSystemInterface {
     //! must be default constructible by Os::FileSystemInterface.
     //!
     //! \return reference to singleton
+    // 'FileSystem' does not name a type here: config/OsSelection.hpp lacks the Os::FileSystem alias
     static FileSystem& getSingleton();
 
   private:
