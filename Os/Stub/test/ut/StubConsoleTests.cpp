@@ -106,8 +106,8 @@ TEST(Interface, SingletonLoggerRegistration) {
     Os::Console::write("direct", 6);
     Os::Console::init();
     Fw::Logger::log("hello");
-    ASSERT_TRUE(recorder.m_called);
     Fw::Logger::registerLogger(&Os::Console::getSingleton());
+    ASSERT_TRUE(recorder.m_called);
 }
 
 int main(int argc, char** argv) {

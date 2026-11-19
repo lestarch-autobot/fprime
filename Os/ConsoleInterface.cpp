@@ -7,6 +7,8 @@
 
 namespace Os {
 
+static_assert(sizeof(Console) > 0,
+              "OS_CONSOLE_HEADER (config/OsSelection.hpp) must define the class aliased as Os::Console");
 static_assert(std::is_base_of<ConsoleInterface, Console>::value,
               "Os::Console (config/OsSelection.hpp) must derive from Os::ConsoleInterface");
 

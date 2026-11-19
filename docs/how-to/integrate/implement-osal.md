@@ -360,7 +360,7 @@ The full set of [OSAL modules](../../../Os/docs/sdd.md#2-core-services) that can
 | **File** | `FileInterface` | `open()`, `read()`, `write()`, `close()`, `seek()` |
 | **FileSystem** | `FileSystemInterface` | `rename()`, `remove()`, `stat()` |
 | **Directory** | `DirectoryInterface` | `open()`, `read()`, `close()` |
-| **Console** | `ConsoleInterface` | `writeMessage()`, `getHandle()` |
+| **Console** | `ConsoleInterface` | `writeMessage()`, `getHandle()`; re-expose the string overload with `using ConsoleInterface::writeMessage;` |
 | **RawTime** | `RawTimeInterface` | `now()`, `getTimeInterval()` (getDelegate takes `RawTimeSource`) |
 | **Cpu** | `CpuInterface` | `getCount()`, `getTicks()` |
 | **Memory** | `MemoryInterface` | `getUsage()` |

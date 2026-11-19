@@ -100,7 +100,8 @@
 // implementation module does not match the alias. The class must also
 // re-expose the common overload with `using ConsoleInterface::writeMessage;`
 // and both the alias and OS_CONSOLE_HEADER must be defined together. An
-// override that omits them does not compile.
+// override that omits them does not compile: a missing OS_CONSOLE_HEADER
+// stops with an #error, a missing alias with "'Console' does not name a type".
 //
 // Example compile-time selection override:
 //

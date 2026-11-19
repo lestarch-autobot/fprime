@@ -12,7 +12,8 @@
 #include <Os/Os.hpp>
 #include "config/OsSelection.hpp"  // defines Os::Console alias and OS_CONSOLE_HEADER consumed by Os/Console.hpp; do not remove
 
-// A project's config/OsSelection.hpp must choose the Console: the Os::Console alias and OS_CONSOLE_HEADER together
+// A project's config/OsSelection.hpp must choose the Console: the Os::Console alias and OS_CONSOLE_HEADER together.
+// The preprocessor cannot see the alias: a "'Console' does not name a type" error below means the alias is missing.
 #ifndef OS_CONSOLE_HEADER
 #error "config/OsSelection.hpp must select the Console: define the Os::Console alias and OS_CONSOLE_HEADER"
 #endif

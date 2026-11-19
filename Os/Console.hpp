@@ -32,11 +32,7 @@
 
 #include "Os/ConsoleInterface.hpp"
 
-// Validate that OS_CONSOLE_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_CONSOLE_HEADER
-#error "OS_CONSOLE_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
+// Os/ConsoleInterface.hpp stops with an error when config/OsSelection.hpp does not define OS_CONSOLE_HEADER
 #include OS_CONSOLE_HEADER
 
 #endif
