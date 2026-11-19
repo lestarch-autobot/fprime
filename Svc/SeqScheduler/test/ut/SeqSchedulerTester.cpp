@@ -725,6 +725,9 @@ void SeqSchedulerTester::SaveWriteFailureKeepsFile() {
     if (::access("/dev/full", W_OK) != 0) {
         GTEST_SKIP() << "/dev/full, the source of the write failure, is not available on this platform";
     }
+    Fw::String tmp;
+    tmp.format("%s.tmp", this->defaultFile());
+    this->removeFile(tmp.toChar());  // a link left by an aborted run
     this->startEmpty();
     this->absRow(0, 50, "a.bin");
     this->cmdSave();
@@ -733,9 +736,6 @@ void SeqSchedulerTester::SaveWriteFailureKeepsFile() {
     U8 after[512];
     const FwSizeType sizeBefore = this->readBytes(this->defaultFile(), before, sizeof(before));
     ASSERT_GT(sizeBefore, 0U);
-    Fw::String tmp;
-    tmp.format("%s.tmp", this->defaultFile());
-    this->removeFile(tmp.toChar());                      // a link left by an aborted run
     ASSERT_EQ(::symlink("/dev/full", tmp.toChar()), 0);  // every write to it fails
     this->absRow(1, 60, "b.bin");
     this->clearHistory();
