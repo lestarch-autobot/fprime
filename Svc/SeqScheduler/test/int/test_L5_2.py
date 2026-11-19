@@ -21,6 +21,7 @@ def test_L5_2(window, send, bench, check, require):
         send("Ref.seqSched.LOAD_TABLE")
         bench.wait(24)
         bracket(bench)
+        require(SET_AHEAD, rows_set_ahead)
         check("ABS")
         check("event seqSched.SeqRun(row=0, fileName=long.bin) count == 1")
         check("event seqSched.RowSet(row=0) count == 2")

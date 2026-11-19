@@ -21,6 +21,7 @@ def test_L5_3(window, send, bench, check, require):
             bench.wait(20)
             bracket(bench)
             bench.action("hash_T_BADCRC")
+            require(SET_AHEAD, rows_set_ahead)
             check("event cmdDisp.OpCodeError count == 1")
             check("event seqSched.TableLoadFailed(reason=CHECKSUM) count == 1")
             check("event seqSched.TableLoadFailed count == 1")

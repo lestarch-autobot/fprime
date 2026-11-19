@@ -25,6 +25,7 @@ def test_L2_9(window, send, bench, check, require):
         send("Ref.seqSched.SET_ROW_ENABLED", [3, False])
         bench.wait(18)
         bracket(bench)
+        require(SET_AHEAD, rows_set_ahead)
         check("ABS")
         check("event seqSched.RowSet(row=0, fileName=short2.bin) count == 1")
         check("event seqSched.RowSet count == 4")

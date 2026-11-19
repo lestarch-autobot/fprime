@@ -27,6 +27,7 @@ def test_L2_10(window, send, bench, check, require):
             bench.wait(22)
             bracket(bench)
             bench.wait_samples(SAMPLE_B, 2)
+            require(SET_AHEAD, rows_set_ahead)
             check("ABS")
             check("event cmdDisp.OpCodeError count == 1")
             check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")

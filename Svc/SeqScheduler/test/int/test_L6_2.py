@@ -19,6 +19,7 @@ def test_L6_2(window, send, bench, check, require):
         bench.wait(12)
         bracket(bench)
         # not ABS: the ground's own CS_RUN makes one SeqDoneUnexpected, judged below
+        require(SET_AHEAD, rows_set_ahead)
         check("event seqSched.TableLoadFailed count == 0")
         check("event seqSched.CmdRejected count == 0")
         check("event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 2")

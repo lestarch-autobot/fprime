@@ -21,6 +21,7 @@ def test_L5_1(window, send, bench, check, require):
             send("Ref.seqSched.LOAD_TABLE")
             bench.wait(20)
             bracket(bench)
+            require(SET_AHEAD, rows_set_ahead)
             check("event cmdDisp.OpCodeError count == 2")
             check("event seqSched.TableLoadFailed(reason=OPEN) count == 1")
             check("event seqSched.TableFileMissing count == 0")

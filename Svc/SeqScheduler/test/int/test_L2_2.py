@@ -16,6 +16,7 @@ def test_L2_2(window, send, bench, check, require):
                               "WAIT_FOR_RUNNING"])
         bench.wait(16)
         bracket(bench)
+        require(SET_AHEAD, rows_set_ahead)
         check("ABS")
         check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
         check("event schedSeq.CS_SequenceLoaded(fileName=short.bin) count == 1")

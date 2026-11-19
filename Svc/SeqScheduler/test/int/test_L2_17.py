@@ -23,6 +23,7 @@ def test_L2_17(window, send, bench, check, require):
             send("Ref.seqSched.SET_ENABLED", [True])
             bench.wait(28)
             bracket(bench)
+            require(SET_AHEAD, rows_set_ahead)
             check("event seqSched.SeqRun(row=0, fileName=long.bin) count == 1")
             check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
             check("event seqSched.EnabledSet(enabled=False) count == 1")

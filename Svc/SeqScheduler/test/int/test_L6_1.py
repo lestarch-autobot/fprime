@@ -25,6 +25,7 @@ def test_L6_1(window, send, bench, check, require):
         bench.wait(8)
         bracket(bench)
         bench.action("read_dp")
+        require(SET_AHEAD, rows_set_ahead)
         check("event cmdDisp.OpCodeError count == 6")
         check("event seqSched.CmdRejected(reason=ROW_INDEX) count == 2")
         check("event seqSched.CmdRejected(reason=FILE_NAME) count == 2")

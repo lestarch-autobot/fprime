@@ -165,6 +165,25 @@ def run_not_before_row_time(row):
     return judge
 
 
+SET_AHEAD = "every ABSOLUTE row set for a coming time was set before that time"
+
+
+def rows_set_ahead(h):
+    """Every RowSet of the window that carries an ABSOLUTE time in TB_WORKSTATION_TIME before the year 2100 was
+    logged before that time: a row command handled only after its row time (a slow command) makes the row late by
+    the bench's doing, not the unit's. A window without such a RowSet holds."""
+    late, seen = [], 0
+    for inst in ("seqSched", "seqSchedB"):
+        for e in h.window.events(inst + ".RowSet"):
+            found = re.search(r"'timeBase': '(?:[\w.]*\.)?TB_WORKSTATION_TIME'.*?'seconds': (\d+)", e.text)
+            if found is None or e.args.get("mode") != "ABSOLUTE" or int(found.group(1)) >= YEAR_2100:
+                continue
+            seen += 1
+            if e.fsw >= int(found.group(1)):
+                late.append(f"{inst} row {e.args.get('row')} set at {e.fsw:.3f} for {found.group(1)}")
+    return (not late, f"{seen} rows set for a coming time; set late: {late or 'none'}")
+
+
 def run_not_before_delay(row):
     """Row run no earlier than the delay of its last RowSet in the window after the bench-recorded start of the
     Ref process (the first tick, from which the delay counts, is not before that start)."""
@@ -530,6 +549,12 @@ def sample_while_running(row, waiting):
 def abs_time(bench, offset):
     """SET_ROW time of an ABSOLUTE row due `offset` s after the newest recorded event."""
     return time_value("TB_WORKSTATION_TIME", fsw_now(bench) + offset)
+
+
+def row_time(base, offset):
+    """SET_ROW time of an ABSOLUTE row due `offset` s after `base`, one FSW time reading shared by the rows of a
+    group: rows set from one reading keep their spacing whatever time the commands take."""
+    return time_value("TB_WORKSTATION_TIME", base + offset)
 
 
 YEAR_2100 = 4102444800

@@ -22,6 +22,7 @@ def test_L2_6(window, send, bench, check, require):
         send("CdhCore.cmdDisp.CMD_NO_OP_STRING", [252])
         bench.wait(23)
         bracket(bench)
+        require(SET_AHEAD, rows_set_ahead)
         check("event seqSched.SeqRun(row=0, fileName=long.bin) count == 1")
         check("event seqSched.SeqRun(row=1, fileName=missing.bin) count == 1")
         check("event seqSched.SeqRun(row=2, fileName=short.bin) count == 1")

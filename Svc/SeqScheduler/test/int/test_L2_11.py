@@ -19,6 +19,7 @@ def test_L2_11(window, send, bench, check, require):
             send("Ref.seqSched.SET_ROW_ENABLED", [3, True])
             bench.wait(4)
             bracket(bench)
+            require(SET_AHEAD, rows_set_ahead)
             check("ABS")
             check("event seqSched.RowSet(row=3, mode=ABSOLUTE, fileName=short2.bin, busyPolicy=WAIT_FOR_RUNNING) "
                   "count == 1")
@@ -37,6 +38,7 @@ def test_L2_11(window, send, bench, check, require):
             send("Ref.seqSched.SET_ROW", [3, abs_time(bench, 8), "ABSOLUTE", "short2.bin", "WAIT_FOR_RUNNING"])
             bench.wait(12)
             bracket(bench)
+            require(SET_AHEAD, rows_set_ahead)
             check("ABS")
             check("event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1")
             check("event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1")

@@ -840,3 +840,35 @@ def test_dropped_steady_array_of_zeros_and_a_sample_at_the_opening_marker():
     assert not holds(steady(case("[0, 10]")))
     # a sample at the time of the opening marker is of the window, not the sample before it
     assert not holds(steady(case("[0, 1]", before="[0, 0]", at=T0)))
+
+
+def test_row_time_is_the_reading_plus_the_offset_in_workstation_time():
+    assert json.loads(sc.row_time(5000, 18)) == {"timeBase": "TB_WORKSTATION_TIME", "timeContext": 0,
+                                                 "seconds": 5018, "useconds": 0}
+    # rows of one group keep their spacing: nothing is read between them
+    assert json.loads(sc.row_time(5000, 26))["seconds"] - json.loads(sc.row_time(5000, 23))["seconds"] == 3
+
+
+def test_rows_set_ahead_judges_absolute_workstation_rows_logged_at_or_after_their_time():
+    def case(*rows):
+        """rows: (instance, fsw of the RowSet, time base, seconds, mode)"""
+        rec = Rec()
+        start = rec.mark(100, T0)
+        for inst, fsw, base, seconds, mode in rows:
+            rec.ev(inst + ".RowSet", fsw, f"Row 0 set: time {{'timeBase': '{base}', 'timeContext': 0, "
+                   f"'seconds': {seconds}, 'useconds': 0}} mode {mode}", row=0, mode=mode)
+        return rec.ctx(rec.win(start, rec.mark(101, T0 + 60)))
+    ws = "TB_WORKSTATION_TIME"
+    def ahead(h):
+        return sc.rows_set_ahead(h)
+    assert holds(ahead(case()))  # no row set: nothing was set late
+    assert holds(ahead(case(("seqSched", T0 + 5.9, ws, int(T0) + 6, "ABSOLUTE"))))
+    assert not holds(ahead(case(("seqSched", T0 + 6.0, ws, int(T0) + 6, "ABSOLUTE"))))  # logged at its time
+    assert not holds(ahead(case(("seqSched", T0 + 8.4, ws, int(T0) + 6, "ABSOLUTE"))))  # the L6-2 case
+    late_b = case(("seqSched", T0 + 2, ws, int(T0) + 6, "ABSOLUTE"), ("seqSchedB", T0 + 9, ws, int(T0) + 6, "ABSOLUTE"))
+    assert not holds(ahead(late_b)) and "seqSchedB row 0" in ahead(late_b)[1]
+    # not judged: another time base, a relative row, a year-2100 row
+    assert holds(ahead(case(("seqSched", T0 + 9, "TB_SC_TIME", int(T0) + 6, "ABSOLUTE"))))
+    assert holds(ahead(case(("seqSched", T0 + 9, ws, 5, "START_RELATIVE"))))
+    assert holds(ahead(case(("seqSched", T0 + 9, ws, sc.YEAR_2100, "ABSOLUTE"))))
+    assert "1 rows set" in ahead(case(("seqSched", T0 + 1, ws, int(T0) + 6, "ABSOLUTE")))[1]

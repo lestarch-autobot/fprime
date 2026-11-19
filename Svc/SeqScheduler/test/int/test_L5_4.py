@@ -21,6 +21,7 @@ def test_L5_4(window, send, bench, check, require):
                               "WAIT_FOR_RUNNING"])
         bench.wait(24)
         bracket_both(bench)
+        require(SET_AHEAD, rows_set_ahead)
         check("event schedSeqB.CS_SequenceComplete(fileName=short.bin) count == 1")
         check("event seqSchedB.SeqDoneUnexpected count == 1")
         check("event seqSchedB.SeqRun(row=0, fileName=long.bin) count == 1")

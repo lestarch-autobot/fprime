@@ -24,6 +24,7 @@ def test_L2_16(window, send, bench, check, require):
             send("Ref.seqSchedB.REPORT_ACTIVE_ROW")
             bench.wait(16)
             bracket_both(bench)
+            require(SET_AHEAD, rows_set_ahead)
             check("event seqSchedB.EnabledSet(enabled=False) count == 1")
             check("event seqSchedB.EnabledSet(enabled=True) count == 1")
             check("event seqSchedB.NoActiveRow count == 1")
