@@ -98,7 +98,7 @@ class MyOsMutex : public MutexInterface {
 ```
 
 > [!TIP]
-> Look at each interface header in `Os/` (e.g., `Os/MutexInterface.hpp`, `Os/File.hpp`, `Os/Task.hpp`) to see the exact set of pure virtual methods that need to be implemented for each. Each interface also defines a `Status` enum — your implementation must return the appropriate [status values](../../../Os/docs/sdd.md#24-error-handling). Note: for services that support compile-time selection, the pure-virtual contract lives in the `*Interface.hpp` header (e.g. `Os/MutexInterface.hpp`, `Os/RawTimeInterface.hpp`), while `Os/Mutex.hpp` / `Os/RawTime.hpp` are thin alias/aggregation headers.
+> Look at each interface header in `Os/` (e.g., `Os/MutexInterface.hpp`, `Os/File.hpp`, `Os/Task.hpp`) to see the exact set of pure virtual methods that need to be implemented for each. Each interface also defines a `Status` enum — your implementation must return the appropriate [status values](../../../Os/docs/sdd.md#24-error-handling). Note: for services that support compile-time selection, the pure-virtual contract lives in the `*Interface.hpp` header (e.g. `Os/MutexInterface.hpp`, `Os/RawTimeInterface.hpp`, `Os/FileSystemInterface.hpp`), while `Os/Mutex.hpp` / `Os/RawTime.hpp` / `Os/FileSystem.hpp` are thin alias/aggregation headers.
 
 ### 2.2 — Implement the Methods
 
@@ -174,7 +174,7 @@ This optimization is most valuable for bare-metal systems with high-frequency op
 
 ### How Projects Override for Compile-Time Selection
 
-Projects override compile-time selection by providing their own configuration header that replaces F´'s default. The override replaces the whole `config/OsSelection.hpp`, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed. For `RawTime`, create a project-specific override of `config/OsSelection.hpp`:
+Projects override compile-time selection by providing their own configuration header that replaces F´'s default. The override replaces the whole `config/OsSelection.hpp`, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed. An existing override that lacks the `FileSystem` lines shown below stops with `#error "config/OsSelection.hpp must define the Os::FileSystem alias and OS_FILE_SYSTEM_HEADER"`. For `RawTime`, create a project-specific override of `config/OsSelection.hpp`:
 
 **Step 1:** In your project's config directory, create `OsSelection.hpp`:
 
@@ -192,21 +192,24 @@ namespace MyPlatform {
 
 namespace Os {
     class DelegateMutex;             // Forward-declare the link-time delegates
-    class DelegateConditionVariable; // kept for Mutex and ConditionVariable
+    class DelegateConditionVariable; // kept for Mutex, ConditionVariable
+    class DelegateFileSystem;        // and FileSystem
 
     // Alias Os::RawTime directly to your implementation (no delegate wrapper)
     using RawTime = MyPlatform::MyRawTime;
 
     // The override file replaces the whole default, so every selection must be
-    // present: keep Mutex and ConditionVariable on the link-time delegates
+    // present: keep Mutex, ConditionVariable and FileSystem on the link-time delegates
     using Mutex = DelegateMutex;
     using ConditionVariable = DelegateConditionVariable;
+    using FileSystem = DelegateFileSystem;
 }
 
 // Point to your implementation header (will be included after RawTimeInterface.hpp)
 #define OS_RAW_TIME_HEADER "MyPlatform/Os/RawTime.hpp"
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_FILE_SYSTEM_HEADER <Os/DelegateFileSystem.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP
 ```

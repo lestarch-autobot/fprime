@@ -1,77 +1,26 @@
 // ======================================================================
 // \title Os/FileSystem.cpp
-// \brief common function implementation for Os::FileSystem
+// \brief common function implementation for Os::FileSystemInterface
+//
+// These functions are shared by every Os::FileSystem selection: the
+// link-time delegate and compile-time aliases of an implementation.
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
 #include <Os/FileSystem.hpp>
 #include <algorithm>
+#include <type_traits>
 
 namespace Os {
 
-FileSystem::FileSystem() : m_handle_storage(), m_delegate(*FileSystemInterface::getDelegate(m_handle_storage)) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-}
+static_assert(std::is_base_of<FileSystemInterface, FileSystem>::value,
+              "Os::FileSystem must be selected as a type derived from Os::FileSystemInterface");
 
-FileSystem::~FileSystem() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-    m_delegate.~FileSystemInterface();
-}
-
-FileSystemHandle* FileSystem::getHandle() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-    return this->m_delegate.getHandle();
-}
-
-FileSystem::Status FileSystem::_removeDirectory(const char* path) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(path != nullptr);
-    return this->m_delegate._removeDirectory(path);
-}
-
-FileSystem::Status FileSystem::_removeFile(const char* path) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(path != nullptr);
-    return this->m_delegate._removeFile(path);
-}
-
-FileSystem::Status FileSystem::_rename(const char* sourcePath, const char* destPath) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(sourcePath != nullptr);
-    FW_ASSERT(destPath != nullptr);
-    return this->m_delegate._rename(sourcePath, destPath);
-}
-
-FileSystem::Status FileSystem::_getPathType(const char* path, PathType& pathType) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(path != nullptr);
-    return this->m_delegate._getPathType(path, pathType);
-}
-
-FileSystem::Status FileSystem::_getWorkingDirectory(char* path, FwSizeType bufferSize) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(path != nullptr);
-    FW_ASSERT(bufferSize > 0);  // because bufferSize=0 would trigger a malloc in some implementations (e.g. Posix)
-    return this->m_delegate._getWorkingDirectory(path, bufferSize);
-}
-
-FileSystem::Status FileSystem::_changeWorkingDirectory(const char* path) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(path != nullptr);
-    return this->m_delegate._changeWorkingDirectory(path);
-}
-
-FileSystem::Status FileSystem::_getFreeSpace(const char* path, FwSizeType& totalBytes, FwSizeType& freeBytes) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(path != nullptr);
-    return this->m_delegate._getFreeSpace(path, totalBytes, freeBytes);
-}
-
-void FileSystem::init() {
+void FileSystemInterface::init() {
     // Force trigger on the fly singleton setup
     (void)FileSystem::getSingleton();
 }
 
-FileSystem& FileSystem::getSingleton() {
+FileSystem& FileSystemInterface::getSingleton() {
     static FileSystem s_singleton;
     return s_singleton;
 }
@@ -80,27 +29,29 @@ FileSystem& FileSystem::getSingleton() {
 // Static functions calling implementation-specific operations
 // ------------------------------------------------------------
 
-FileSystem::Status FileSystem::removeDirectory(const char* path) {
+FileSystemInterface::Status FileSystemInterface::removeDirectory(const char* path) {
     return FileSystem::getSingleton()._removeDirectory(path);
 }
 
-FileSystem::Status FileSystem::removeFile(const char* path) {
+FileSystemInterface::Status FileSystemInterface::removeFile(const char* path) {
     return FileSystem::getSingleton()._removeFile(path);
 }
 
-FileSystem::Status FileSystem::rename(const char* sourcePath, const char* destPath) {
+FileSystemInterface::Status FileSystemInterface::rename(const char* sourcePath, const char* destPath) {
     return FileSystem::getSingleton()._rename(sourcePath, destPath);
 }
 
-FileSystem::Status FileSystem::getWorkingDirectory(char* path, FwSizeType bufferSize) {
+FileSystemInterface::Status FileSystemInterface::getWorkingDirectory(char* path, FwSizeType bufferSize) {
     return FileSystem::getSingleton()._getWorkingDirectory(path, bufferSize);
 }
 
-FileSystem::Status FileSystem::changeWorkingDirectory(const char* path) {
+FileSystemInterface::Status FileSystemInterface::changeWorkingDirectory(const char* path) {
     return FileSystem::getSingleton()._changeWorkingDirectory(path);
 }
 
-FileSystem::Status FileSystem::getFreeSpace(const char* path, FwSizeType& totalBytes, FwSizeType& freeBytes) {
+FileSystemInterface::Status FileSystemInterface::getFreeSpace(const char* path,
+                                                              FwSizeType& totalBytes,
+                                                              FwSizeType& freeBytes) {
     return FileSystem::getSingleton()._getFreeSpace(path, totalBytes, freeBytes);
 }
 
@@ -108,7 +59,7 @@ FileSystem::Status FileSystem::getFreeSpace(const char* path, FwSizeType& totalB
 // Additional functions built on top of OS-specific operations
 // ------------------------------------------------------------
 
-FileSystem::Status FileSystem::createDirectory(const char* path, bool errorIfAlreadyExists) {
+FileSystemInterface::Status FileSystemInterface::createDirectory(const char* path, bool errorIfAlreadyExists) {
     FW_ASSERT(path != nullptr);
     Status status = Status::OP_OK;
     Os::Directory dir;
@@ -123,7 +74,7 @@ FileSystem::Status FileSystem::createDirectory(const char* path, bool errorIfAlr
     return status;
 }
 
-FileSystem::Status FileSystem::touch(const char* path) {
+FileSystemInterface::Status FileSystemInterface::touch(const char* path) {
     FW_ASSERT(path != nullptr);
     Status status = Status::OP_OK;
     Os::File file;
@@ -135,7 +86,7 @@ FileSystem::Status FileSystem::touch(const char* path) {
     return status;
 }
 
-FileSystem::PathType FileSystem::getPathType(const char* path) {
+FileSystemInterface::PathType FileSystemInterface::getPathType(const char* path) {
     FW_ASSERT(path != nullptr);
     PathType pathType;
     Status status = getSingleton()._getPathType(path, pathType);
@@ -145,11 +96,11 @@ FileSystem::PathType FileSystem::getPathType(const char* path) {
     return pathType;
 }  // end getPathType
 
-bool FileSystem::exists(const char* path) {
+bool FileSystemInterface::exists(const char* path) {
     return FileSystem::getPathType(path) != PathType::NOT_EXIST;
 }  // end exists
 
-FileSystem::Status FileSystem::copyFile(const char* sourcePath, const char* destPath) {
+FileSystemInterface::Status FileSystemInterface::copyFile(const char* sourcePath, const char* destPath) {
     FW_ASSERT(sourcePath != nullptr);
     FW_ASSERT(destPath != nullptr);
     Os::File source;
@@ -164,7 +115,7 @@ FileSystem::Status FileSystem::copyFile(const char* sourcePath, const char* dest
     }
 
     FwSizeType sourceFileSize = 0;
-    FileSystem::Status fs_status = FileSystem::getFileSize(sourcePath, sourceFileSize);
+    FileSystemInterface::Status fs_status = FileSystem::getFileSize(sourcePath, sourceFileSize);
     if (fs_status != FileSystem::Status::OP_OK) {
         return fs_status;
     }
@@ -174,7 +125,11 @@ FileSystem::Status FileSystem::copyFile(const char* sourcePath, const char* dest
     return fs_status;
 }  // end copyFile
 
-FileSystem::Status FileSystem::appendFile(const char* sourcePath, const char* destPath, bool createMissingDest) {
+FileSystemInterface::Status FileSystemInterface::appendFile(const char* sourcePath,
+                                                            const char* destPath,
+                                                            bool createMissingDest) {
+    FW_ASSERT(sourcePath != nullptr);
+    FW_ASSERT(destPath != nullptr);
     Os::File source;
     Os::File destination;
 
@@ -193,7 +148,7 @@ FileSystem::Status FileSystem::appendFile(const char* sourcePath, const char* de
         return FileSystem::handleFileError(fileStatus);
     }
 
-    FileSystem::Status fs_status = FileSystem::OP_OK;
+    FileSystemInterface::Status fs_status = FileSystem::OP_OK;
 
     FwSizeType sourceFileSize = 0;
     fs_status = FileSystem::getFileSize(sourcePath, sourceFileSize);
@@ -206,7 +161,9 @@ FileSystem::Status FileSystem::appendFile(const char* sourcePath, const char* de
     return fs_status;
 }  // end appendFile
 
-FileSystem::Status FileSystem::moveFile(const char* source, const char* destination) {
+FileSystemInterface::Status FileSystemInterface::moveFile(const char* source, const char* destination) {
+    FW_ASSERT(source != nullptr);
+    FW_ASSERT(destination != nullptr);
     Status status = Status::OP_OK;
 
     // Try to rename the file
@@ -224,7 +181,8 @@ FileSystem::Status FileSystem::moveFile(const char* source, const char* destinat
     return status;
 }
 
-FileSystem::Status FileSystem::getFileSize(const char* path, FwSizeType& size) {
+FileSystemInterface::Status FileSystemInterface::getFileSize(const char* path, FwSizeType& size) {
+    FW_ASSERT(path != nullptr);
     Os::File file;
     Os::File::Status status = file.open(path, Os::File::OPEN_READ);
     if (status != File::Status::OP_OK) {
@@ -241,8 +199,8 @@ FileSystem::Status FileSystem::getFileSize(const char* path, FwSizeType& size) {
 // Internal helper functions
 // ------------------------------------------------------------
 
-FileSystem::Status FileSystem::handleFileError(File::Status fileStatus) {
-    FileSystem::Status status = FileSystem::OTHER_ERROR;
+FileSystemInterface::Status FileSystemInterface::handleFileError(File::Status fileStatus) {
+    FileSystemInterface::Status status = FileSystem::OTHER_ERROR;
 
     switch (fileStatus) {
         case File::NO_SPACE:
@@ -260,8 +218,8 @@ FileSystem::Status FileSystem::handleFileError(File::Status fileStatus) {
     return status;
 }  // end handleFileError
 
-FileSystem::Status FileSystem::handleDirectoryError(Directory::Status dirStatus) {
-    FileSystem::Status status = FileSystem::OTHER_ERROR;
+FileSystemInterface::Status FileSystemInterface::handleDirectoryError(Directory::Status dirStatus) {
+    FileSystemInterface::Status status = FileSystem::OTHER_ERROR;
 
     switch (dirStatus) {
         case Directory::DOESNT_EXIST:
@@ -282,7 +240,7 @@ FileSystem::Status FileSystem::handleDirectoryError(Directory::Status dirStatus)
     return status;
 }  // end handleFileError
 
-FileSystem::Status FileSystem::copyFileData(File& source, File& destination, FwSizeType size) {
+FileSystemInterface::Status FileSystemInterface::copyFileData(File& source, File& destination, FwSizeType size) {
     static_assert(FILE_SYSTEM_FILE_CHUNK_SIZE != 0, "FILE_SYSTEM_FILE_CHUNK_SIZE must be >0");
     U8 fileBuffer[FILE_SYSTEM_FILE_CHUNK_SIZE];
     File::Status file_status;
