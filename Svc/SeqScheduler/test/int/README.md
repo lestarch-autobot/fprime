@@ -10,6 +10,7 @@ record markers and declares the plan's named checks over the recorded window.
 | `plan.json`, `plan.md` | The approved plan and its rendering (`fth render-plan`) |
 | `test_<ID>.py` | One file and function per plan test; stimulus and named checks (`fth verify-stimulus` compares each with the plan's procedure) |
 | `seqsched_common.py` | Names, helpers and check functions shared by the tests |
+| `../kat/test_helpers_kat.py` | Known-answer tests of the helper checks, one holding and one failing case each (`pytest Svc/SeqScheduler/test/kat`) |
 | `planted_faults.py` | The seven planted faults and the completeness helpers |
 | `faults-menu.json` | The fault menu (`fth planted-faults-menu plan.json`) |
 | `bench.json` | The bench: how `Ref`, the GDS and the recorder are started and commanded |
