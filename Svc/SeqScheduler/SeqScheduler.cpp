@@ -23,6 +23,10 @@ constexpr I64 MAX_SIGNED_USEC = 0x1FFFFFFFFFFFFFFFLL;
 
 //! Skipped rows that get an event each on one tick or disable command; the rest are counted in one event
 constexpr FwSizeType MAX_SKIP_EVENTS = 4;
+// Of those, the most that rows skipped as disabled or late, and those and rows skipped by a cancel, may take on one
+// tick: the steps of a tick skip in that order, and each later kind keeps at least one event
+constexpr FwSizeType MAX_EARLY_SKIP_EVENTS = 2;
+constexpr FwSizeType MAX_CANCEL_SKIP_EVENTS = 3;
 
 static_assert(static_cast<FwSizeType>(FileNameStringSize) <= static_cast<FwSizeType>(FW_FIXED_LENGTH_STRING_SIZE),
               "A table file name is decoded through Fw::String and must fit it");
@@ -91,7 +95,8 @@ void SeqScheduler::configure(const Fw::StringBase& defaultTableFile,
     const FwSizeType alignment = alignof(std::max_align_t);
     const FwSizeType tableSize = alignUp(rows * sizeof(SeqScheduler_Row), alignment);
     const FwSizeType rowDueSize = alignUp(rows * sizeof(RowDue), alignment);
-    const FwSizeType treeSize = Fw::ExternalRedBlackTreeSet<DueRow>::getByteArraySize(rows);
+    // Rounded up so that each of the three sets starts on the alignment of the allocation
+    const FwSizeType treeSize = alignUp(Fw::ExternalRedBlackTreeSet<DueRow>::getByteArraySize(rows), alignment);
     static_assert(Fw::ExternalRedBlackTreeSet<DueRow>::getByteArrayAlignment() <= alignof(std::max_align_t),
                   "The due-row tree must fit the alignment of the allocation");
     const FwSizeType wanted = 2 * tableSize + rowDueSize + 3 * treeSize;
@@ -104,9 +109,9 @@ void SeqScheduler::configure(const Fw::StringBase& defaultTableFile,
 
     U8* const bytes = static_cast<U8*>(memory);
     // The objects are constructed one at a time: an array placement new may add overhead of its own
-    this->m_table = reinterpret_cast<SeqScheduler_Row*>(bytes);
-    this->m_loadRows = reinterpret_cast<SeqScheduler_Row*>(bytes + tableSize);
-    this->m_rowDue = reinterpret_cast<RowDue*>(bytes + 2 * tableSize);
+    this->m_table = static_cast<SeqScheduler_Row*>(static_cast<void*>(bytes));
+    this->m_loadRows = static_cast<SeqScheduler_Row*>(static_cast<void*>(bytes + tableSize));
+    this->m_rowDue = static_cast<RowDue*>(static_cast<void*>(bytes + 2 * tableSize));
     for (FwSizeType i = 0; i < rows; i++) {
         (void)new (&this->m_table[i]) SeqScheduler_Row();
         (void)new (&this->m_loadRows[i]) SeqScheduler_Row();
@@ -410,7 +415,7 @@ void SeqScheduler::skipDueRowsWhileDisabled() {
     for (FwSizeType row = 0; row < this->m_rows; row++) {
         if (this->m_rowDue[row].due) {
             this->setRowState(row, SeqScheduler_RowState::SKIPPED);
-            if (this->skipEventAllowed()) {
+            if (this->skipEventAllowed(MAX_SKIP_EVENTS)) {
                 this->log_ACTIVITY_LO_RowSkippedDisabled(row, SeqScheduler_SkipCause::WAITING_AT_DISABLE);
             }
         }
@@ -433,14 +438,14 @@ void SeqScheduler::evaluatePendingRows(bool quiet) {
         }
         if ((!this->m_enabled) || (!entry.get_enabled())) {
             this->setRowState(row, SeqScheduler_RowState::SKIPPED);
-            if ((!quiet) && this->skipEventAllowed()) {
+            if ((!quiet) && this->skipEventAllowed(MAX_EARLY_SKIP_EVENTS)) {
                 this->log_ACTIVITY_LO_RowSkippedDisabled(row, this->m_enabled
                                                                   ? SeqScheduler_SkipCause::ROW_DISABLED
                                                                   : SeqScheduler_SkipCause::SCHEDULER_DISABLED);
             }
         } else if (info.lateUsec > tolerance) {
             this->setRowState(row, SeqScheduler_RowState::SKIPPED);
-            if ((!quiet) && this->skipEventAllowed()) {
+            if ((!quiet) && this->skipEventAllowed(MAX_EARLY_SKIP_EVENTS)) {
                 this->log_WARNING_LO_RowLate(row);
             }
         } else {
@@ -484,7 +489,7 @@ void SeqScheduler::applyCancelRule() {
         this->lock();
         this->removeDue(first.row);
         this->unLock();
-        if (this->skipEventAllowed()) {
+        if (this->skipEventAllowed(MAX_CANCEL_SKIP_EVENTS)) {
             this->log_WARNING_LO_RowSkippedByCancel(first.row, last.row);
         }
     }
@@ -517,7 +522,7 @@ void SeqScheduler::skipBusyRows() {
             this->lock();
             this->removeDue(row);
             this->unLock();
-            if (this->skipEventAllowed()) {
+            if (this->skipEventAllowed(MAX_SKIP_EVENTS)) {
                 this->log_WARNING_LO_RowSkippedBusy(row, this->m_seq.row);
             }
         }
@@ -628,6 +633,10 @@ bool SeqScheduler::loadTable(bool startUp) {
     this->m_loadRows = this->m_table;
     this->m_table = loaded;
     this->clearDue();
+    // No row is upcoming until the order of the new table is built: the old order names rows of the old table
+    const FwSizeType emptied = 1 - this->m_upcomingActive;
+    this->m_upcoming[emptied].clear();
+    this->m_upcomingActive = emptied;
     this->unLock();
     this->rebuildUpcoming();
     this->m_loadState = LoadState::LOADED_NEW;
@@ -998,10 +1007,12 @@ bool SeqScheduler::findUpcoming(FwSizeType position, FwSizeType& row, Fw::Time& 
     // Forward walk of the order; it holds at most one entry per row
     for (FwSizeType walked = 0; (walked < this->m_rows) && (it != order.end()); walked++) {
         DueRow key;
+        Fw::Time entryTime;
         // A row changed since the order was built is passed over
-        if (this->upcomingKey((*it).row, key, timeDue)) {
+        if (this->upcomingKey((*it).row, key, entryTime)) {
             if (found == position) {
                 row = (*it).row;
+                timeDue = entryTime;
                 return true;
             }
             found++;
@@ -1030,8 +1041,9 @@ void SeqScheduler::rebuildUpcoming() {
     this->unLock();
 }
 
-bool SeqScheduler::skipEventAllowed() {
-    if (this->m_skipEvents < MAX_SKIP_EVENTS) {
+bool SeqScheduler::skipEventAllowed(FwSizeType limit) {
+    FW_ASSERT(limit <= MAX_SKIP_EVENTS, static_cast<FwAssertArgType>(limit));
+    if (this->m_skipEvents < limit) {
         this->m_skipEvents++;
         return true;
     }

@@ -301,7 +301,7 @@ The table is loaded, if no load has been attempted, by the first tick before any
 5. walks the due rows forward to find the last `CANCEL_RUNNING` row; if there is one, removes the first due row, setting it `SKIPPED` with `RowSkippedByCancel`, until that row is the first, and, if the state is `Running`, sends the cancel, emits `SeqCancelled` and enters `Cancelling`;
 6. in `Idle`, runs the first due row, if there is one, and removes it;
 7. walks the rows by index and, for each `SKIP_WHEN_RUNNING` row marked due in `m_rowDue`, removes it from the due rows by value and sets it `SKIPPED` with `RowSkippedBusy`: a row is left among the due rows only while a sequence is running. The set is not iterated while it is changed;
-8. emits `RowSkipsNotReported` when steps 3 to 7 skipped more than four rows: the first four skipped rows of a tick get their own event, the rest are counted (§5.4, §7); in `LOADED_NEW`, enters `LOADED`; rebuilds the upcoming order (§3.6.3);
+8. emits `RowSkipsNotReported` when steps 3 to 7 skipped more rows than got an event: at most four skipped rows of a tick get their own event, the rest are counted (§5.4, §7); in `LOADED_NEW`, enters `LOADED`; rebuilds the upcoming order (§3.6.3);
 9. writes telemetry.
 
 Running a row is: call `seqRunOut` with the row's file name, set the row `EXECUTING`, emit `SeqRun`,
@@ -326,7 +326,7 @@ The order is kept in `m_upcoming`, two `Fw::ExternalRedBlackTreeSet<DueRow>` set
 the end of every tick and of every command that changes the table or the enable flags (`SET_ROW`,
 `SET_ROW_ENABLED`, `SET_SEQ_ENABLED`, `SET_ENABLED`, a successful load): it clears the set not
 being read, inserts every upcoming row without holding the lock, and then makes that set the one
-read, holding the lock for that exchange only. A query walks the set being read from its first
+read, holding the lock for that exchange only. A load, under the lock that exchanges the table, first makes an emptied set the one read, so that no query pairs the old order with the new table. A query walks the set being read from its first
 entry to the i-th entry that is still upcoming, at most `m_rows` steps and i + 1 when no row has
 changed since the order was built, each step a constant-time check of one row. A row changed by a
 command since the order was built is passed over when it is no longer upcoming, and is reported
@@ -509,7 +509,7 @@ A command fails with `CmdRejected` (`WARNING_HI`), the table unchanged, on these
 | `RowSkippedBusy` | warning low | `SKIP_WHEN_RUNNING` row came due while a sequence was running and was skipped |
 | `RowSkippedByCancel` | warning low | Due row skipped because a `CANCEL_RUNNING` row came due after it; names both rows |
 | `RowSkippedDisabled` | activity low | Time of a disabled row passed, the row or the component being disabled, or a waiting row was skipped at a component disable; argument `cause` tells which (`ROW_DISABLED`, `SCHEDULER_DISABLED`, `WAITING_AT_DISABLE`); not emitted on the first tick handled after a table load |
-| `RowSkipsNotReported` | warning low | One tick, or one `SET_ENABLED` command, skipped more than four rows: the first four got their own event (`RowSkippedDisabled`, `RowLate`, `RowSkippedByCancel` or `RowSkippedBusy`), `count` gives the rest. The row states and `RowsSkipped` show them all |
+| `RowSkipsNotReported` | warning low | One tick, or one `SET_ENABLED` command, skipped more rows than got their own event (`RowSkippedDisabled`, `RowLate`, `RowSkippedByCancel` or `RowSkippedBusy`; at most four, §7); `count` gives the rest. The row states and `RowsSkipped` show them all |
 | `ActiveRow` | activity high | Answer to `REPORT_ACTIVE_ROW`: index, time due and file name of the next-due row |
 | `NoActiveRow` | activity high | Answer to `REPORT_ACTIVE_ROW`: no row is upcoming |
 | `EnabledSet` | activity high | Component enabled or disabled |
@@ -582,7 +582,9 @@ base is first reported.
 | A load reads and hashes every row of the file, also the rows beyond the table of an over-long file: up to 65535 rows of `TABLE_FILE_ROW_SIZE` bytes, about 16.7 MB. The component thread handles nothing else for that time; the queue must hold the ticks, commands and completion reports that arrive in it, or the file be kept to the table size | Integrator (queue size, table file size) |
 | The lock is held by a load only to exchange the table with the load copy and clear the due flags (one pass over the rows), and by a rebuild of the upcoming order only to switch sets. A query holds it for at most one step per row, i + 1 steps when no row changed since the last tick or table command | Integrator (callers of `queryIn`) |
 | One tick emits at most: one `TimeBaseNotRecorded`, the load events of a first tick, four per-row skip events, one `RowSkipsNotReported`, one `SeqCancelled` and one `SeqRun`. A `SET_ENABLED` command emits at most four `RowSkippedDisabled`, one `RowSkipsNotReported` and `EnabledSet`. The events of the sequencer and command dispatcher for the commands of a sequence that runs on the same tick are not part of this bound and share the event queue | Integrator (event queue size) |
-| Skipped rows beyond the fourth of one tick or disable command get no event of their own; `RowSkipsNotReported` gives their number, and the row states in the table data product name them | Operator |
+| At most four skipped rows of one tick or disable command get an event of their own; `RowSkipsNotReported` gives the number of the others, and the row states in the table data product name them. A tick skips in the order of its steps (§3.6.2): rows skipped as disabled or late may take the first two of the four events, rows skipped by a cancel may bring the count to three, and rows skipped as busy to four, so that each kind of skip on one tick is reported by at least one event. A disable command may use all four | Operator |
+| Rows skipped on the first tick handled after a load get no event and are not counted in `RowSkipsNotReported` either; `RowsSkipped` gives their number | Operator |
+| From the moment a load exchanges the table until the upcoming order of the new table is built, a few row steps later on the component thread, a query reports no upcoming row | Integrator (callers of `queryIn`) |
 | `Svc.FpySequencer` does not report a run it refuses while busy; such a refusal holds waiting rows until restart | Deployment (sequencer choice) |
 | A sequence run on the attached sequencer by another source ends or blocks the wait | Deployment (dedicated sequencer) |
 | A time base first reported after `SeqSchedulerTimeBases` others is not recorded; rows relative to it stay `PENDING` (`TimeBaseNotRecorded`) | Deployment (`SeqSchedulerTimeBases`) |
@@ -664,9 +666,11 @@ base is first reported.
 | `QueryRelative` | A `START_RELATIVE` row's time due is the first tick's system time plus its time, a `TIME_BASE_RELATIVE` row's the time of its base's first tick plus its time; neither moves when system time or the time base changes. | REQ-SeqScheduler-046, REQ-SeqScheduler-061 |
 | `QueryLargeTable` | On a full table of 2048 rows every position returns the row the order gives, and the position after the last is invalid. | REQ-SeqScheduler-037, REQ-SeqScheduler-038, REQ-SeqScheduler-039 |
 | `QueryAfterEdit` | Each of `SET_ROW`, `SET_ROW_ENABLED`, `SET_SEQ_ENABLED`, `SET_ENABLED` and a load changes what a query returns without a tick in between. | REQ-SeqScheduler-037, REQ-SeqScheduler-039 |
+| `QueryStaleOrder` | A row changed since the order was built is passed over by a query, and a reply of `false` leaves the caller's time as it was. | REQ-SeqScheduler-037, REQ-SeqScheduler-038 |
+| `LoadExchange` | Each of three loads in a row replaces the whole table: rows beyond the file are empty, every state is `PENDING`, and a row that was in no earlier order is upcoming. | REQ-SeqScheduler-003, REQ-SeqScheduler-039 |
 | `QueryWaitingAfterBaseChange` | A waiting `ABSOLUTE` row stays upcoming, in the query, `NextRow` and `REPORT_ACTIVE_ROW`, after system time changes to another time base, and runs on the completion report. | REQ-SeqScheduler-039 |
-| `QueryFromSecondThread` | Queries from a second thread, while the component thread sets rows, ticks, saves and loads, return only rows the test set. | REQ-SeqScheduler-037 |
-| `SkipEventsBounded` | One tick or disable command that skips more than four rows emits four per-row events and one `RowSkipsNotReported` with the rest, for skips by a cancel row, at a disable, while disabled and as late; four skipped rows get no count. | REQ-SeqScheduler-021, REQ-SeqScheduler-022, REQ-SeqScheduler-058 |
+| `QueryFromSecondThread` | Queries through the guarded port from a second thread, while the component thread sets rows, ticks, saves and loads, return only rows the test set. | REQ-SeqScheduler-037 |
+| `SkipEventsBounded` | One tick or disable command that skips more rows than its event limit emits the per-row events of §7 and one `RowSkipsNotReported` with the rest: three for skips by a cancel row, four at a disable command, two while disabled and two as late; four rows skipped as busy get four events and no count; a tick with disabled, cancelled and busy skips reports each kind. | REQ-SeqScheduler-021, REQ-SeqScheduler-022, REQ-SeqScheduler-058 |
 | `ToleranceParameterInvalid` | A `LATE_TOLERANCE_SEC` that is not valid counts as one tick period. | REQ-SeqScheduler-021 |
 | `QueryNotUpcoming` | Disabled, empty, non-`PENDING`, other-base `ABSOLUTE` and unknown-origin rows are not upcoming. | REQ-SeqScheduler-039 |
 | `QueryInvalid` | A query beyond the upcoming rows, on an empty table, or for a `START_RELATIVE` row before the first tick, is invalid. | REQ-SeqScheduler-038, REQ-SeqScheduler-039 |

@@ -366,6 +366,16 @@ TEST(SeqScheduler, ToleranceParameterInvalid) {
     tester.ToleranceParameterInvalid();
 }
 
+TEST(SeqScheduler, QueryStaleOrder) {
+    Svc::SeqSchedulerTester tester;
+    tester.QueryStaleOrder();
+}
+
+TEST(SeqScheduler, LoadExchange) {
+    Svc::SeqSchedulerTester tester;
+    tester.LoadExchange();
+}
+
 TEST(SeqScheduler, QueryInvalid) {
     Svc::SeqSchedulerTester tester;
     tester.QueryInvalid();

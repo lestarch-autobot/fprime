@@ -1759,6 +1759,70 @@ void SeqSchedulerTester::QueryAfterEdit() {
     ASSERT_FALSE(this->query(1, timeDue, name));
 }
 
+void SeqSchedulerTester::QueryStaleOrder() {
+    // SDD 3.6.3: a row changed since the order was built is passed over; a reply of false leaves the time as given
+    this->startEmpty();
+    this->absRow(0, 5, "r0.bin");
+    this->absRow(1, 9, "r1.bin");
+    this->component.m_table[0].set_enabled(false);  // changed behind the order: no command, no rebuild
+    Fw::Time timeDue(TimeBase::TB_SC_TIME, 0, 77, 7);
+    Fw::String name;
+    ASSERT_TRUE(this->query(0, timeDue, name));
+    ASSERT_STREQ(name.toChar(), "r1.bin");
+    ASSERT_EQ(timeDue.getSeconds(), T0 + 9);
+    timeDue = Fw::Time(TimeBase::TB_SC_TIME, 0, 77, 7);
+    ASSERT_FALSE(this->query(1, timeDue, name));
+    ASSERT_EQ(timeDue, Fw::Time(TimeBase::TB_SC_TIME, 0, 77, 7));
+}
+
+void SeqSchedulerTester::LoadExchange() {
+    // SDD 5.3: every load replaces the whole table: rows beyond the file are empty, every state is PENDING,
+    // and the upcoming order is that of the new table
+    this->startEmpty();
+    const FileRow six[] = {
+        {TimeBase::TB_WORKSTATION_TIME, T0 + 1, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 1, "a.bin"},
+        {TimeBase::TB_NONE, 0, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 0, ""},
+        {TimeBase::TB_NONE, 0, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 0, ""},
+        {TimeBase::TB_NONE, 0, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 0, ""},
+        {TimeBase::TB_NONE, 0, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 0, ""},
+        {TimeBase::TB_WORKSTATION_TIME, T0 + 90, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 1, "f.bin"}};
+    const FileRow one[] = {
+        {TimeBase::TB_WORKSTATION_TIME, T0 + 95, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 1, "one.bin"}};
+    Fw::Time timeDue;
+    Fw::String name;
+    this->absRow(3, 80, "live.bin");  // in the table before the first load, in no file
+    this->writeFile(this->defaultFile(), six, 6);
+    this->cmdLoad();
+    // Row 5 was in no order before this load
+    ASSERT_TRUE(this->query(1, timeDue, name));
+    ASSERT_STREQ(name.toChar(), "f.bin");
+    ASSERT_FALSE(this->query(2, timeDue, name));
+    ASSERT_STREQ(this->component.m_table[3].get_fileName().toChar(), "");
+    this->tick(2);
+    this->done();
+    ASSERT_EQ(this->state(0), State::EXECUTED);
+    // The second load decodes into the copy that holds the first table: its rows 1 to 5 must not come back
+    this->writeFile(this->defaultFile(), one, 1);
+    this->cmdLoad();
+    ASSERT_EQ(this->state(0), State::PENDING);
+    ASSERT_STREQ(this->component.m_table[0].get_fileName().toChar(), "one.bin");
+    for (FwSizeType row = 1; row < this->component.m_rows; row++) {
+        ASSERT_STREQ(this->component.m_table[row].get_fileName().toChar(), "") << row;
+        ASSERT_FALSE(this->component.m_table[row].get_enabled()) << row;
+        ASSERT_EQ(this->state(row), State::PENDING) << row;
+    }
+    ASSERT_TRUE(this->query(0, timeDue, name));
+    ASSERT_STREQ(name.toChar(), "one.bin");
+    ASSERT_FALSE(this->query(1, timeDue, name));
+    // The third load decodes into the copy that holds the six-row table, with row 0 EXECUTED in it
+    this->writeFile(this->defaultFile(), six, 6);
+    this->cmdLoad();
+    for (FwSizeType row = 0; row < this->component.m_rows; row++) {
+        ASSERT_EQ(this->state(row), State::PENDING) << row;
+    }
+    ASSERT_STREQ(this->component.m_table[5].get_fileName().toChar(), "f.bin");
+}
+
 void SeqSchedulerTester::QueryWaitingAfterBaseChange() {
     // SDD 3.6.3: a waiting ABSOLUTE row is upcoming until it runs, also after system time changes its time base
     this->startEmpty();
@@ -1795,7 +1859,8 @@ void SeqSchedulerTester::QueryFromSecondThread() {
             for (FwSizeType i = 0; i < 4; i++) {
                 Fw::Time timeDue;
                 Fw::String name;
-                if (this->component.queryIn_handler(0, i, timeDue, name)) {
+                if (this->invoke_to_queryIn(0, i, timeDue,
+                                            name)) {  // through the port: the guarded entry takes the lock
                     answers++;
                     // Every row the test sets is due after T0 and named
                     if ((name.length() == 0) || (timeDue.getSeconds() <= T0)) {
@@ -1837,13 +1902,13 @@ void SeqSchedulerTester::SkipEventsBounded() {
     ASSERT_EQ(this->component.m_due.getSize(), 99U);
     this->clearHistory();
     this->tick();
-    ASSERT_EVENTS_RowSkippedByCancel_SIZE(4);
+    ASSERT_EVENTS_RowSkippedByCancel_SIZE(3);  // one event is kept for a row skipped as busy
     ASSERT_EVENTS_RowSkippedByCancel(0, 1, 100);
-    ASSERT_EVENTS_RowSkippedByCancel(3, 4, 100);
+    ASSERT_EVENTS_RowSkippedByCancel(2, 3, 100);
     ASSERT_EVENTS_RowSkipsNotReported_SIZE(1);
-    ASSERT_EVENTS_RowSkipsNotReported(0, 95);
+    ASSERT_EVENTS_RowSkipsNotReported(0, 96);
     ASSERT_EVENTS_SeqCancelled_SIZE(1);
-    ASSERT_EVENTS_SIZE(6);
+    ASSERT_EVENTS_SIZE(5);
     for (FwSizeType row = 1; row < 100; row++) {
         ASSERT_EQ(this->state(row), State::SKIPPED) << row;
     }
@@ -1867,10 +1932,10 @@ void SeqSchedulerTester::SkipEventsBounded() {
     }
     this->clearHistory();
     this->tick(2);
-    ASSERT_EVENTS_RowSkippedDisabled_SIZE(4);
+    ASSERT_EVENTS_RowSkippedDisabled_SIZE(2);  // two events are kept for rows skipped by a cancel or as busy
     ASSERT_EVENTS_RowSkippedDisabled(0, 111, SeqScheduler_SkipCause::SCHEDULER_DISABLED);
     ASSERT_EVENTS_RowSkipsNotReported_SIZE(1);
-    ASSERT_EVENTS_RowSkipsNotReported(0, 3);
+    ASSERT_EVENTS_RowSkipsNotReported(0, 5);
     // Four skipped rows get an event each and no count
     this->cmdEnabled(true);
     this->done();
@@ -1889,9 +1954,38 @@ void SeqSchedulerTester::SkipEventsBounded() {
     }
     this->clearHistory();
     this->tickBatch(5);
-    ASSERT_EVENTS_RowLate_SIZE(4);
+    ASSERT_EVENTS_RowLate_SIZE(2);
     ASSERT_EVENTS_RowSkipsNotReported_SIZE(1);
-    ASSERT_EVENTS_RowSkipsNotReported(0, 2);
+    ASSERT_EVENTS_RowSkipsNotReported(0, 4);
+    // Every kind on one tick: three disabled rows pass their time, a cancel row skips three waiting rows, and
+    // a SKIP_WHEN_RUNNING row finds the cancelled sequence still running. Each kind gets an event.
+    this->done();
+    this->tick();
+    this->done();
+    const U32 now = this->m_seconds - T0;
+    this->absRow(140, now + 2, "long2.bin");
+    for (FwSizeType row = 141; row < 144; row++) {
+        this->absRow(row, now + 3, "wait3.bin");
+    }
+    for (FwSizeType row = 144; row < 147; row++) {
+        this->absRow(row, now + 4, "off3.bin");
+        this->cmdRowEnabled(row, false);
+    }
+    this->absRow(147, now + 4, "cancel3.bin", Policy::CANCEL_RUNNING);
+    this->absRow(148, now + 4, "busy3.bin", Policy::SKIP_WHEN_RUNNING);
+    this->tick(3);
+    ASSERT_EQ(this->state(140), State::EXECUTING);
+    ASSERT_EQ(this->component.m_due.getSize(), 3U);
+    this->clearHistory();
+    this->tick();
+    ASSERT_EVENTS_RowSkippedDisabled_SIZE(2);
+    ASSERT_EVENTS_RowSkippedDisabled(0, 144, SeqScheduler_SkipCause::ROW_DISABLED);
+    ASSERT_EVENTS_RowSkippedByCancel_SIZE(1);
+    ASSERT_EVENTS_RowSkippedByCancel(0, 141, 147);
+    ASSERT_EVENTS_RowSkippedBusy_SIZE(1);
+    ASSERT_EVENTS_RowSkippedBusy(0, 148, 140);
+    ASSERT_EVENTS_RowSkipsNotReported_SIZE(1);
+    ASSERT_EVENTS_RowSkipsNotReported(0, 3);  // one disabled row and two rows skipped by the cancel
 }
 
 void SeqSchedulerTester::ToleranceParameterInvalid() {

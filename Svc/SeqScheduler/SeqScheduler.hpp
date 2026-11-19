@@ -224,7 +224,8 @@ class SeqScheduler final : public SeqSchedulerComponentBase {
     void rebuildUpcoming();
 
     //! Count one skipped row of this tick or command; \return true when the row gets an event of its own
-    bool skipEventAllowed();
+    //! \param limit the number of per-row events of this tick or command that the row's kind of skip may bring it to
+    bool skipEventAllowed(FwSizeType limit);
 
     //! Emit RowSkipsNotReported for the skipped rows that got no event, and start a new count
     void reportSkipsWithoutEvent();
