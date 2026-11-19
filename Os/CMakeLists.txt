@@ -167,7 +167,24 @@ fprime_target_dependencies(Os PUBLIC "Os_Mutex")
 add_named_os_module(CountingSemaphore)
 add_named_os_module(Queue)
 add_named_os_module(Cpu)
-add_named_os_module(Memory)
+# Memory: Memory.hpp is a thin public alias header; the interface and link-time
+# delegate live in MemoryInterface.{hpp,cpp} and DelegateMemory.{hpp,cpp}.
+register_fprime_module(
+      "Os_Memory"
+    REQUIRES_IMPLEMENTATIONS
+      "Os_Memory"
+    SOURCES
+      "${CMAKE_CURRENT_LIST_DIR}/MemoryInterface.cpp"
+      "${CMAKE_CURRENT_LIST_DIR}/DelegateMemory.cpp"
+    HEADERS
+      "${CMAKE_CURRENT_LIST_DIR}/Memory.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/MemoryInterface.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/DelegateMemory.hpp"
+    DEPENDS
+      Fw_Time
+      Fw_Types
+)
+fprime_target_dependencies(Os PUBLIC "Os_Memory")
 # RawTime: RawTime.hpp is a thin public alias header (no .cpp); the interface and
 # link-time delegate live in DelegateRawTime.{hpp,cpp}. Registered explicitly
 # because add_named_os_module assumes a matching <name>.cpp per header.

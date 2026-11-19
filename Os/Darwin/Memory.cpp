@@ -46,7 +46,7 @@ kern_return_t vm_stat_helper(FwSizeType& used, FwSizeType& total) {
     return (status1 == KERN_SUCCESS) ? status2 : status1;
 }
 
-MemoryInterface::Status DarwinMemory::_getUsage(Os::Memory::Usage& memory_usage) {
+MemoryInterface::Status DarwinMemory::_getUsage(Usage& memory_usage) {
     // Call out VM helper
     if (KERN_SUCCESS == vm_stat_helper(memory_usage.used, memory_usage.total)) {
         return Status::OP_OK;

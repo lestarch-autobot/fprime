@@ -174,7 +174,7 @@ This optimization is most valuable for bare-metal systems with high-frequency op
 
 ### How Projects Override for Compile-Time Selection
 
-Projects override compile-time selection by providing their own configuration header that replaces F´'s default. The override replaces the whole `config/OsSelection.hpp`, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed. For `RawTime`, create a project-specific override of `config/OsSelection.hpp`:
+Projects override compile-time selection by providing their own configuration header that replaces F´'s default. The override replaces the whole `config/OsSelection.hpp`, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed. An override that leaves one out fails to compile. For `RawTime`, create a project-specific override of `config/OsSelection.hpp`:
 
 **Step 1:** In your project's config directory, create `OsSelection.hpp`:
 
@@ -193,6 +193,7 @@ namespace MyPlatform {
 namespace Os {
     class DelegateMutex;             // Forward-declare the link-time delegates
     class DelegateConditionVariable; // kept for Mutex and ConditionVariable
+    class DelegateMemory;            // kept for Memory
 
     // Alias Os::RawTime directly to your implementation (no delegate wrapper)
     using RawTime = MyPlatform::MyRawTime;
@@ -201,12 +202,14 @@ namespace Os {
     // present: keep Mutex and ConditionVariable on the link-time delegates
     using Mutex = DelegateMutex;
     using ConditionVariable = DelegateConditionVariable;
+    using Memory = DelegateMemory;
 }
 
 // Point to your implementation header (will be included after RawTimeInterface.hpp)
 #define OS_RAW_TIME_HEADER "MyPlatform/Os/RawTime.hpp"
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_MEMORY_HEADER <Os/DelegateMemory.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP
 ```
