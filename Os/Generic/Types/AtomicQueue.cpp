@@ -110,7 +110,7 @@ void AtomicQueue::teardown() {
     if (this->m_notFullSem != nullptr) {
         FW_ASSERT(this->m_allocator != nullptr, 0);
 
-        // Call destructor
+        // Call destructor; qualified because Os::CountingSemaphore is an alias
         this->m_notFullSem->Os::CountingSemaphore::~CountingSemaphore();
 
         // Deallocate memory

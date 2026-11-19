@@ -8,8 +8,8 @@
 #include <Fw/FPrimeBasicTypes.hpp>
 #include <Fw/Time/TimeInterval.hpp>
 #include <Os/Os.hpp>
-// Defines the Os::CountingSemaphore alias and OS_COUNTING_SEMAPHORE_HEADER consumed by Os/CountingSemaphore.hpp; do
-// not remove
+// Normally defines the Os::CountingSemaphore alias and OS_COUNTING_SEMAPHORE_HEADER consumed by
+// Os/CountingSemaphore.hpp; do not remove
 #include "config/OsSelection.hpp"
 
 namespace Os {
