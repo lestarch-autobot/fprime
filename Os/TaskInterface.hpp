@@ -12,10 +12,11 @@
 #include <Os/Mutex.hpp>
 #include <Os/Os.hpp>
 #include <Os/TaskString.hpp>
-#include "config/OsSelection.hpp"  // defines the Os::Task alias and OS_TASK_HEADER consumed by Os/Task.hpp; do not remove
+#include "config/OsSelection.hpp"  // defines the Os::Task alias and OS_TASK_HEADER consumed by Os/Task.hpp
 
-// Validate that config/OsSelection.hpp selects an Os::Task. Checked here, not only in Os/Task.hpp, because this
-// header itself uses the Os::Task alias.
+// Validate that config/OsSelection.hpp selects an Os::Task. Checked here rather than in Os/Task.hpp because this
+// header itself uses the Os::Task alias. Only the macro can be checked: if `Task` is undeclared below,
+// config/OsSelection.hpp defined OS_TASK_HEADER without the Os::Task alias.
 #ifndef OS_TASK_HEADER
 #error "config/OsSelection.hpp must select an Os::Task: define the Os::Task alias and OS_TASK_HEADER"
 #endif
