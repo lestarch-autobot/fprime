@@ -9,15 +9,10 @@
 #include <Os/Os.hpp>
 #include "config/OsSelection.hpp"  // defines Os::Cpu alias and OS_CPU_HEADER consumed by Os/Cpu.hpp; do not remove
 
-// A project config/OsSelection.hpp that predates the Cpu selection defines neither the Os::Cpu alias nor
-// OS_CPU_HEADER: select the link-time delegate so that such projects keep building.
-// A config/OsSelection.hpp must define both the Os::Cpu alias and OS_CPU_HEADER, or neither of them.
+// Validate that the Cpu selection was made by config/OsSelection.hpp. The check is here rather than in Os/Cpu.hpp
+// because CpuInterface names the Os::Cpu alias below.
 #ifndef OS_CPU_HEADER
-namespace Os {
-class DelegateCpu;
-using Cpu = DelegateCpu;
-}  // namespace Os
-#define OS_CPU_HEADER <Os/DelegateCpu.hpp>
+#error "OS_CPU_HEADER and the Os::Cpu alias must be defined in config/OsSelection.hpp"
 #endif
 
 namespace Os {
