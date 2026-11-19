@@ -960,3 +960,218 @@ def test_L3_1(window, send, bench, check, require):
         check("event seqSched.RowSkippedDisabled count == 0")
         check("row 1 run between 57 and 66 s after the bench-recorded start of the Ref process",
               run_after_restart(1, 57, 66))
+
+
+def disable_and_report(window, send, bench, check, require, start, inst, name, seq, both):
+    """L2-15 / L2-16: the same procedure and checks on one scheduler instance."""
+    try:
+        with window(start, start + 1):
+            require("STD")
+            standard_requires(require, fresh=True)
+            require(f"first({name}.Enabled) == True")
+            bench.action("write_T_BASE_B" if both else "write_T_BASE")
+            send(inst + ".LOAD_TABLE")
+            send(inst + ".SET_ROW_ENABLED", [0, True])
+            send(inst + ".SET_ROW_ENABLED", [1, True])
+            send(inst + ".SET_ROW", [0] + abs_row(bench, 12, "short.bin", "WAIT_FOR_RUNNING"))
+            send(inst + ".SET_ENABLED", [False])
+            send(inst + ".REPORT_ACTIVE_ROW")
+            bench.wait(18)
+            send(inst + ".SET_ENABLED", [True])
+            send(inst + ".SET_ROW", [1] + abs_row(bench, 10, "short.bin", "WAIT_FOR_RUNNING"))
+            send(inst + ".REPORT_ACTIVE_ROW")
+            bench.wait(16)
+            bracket_both(bench) if both else bracket(bench)
+            check(f"event {name}.EnabledSet(enabled=False) count == 1")
+            check(f"event {name}.EnabledSet(enabled=True) count == 1")
+            check(f"event {name}.NoActiveRow count == 1")
+            check(f"event {name}.ActiveRow(row=1) count == 1")
+            check(f"event {name}.ActiveRow count == 1")
+            check(f"event {name}.RowSkippedDisabled(row=0) count == 1")
+            check(f"event {name}.SeqRun(row=0) count == 0")
+            check(f"event {name}.SeqRun(row=1) count == 1")
+            check(f"event {name}.SeqRun count == 1")
+            check(f"event {seq}.CS_SequenceComplete count == 1")
+            check(f"event {name}.RowLate count == 0")
+            check(f"event {name}.NoActiveRow precedes event {name}.RowSkippedDisabled(row=0)")
+            check(f"last({name}.Enabled) == True")
+            check(f"last({name}.RowsSkipped) == 1")
+            check(f"last({name}.RowsExecuted) == 1")
+            check(f"last({name}.LastExecutedRow) == 1")
+            if both:
+                check("event seqSched.SeqRun count == 0")
+                check("event seqSched.EnabledSet count == 0")
+                check("last(seqSched.Enabled) == True")
+                require("SeqSchedB samples >= 2 in every window", samples_b)
+    except BaseException:
+        # the plan's `finally`: a failed procedure must not leave the scheduler disabled for the next test
+        send(inst + ".SET_ENABLED", [True])
+        raise
+
+
+def test_L2_15(window, send, bench, check, require):
+    disable_and_report(window, send, bench, check, require, 310, S, "seqSched", "schedSeq", False)
+
+
+def test_L2_16(window, send, bench, check, require):
+    disable_and_report(window, send, bench, check, require, 320, B, "seqSchedB", "schedSeqB", True)
+
+
+T_BASE_FILE = "seq_sched.tbl"
+T_TRUNC_FILE = "t_trunc.tbl"
+T_BADCRC_FILE = "t_badcrc.tbl"
+
+
+def restore_table(window, send, bench, check, require, start):
+    """Clean-up window of the load-failure tests: TABLE_FILE back to the plan value and T-BASE loaded."""
+    with window(start, start + 1):
+        require("both markers present")
+        send(S + ".TABLE_FILE_PRM_SET", [T_BASE_FILE])
+        send(S + ".LOAD_TABLE")
+        bracket(bench)
+        check("event seqSched.TableLoaded count == 1")
+
+
+def test_L5_1(window, send, bench, check, require):
+    try:
+        with window(500, 501):
+            require("STD-ERR")
+            standard_requires(require, fresh=True)
+            bench.action("write_T_BASE")
+            bench.action("write_T_TRUNC")
+            send(S + ".LOAD_TABLE")
+            send(S + ".SET_ROW_ENABLED", [0, True])
+            send(S + ".SET_ROW", [0] + abs_row(bench, 15, "short.bin", "WAIT_FOR_RUNNING"))
+            send(S + ".TABLE_FILE_PRM_SET", ["missing.tbl"])
+            send(S + ".LOAD_TABLE")
+            send(S + ".TABLE_FILE_PRM_SET", [T_TRUNC_FILE])
+            send(S + ".LOAD_TABLE")
+            bench.wait(20)
+            bracket(bench)
+            check("event cmdDisp.OpCodeError count == 2")
+            check("event seqSched.TableLoadFailed(reason=OPEN) count == 1")
+            check("event seqSched.TableFileMissing count == 0")
+            check("event seqSched.TableLoadFailed(reason=SIZE) count == 1")
+            check("event seqSched.TableLoaded count == 1")
+            check("event seqSched.CmdRejected count == 0")
+            check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
+            check("event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1")
+            check("last(seqSched.TableLoaded) == True")
+            check("last(seqSched.RowsPending) == 15")
+            check("last(seqSched.RowsExecuted) == 1")
+    finally:
+        restore_table(window, send, bench, check, require, 501)
+
+
+def loads_around_run(h):
+    loads = [e.fsw for e in h.window.events("seqSched.TableLoaded")]
+    done = [e.fsw for e in h.window.events("schedSeq.CS_SequenceComplete") if e.args.get("fileName") == "long.bin"]
+    run = run_time(h, 0)
+    if len(loads) != 2 or not done or run is None:
+        return (False, f"loads {loads}, complete {done}, run {run}")
+    return (loads[1] < done[0] and loads[1] > run, f"loads {loads}, run {run}, complete {done[0]}")
+
+
+def test_L5_2(window, send, bench, check, require):
+    with window(510, 511):
+        require("STD")
+        standard_requires(require, fresh=True)
+        bench.action("write_T_BASE")
+        send(S + ".LOAD_TABLE")
+        send(S + ".SET_ROW_ENABLED", [0, True])
+        send(S + ".SET_ROW", [0] + abs_row(bench, 6, "long.bin", "WAIT_FOR_RUNNING"))
+        bench.wait(10)
+        send(S + ".SET_ROW", [0, time_value("TB_WORKSTATION_TIME", YEAR_2100), "ABSOLUTE", "short.bin",
+                              "WAIT_FOR_RUNNING"])
+        send(S + ".SET_ROW_ENABLED", [0, False])
+        send(S + ".SET_SEQ_ENABLED", ["short.bin", False])
+        send(S + ".LOAD_TABLE")
+        bench.wait(24)
+        bracket(bench)
+        check("ABS")
+        check("event seqSched.SeqRun(row=0, fileName=long.bin) count == 1")
+        check("event seqSched.RowSet(row=0) count == 2")
+        check("event seqSched.TableLoaded count == 2")
+        check("event schedSeq.CS_SequenceCanceled count == 0")
+        check("event seqSched.SeqCancelled count == 0")
+        check("event schedSeq.CS_SequenceComplete(fileName=long.bin) count == 1")
+        check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
+        check("event seqSched.SeqDoneUnexpected count == 0")
+        check("event seqSched.SeqRun(row=0) precedes event seqSched.RowSet(row=0, fileName=short.bin)")
+        check("both TableLoaded events precede CS_SequenceComplete(fileName=long.bin), the second after SeqRun(row=0)",
+              loads_around_run)
+        check("last(seqSched.RunningRow) == 16")
+        check("last(seqSched.RowsPending) == 16")
+
+
+def file_unchanged(action):
+    """The file read by a bench action has the same digest at its first and last reading in the test."""
+    def judge(h):
+        rows = [r for r in h.evidence(action) if r]
+        return (len(rows) >= 2 and rows[0]["sha256"] == rows[-1]["sha256"] and rows[0]["size"] > 0,
+                f"{len(rows)} readings: {[r['sha256'][:8] for r in rows]}")
+    return judge
+
+
+def test_L5_3(window, send, bench, check, require):
+    try:
+        with window(520, 521):
+            require("STD-ERR")
+            standard_requires(require, fresh=True)
+            bench.action("write_T_BASE")
+            bench.action("write_T_BADCRC")
+            bench.action("hash_T_BADCRC")
+            send(S + ".LOAD_TABLE")
+            send(S + ".SET_ROW_ENABLED", [0, True])
+            send(S + ".SET_ROW", [0] + abs_row(bench, 15, "short.bin", "WAIT_FOR_RUNNING"))
+            send(S + ".TABLE_FILE_PRM_SET", [T_BADCRC_FILE])
+            send(S + ".LOAD_TABLE")
+            bench.wait(20)
+            bracket(bench)
+            bench.action("hash_T_BADCRC")
+            check("event cmdDisp.OpCodeError count == 1")
+            check("event seqSched.TableLoadFailed(reason=CHECKSUM) count == 1")
+            check("event seqSched.TableLoadFailed count == 1")
+            check("event seqSched.TableLoaded count == 1")
+            check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
+            check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
+            check("event seqSched.TableSaved count == 0")
+            check("last(seqSched.TableLoaded) == True")
+            check("last(seqSched.RowsExecuted) == 1")
+            check("file T-BADCRC unchanged on the bench file system", file_unchanged("hash_T_BADCRC"))
+    finally:
+        restore_table(window, send, bench, check, require, 521)
+
+
+def test_L5_4(window, send, bench, check, require):
+    with window(530, 531):
+        require("STD")
+        standard_requires(require, fresh=True)
+        bench.action("write_T_BASE_B")
+        send(B + ".LOAD_TABLE")
+        send(QB + ".CS_RUN", ["short.bin", "NO_BLOCK"])
+        bench.wait(4)
+        send(B + ".SET_ROW_ENABLED", [0, True])
+        send(B + ".SET_ROW", [0] + abs_row(bench, 6, "long.bin", "WAIT_FOR_RUNNING"))
+        bench.wait(10)
+        send(B + ".SET_ROW_ENABLED", [0, False])
+        send(B + ".SET_ROW", [0, time_value("TB_WORKSTATION_TIME", YEAR_2100), "ABSOLUTE", "short2.bin",
+                              "WAIT_FOR_RUNNING"])
+        bench.wait(24)
+        bracket_both(bench)
+        check("event schedSeqB.CS_SequenceComplete(fileName=short.bin) count == 1")
+        check("event seqSchedB.SeqDoneUnexpected count == 1")
+        check("event seqSchedB.SeqRun(row=0, fileName=long.bin) count == 1")
+        check("event schedSeqB.CS_SequenceComplete(fileName=long.bin) count == 1")
+        check("event schedSeqB.CS_SequenceCanceled count == 0")
+        check("event seqSchedB.SeqCompleted(row=0, response=OK) count == 1")
+        check("event seqSchedB.SeqCompleted count == 1")
+        check("event seqSchedB.SeqDoneUnexpected precedes event seqSchedB.SeqRun(row=0)")
+        check("event seqSchedB.SeqRun(row=0) precedes event seqSchedB.RowSet(row=0, fileName=short2.bin)")
+        check("event seqSchedB.RowSet(row=0, fileName=short2.bin) precedes "
+              "event schedSeqB.CS_SequenceComplete(fileName=long.bin)")
+        check("last(seqSchedB.RunningRow) == 16")
+        check("last(seqSchedB.RowsExecuted) == 0")
+        check("event seqSched.SeqDoneUnexpected count == 0")
+        check("event seqSched.SeqRun count == 0")
+        require("SeqSchedB samples >= 2 in every window", samples_b)

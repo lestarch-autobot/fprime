@@ -19,7 +19,10 @@
     "fsw_now": "python3 {bench} fsw-now {logs}",
     "next_due": "python3 {bench} next-due {logs} seqSched",
     "next_due_b": "python3 {bench} next-due {logs} seqSchedB",
-    "ref_start": "python3 {bench} ref-start"
+    "ref_start": "python3 {bench} ref-start",
+    "write_T_TRUNC": "python3 {bench} write-table T-TRUNC",
+    "write_T_BADCRC": "python3 {bench} write-table T-BADCRC",
+    "hash_T_BADCRC": "python3 {bench} hash-file t_badcrc.tbl"
   },
   "timeouts": {
     "flash_s": 60,

@@ -8,6 +8,7 @@ Ref runs with the work directory as its working directory, so table, sequence, p
 data product files are all found there.
 """
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -152,7 +153,13 @@ def tables():
     t_fields[15] = {"timeBase": "TB_NONE", "seconds": 1000000, "mode": "START_RELATIVE", "fileName": "short.bin",
                     "busyPolicy": "SKIP_WHEN_RUNNING", "enabled": False}
     return {"T-BASE": ("seq_sched.tbl", t_base), "T-BASE-B": ("seq_sched_b.tbl", t_base_b),
-            "T-FIELDS": ("seq_sched.tbl", t_fields)}
+            "T-FIELDS": ("seq_sched.tbl", t_fields),
+            "T-TRUNC": ("t_trunc.tbl", base_rows()), "T-BADCRC": ("t_badcrc.tbl", base_rows())}
+
+
+# Table files written as T-BASE and then damaged: its last byte removed, or one row byte inverted
+DAMAGED = {"T-TRUNC": "truncate", "T-BADCRC": "invert"}
+HEADER_SIZE = 3  # version byte and big-endian U16 row count
 
 
 def write_table(args):
@@ -160,7 +167,21 @@ def write_table(args):
     source = WORK / (args.table + ".json")
     source.write_text(json.dumps(rows, indent=1) + "\n")
     subprocess.run([sys.executable, str(TABLE_SCRIPT), str(source), str(WORK / name)], check=True)
+    damage = DAMAGED.get(args.table)
+    if damage is not None:
+        data = bytearray((WORK / name).read_bytes())
+        if damage == "truncate":
+            del data[-1]
+        else:
+            data[HEADER_SIZE] ^= 0xFF  # first byte of row 0
+        (WORK / name).write_bytes(bytes(data))
     print(f"bench: wrote {args.table} to {name}")
+
+
+def hash_file(args):
+    """Size and digest of a file of the bench file system."""
+    data = (WORK / args.name).read_bytes() if (WORK / args.name).is_file() else b""
+    evidence({"name": args.name, "size": len(data), "sha256": hashlib.sha256(data).hexdigest()})
 
 
 def main():
@@ -193,6 +214,9 @@ def main():
     p.set_defaults(fn=next_due)
     p = sub.add_parser("ref-start")
     p.set_defaults(fn=ref_start)
+    p = sub.add_parser("hash-file")
+    p.add_argument("name")
+    p.set_defaults(fn=hash_file)
     args = parser.parse_args()
     args.fn(args)
 
