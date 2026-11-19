@@ -73,6 +73,7 @@ register_fprime_ut(
   CHOOSES_IMPLEMENTATIONS
   Os_Memory_Test_Stub
   DEPENDS
+    Os_Memory
     Fw_Types
     STest
 )
