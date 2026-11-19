@@ -87,6 +87,24 @@
 //     }  // namespace Os
 //     #define OS_MUTEX_HEADER "Va416x0/Os/AtomicMutex/AtomicMutex.hpp"
 //     #define OS_CONDITION_VARIABLE_HEADER "Os/Stub/ConditionVariable.hpp"
+//
+// ----------------------------------------------------------------------
+// Queue
+//
+// Compile-time selections MUST derive from Os::QueueInterface, which supplies
+// the common Os::Queue functions (serialized send()/receive(), getDepth(),
+// getMessageSize(), getName(), getNumQueues(), setRegistry()) and the
+// createChecks()/finishCreate()/finishTeardown()/sendChecks()/receiveChecks()
+// helpers each implementation calls. As with Mutex, the implementation module
+// providing the aliased class must still be in the link. FW_QUEUE_HANDLE_MAX_SIZE
+// only sizes the storage of the link-time delegate; a compile-time selection
+// does not use it.
+//
+// Example compile-time selection override:
+//
+//     namespace Os { namespace Generic { class PriorityQueue; } }
+//     namespace Os { using Queue = Os::Generic::PriorityQueue; }
+//     #define OS_QUEUE_HEADER "Os/Generic/PriorityQueue.hpp"
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
@@ -104,10 +122,14 @@ using Mutex = DelegateMutex;
 class DelegateConditionVariable;
 using ConditionVariable = DelegateConditionVariable;
 
+class DelegateQueue;
+using Queue = DelegateQueue;
+
 }  // namespace Os
 
 #define OS_RAW_TIME_HEADER <Os/DelegateRawTime.hpp>
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_QUEUE_HEADER <Os/DelegateQueue.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP

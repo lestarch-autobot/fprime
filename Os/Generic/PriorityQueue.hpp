@@ -90,8 +90,8 @@ class PriorityQueue : public Os::QueueInterface {
 
     //! \brief teardown the queue
     //!
-    //! Allow for queues to deallocate resources as part of system shutdown. This delegates to the underlying queue
-    //! implementation.
+    //! Allow for queues to deallocate resources as part of system shutdown. The queue is uninitialized afterward and
+    //! may be created again.
     void teardown() override;
 
     //! \brief teardown the queue
@@ -101,6 +101,10 @@ class PriorityQueue : public Os::QueueInterface {
     //!
     //! Note: this is a helper to allow this to be called from the destructor.
     void teardownInternal();
+
+    // Bring the common send/receive overloads of the interface back into scope
+    using QueueInterface::receive;
+    using QueueInterface::send;
 
     //! \brief send a message into the queue
     //!

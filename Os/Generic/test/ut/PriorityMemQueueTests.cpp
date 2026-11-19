@@ -472,6 +472,17 @@ TEST_P(PriorityMemQueueConfigTest, ConfigAndOperate) {
     Os::QueueInterface::Status status = queue.create(testCase.queueId, name, 10, 128);
     ASSERT_EQ(Os::QueueInterface::Status::OP_OK, status);
 
+    // A configured queue reports the largest message it can hold, bounded by the size given to create
+    FwSizeType largest = 0;
+    for (const auto& priorityCfg : priorityCfgs) {
+        largest = FW_MAX(largest, priorityCfg.maxMsgSize);
+    }
+    const FwSizeType expectedSize = FW_MIN(static_cast<FwSizeType>(128), largest);
+    ASSERT_EQ(expectedSize, queue.getMessageSize());
+    U8 oversized[129] = {};
+    ASSERT_EQ(Os::QueueInterface::Status::SIZE_MISMATCH,
+              queue.send(oversized, expectedSize + 1, 0, Os::QueueInterface::BlockingType::NONBLOCKING));
+
     if (testCase.testSendRecv) {
         U8 sendData[64] = {1, 2, 3};
         status = queue.send(sendData, 3, 0, Os::QueueInterface::BlockingType::NONBLOCKING);
@@ -2108,8 +2119,8 @@ TEST_F(PriorityMemQueueTestFixture, BlockingReceiveUnblock) {
     queue.teardown();
 }
 
-// Double create without teardown test - verify assertion on second create
-TEST_F(PriorityMemQueueTestFixture, DoubleCreateAssertion) {
+// Double create without teardown test - verify second create is rejected
+TEST_F(PriorityMemQueueTestFixture, DoubleCreateRejected) {
     Os::Generic::PriorityMemQueue::configure(configs, 1, false,
                                              Fw::MemoryAllocation::MemoryAllocatorType::OS_GENERIC_PRIORITY_QUEUE);
 
@@ -2117,8 +2128,11 @@ TEST_F(PriorityMemQueueTestFixture, DoubleCreateAssertion) {
     ASSERT_EQ(Os::QueueInterface::Status::OP_OK,
               queue.create(QUEUE_ID, Fw::String("Test1"), QUEUE_DEPTH, MESSAGE_SIZE));
 
-    // Second create without teardown should assert (fail-fast design)
-    ASSERT_DEATH_IF_SUPPORTED({ queue.create(QUEUE_ID, Fw::String("Test2"), QUEUE_DEPTH, MESSAGE_SIZE); }, "Assertion");
+    // Second create without teardown is rejected by the common Os::QueueInterface create checks, as it is through
+    // Os::Queue, and leaves the created queue untouched
+    ASSERT_EQ(Os::QueueInterface::Status::ALREADY_CREATED,
+              queue.create(QUEUE_ID, Fw::String("Test2"), QUEUE_DEPTH, MESSAGE_SIZE));
+    ASSERT_STREQ("Test1", queue.getName().toChar());
 
     queue.teardown();
 }

@@ -6,6 +6,8 @@
 #include <cstring>
 #include "Fw/Types/Assert.hpp"
 
+// This test double records calls for the Os::Queue unit tests and is used behind Os::DelegateQueue only: it does
+// not call the Os::QueueInterface check helpers, so it is not a valid compile-time selection of Os::Queue.
 namespace Os {
 namespace Stub {
 namespace Queue {

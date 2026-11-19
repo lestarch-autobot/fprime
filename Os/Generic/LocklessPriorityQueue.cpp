@@ -80,8 +80,11 @@ QueueInterface::Status LocklessPriorityQueue::create(FwEnumStoreType id,
                                                      const Fw::ConstStringBase& name,
                                                      FwSizeType depth,
                                                      FwSizeType messageSize) {
-    static_cast<void>(name);
-
+    // Common create checks: non-zero depth and message size, and not already created
+    const QueueInterface::Status checkStatus = this->createChecks(depth, messageSize);
+    if (checkStatus != QueueInterface::Status::OP_OK) {
+        return checkStatus;
+    }
     // Ensure that the queue has not already been created. A double create would leak memory and
     // is a programming error.
     FW_ASSERT(this->m_handle.m_slots == nullptr);
@@ -169,6 +172,7 @@ QueueInterface::Status LocklessPriorityQueue::create(FwEnumStoreType id,
         this->m_handle.m_count.store(0, std::memory_order_relaxed);
         this->m_handle.m_available.store(0, std::memory_order_relaxed);
         this->m_handle.m_highMark.store(0, std::memory_order_relaxed);
+        this->finishCreate(*this, name, depth, messageSize);
     }
     return status;
 }
@@ -192,12 +196,18 @@ void LocklessPriorityQueue::teardown() {
         this->m_handle.m_highMark.store(0, std::memory_order_relaxed);
         this->m_handle.m_sequence.store(0, std::memory_order_relaxed);
     }
+    this->finishTeardown();
 }
 
 QueueInterface::Status LocklessPriorityQueue::send(const U8* buffer,
                                                    FwSizeType size,
                                                    FwQueuePriorityType priority,
                                                    QueueInterface::BlockingType blockType) {
+    // Common send checks: non-null buffer, queue created, and message fits
+    const QueueInterface::Status checkStatus = this->sendChecks(buffer, size);
+    if (checkStatus != QueueInterface::Status::OP_OK) {
+        return checkStatus;
+    }
     // Programming-error checks: queue must be created and inputs must be well-formed. These are
     // preconditions, not untrusted-input checks.
     FW_ASSERT(this->m_handle.m_slots != nullptr);
@@ -267,6 +277,11 @@ QueueInterface::Status LocklessPriorityQueue::receive(U8* destination,
                                                       QueueInterface::BlockingType blockType,
                                                       FwSizeType& actualSize,
                                                       FwQueuePriorityType& priority) {
+    // Common receive checks: non-null destination, queue created, and capacity holds any message
+    const QueueInterface::Status checkStatus = this->receiveChecks(destination, capacity);
+    if (checkStatus != QueueInterface::Status::OP_OK) {
+        return checkStatus;
+    }
     // Programming-error checks. These mirror the assertions in send().
     FW_ASSERT(this->m_handle.m_slots != nullptr);
     FW_ASSERT(this->m_handle.m_data != nullptr);

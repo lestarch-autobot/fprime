@@ -393,6 +393,11 @@ QueueInterface::Status PriorityMemQueue::create(FwEnumStoreType id,
                                                 const Fw::ConstStringBase& name,
                                                 FwSizeType depth,
                                                 FwSizeType messageSize) {
+    // Common create checks: non-zero depth and message size, and not already created
+    const QueueInterface::Status checkStatus = this->createChecks(depth, messageSize);
+    if (checkStatus != QueueInterface::Status::OP_OK) {
+        return checkStatus;
+    }
     FW_ASSERT(depth > 0, id);
     FW_ASSERT(messageSize > 0, id);
 
@@ -437,13 +442,29 @@ QueueInterface::Status PriorityMemQueue::create(FwEnumStoreType id,
     this->m_handle.m_notEmptySem = new (semMem) Os::CountingSemaphore(static_cast<U32>(0));
 
     // Create the priority queues based on configuration
+    QueueInterface::Status status = QueueInterface::Status::OP_OK;
     if (queueConfig != nullptr) {
         // Use the found configuration to create multiple priority queues
-        return createConfiguredQueues(queueConfig, allocator, id);
+        status = createConfiguredQueues(queueConfig, allocator, id);
     } else {
         // No configuration found, create a single default priority queue
-        return createDefaultQueue(depth, messageSize, allocator, id);
+        status = createDefaultQueue(depth, messageSize, allocator, id);
     }
+    if (status == QueueInterface::Status::OP_OK) {
+        // A configured queue sizes each priority itself: the largest message it stores may be smaller than
+        // messageSize. Record the smaller of the two so that the common receive check accepts every buffer able
+        // to hold any stored message. Each priority still checks sizes exactly on enqueue and dequeue.
+        FwSizeType recordedSize = messageSize;
+        if (queueConfig != nullptr) {
+            FwSizeType largest = 0;
+            for (FwSizeType i = 0; i < queueConfig->numPriorities; ++i) {
+                largest = FW_MAX(largest, queueConfig->priorityConfigs[i].maxMsgSize);
+            }
+            recordedSize = FW_MIN(messageSize, largest);
+        }
+        this->finishCreate(*this, name, depth, recordedSize);
+    }
+    return status;
 }
 
 // Helper method to find a matching configuration for the given ID
@@ -540,6 +561,7 @@ QueueInterface::Status PriorityMemQueue::createPriorityQueue(FwQueuePriorityType
 
 void PriorityMemQueue::teardown() {
     this->teardownInternal();
+    this->finishTeardown();
 }
 
 void PriorityMemQueue::teardownInternal() {
@@ -641,6 +663,11 @@ QueueInterface::Status PriorityMemQueue::send(const U8* buffer,
                                               FwSizeType size,
                                               FwQueuePriorityType priority,
                                               QueueInterface::BlockingType blockType) {
+    // Common send checks: non-null buffer, queue created, and message fits
+    const QueueInterface::Status checkStatus = this->sendChecks(buffer, size);
+    if (checkStatus != QueueInterface::Status::OP_OK) {
+        return checkStatus;
+    }
     // Validate input parameters
     FW_ASSERT(buffer != nullptr, this->m_handle.m_id, priority, blockType);
     FW_ASSERT(size > 0, this->m_handle.m_id, static_cast<FwAssertArgType>(size), priority);
@@ -696,6 +723,11 @@ QueueInterface::Status PriorityMemQueue::receive(U8* destination,
                                                  QueueInterface::BlockingType blockType,
                                                  FwSizeType& actualSize,
                                                  FwQueuePriorityType& priority) {
+    // Common receive checks: non-null destination, queue created, and capacity holds any message
+    const QueueInterface::Status checkStatus = this->receiveChecks(destination, capacity);
+    if (checkStatus != QueueInterface::Status::OP_OK) {
+        return checkStatus;
+    }
     // Validate input parameters
     FW_ASSERT(destination != nullptr, blockType, this->m_handle.m_id);
 

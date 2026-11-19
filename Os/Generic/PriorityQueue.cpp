@@ -48,6 +48,11 @@ QueueInterface::Status PriorityQueue::create(FwEnumStoreType id,
                                              const Fw::ConstStringBase& name,
                                              FwSizeType depth,
                                              FwSizeType messageSize) {
+    // Common create checks: non-zero depth and message size, and not already created
+    const QueueInterface::Status checkStatus = this->createChecks(depth, messageSize);
+    if (checkStatus != QueueInterface::Status::OP_OK) {
+        return checkStatus;
+    }
     const FwEnumStoreType identifier = id;
     QueueInterface::Status status = Os::QueueInterface::Status::OP_OK;
     // Ensure we are created exactly once
@@ -154,12 +159,14 @@ QueueInterface::Status PriorityQueue::create(FwEnumStoreType id,
         this->m_handle.m_stopIndex = 0;
         this->m_handle.m_depth = depth;
         this->m_handle.m_highMark = 0;
+        this->finishCreate(*this, name, depth, messageSize);
     }
     return status;
 }
 
 void PriorityQueue::teardown() {
     this->teardownInternal();
+    this->finishTeardown();
 }
 
 void PriorityQueue::teardownInternal() {
@@ -188,6 +195,11 @@ QueueInterface::Status PriorityQueue::send(const U8* buffer,
                                            FwSizeType size,
                                            FwQueuePriorityType priority,
                                            QueueInterface::BlockingType blockType) {
+    // Common send checks: non-null buffer, queue created, and message fits
+    const QueueInterface::Status checkStatus = this->sendChecks(buffer, size);
+    if (checkStatus != QueueInterface::Status::OP_OK) {
+        return checkStatus;
+    }
     // Check for sizing problem before locking
     if (size > this->m_handle.m_maxSize) {
         return QueueInterface::Status::SIZE_MISMATCH;
@@ -221,6 +233,11 @@ QueueInterface::Status PriorityQueue::receive(U8* destination,
                                               QueueInterface::BlockingType blockType,
                                               FwSizeType& actualSize,
                                               FwQueuePriorityType& priority) {
+    // Common receive checks: non-null destination, queue created, and capacity holds any message
+    const QueueInterface::Status checkStatus = this->receiveChecks(destination, capacity);
+    if (checkStatus != QueueInterface::Status::OP_OK) {
+        return checkStatus;
+    }
     // Reject undersized buffers before popping so the message stays queued (matches POSIX mq_receive EMSGSIZE)
     if (capacity < this->m_handle.m_maxSize) {
         return QueueInterface::Status::SIZE_MISMATCH;
