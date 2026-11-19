@@ -95,9 +95,10 @@
 // constructible: the singleton and the static init()/getCount()/getTicks()
 // functions are defined once on CpuInterface in terms of Os::Cpu.
 //
-// Those functions are defined inline in Os/Cpu.hpp, so a compile-time
-// selection uses neither Os::DelegateCpu nor CpuInterface::getDelegate(); the
-// module providing the selected class must still be in the link (see above).
+// Those functions are defined inline in Os/Cpu.hpp, so code using a
+// compile-time selection references neither Os::DelegateCpu nor
+// CpuInterface::getDelegate(). The module providing the selected class must
+// still be in the link (see above), placed so that it resolves those users.
 //
 // Example compile-time selection override:
 //
