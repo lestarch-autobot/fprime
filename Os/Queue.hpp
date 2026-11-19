@@ -30,6 +30,7 @@
 
 #include "Os/QueueInterface.hpp"
 
+// OS_QUEUE_HEADER is validated in Os/QueueInterface.hpp, which uses the Os::Queue alias
 #include OS_QUEUE_HEADER
 
 #endif  // Os_Queue_hpp_
