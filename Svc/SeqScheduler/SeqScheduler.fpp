@@ -257,34 +257,34 @@ module Svc {
     # ----------------------------------------------------------------------
 
     @ Index of the soonest upcoming row; the table row count when none
-    telemetry NextRow: FwSizeType update on change
+    telemetry NextRow: FwSizeType
 
     @ Time due of that row
     telemetry NextTimeDue: Fw.TimeValue
 
     @ A table load has succeeded, with or without a file, and its table is in use; unchanged by a failed load command
-    telemetry TableLoaded: bool update on change
+    telemetry TableLoaded: bool
 
     @ The component is enabled
-    telemetry Enabled: bool update on change
+    telemetry Enabled: bool
 
     @ Row whose sequence was last reported complete; not written until there is one
     telemetry LastExecutedRow: FwSizeType update on change
 
     @ Row whose sequence is running or being cancelled; the table row count when none
-    telemetry RunningRow: FwSizeType update on change
+    telemetry RunningRow: FwSizeType
 
     @ Count of due rows waiting for the running sequence to be reported complete
-    telemetry RowsWaiting: FwSizeType update on change
+    telemetry RowsWaiting: FwSizeType
 
     @ Count of PENDING rows that are not empty
-    telemetry RowsPending: FwSizeType update on change
+    telemetry RowsPending: FwSizeType
 
     @ Count of EXECUTED rows
-    telemetry RowsExecuted: FwSizeType update on change
+    telemetry RowsExecuted: FwSizeType
 
     @ Count of SKIPPED rows
-    telemetry RowsSkipped: FwSizeType update on change
+    telemetry RowsSkipped: FwSizeType
 
     # ----------------------------------------------------------------------
     # Data products

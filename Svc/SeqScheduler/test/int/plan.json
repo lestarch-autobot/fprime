@@ -71,7 +71,6 @@
    "seqSched.RunningRow",
    "seqSched.RowsWaiting",
    "seqSched.Enabled",
-   "seqSched.LastExecutedRow",
    "seqSched.RowsPending",
    "seqSched.RowsExecuted",
    "seqSched.RowsSkipped"
@@ -83,7 +82,6 @@
    "seqSchedB.RunningRow",
    "seqSchedB.RowsWaiting",
    "seqSchedB.Enabled",
-   "seqSchedB.LastExecutedRow",
    "seqSchedB.RowsPending",
    "seqSchedB.RowsExecuted",
    "seqSchedB.RowsSkipped"
@@ -658,7 +656,8 @@
   "18. 2026-11-18 human (Michael Starch, 09:20 PST) — `TicksDropped` telemetry and the queue-overflow hooks are removed: `run` counts ticks and queues at most one tick message; any other queue overflow is the framework assertion.",
   "19. 2026-11-18 human (Michael Starch, 14:32 and 14:35 PST) — table length, default table file and tick period come from `configure` (no `TICK_PERIOD_USEC` parameter, REQ-048 removed); a missing table file at start-up gives an empty table (unit test); disabled-row skips emit `RowSkippedDisabled`; `EXECUTING` state; `SET_ENABLED` and `REPORT_ACTIVE_ROW` (L2-15, L2-16 added); requirements 051 to 059 added, seven of them verified by unit test only.",
   "20. 2026-11-18 human (Michael Starch, 16:12 PST) — row state is not saved: every loaded row is PENDING and a past row is skipped with no event on the first tick after a load (L2-1, L3-1, L7-1 reworked; REQ-024 removed; REQ-056 now has system coverage); a failed load leaves an empty table that commands can fill (REQ-043 and `NO_TABLE` removed; L5-1, L5-3 reworked; L5-1 says truncated, not short); due rows are handled by time due, then index, and a due CANCEL_RUNNING row skips every due row ahead of it (REQ-060, `RowSkippedByCancel`; L2-13 reworked); a relative row's time due is its origin's system time plus its time (REQ-046, REQ-061).",
-  "21. 2026-11-18 human (Michael Starch, 16:24 PST) and designer — the due rows are held in the existing `Fw::ExternalRedBlackTreeSet`; tests of several rows due with a later CANCEL_RUNNING row, and with the cancel row between other due rows, are added (L2-7 and L2-13 reworked, REQ-060 now has system coverage; unit tests CancelLastOfSeveralDue, CancelBetweenDue, TwoCancelsDue). From review round 13: a failed load command leaves the table unchanged, only a failed start-up load leaves it empty (L5-1 and L5-3 reworked: the row due after the failed load is run)."
+  "21. 2026-11-18 human (Michael Starch, 16:24 PST) and designer — the due rows are held in the existing `Fw::ExternalRedBlackTreeSet`; tests of several rows due with a later CANCEL_RUNNING row, and with the cancel row between other due rows, are added (L2-7 and L2-13 reworked, REQ-060 now has system coverage; unit tests CancelLastOfSeveralDue, CancelBetweenDue, TwoCancelsDue). From review round 13: a failed load command leaves the table unchanged, only a failed start-up load leaves it empty (L5-1 and L5-3 reworked: the row due after the failed load is run).",
+  "2026-11-19 developer — dry run on the bench: (1) `seqSched.LastExecutedRow` removed from the `SeqSched` sample group: it is written only when a sequence completes (SDD telemetry table), so it has no sample in most windows; (2) the dispatch-count and drop-count members of `STD` and `STD-ERR` are registered helpers: a sequence's own commands are also logged as dispatched, so only `CMD_NO_OP` may be dispatched more often than sent. Not yet reviewed."
  ],
  "tests": [
   {
