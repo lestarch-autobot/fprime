@@ -19,8 +19,7 @@
 //      method signatures, so it includes CFG first. It then defines
 //      ConsoleHandle and ConsoleInterface.
 //
-//   3. OS_CONSOLE_HEADER (IMPL) is defined by CFG (or defaulted to the delegate
-//      by IF when CFG defines neither it nor the alias) and points to the concrete
+//   3. OS_CONSOLE_HEADER (IMPL) is defined by CFG and points to the concrete
 //      implementation header. If using delegation, this points to
 //      Os/DelegateConsole.hpp. If using compile-time selection, it points
 //      directly to an implementation (e.g. Os/Posix/Console.hpp).
@@ -33,7 +32,11 @@
 
 #include "Os/ConsoleInterface.hpp"
 
-// OS_CONSOLE_HEADER comes from config/OsSelection.hpp, or defaults to the link-time delegate in ConsoleInterface.hpp
+// Validate that OS_CONSOLE_HEADER was defined by config/OsSelection.hpp
+#ifndef OS_CONSOLE_HEADER
+#error "OS_CONSOLE_HEADER must be defined in config/OsSelection.hpp"
+#endif
+
 #include OS_CONSOLE_HEADER
 
 #endif

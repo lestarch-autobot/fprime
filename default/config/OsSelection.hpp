@@ -100,7 +100,7 @@
 // implementation module does not match the alias. The class must also
 // re-expose the common overload with `using ConsoleInterface::writeMessage;`
 // and both the alias and OS_CONSOLE_HEADER must be defined together. An
-// override that defines neither keeps the link-time delegate.
+// override that omits them does not compile.
 //
 // Example compile-time selection override:
 //
