@@ -30,7 +30,7 @@
   "timeouts": {
     "flash_s": 60,
     "gds_start_s": 20,
-    "recorder_start_s": 3,
+    "recorder_start_s": 18,
     "send_s": 60,
     "command_s": 30,
     "reset_settle_s": 12
