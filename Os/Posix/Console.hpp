@@ -5,7 +5,7 @@
 #ifndef OS_POSIX_Console_HPP
 #define OS_POSIX_Console_HPP
 
-#include <Os/ConsoleInterface.hpp>
+#include <Os/Console.hpp>
 #include <cstdio>
 
 namespace Os {

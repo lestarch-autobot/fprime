@@ -79,7 +79,10 @@ TEST(Interface, StaticWrite) {
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.message, message.toChar());
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, 5);
+    Os::Stub::Console::Test::StaticData::data.lastCalled = Os::Stub::Console::Test::StaticData::NONE_FN;
     Os::Console::write("direct", 6);
+    ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::WRITE_FN);
+    ASSERT_STREQ(Os::Stub::Console::Test::StaticData::data.message, "direct");
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.size, 6);
 }
 

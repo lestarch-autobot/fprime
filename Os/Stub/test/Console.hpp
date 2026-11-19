@@ -5,7 +5,7 @@
 #ifndef OS_Stub_Test_Console_HPP
 #define OS_Stub_Test_Console_HPP
 
-#include <Os/ConsoleInterface.hpp>
+#include <Os/Console.hpp>
 #include <cstdio>
 
 namespace Os {
@@ -46,7 +46,8 @@ struct TestConsoleHandle : public ConsoleHandle {};
 
 //! \brief stub implementation of Os::ConsoleInterface
 //!
-//! Stub implementation of `ConsoleInterface` for use as a delegate class handling stub console operations.
+//! Stub implementation of `ConsoleInterface` handling stub console operations, usable as the link-time delegate
+//! or directly.
 //!
 class TestConsole : public ConsoleInterface {
   public:

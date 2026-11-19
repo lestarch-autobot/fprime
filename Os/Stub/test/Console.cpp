@@ -1,5 +1,5 @@
 // ======================================================================
-// \title Os/Stub/Console.cpp
+// \title Os/Stub/test/Console.cpp
 // \brief stub implementation for Os::Console
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
