@@ -112,10 +112,10 @@
 // DirectoryInterface::getDelegate. Directory shares the Os_File module with
 // File and FileSystem.
 //
-// A project override of this header that defines neither the Os::Directory
-// alias nor OS_DIRECTORY_HEADER keeps the link-time delegate (see
-// Os/Directory.hpp). Defining OS_DIRECTORY_HEADER without the alias, or an
-// implementation alias without OS_DIRECTORY_HEADER, is a compile error.
+// A project override of this header MUST select a Directory: it defines both
+// the Os::Directory alias and OS_DIRECTORY_HEADER (the two lines at the end
+// of this file keep the link-time delegate). Os/Directory.hpp reports a
+// missing OS_DIRECTORY_HEADER with an #error.
 //
 // Example compile-time selection override:
 //

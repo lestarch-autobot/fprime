@@ -22,8 +22,7 @@
 //   3. OS_DIRECTORY_HEADER (IMPL) is defined by CFG and points to the concrete
 //      implementation header. If using delegation, this points to
 //      Os/DelegateDirectory.hpp. If using compile-time selection, it points
-//      directly to a platform-specific implementation. If CFG defines neither
-//      the alias nor OS_DIRECTORY_HEADER, the link-time delegate is used.
+//      directly to a platform-specific implementation.
 //
 // DirectoryInterface.hpp must precede OS_DIRECTORY_HEADER here,
 // and CFG must never include either of them (that would form a cycle).
@@ -33,15 +32,11 @@
 
 #include "Os/DirectoryInterface.hpp"
 
-#ifdef OS_DIRECTORY_HEADER
-#include OS_DIRECTORY_HEADER
-#else
-// A project config/OsSelection.hpp that predates the Directory selection defines neither the Os::Directory
-// alias nor OS_DIRECTORY_HEADER: keep the link-time delegate so such projects build unchanged.
-#include "Os/DelegateDirectory.hpp"
-namespace Os {
-using Directory = DelegateDirectory;
-}  // namespace Os
+// Validate that OS_DIRECTORY_HEADER was defined by config/OsSelection.hpp
+#ifndef OS_DIRECTORY_HEADER
+#error "OS_DIRECTORY_HEADER must be defined in config/OsSelection.hpp"
 #endif
+
+#include OS_DIRECTORY_HEADER
 
 #endif  // Os_Directory_hpp
