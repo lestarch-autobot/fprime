@@ -235,14 +235,20 @@ def test_L0_2(window, send, bench, check, require):
         standard_requires(require)
         bracket(bench)
         send(T + ".SET_TIME_BASE", ["TB_SC_TIME"])
-        bench.wait(2)
-        send(Q + ".CS_RUN", ["short.bin", "NO_BLOCK"])
-        send("CdhCore.cmdDisp.CMD_NO_OP")
-        send("CdhCore.health.HLTH_ENABLE", ["ENABLED"])
-        send(S + ".LOAD_TABLE")
-        bench.wait_event("schedSeq.CS_SequenceComplete", 5)
-        send(T + ".SET_TIME_BASE", ["TB_SC_TIME"])
-        bench.wait(3)
+        try:
+            bench.wait(2)
+            # short.bin ends within the tick that starts it: count from before the command that runs it
+            done = bench.count_events("schedSeq.CS_SequenceComplete")
+            send(Q + ".CS_RUN", ["short.bin", "NO_BLOCK"])
+            send("CdhCore.cmdDisp.CMD_NO_OP")
+            send("CdhCore.health.HLTH_ENABLE", ["ENABLED"])
+            send(S + ".LOAD_TABLE")
+            bench.wait_event("schedSeq.CS_SequenceComplete", 5, base=done)
+            send(T + ".SET_TIME_BASE", ["TB_SC_TIME"])
+            bench.wait(3)
+        except Exception:
+            send(T + ".CLEAR_TIME_BASE")  # a failed procedure must not leave the override set for the next test
+            raise
         send(T + ".CLEAR_TIME_BASE")
         bracket(bench)
         check("event timeBaseSetter.TimeBaseSet(timeBase=TB_SC_TIME) count == 2")
@@ -380,6 +386,8 @@ def test_L2_4(window, send, bench, check, require):
         require("Ref process not restarted since the bench recorded its start", not_restarted)
     with window(231, 232):
         require("STD")
+        # read again: the markers between the windows take longer than the 3 s the pass rule allows for
+        elapsed = elapsed_of(bench)
         send(S + ".SET_ROW", [0, time_value("TB_NONE", elapsed + 12), "START_RELATIVE", "short.bin",
                               "WAIT_FOR_RUNNING"])
         bench.wait(18)
@@ -1337,7 +1345,9 @@ def test_L6_2(window, send, bench, check, require):
         send(S + ".SET_ROW", [0] + abs_row(bench, 6, "short.bin", "WAIT_FOR_RUNNING"))
         bench.wait(12)
         bracket(bench)
-        check("ABS")
+        # not ABS: the ground's own CS_RUN makes one SeqDoneUnexpected, judged below
+        check("event seqSched.TableLoadFailed count == 0")
+        check("event seqSched.CmdRejected count == 0")
         check("event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 2")
         check("event seqSched.SeqDoneUnexpected count == 1")
         check("event seqSched.SeqCompleted count == 1")

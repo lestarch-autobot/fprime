@@ -269,7 +269,7 @@ module Svc {
     telemetry Enabled: bool
 
     @ Row whose sequence was last reported complete; not written until there is one
-    telemetry LastExecutedRow: FwSizeType update on change
+    telemetry LastExecutedRow: FwSizeType
 
     @ Row whose sequence is running or being cancelled; the table row count when none
     telemetry RunningRow: FwSizeType
