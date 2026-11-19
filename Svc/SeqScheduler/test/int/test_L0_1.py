@@ -7,6 +7,7 @@ from seqsched_common import *  # noqa: F401,F403
 def test_L0_1(window, send, bench, check, require):
     with window(100, 101):
         require("STD")
+        require(ONE_CLOCK, one_clock)
         bracket(bench)
         bench.action("manifest_versions")
         send("CdhCore.version.VERSION", ["ALL"])

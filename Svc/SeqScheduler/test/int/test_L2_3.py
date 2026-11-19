@@ -26,9 +26,11 @@ def test_L2_3(window, send, bench, check, require):
     with window(221, 222):
         require("STD")
         send("Ref.timeBaseSetter.SET_TIME_BASE", ["TB_SC_TIME"])
-        bench.wait(24)
-        bracket(bench)
-        send("Ref.timeBaseSetter.CLEAR_TIME_BASE")
+        try:
+            bench.wait(24)
+            bracket(bench)
+        finally:
+            send("Ref.timeBaseSetter.CLEAR_TIME_BASE")  # also after a failed procedure
         check("event seqSched.RowLate(row=0) count == 1")
         check("event seqSched.SeqRun(row=0) count == 0")
         check("event seqSched.SeqRun(row=1, fileName=short.bin) count == 1")

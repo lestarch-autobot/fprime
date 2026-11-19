@@ -61,7 +61,10 @@ _SEEN = set()
 
 
 def _seen(test_id, name):
-    """True from the second call for one test and fault: the fault acts on the first matching command only."""
+    """True from the second call for one test and fault: the fault acts on the first matching command only.
+
+    The state lives as long as the process: `fth run` starts one pytest process per run and runs a test once in
+    it, so a fault planted on the same test in another run starts from an empty set."""
     key = (test_id, name)
     if key in _SEEN:
         return True
@@ -218,8 +221,9 @@ NO_OP_OPCODE = 0x1000000  # CdhCore.cmdDisp.CMD_NO_OP: the only command the sequ
         "L2-17": [
             "event seqSched.EnabledSet(enabled=False) count == 1",
             "event seqSched.EnabledSet(enabled=True) count == 1",
-            "event seqSched.SeqRun(row=0) precedes event seqSched.EnabledSet(enabled=False)",
             "event seqSched.RowSkippedDisabled(row=1) count == 1",
+            "event seqSched.RowSkippedDisabled(row=1, cause=WAITING_AT_DISABLE) count == 1",
+            "event seqSched.RowSkippedDisabled(row=1) precedes event seqSched.EnabledSet(enabled=False)",
             "event seqSched.RowSkippedDisabled count == 1",
             "event seqSched.SeqRun(row=1) count == 0",
             "event seqSched.SeqRun count == 1",

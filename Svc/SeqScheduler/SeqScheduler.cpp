@@ -626,6 +626,7 @@ bool SeqScheduler::loadTable(bool startUp) {
         if (row >= loadedRows) {
             this->m_loadRows[row] = SeqScheduler_Row();
         }
+        // A guard: a decoded row and an empty row are PENDING already
         this->m_loadRows[row].set_state(SeqScheduler_RowState::PENDING);
     }
     this->lock();

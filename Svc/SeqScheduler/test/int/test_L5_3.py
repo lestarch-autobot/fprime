@@ -15,8 +15,8 @@ def test_L5_3(window, send, bench, check, require):
             bench.action("hash_T_BADCRC")
             send("Ref.seqSched.LOAD_TABLE")
             send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
-            send("Ref.seqSched.SET_ROW", [0] + abs_row(bench, 15, "short.bin", "WAIT_FOR_RUNNING"))
-            send("Ref.seqSched.TABLE_FILE_PRM_SET", [T_BADCRC_FILE])
+            send("Ref.seqSched.SET_ROW", [0, abs_time(bench, 15), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
+            send("Ref.seqSched.TABLE_FILE_PRM_SET", ["t_badcrc.tbl"])
             send("Ref.seqSched.LOAD_TABLE")
             bench.wait(20)
             bracket(bench)
@@ -35,7 +35,7 @@ def test_L5_3(window, send, bench, check, require):
         # clean-up window: TABLE_FILE back to the plan value and T-BASE loaded
         with window(521, 522):
             require("both markers present")
-            send("Ref.seqSched.TABLE_FILE_PRM_SET", [T_BASE_FILE])
+            send("Ref.seqSched.TABLE_FILE_PRM_SET", ["seq_sched.tbl"])
             send("Ref.seqSched.LOAD_TABLE")
             bracket(bench)
             check("event seqSched.TableLoaded count == 1")

@@ -13,7 +13,7 @@ def test_L2_11(window, send, bench, check, require):
             bench.action("write_T_BASE")
             send("Ref.seqSched.LOAD_TABLE")
             send("Ref.seqSched.SET_ROW_ENABLED", [3, True])
-            send("Ref.seqSched.SET_ROW", [3] + abs_row(bench, 8, "short2.bin", "WAIT_FOR_RUNNING"))
+            send("Ref.seqSched.SET_ROW", [3, abs_time(bench, 8), "ABSOLUTE", "short2.bin", "WAIT_FOR_RUNNING"])
             bench.wait(14)
             send("Ref.seqSched.SET_ROW_ENABLED", [3, False])
             send("Ref.seqSched.SET_ROW_ENABLED", [3, True])
@@ -34,13 +34,17 @@ def test_L2_11(window, send, bench, check, require):
         with window(291, 292):
             require("STD")
             standard_requires(require, fresh=4)
-            send("Ref.seqSched.SET_ROW", [3] + abs_row(bench, 8, "short2.bin", "WAIT_FOR_RUNNING"))
+            send("Ref.seqSched.SET_ROW", [3, abs_time(bench, 8), "ABSOLUTE", "short2.bin", "WAIT_FOR_RUNNING"])
             bench.wait(12)
             bracket(bench)
             check("ABS")
             check("event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1")
             check("event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1")
             check("last(seqSched.RowsExecuted) == 1")
-    except BaseException:
-        settle(bench)
-        raise
+    finally:
+        # clean-up window: a sequence left running by a failed procedure ends before the next test
+        with window(292, 299):
+            require("both markers present")
+            bench.wait(25)
+            bracket(bench)
+            check("SeqSched samples >= 2")

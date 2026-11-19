@@ -3,8 +3,11 @@
 Each test sends the plan's procedure inside its windows and declares the plan's named checks.
 The verdict is computed from the record at window close; waits are pacing only.
 """
+import ast
 import json
+import os
 import re
+from pathlib import Path
 
 import pytest
 
@@ -27,8 +30,8 @@ PLAN_PARAMS = {
 }
 IDLE = "Ref.schedSeq and Ref.schedSeqB idle at the opening marker"
 PARAMS = "TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker"
-FRESH = "each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent"
-FRESH4 = "each 'FSW time + N s' is taken from an event received <= 4 s before the command is sent"
+FRESH = "each 'FSW time + N s' is taken from the newest recorded event, logged <= 1 s before the reading"
+FRESH4 = "each 'FSW time + N s' is taken from the newest recorded event, logged <= 4 s before the reading"
 
 
 def reqs(numbers):
@@ -41,12 +44,19 @@ def time_value(base, seconds):
     return json.dumps({"timeBase": base, "timeContext": 0, "seconds": int(seconds), "useconds": 0})
 
 
+_READINGS = []  # the test of each FSW time reading of this process, in the order taken
+_JUDGED = {}  # per test, the number of its readings that a window has judged
+
+
 def fsw_now(bench):
     """Seconds of the newest recorded event (0 in a dry run, where nothing is recorded)."""
     rows = bench.action("fsw_now")
     if bench.dry_run and bench.replay_record is None:
         return 0  # a dry run records nothing; a replay is also a dry run of the bench, but it has the readings
-    if not rows or not rows[-1]:
+    if not rows:
+        raise RuntimeError("bench: no FSW time reading (fsw_now printed no event)")
+    _READINGS.append(bench.test_id)  # one evidence row per reading, also for one that failed
+    if not rows[-1]:
         raise RuntimeError("bench: no FSW time reading (fsw_now printed no event)")
     return int(rows[-1]["sec"])
 
@@ -54,18 +64,30 @@ def fsw_now(bench):
 def fresh_times(limit=1.0):
     """The FSW times read in this window are at most `limit` seconds old.
 
-    A reading is of this window when the event it names lies at or after the START marker and before the END
-    marker. Evidence is kept per test, not per window: assigning the rows by event time makes a live run and a
-    replay judge the same rows. Every window that reads an FSW time states this rule, so each reading is judged
-    once. A window with no reading of its own fails; `fsw_now` raises on a reading that failed.
+    Built when the window opens and judged when it closes: the readings of the window are those taken between
+    the two, by their position among the readings of the test. A live run and a replay take the readings in
+    the same order, so both judge the same rows; the time of a reading plays no part. Every window that reads
+    an FSW time states this rule. A window with no reading of its own fails, and so does one that finds
+    readings of the test before it that no window judged; `fsw_now` raises on a reading that failed.
     """
+    start = len(_READINGS)
+
     def judge(h):
+        end = len(_READINGS)
+        if end <= start:
+            return (False, "no FSW time reading in the window")
+        test, base = _READINGS[start], start
+        while base > 0 and _READINGS[base - 1] == test:
+            base -= 1
         rows = h.evidence("fsw_now")
-        first, last = h.window.start_marker.fsw, h.window.end_marker.fsw
-        mine = [r for r in rows if r and first <= r["sec"] + r["usec"] / 1e6 < last]
-        ages = [r["age_s"] for r in mine]
-        return (len(mine) > 0 and max(ages) <= limit,
-                f"ages {ages} of {len(rows)} FSW time readings in the test")
+        mine = rows[start - base:end - base]
+        unjudged = (start - base) - _JUDGED.get(test, 0)
+        _JUDGED[test] = max(_JUDGED.get(test, 0), end - base)
+        ages = [r["age_s"] for r in mine if r]
+        ok = len(mine) == end - start and len(ages) == len(mine) and max(ages, default=limit + 1) <= limit
+        return (ok and unjudged <= 0,
+                f"ages {ages} of readings {start - base + 1}..{end - base} of {len(rows)} in the test; "
+                f"{max(unjudged, 0)} earlier readings judged by no window")
     return judge
 
 
@@ -90,16 +112,26 @@ def sequencers_idle(h):
     return (not any(busy.values()), f"running at the opening marker: {sorted(q for q, b in busy.items() if b)}")
 
 
+def _raw_args(raw):
+    """The recorded argument list of a command, each argument as text; None when it is not a list."""
+    try:
+        args = ast.literal_eval(raw.strip())
+    except (ValueError, SyntaxError):
+        return None
+    return [str(a) for a in args] if isinstance(args, list) else None
+
+
 def plan_params(h):
-    """The last parameter set command of each plan parameter since the image started carries the plan value."""
-    opening = h.window.start_marker
-    start = min((e.fsw for e in h.record.events if e.epoch == opening.epoch), default=0.0)
+    """No parameter set command of the record before this window left a plan parameter off its plan value.
+
+    The image starts with the plan values (no parameter is saved), so the last set command before the window,
+    if any, decides; its recorded argument list is compared whole, not searched."""
     last = {}
     for c in h.record.commands:
         if c.short in PLAN_PARAMS and c.idx < h.window.cmds[0].idx:
             last[c.short] = c
-    wrong = [f"{k}={c.raw}" for k, c in last.items() if str(PLAN_PARAMS[k]) not in c.raw]
-    return (not wrong, f"start at {start}; off plan: {wrong}")
+    wrong = [f"{k}={c.raw}" for k, c in last.items() if _raw_args(c.raw) != [str(PLAN_PARAMS[k])]]
+    return (not wrong, f"{len(last)} plan parameters set before the window; off plan: {wrong}")
 
 
 def standard_requires(require, fresh=False):
@@ -154,7 +186,8 @@ def command_time(h, name, nth=0, window=None):
     if len(rows) <= nth:
         return None
     opcode = rows[nth].opcode
-    sent = [e for e in w.events("cmdDisp.OpCodeDispatched") if f"0x{opcode:x}" in e.text.lower()]
+    sent = [e for e in w.events("cmdDisp.OpCodeDispatched")
+            if [int(code, 16) for code in re.findall(r"0x([0-9a-f]+)", e.text.lower())][:1] == [opcode]]
     return sent[nth].fsw if len(sent) > nth else None
 
 
@@ -174,15 +207,30 @@ def bracket(bench, n=2):
     bench.wait_samples(SAMPLE, n)
 
 
+def manifest_in_hand():
+    """Describe strings of the manifest given to this `fth run` or replay (named in FTH_MANIFEST), or None."""
+    path = os.environ.get("FTH_MANIFEST")
+    if not path or not Path(path).is_file():
+        return None
+    repos = json.loads(Path(path).read_text(encoding="utf-8")).get("repos", [])
+    return sorted({str(r["describe"]) for r in repos if r.get("describe")})
+
+
 def version_strings_match(h):
-    """Every describe string of the manifest's repositories is in the text of a version event of the window."""
+    """Every describe string of the manifest in hand is, whole, the version a version event of the window names.
+
+    The strings the bench read from the manifest in the live run are in the record; a replay compares them with
+    the manifest it was given, so a record judged against another manifest fails."""
     rows = [r for r in h.evidence("manifest_versions") if r]
-    wanted = rows[0].get("describe", []) if rows else []
-    texts = [e.text for e in h.window.ev if ".version." in e.name]
-    if not wanted or not texts:
-        return (False, f"{len(wanted)} manifest describe strings, {len(texts)} version events")
-    missing = [d for d in wanted if not any(d in t for t in texts)]
-    return (not missing, f"{len(texts)} version events; manifest strings not found: {missing}")
+    recorded = sorted(rows[0].get("describe", [])) if len(rows) == 1 else []
+    wanted = manifest_in_hand()
+    named = [found.group(1) for e in h.window.ev if ".version." in e.name
+             for found in [re.search(r"\[([^\]]*)\]\s*$", e.text)] if found]
+    if not recorded or wanted is None or not named:
+        return (False, f"recorded manifest strings {recorded}, manifest in hand {wanted}, {len(named)} version events")
+    missing = [d for d in wanted if d not in named]
+    return (recorded == wanted and not missing,
+            f"manifest in hand {wanted}, recorded {recorded}, version events name {sorted(set(named))}")
 
 
 
@@ -195,9 +243,20 @@ SPAN_RECORDS = ("at least one record from each of CdhCore.cmdDisp, CdhCore.healt
 SPAN_BASE = ("every event and channel record of CdhCore.cmdDisp, CdhCore.health, Ref.seqSched, Ref.schedSeq and "
              "Ref.systemResources time-tagged more than 1 s after the first TimeBaseSet and more than 1 s before "
              "TimeBaseCleared carries TB_SC_TIME, and no record of the window more than 1 s outside that span does")
+ACTIVE_ROW = "the {}.ActiveRow event carries the time of row 1's SET_ROW command and its file name short.bin"
+ONE_CLOCK = "bench and FSW share one clock: the FSW seconds of both marker events are within 2 s of their ground receive time"
+SPAN_STAMPED = "every event of the override span has a ground receive time"
+RUNNING_AT_ENABLES = "long.bin is running on Ref.schedSeq when each SET_ENABLED command of the window is handled"
 SPAN_RECEIVE = "FSW seconds of every event in the override span are within 2 s of its ground receive time"
 SPAN_SECONDS = ("FSW seconds of every record in the override span lie between those of the last record before "
                 "the span and the first record after it")
+
+
+def one_clock(h):
+    """A bench condition: several helpers compare a bench wall-clock time with an FSW time directly."""
+    marks = [h.window.start_marker, h.window.end_marker]
+    apart = [None if m.recv is None else abs(m.fsw - m.recv) for m in marks]
+    return (all(a is not None and a <= 2.0 for a in apart), f"FSW time minus receive time of the markers: {apart}")
 
 
 def no_start_up(h):
@@ -237,14 +296,37 @@ def span_base(h):
             f"{len(inside)} inside, {len(wrong_in)} not TB_SC_TIME; {len(outside)} outside, {len(wrong_out)} TB_SC_TIME")
 
 
+def span_events(h):
+    """The events of the override span: those whose time tag carries the override's base (span_base judges that)."""
+    return [e for e in h.window.ev if e.base == TB["TB_SC_TIME"]]
+
+
+def span_stamped(h):
+    """A bench condition: an event the recorder did not stamp cannot be judged by span_receive."""
+    inside = span_events(h)
+    unstamped = [e.line for e in inside if e.recv is None]
+    return (bool(inside) and not unstamped, f"{len(inside)} events, {len(unstamped)} without a receive time")
+
+
 def span_receive(h):
     """The approved L0-2 rule: the override changes the time base of a time tag, not its seconds."""
-    inside = [e for e in h.window.ev if e.base == TB["TB_SC_TIME"]]
-    unstamped = [e.line for e in inside if e.recv is None]
-    off = [e.line for e in inside if e.recv is not None and abs(e.fsw - e.recv) > 2.0]
-    worst = max((abs(e.fsw - e.recv) for e in inside if e.recv is not None), default=0.0)
-    return (bool(inside) and not unstamped and not off,
-            f"{len(inside)} events, {len(unstamped)} without a receive time, {len(off)} over 2 s, largest {worst:.3f} s")
+    inside = [e for e in span_events(h) if e.recv is not None]
+    off = [e.line for e in inside if abs(e.fsw - e.recv) > 2.0]
+    worst = max((abs(e.fsw - e.recv) for e in inside), default=0.0)
+    return (bool(inside) and not off, f"{len(inside)} events, {len(off)} over 2 s, largest {worst:.3f} s")
+
+
+def enables_while_running(row):
+    """A bench condition of L2-17: every SET_ENABLED was handled between the run of `row` and its completion."""
+    def judge(h):
+        start = row_event_time(h, "seqSched.SeqRun", row)
+        end = row_event_time(h, "seqSched.SeqCompleted", row)
+        sets = [e.fsw for e in h.window.events("seqSched.EnabledSet")]
+        if start is None or end is None or not sets:
+            return (False, f"run {start}, completion {end}, {len(sets)} EnabledSet")
+        outside = [t for t in sets if not start < t < end]
+        return (not outside, f"{len(sets)} EnabledSet, {len(outside)} outside {start:.3f}..{end:.3f}")
+    return judge
 
 
 def span_seconds(h):
@@ -406,6 +488,19 @@ def row_event_time(h, name, row):
     return rows[0].fsw if rows else None
 
 
+def active_row_is(instance, row, file_name):
+    """The ActiveRow report of `row` names the time its last SET_ROW of the window carries, and its file."""
+    def judge(h):
+        reports = [e for e in h.window.events(f"{instance}.ActiveRow") if e.args.get("row") == row]
+        sent = [c for c in h.window.cmds if c.short == f"{instance}.SET_ROW" and c.args[:1] == [row]]
+        found = re.search(r"'seconds': (\d+)", str(reports[0].args.get("timeDue"))) if reports else None
+        if found is None or not sent or len(sent[-1].args) < 3:
+            return (False, f"{len(reports)} reports, {len(sent)} SET_ROW commands")
+        return (int(found.group(1)) == sent[-1].args[2] and reports[0].args.get("fileName") == file_name,
+                f"reported {found.group(1)} {reports[0].args.get('fileName')}, commanded {sent[-1].args[2]}")
+    return judge
+
+
 def run_gap(first, second, low):
     def judge(h):
         a, b = run_time(h, first), run_time(h, second)
@@ -432,26 +527,13 @@ def sample_while_running(row, waiting):
 
 
 
-def abs_row(bench, offset, file_name, policy):
-    """SET_ROW time and trailing arguments of an ABSOLUTE row due `offset` s after the newest recorded event."""
-    return [time_value("TB_WORKSTATION_TIME", fsw_now(bench) + offset), "ABSOLUTE", file_name, policy]
-
-
+def abs_time(bench, offset):
+    """SET_ROW time of an ABSOLUTE row due `offset` s after the newest recorded event."""
+    return time_value("TB_WORKSTATION_TIME", fsw_now(bench) + offset)
 
 
 YEAR_2100 = 4102444800
 
-
-
-
-
-
-def settle(bench):
-    """The plan's `finally` step: let a sequence left running by a failed procedure end before the next test."""
-    try:
-        bench.wait_event("schedSeq.CS_SequenceComplete", 25)
-    except Exception:  # noqa: BLE001 - the wait is pacing only; the next test's IDLE require judges the state
-        pass
 
 
 def samples_b(h):
@@ -500,7 +582,7 @@ def run_after_restart(row, low, high):
         start, run = [r for r in h.evidence("ref_start") if r], run_time(h, row)
         if len(start) < 2 or run is None:
             return (False, f"{len(start)} recorded starts, run {run}")
-        return (low <= run - start[-1]["start"] <= high, f"{run - start[-1]['start']:.3f} s")
+        return (low <= run - start[1]["start"] <= high, f"{run - start[1]['start']:.3f} s")
     return judge
 
 
@@ -524,7 +606,7 @@ def file_unchanged(action):
     """The file read by a bench action has the same digest at its first and last reading in the test."""
     def judge(h):
         rows = [r for r in h.evidence(action) if r]
-        return (len(rows) >= 2 and rows[0]["sha256"] == rows[-1]["sha256"] and rows[0]["size"] > 0,
+        return (len(rows) == 2 and rows[0]["sha256"] == rows[1]["sha256"] and rows[0]["size"] > 0,
                 f"{len(rows)} readings: {[r['sha256'][:8] for r in rows]}")
     return judge
 
@@ -564,14 +646,14 @@ def product_is(want, states=None, skip=()):
     """The test's last decoded data product holds the wanted rows (and row states) in index order."""
     def judge(h):
         rows = [r for r in h.evidence("read_dp") if r]
-        if not rows or rows[-1]["rows"] is None:
-            return (False, f"no decoded product: {rows[-1]['error'] if rows else 'no evidence'}")
-        got = rows[-1]["rows"]
+        if len(rows) != 1 or rows[0]["rows"] is None:
+            return (False, f"no decoded product: {rows[0]['error'] if len(rows) == 1 else str(len(rows)) + ' read_dp rows, one wanted'}")
+        got = rows[0]["rows"]
         wrong = differing(got, want, FIELDS, skip)
         if states is not None and not wrong:
             wrong = [f"row {i} state: {got[i].get('state')!r} != {states[i]!r}" for i in range(len(want))
                      if got[i].get("state") != states[i]]
-        return (not wrong, f"{rows[-1]['file']}: {wrong[:4] if wrong else 'as wanted'}")
+        return (not wrong, f"{rows[0]['file']}: {wrong[:4] if wrong else 'as wanted'}")
     return judge
 
 
@@ -579,7 +661,7 @@ def new_product(h):
     """The product decoded was written in this test: more product files after the dump than before it."""
     before = [r for r in h.evidence("count_dp") if r]
     after = [r for r in h.evidence("read_dp") if r]
-    return (bool(before) and bool(after) and after[-1]["files"] > before[0]["files"],
+    return (len(before) == 1 and len(after) == 1 and after[0]["files"] > before[0]["files"],
             f"files before {[r['files'] for r in before]}, after {[r['files'] for r in after]}")
 
 
@@ -604,9 +686,9 @@ def t_final():
 
 def table_is_final(h):
     rows = [r for r in h.evidence("read_table") if r]
-    if not rows or not rows[-1]["valid"]:
-        return (False, f"table file not valid: {rows[-1]['error'] if rows else 'no evidence'}")
-    got = rows[-1]["rows"]
+    if len(rows) != 1 or not rows[0]["valid"]:
+        return (False, f"table file not valid: {rows[0]['error'] if len(rows) == 1 else str(len(rows)) + ' read_table rows, one wanted'}")
+    got = rows[0]["rows"]
     wrong = differing(got, t_final(), FIELDS, PAST_TIMES)
     if not wrong:
         wrong = [f"row {i} carries a state" for i in range(16) if "state" in got[i]]

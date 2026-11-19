@@ -30,6 +30,7 @@ def test_L0_2(window, send, bench, check, require):
         require(SPAN_RECORDS, span_has_records)
         check(SPAN_BASE, span_base)
         check(SPAN_SECONDS, span_seconds)
+        require(SPAN_STAMPED, span_stamped)
         check(SPAN_RECEIVE, span_receive)
         check("the time tag of the second timeBaseSetter.TimeBaseSet event carries TB_SC_TIME", second_set_base)
         check("event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1")

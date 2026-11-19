@@ -19,8 +19,10 @@ def test_L2_12(window, send, bench, check, require):
         send("Ref.seqSched.SET_ROW", [0, time_value("TB_SC_TIME", elapsed + 20), "TIME_BASE_RELATIVE", "short.bin",
                               "WAIT_FOR_RUNNING"])
         send("Ref.timeBaseSetter.SET_TIME_BASE", ["TB_SC_TIME"])
-        bench.wait(3)
-        send("Ref.timeBaseSetter.CLEAR_TIME_BASE")
+        try:
+            bench.wait(3)
+        finally:
+            send("Ref.timeBaseSetter.CLEAR_TIME_BASE")  # also after a failed procedure
         bench.wait(20)
         bracket(bench)
         check("ABS")

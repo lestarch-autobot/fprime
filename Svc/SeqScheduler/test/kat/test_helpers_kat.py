@@ -1,8 +1,11 @@
 """Known-answer tests of the helper predicates of the SeqScheduler system tests.
 
 Each helper of ../int/seqsched_common.py and ../int/planted_faults.py is given a small hand-made
-record on which it must hold and one on which it must not. Run: `pytest Svc/SeqScheduler/test/kat`.
+record on which it must hold and one on which it must not. The rows are hand-made; the record, its
+windows and the helper context are the tool's own (fth.replay.Record and Window, fth.engine.HelperContext),
+so a helper is judged on the rows the tool would hand it. Run: `pytest Svc/SeqScheduler/test/kat`.
 """
+import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -13,28 +16,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "int"))
 
 import seqsched_common as sc  # noqa: E402
 from fth.registry import load_helpers_module  # noqa: E402
-from fth.replay import ChannelRow, CommandRow, EventRow  # noqa: E402
+from fth.engine import HelperContext  # noqa: E402
+from fth.replay import ChannelRow, CommandRow, EventRow, Record, Window  # noqa: E402
 
 HELPERS = load_helpers_module(Path(__file__).resolve().parent.parent / "int" / "planted_faults.py").helpers
 NO_OP_OPCODE = 0x1000000  # CdhCore.cmdDisp.CMD_NO_OP
+MARK_OPCODE = 0x1000001  # CdhCore.cmdDisp.CMD_NO_OP_STRING
 
 T0 = 1000.0  # FSW time of the opening marker
 WS, SC_TIME = 2, 3
-
-
-class Win:
-    """The part of fth.replay.Window the helpers use."""
-
-    def __init__(self, ev, ch, cmds):
-        self.ev, self.ch, self.cmds = ev, ch, cmds
-        self.start_marker, self.end_marker = ev[0], ev[-1]
-
-    def events(self, short=None, **args):
-        return [e for e in self.ev if (short is None or e.short == short)
-                and all(e.args.get(k) == v for k, v in args.items())]
-
-    def channel(self, short):
-        return [c for c in self.ch if c.short == short]
 
 
 class Rec:
@@ -60,17 +50,26 @@ class Rec:
         return row
 
     def mark(self, marker, fsw):
+        self.cmd("cmdDisp.CMD_NO_OP_STRING", MARK_OPCODE, raw=f"['{marker}']")
         return self.ev("cmdDisp.NoOpStringReceived", fsw, id=marker)
 
+    def record(self):
+        return Record(Path("kat"), self.events, self.channels, self.commands,
+                      marker_event="cmdDisp.NoOpStringReceived", marker_command="cmdDisp.CMD_NO_OP_STRING",
+                      evidence=[{"test": "KAT", "action": action, "data": row}
+                                for action, rows in self.evidence.items() for row in rows])
+
     def win(self, start, end):
-        """Window between two marker events: events and channels by time, commands given by the caller."""
-        a, b = self.events.index(start), self.events.index(end)
-        return Win(self.events[a:b + 1], [c for c in self.channels if start.fsw <= c.fsw <= end.fsw], list(self.commands))
+        """The fth.replay.Window between two marker events, sliced by the tool as it slices a record."""
+        w = Window(self.record(), start.args["id"], end.args["id"])
+        # on a record whose dispatcher logs the dispatch first, the tool opens the window on the marker's dispatch row
+        assert w.ok and w.end_marker is end and start in w.ev[:2]
+        return w
 
     def ctx(self, window, **windows):
-        record = SimpleNamespace(events=self.events, channels=self.channels, commands=self.commands)
-        return SimpleNamespace(record=record, window=window, windows=dict(windows) or {"W": window},
-                               evidence=lambda action: self.evidence.get(action, []))
+        record = self.record()
+        test = SimpleNamespace(id="KAT")
+        return HelperContext(record, None, test, window, dict(windows) or {"W": window})
 
 
 def simple(build=None, evidence=None):
@@ -93,29 +92,51 @@ def row_set(rec, row, seconds, fsw):
 
 
 def test_fresh_times():
-    def reading(age, at):
-        return {"age_s": age, "sec": int(at), "usec": int(round((at - int(at)) * 1e6))}
+    class Bench:
+        dry_run, replay_record = False, None
 
-    inside, inside2 = reading(0.4, T0 + 5), reading(1.0, T0 + 20.5)
-    assert holds(sc.fresh_times()(simple(evidence={"fsw_now": [inside, inside2]})))
-    assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [inside, reading(1.5, T0 + 20)]})))
-    # A stale reading of another window of the test is not this window's: before START, at or after END
-    assert holds(sc.fresh_times()(simple(evidence={"fsw_now": [reading(1.5, T0 - 1), inside, reading(1.5, T0 + 60)]})))
-    assert holds(sc.fresh_times()(simple(evidence={"fsw_now": [reading(0.2, T0)]})))  # at START: this window's
-    assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [reading(1.5, T0)]})))
-    # No reading of its own: a failed reading, readings of other windows only, none at all
-    assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [None]})))
-    assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [reading(0.1, T0 + 60)]})))
-    assert not holds(sc.fresh_times()(simple()))
-    # A failed reading has no time and no window; fsw_now stops the test there
-    assert holds(sc.fresh_times()(simple(evidence={"fsw_now": [inside, None]})))
-    # The 4 s form of the windows opened by the END marker of the window before
-    assert holds(sc.fresh_times(4.0)(simple(evidence={"fsw_now": [reading(1.6, T0 + 1), reading(4.0, T0 + 2)]})))
-    assert not holds(sc.fresh_times(4.0)(simple(evidence={"fsw_now": [reading(1.6, T0 + 1), reading(4.1, T0 + 2)]})))
+        def __init__(self, test_id):
+            self.test_id, self.rows = test_id, []
+
+        def action(self, name):
+            return self.rows[-1:]
+
+    def window(bench, ages, limit=1.0, before=()):
+        """Readings `before` the window opens, then one window that takes a reading of each age in `ages`."""
+        def take(age):
+            bench.rows.append(None if age is None else {"age_s": age, "sec": 7, "usec": 0})
+            try:
+                sc.fsw_now(bench)
+            except RuntimeError:
+                pass
+        for age in before:
+            take(age)
+        judge = sc.fresh_times(limit)
+        for age in ages:
+            take(age)
+        return judge(simple(evidence={"fsw_now": list(bench.rows)}))
+
+    assert holds(window(Bench("T-1"), [0.4, 1.0]))
+    assert not holds(window(Bench("T-2"), [0.4, 1.5]))
+    assert not holds(window(Bench("T-3"), []))  # no reading of its own
+    assert not holds(window(Bench("T-4"), [0.4, None]))  # a failed reading
+    assert holds(window(Bench("T-5"), [1.6, 4.0], limit=4.0))
+    assert not holds(window(Bench("T-5b"), [1.6, 4.1], limit=4.0))
+    # two windows of one test: each judges its own readings, by position, whatever their times
+    two = Bench("T-6")
+    assert holds(window(two, [0.2, 0.3]))
+    assert not holds(window(two, [1.5]))
+    assert holds(window(two, [0.9]))
+    # another test's stale readings earlier in the process are not this test's
+    assert holds(window(Bench("T-7"), [0.5]))
+    # a reading of the test taken before the window opened, which no window judged
+    assert not holds(window(Bench("T-8"), [0.5], before=[0.1]))
 
 
 def test_fsw_now_raises_on_a_failed_reading():
     class Bench:
+        test_id = "T-0"
+
         def __init__(self, rows, dry_run=False, replay_record=None):
             self.rows, self.dry_run, self.replay_record = rows, dry_run, replay_record
 
@@ -155,7 +176,12 @@ def test_plan_params():
         ctx.window.cmds = rec.commands[1:]
         return ctx
     assert holds(sc.plan_params(with_set("['1']")))
+    assert holds(sc.plan_params(with_set("[1]")))
     assert not holds(sc.plan_params(with_set("['5']")))
+    assert not holds(sc.plan_params(with_set("['10']")))  # holds the plan value as a substring only
+    assert not holds(sc.plan_params(with_set("['1', '1']")))
+    assert not holds(sc.plan_params(with_set("not a list")))
+    assert holds(sc.plan_params(simple()))  # no parameter command before the window: the start-up values stand
 
 
 def test_run_not_before_row_time():
@@ -192,21 +218,52 @@ def test_command_time_and_run_after():
         return simple(build)
     assert sc.command_time(case(T0 + 10), "seqSched.SET_ROW") == T0 + 2
     assert sc.command_time(case(T0 + 10), "seqSched.SET_ROW", 1) is None
+
+    def prefix(rec):  # an opcode that is the leading digits of another's is not that command
+        rec.cmd("seqSched.SET_ROW", 0x10000a0)
+        rec.ev("cmdDisp.OpCodeDispatched", T0 + 2, "Opcode 0x10000a04 dispatched to port 0")
+    assert sc.command_time(simple(prefix), "seqSched.SET_ROW") is None
     assert holds(sc.run_after(0, "seqSched.SET_ROW", 8, 12)(case(T0 + 12)))
     assert not holds(sc.run_after(0, "seqSched.SET_ROW", 8, 12)(case(T0 + 9)))
     assert not holds(sc.run_after(0, "seqSched.SET_ROW", 8, 12)(case(T0 + 15)))
     assert not holds(sc.run_after(0, "seqSched.LOAD_TABLE", 8, 12)(case(T0 + 12)))
 
 
-def test_version_strings_match():
+def test_version_strings_match(tmp_path, monkeypatch):
+    def manifest(*describe):
+        path = tmp_path / "manifest.json"
+        path.write_text(json.dumps({"repos": [{"describe": d} for d in describe]}))
+        monkeypatch.setenv("FTH_MANIFEST", str(path))
+
     def case(text, wanted=({"describe": ["608087211"]},)):
         return simple(lambda rec: rec.ev("version.FrameworkVersion", T0 + 1, text),
                       {"manifest_versions": list(wanted)})
-    assert holds(sc.version_strings_match(case("Framework version: v4.0.0-12-g608087211")))
-    assert not holds(sc.version_strings_match(case("Framework version: bogus")))
-    assert not holds(sc.version_strings_match(case("Framework version: 608087211", wanted=[{"describe": []}])))
-    assert not holds(sc.version_strings_match(case("Framework version: 608087211", wanted=[])))
+    manifest("608087211")
+    assert holds(sc.version_strings_match(case("Framework Version: [608087211]")))
+    assert not holds(sc.version_strings_match(case("Framework Version: [bogus]")))
+    assert not holds(sc.version_strings_match(case("Framework Version: [v4.0.0-12-g608087211]")))  # not the whole string
+    assert not holds(sc.version_strings_match(case("Framework Version: 608087211")))  # no version named
+    assert not holds(sc.version_strings_match(case("Framework Version: [608087211]", wanted=[{"describe": []}])))
+    assert not holds(sc.version_strings_match(case("Framework Version: [608087211]", wanted=[])))
     assert not holds(sc.version_strings_match(simple(evidence={"manifest_versions": [{"describe": ["608087211"]}]})))
+    # the record judged against another manifest than the one of its live run
+    manifest("736179b67")
+    assert not holds(sc.version_strings_match(case("Framework Version: [608087211]")))
+    assert not holds(sc.version_strings_match(case("Framework Version: [736179b67]")))
+    # no manifest in hand
+    monkeypatch.delenv("FTH_MANIFEST")
+    assert not holds(sc.version_strings_match(case("Framework Version: [608087211]")))
+
+
+def test_one_clock():
+    def case(start, end):
+        ctx = simple()
+        ctx.window.start_marker.recv, ctx.window.end_marker.recv = start, end
+        return ctx
+    assert holds(sc.one_clock(case(T0 + 0.01, T0 + 62.0)))
+    assert not holds(sc.one_clock(case(T0 + 0.01, T0 + 62.1)))
+    assert not holds(sc.one_clock(case(T0 - 3600, T0 + 60 - 3600)))  # the bench an hour behind
+    assert not holds(sc.one_clock(case(None, T0 + 60)))  # a marker without a receive time
 
 
 def test_no_start_up():
@@ -235,10 +292,38 @@ def test_span_receive():
                 rec.ev("seqSched.RowSet", T0 + 20 + i, base=SC_TIME).recv = None if offset is None else T0 + 20 + i + offset
         return simple(build)
     assert holds(sc.span_receive(case([0.01, 1.9, -1.9])))
+    assert holds(sc.span_receive(case([2.0])))  # at the limit
     assert not holds(sc.span_receive(case([0.01, 2.1])))  # seconds 2.1 s behind the receive time
     assert not holds(sc.span_receive(case([0.01, -2.1])))
-    assert not holds(sc.span_receive(case([0.01, None])))  # an event the recorder did not stamp
     assert not holds(sc.span_receive(case([])))  # no event in the span
+    assert not holds(sc.span_receive(case([None])))  # nothing to judge
+    # an event the recorder did not stamp is a bench condition, judged by span_stamped
+    assert holds(sc.span_receive(case([0.01, None])))
+    assert holds(sc.span_stamped(case([0.01, 2.5])))
+    assert not holds(sc.span_stamped(case([0.01, None])))
+    assert not holds(sc.span_stamped(case([])))
+    assert len(sc.span_events(case([0.01, None]))) == 2
+
+
+def test_enables_while_running():
+    def case(sets, run=T0 + 10, done=T0 + 40):
+        def build(rec):
+            if run is not None:
+                rec.ev("seqSched.SeqRun", run, row=0)
+            for fsw in sets:
+                rec.ev("seqSched.EnabledSet", fsw)
+            if done is not None:
+                rec.ev("seqSched.SeqCompleted", done, row=0)
+            rec.ev("seqSched.SeqRun", T0 + 5, row=3)  # another row's run is not the bound
+        return simple(build)
+    assert holds(sc.enables_while_running(0)(case([T0 + 20, T0 + 22])))
+    assert holds(sc.enables_while_running(0)(case([T0 + 10.001, T0 + 39.999])))
+    assert not holds(sc.enables_while_running(0)(case([T0 + 9, T0 + 22])))  # disabled before long.bin ran
+    assert not holds(sc.enables_while_running(0)(case([T0 + 20, T0 + 41])))  # enabled after it completed
+    assert not holds(sc.enables_while_running(0)(case([T0 + 20, T0 + 40])))  # at the completion: not inside
+    assert not holds(sc.enables_while_running(0)(case([])))
+    assert not holds(sc.enables_while_running(0)(case([T0 + 20], run=None)))
+    assert not holds(sc.enables_while_running(0)(case([T0 + 20], done=None)))
 
 
 def test_override_span_helpers():
@@ -253,6 +338,19 @@ def test_override_span_helpers():
     assert not holds(sc.span_seconds(span(inside_fsw=T0 + 50)))  # seconds altered: later than the records after
     assert not holds(sc.span_seconds(span(inside_fsw=T0 + 2)))  # earlier than the records before
     assert not holds(sc.span_seconds(simple()))
+    # missing evidence: a span with no record of the other base before it, inside it, after it
+    for gone in ("before", "inside", "after"):
+        ctx = span()
+        lo, hi = sc.override_span(ctx)
+        keep = {"before": lambda r: not (r.fsw < lo and r.base != SC_TIME),
+                "inside": lambda r: r.base != SC_TIME,
+                "after": lambda r: not (r.fsw > hi and r.base != SC_TIME)}[gone]
+        for r in ctx.window.ev:  # the two events that bound the span stay, in the other base
+            if r.short.startswith("timeBaseSetter.") and gone == "inside":
+                r.base = WS
+        ctx.window.ev = [r for r in ctx.window.ev if keep(r) or r.short.startswith("timeBaseSetter.")]
+        ctx.window.ch = [r for r in ctx.window.ch if keep(r)]
+        assert not holds(sc.span_seconds(ctx)), gone
 
 
 def test_second_set_base():
@@ -291,6 +389,10 @@ def test_row1_after_its_set_row():
         return two_windows(build1, lambda rec: rec.ev("seqSched.SeqRun", run, row=1))
     assert holds(sc.row1_after_its_set_row(case(T0 + 34)))
     assert not holds(sc.row1_after_its_set_row(case(T0 + 42)))
+    assert holds(sc.row1_after_its_set_row(case(T0 + 31)))  # 27 s after the second SET_ROW: the lower limit
+    assert holds(sc.row1_after_its_set_row(case(T0 + 37)))  # 33 s: the upper limit
+    assert not holds(sc.row1_after_its_set_row(case(T0 + 30.999)))
+    assert not holds(sc.row1_after_its_set_row(case(T0 + 37.001)))
     assert not holds(sc.row1_after_its_set_row(two_windows()))
 
 
@@ -367,6 +469,17 @@ def test_run_after_w1_sample():
     assert holds(sc.run_after_w1_sample(10, 20)(case(1020.0)))
     assert not holds(sc.run_after_w1_sample(10, 20)(case(1030.0)))
     assert not holds(sc.run_after_w1_sample(10, 20)(case(1010.0)))
+    assert holds(sc.run_after_w1_sample(10, 20)(case(1015.0)))  # at the lower limit
+    assert holds(sc.run_after_w1_sample(10, 20)(case(1025.0)))  # at the upper limit
+    assert not holds(sc.run_after_w1_sample(10, 20)(case(1014.999)))
+    assert not holds(sc.run_after_w1_sample(10, 20)(case(1025.001)))
+    no_sample = case(1020.0)
+    no_sample.evidence = lambda action: []
+    assert not holds(sc.run_after_w1_sample(10, 20)(no_sample))  # no NextTimeDue sample read in W1
+    w = simple()
+    w.evidence = lambda action: [{"value": due(2000), "sec": 1005, "usec": 0}]
+    w.windows = {"W1": w.window, "W3": w.window}
+    assert not holds(sc.run_after_w1_sample(10, 20)(w))  # no run of row 0 in W3
 
 
 def test_last_before_marker():
@@ -379,6 +492,25 @@ def test_last_before_marker():
     assert holds(sc.last_before_marker("seqSched.RowsWaiting", 150, 1)(case(1)))
     assert not holds(sc.last_before_marker("seqSched.RowsWaiting", 150, 1)(case(0)))
     assert not holds(sc.last_before_marker("seqSched.RowsWaiting", 151, 1)(case(1)))
+
+
+def test_active_row_is():
+    def case(reported=T0 + 30, name="short.bin", sets=((1, T0 + 30),), report_row=1):
+        def build(rec):
+            for row, seconds in sets:
+                rec.cmd("seqSched.SET_ROW", 1, [row, 0, int(seconds), 0])
+            rec.ev("seqSched.ActiveRow", T0 + 12, row=report_row, fileName=name,
+                   timeDue=f"{{'timeBase': 'TB_WORKSTATION_TIME', 'timeContext': 0, 'seconds': {int(reported)}, 'useconds': 0}}")
+        return simple(build)
+    judge = sc.active_row_is("seqSched", 1, "short.bin")
+    assert holds(judge(case()))
+    assert not holds(judge(case(reported=T0 + 31)))  # another time
+    assert not holds(judge(case(name="long.bin")))  # another file
+    assert not holds(judge(case(report_row=0)))  # no report of row 1
+    assert not holds(judge(case(sets=((0, T0 + 30),))))  # no SET_ROW of row 1
+    assert holds(judge(case(sets=((1, T0 + 5), (0, T0 + 9), (1, T0 + 30)))))  # the last SET_ROW of the row counts
+    assert not holds(judge(case(sets=((1, T0 + 30), (1, T0 + 5)))))
+    assert not holds(sc.active_row_is("seqSchedB", 1, "short.bin")(case()))  # the other instance
 
 
 def test_run_gap():
@@ -407,6 +539,14 @@ def test_sample_while_running():
     # The two channels of one tick are microseconds apart; those of two ticks are not paired
     assert holds(sc.sample_while_running(2, 1)(case(1, 2, apart=0.000004)))
     assert not holds(sc.sample_while_running(2, 1)(case(1, 2, apart=1.0)))
+    assert holds(sc.sample_while_running(2, 1)(case(1, 2, apart=0.499)))  # just inside the pairing limit
+    assert not holds(sc.sample_while_running(2, 1)(case(1, 2, apart=0.5)))  # at it: not paired
+    assert not holds(sc.sample_while_running(2, 1)(case(1, 2, at=T0 + 10)))  # at the run: not inside the span
+    assert not holds(sc.sample_while_running(2, 1)(case(1, 2, at=T0 + 20)))  # at the completion
+    assert not holds(sc.sample_while_running(2, 1)(simple()))  # no run, no completion
+    only_run = simple(lambda rec: (rec.ev("seqSched.SeqRun", T0 + 10, row=2), rec.ch("seqSched.RowsWaiting", T0 + 15, 1),
+                                   rec.ch("seqSched.RunningRow", T0 + 15, 2)))
+    assert not holds(sc.sample_while_running(2, 1)(only_run))  # no completion in the window
 
 
 def test_samples_b():
@@ -443,6 +583,8 @@ def test_run_after_restart():
     assert holds(sc.run_after_restart(0, 8, 12)(case(1020.0, two)))
     assert not holds(sc.run_after_restart(0, 8, 12)(case(1030.0, two)))
     assert not holds(sc.run_after_restart(0, 8, 12)(case(1020.0, two[:1])))
+    # a start recorded by a later window is not the restart of this check: the second row stays the one judged
+    assert holds(sc.run_after_restart(0, 8, 12)(case(1020.0, two + [{"start": 1500.0}])))
 
 
 def test_loads_around_run():
@@ -456,6 +598,23 @@ def test_loads_around_run():
     assert holds(sc.loads_around_run(case(T0 + 20)))
     assert not holds(sc.loads_around_run(case(T0 + 5)))  # loaded before the run
     assert not holds(sc.loads_around_run(case(T0 + 35)))  # loaded after the sequence ended
+    assert not holds(sc.loads_around_run(case(T0 + 10)))  # at the run: not after it
+    assert not holds(sc.loads_around_run(case(T0 + 30)))  # at the end of the sequence: not before it
+    assert holds(sc.loads_around_run(case(T0 + 10.001)))
+    assert holds(sc.loads_around_run(case(T0 + 29.999)))
+
+    def missing(what):
+        def build(rec):
+            rec.ev("seqSched.TableLoaded", T0 + 2)
+            if what != "run":
+                rec.ev("seqSched.SeqRun", T0 + 10, row=0)
+            if what != "load":
+                rec.ev("seqSched.TableLoaded", T0 + 20)
+            if what != "complete":
+                rec.ev("schedSeq.CS_SequenceComplete", T0 + 30, fileName="long.bin")
+        return simple(build)
+    for what in ("run", "load", "complete"):
+        assert not holds(sc.loads_around_run(missing(what))), what
 
 
 def test_file_unchanged():
@@ -464,6 +623,8 @@ def test_file_unchanged():
     assert holds(sc.file_unchanged("read_file")(case("a")))
     assert not holds(sc.file_unchanged("read_file")(case("b")))
     assert not holds(sc.file_unchanged("read_file")(simple(evidence={"read_file": [{"sha256": "a" * 64, "size": 10}]})))
+    three = [{"sha256": "a" * 64, "size": 10}] * 3  # a third reading: the check no longer knows its pair
+    assert not holds(sc.file_unchanged("read_file")(simple(evidence={"read_file": three})))
 
 
 def test_differing():
@@ -487,6 +648,9 @@ def test_product_is():
     assert not holds(sc.product_is(sc.t_base(), ["EXECUTED"] + states[1:])(case(good)))
     assert not holds(sc.product_is(sc.t_base())(case(None, "no file")))
     assert not holds(sc.product_is(sc.t_base())(simple()))
+    later = {"rows": good, "file": "b.fdp", "files": 2, "error": ""}  # a second product read later in the test
+    twice = simple(evidence={"read_dp": [{"rows": good, "file": "a.fdp", "files": 1, "error": ""}, later]})
+    assert not holds(sc.product_is(sc.t_base(), states)(twice))
 
 
 def test_new_product():
@@ -495,6 +659,8 @@ def test_new_product():
     assert holds(sc.new_product(case(1, 2)))
     assert not holds(sc.new_product(case(2, 2)))
     assert not holds(sc.new_product(simple()))
+    assert not holds(sc.new_product(simple(evidence={"count_dp": [{"files": 1}], "read_dp": [{"files": 2}, {"files": 3}]})))
+    assert not holds(sc.new_product(simple(evidence={"count_dp": [{"files": 1}, {"files": 1}], "read_dp": [{"files": 2}]})))
 
 
 def test_table_is_final():
@@ -510,6 +676,8 @@ def test_table_is_final():
     assert not holds(sc.table_is_final(case(lambda rows: rows[6].update(seconds=sc.YEAR_2100))))  # not a past time
     assert not holds(sc.table_is_final(case(valid=False)))
     assert not holds(sc.table_is_final(simple()))
+    good = case().evidence("read_table")
+    assert not holds(sc.table_is_final(simple(evidence={"read_table": good + good})))  # a second reading of the table
 
 
 def dispatched(rec, opcode, fsw):
@@ -521,13 +689,11 @@ def test_commands_dispatched():
         rec = Rec()
         dispatched(rec, 0x1000001, T0 - 0.1)  # the opening marker's own dispatch precedes its event
         start = rec.mark(100, T0)
-        rec.cmd("cmdDisp.CMD_NO_OP_STRING", 0x1000001, [100])
         rec.cmd("seqSched.SET_ROW", 0x10000a04)
         for i in range(set_row):
             dispatched(rec, 0x10000a04, T0 + 2 + i)
         for i in range(no_op):
             dispatched(rec, NO_OP_OPCODE, T0 + 10 + i)
-        rec.cmd("cmdDisp.CMD_NO_OP_STRING", 0x1000001, [101])
         dispatched(rec, 0x1000001, T0 + 59.9)
         return rec.ctx(rec.win(start, rec.mark(101, T0 + 60)))
     assert holds(HELPERS["commands_dispatched"](case()))
@@ -552,13 +718,38 @@ def test_dropped_steady():
     assert holds(HELPERS["com_dropped_steady"](case(0, "comQueue.comIngressDropped")))
     assert not holds(HELPERS["com_dropped_steady"](case(3, "comQueue.comManagedDropped")))
 
+    def choice(inside, other=None, earlier_start=None, same_start=7, late=None):
+        """The sample before the window is the last of the same channel and the same start, before the marker."""
+        rec = Rec()
+        rec.ch("comQueue.comIngressDropped", T0 - 50, 3)
+        rec.ch("comQueue.comIngressDropped", T0 - 40, same_start)
+        if earlier_start is not None:  # a start before this one, filed after this start's samples
+            rec.ch("comQueue.comIngressDropped", T0 - 10, earlier_start, epoch=-1)
+        if other is not None:
+            rec.ch("comQueue.comManagedDropped", T0 - 30, other)  # the other channel, later than the sample wanted
+        start = rec.mark(100, T0)
+        rec.ch("comQueue.comIngressDropped", T0 + 5, inside)
+        end = rec.mark(101, T0 + 60)
+        if late is not None:
+            rec.ch("comQueue.comIngressDropped", T0 + 70, late)  # after the window: not the sample before it
+        return rec.ctx(rec.win(start, end))
+    steady = HELPERS["com_dropped_steady"]
+    assert holds(steady(choice(7)))
+    assert not holds(steady(choice(3)))  # the last sample before the window, not an earlier one
+    assert holds(steady(choice(7, other=9)))  # another channel's sample is not this channel's
+    assert not holds(steady(choice(9, other=9)))
+    assert holds(steady(choice(7, earlier_start=9)))  # a sample of an earlier start is not of this start
+    assert not holds(steady(choice(9, earlier_start=9)))
+    assert holds(steady(choice(7, late=9)))  # a sample after the closing marker is not before the window
+    assert not holds(steady(choice(9, late=9)))
+
 
 def test_every_predicate_has_a_known_answer_test():
     """A new helper of seqsched_common.py without a test here fails this test."""
     here = Path(__file__).read_text(encoding="utf-8")
     not_predicates = {"reqs", "time_value", "fsw_now", "this_start", "standard_requires", "run_time", "bracket",
                       "override_span", "records_of", "elapsed_of", "due_samples_after_row_set", "first_set_of_start",
-                      "row_event_time", "abs_row", "settle", "bracket_both", "t_base", "t_fields", "t_final"}
+                      "row_event_time", "abs_time", "span_events", "_raw_args", "manifest_in_hand", "bracket_both", "t_base", "t_fields", "t_final"}
     names = [n for n, f in vars(sc).items() if callable(f) and getattr(f, "__module__", "") == sc.__name__]
     missing = [n for n in names if n not in not_predicates and f"sc.{n}(" not in here]
     assert not missing, missing

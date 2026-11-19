@@ -14,7 +14,7 @@ def test_L5_4(window, send, bench, check, require):
         send("Ref.schedSeqB.CS_RUN", ["short.bin", "NO_BLOCK"])
         bench.wait(4)
         send("Ref.seqSchedB.SET_ROW_ENABLED", [0, True])
-        send("Ref.seqSchedB.SET_ROW", [0] + abs_row(bench, 6, "long.bin", "WAIT_FOR_RUNNING"))
+        send("Ref.seqSchedB.SET_ROW", [0, abs_time(bench, 6), "ABSOLUTE", "long.bin", "WAIT_FOR_RUNNING"])
         bench.wait(10)
         send("Ref.seqSchedB.SET_ROW_ENABLED", [0, False])
         send("Ref.seqSchedB.SET_ROW", [0, time_value("TB_WORKSTATION_TIME", YEAR_2100), "ABSOLUTE", "short2.bin",

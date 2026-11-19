@@ -12,8 +12,10 @@ def test_L2_5(window, send, bench, check, require):
         bench.action("write_T_BASE")
         send("Ref.seqSched.LOAD_TABLE")
         send("Ref.timeBaseSetter.SET_TIME_BASE", ["TB_PROC_TIME"])
-        bench.wait(3)
-        send("Ref.timeBaseSetter.CLEAR_TIME_BASE")
+        try:
+            bench.wait(3)
+        finally:
+            send("Ref.timeBaseSetter.CLEAR_TIME_BASE")  # also after a failed procedure
         send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
         send("Ref.seqSched.SET_ROW", [0, time_value("TB_PROC_TIME", 1000000), "TIME_BASE_RELATIVE", "short.bin",
                               "WAIT_FOR_RUNNING"])
@@ -28,8 +30,10 @@ def test_L2_5(window, send, bench, check, require):
     with window(241, 242):
         require("STD")
         send("Ref.timeBaseSetter.SET_TIME_BASE", ["TB_PROC_TIME"])
-        bench.wait(3)
-        send("Ref.timeBaseSetter.CLEAR_TIME_BASE")
+        try:
+            bench.wait(3)
+        finally:
+            send("Ref.timeBaseSetter.CLEAR_TIME_BASE")  # also after a failed procedure
         bracket(bench)
         check("seconds of NextTimeDue are equal within 1 s across the second TB_PROC_TIME report",
               due_steady_across_report)

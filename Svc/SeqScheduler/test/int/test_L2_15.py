@@ -15,12 +15,12 @@ def test_L2_15(window, send, bench, check, require):
             send("Ref.seqSched.LOAD_TABLE")
             send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
             send("Ref.seqSched.SET_ROW_ENABLED", [1, True])
-            send("Ref.seqSched.SET_ROW", [0] + abs_row(bench, 12, "short.bin", "WAIT_FOR_RUNNING"))
+            send("Ref.seqSched.SET_ROW", [0, abs_time(bench, 12), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
             send("Ref.seqSched.SET_ENABLED", [False])
             send("Ref.seqSched.REPORT_ACTIVE_ROW")
             bench.wait(18)
             send("Ref.seqSched.SET_ENABLED", [True])
-            send("Ref.seqSched.SET_ROW", [1] + abs_row(bench, 10, "short.bin", "WAIT_FOR_RUNNING"))
+            send("Ref.seqSched.SET_ROW", [1, abs_time(bench, 10), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
             send("Ref.seqSched.REPORT_ACTIVE_ROW")
             bench.wait(16)
             bracket(bench)
@@ -29,6 +29,7 @@ def test_L2_15(window, send, bench, check, require):
             check("event seqSched.NoActiveRow count == 1")
             check("event seqSched.ActiveRow(row=1) count == 1")
             check("event seqSched.ActiveRow count == 1")
+            check(ACTIVE_ROW.format("seqSched"), active_row_is("seqSched", 1, "short.bin"))
             check("event seqSched.RowSkippedDisabled(row=0) count == 1")
             check("event seqSched.SeqRun(row=0) count == 0")
             check("event seqSched.SeqRun(row=1) count == 1")
@@ -40,7 +41,10 @@ def test_L2_15(window, send, bench, check, require):
             check("last(seqSched.RowsSkipped) == 1")
             check("last(seqSched.RowsExecuted) == 1")
             check("last(seqSched.LastExecutedRow) == 1")
-    except BaseException:
-        # the plan's `finally`: a failed procedure must not leave the scheduler disabled for the next test
-        send("Ref.seqSched.SET_ENABLED", [True])
-        raise
+    finally:
+        # clean-up window: a failed procedure must not leave the scheduler disabled for the next test
+        with window(311, 312):
+            require("both markers present")
+            send("Ref.seqSched.SET_ENABLED", [True])
+            bracket(bench)
+            check("last(seqSched.Enabled) == True")

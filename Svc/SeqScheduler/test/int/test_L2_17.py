@@ -27,19 +27,24 @@ def test_L2_17(window, send, bench, check, require):
             check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
             check("event seqSched.EnabledSet(enabled=False) count == 1")
             check("event seqSched.EnabledSet(enabled=True) count == 1")
-            check("event seqSched.SeqRun(row=0) precedes event seqSched.EnabledSet(enabled=False)")
-            check("event seqSched.EnabledSet(enabled=True) precedes event seqSched.SeqCompleted(row=0)")
+            require(RUNNING_AT_ENABLES, enables_while_running(0))
             check("event seqSched.RowSkippedDisabled(row=1) count == 1")
+            check("event seqSched.RowSkippedDisabled(row=1, cause=WAITING_AT_DISABLE) count == 1")
+            check("event seqSched.RowSkippedDisabled(row=1) precedes event seqSched.EnabledSet(enabled=False)")
             check("event seqSched.RowSkippedDisabled count == 1")
             check("event seqSched.SeqRun(row=1) count == 0")
             check("event seqSched.SeqRun count == 1")
             check("event seqSched.RowLate count == 0")
             check("event seqSched.SeqCancelled count == 0")
+            check("event seqSched.RowSkipsNotReported count == 0")
             check("last(seqSched.Enabled) == True")
             check("last(seqSched.RowsSkipped) == 1")
             check("last(seqSched.RowsExecuted) == 1")
             check("last(seqSched.RowsWaiting) == 0")
-    except BaseException:
-        # the plan's `finally`: a failed procedure must not leave the scheduler disabled for the next test
-        send("Ref.seqSched.SET_ENABLED", [True])
-        raise
+    finally:
+        # clean-up window: a failed procedure must not leave the scheduler disabled for the next test
+        with window(331, 332):
+            require("both markers present")
+            send("Ref.seqSched.SET_ENABLED", [True])
+            bracket(bench)
+            check("last(seqSched.Enabled) == True")
