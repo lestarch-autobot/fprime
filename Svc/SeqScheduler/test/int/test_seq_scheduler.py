@@ -98,6 +98,18 @@ def run_time(h, row, window=None):
     return rows[0].fsw if rows else None
 
 
+def run_not_before_row_time(row):
+    """Row run at or after the time its (first) RowSet event in the window reports for it."""
+    def judge(h):
+        run = run_time(h, row)
+        sets = [e for e in h.window.events("seqSched.RowSet") if e.args.get("row") == row]
+        found = re.search(r"'seconds': (\d+)", sets[0].text) if sets else None
+        if run is None or found is None:
+            return (False, f"run {run}, RowSet {sets[0].text if sets else None}")
+        return (run >= int(found.group(1)), f"run {run:.3f}, row time {found.group(1)}")
+    return judge
+
+
 def command_time(h, name, nth=0, window=None):
     """FSW time at which the n-th sending of a command in the window was dispatched."""
     w = h.windows[window] if window else h.window
@@ -159,7 +171,7 @@ def test_L2_2(window, send, bench, check, require):
         check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
         check("event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)")
         check("last(seqSched.RowsExecuted) == 1")
-        check("row 0 run no earlier than 8 s after SET_ROW", run_after(0, "seqSched.SET_ROW", 8, None))
+        check("row 0 run no earlier than the time set in the row", run_not_before_row_time(0))
 
 
 FIVE = ("cmdDisp", "health", "seqSched", "schedSeq", "systemResources")
@@ -766,7 +778,7 @@ def test_L2_11(window, send, bench, check, require):
             check("event seqSched.RowEnabledSet(row=3) count == 3")
             check("last(seqSched.RowsExecuted) == 1")
             check("last(seqSched.RowsPending) == 15")
-            check("row 3 run no earlier than 6 s after SET_ROW", run_after(3, "seqSched.SET_ROW", 6, None))
+            check("row 3 run no earlier than the time set in the row", run_not_before_row_time(3))
             check("row 3 run no later than 10 s after SET_ROW", run_after(3, "seqSched.SET_ROW", None, 10))
         with window(291, 292):
             require("STD")

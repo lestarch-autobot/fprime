@@ -658,7 +658,8 @@
   "20. 2026-11-18 human (Michael Starch, 16:12 PST) — row state is not saved: every loaded row is PENDING and a past row is skipped with no event on the first tick after a load (L2-1, L3-1, L7-1 reworked; REQ-024 removed; REQ-056 now has system coverage); a failed load leaves an empty table that commands can fill (REQ-043 and `NO_TABLE` removed; L5-1, L5-3 reworked; L5-1 says truncated, not short); due rows are handled by time due, then index, and a due CANCEL_RUNNING row skips every due row ahead of it (REQ-060, `RowSkippedByCancel`; L2-13 reworked); a relative row's time due is its origin's system time plus its time (REQ-046, REQ-061).",
   "21. 2026-11-18 human (Michael Starch, 16:24 PST) and designer — the due rows are held in the existing `Fw::ExternalRedBlackTreeSet`; tests of several rows due with a later CANCEL_RUNNING row, and with the cancel row between other due rows, are added (L2-7 and L2-13 reworked, REQ-060 now has system coverage; unit tests CancelLastOfSeveralDue, CancelBetweenDue, TwoCancelsDue). From review round 13: a failed load command leaves the table unchanged, only a failed start-up load leaves it empty (L5-1 and L5-3 reworked: the row due after the failed load is run).",
   "2026-11-19 developer — dry run on the bench: (1) `seqSched.LastExecutedRow` removed from the `SeqSched` sample group: it is written only when a sequence completes (SDD telemetry table), so it has no sample in most windows; (2) the dispatch-count and drop-count members of `STD` and `STD-ERR` are registered helpers: a sequence's own commands are also logged as dispatched, so only `CMD_NO_OP` may be dispatched more often than sent. Not yet reviewed.",
-  "2026-11-19 developer — dry run on the bench: L6-2 declared ABS, whose member `event seqSched.SeqDoneUnexpected count == 0` contradicts the test's own `count == 1`; L6-2 now declares the other two members of ABS. Not yet reviewed."
+  "2026-11-19 developer — dry run on the bench: L6-2 declared ABS, whose member `event seqSched.SeqDoneUnexpected count == 0` contradicts the test's own `count == 1`; L6-2 now declares the other two members of ABS. Not yet reviewed.",
+  "2026-11-19 developer — dry run on the bench: the lower time bound of L2-2 and L2-11 was judged against the SET_ROW command with a 2 s allowance; reading the FSW time and sending the command take 1.2 to 3.2 s, so the check failed on a correct run (5.741 s against 6 s). The bound is now judged against the time in the row's own RowSet event. Not yet reviewed."
  ],
  "tests": [
   {
@@ -840,7 +841,7 @@
      "text": "10 s planned delay + 1 s tick + 1 s command latency"
     },
     {
-     "pred": "row 0 run no earlier than 8 s after SET_ROW (helper)",
+     "pred": "row 0 run no earlier than the time set in the row (helper)",
      "text": "10 s planned delay less 1 s tick and 1 s for reading FSW time from the last event"
     }
    ],
@@ -848,7 +849,7 @@
     "row_time_late",
     "disable_row"
    ],
-   "evidence": "SeqRun(0) -> schedSeq CS_SequenceLoaded -> CS_SequenceComplete -> SeqCompleted(0, OK); the sequencer's own events are the evidence outside the UUT. Named checks the test declares: STD (require) ; ABS ; event seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; event schedSeq.CS_SequenceLoaded(fileName=short.bin) count == 1 ; event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; event seqSched.SeqCompleted(row=0, response=OK) count == 1 ; event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0) ; last(seqSched.RowsExecuted) == 1 ; row 0 run no earlier than 8 s after SET_ROW (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+   "evidence": "SeqRun(0) -> schedSeq CS_SequenceLoaded -> CS_SequenceComplete -> SeqCompleted(0, OK); the sequencer's own events are the evidence outside the UUT. Named checks the test declares: STD (require) ; ABS ; event seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; event schedSeq.CS_SequenceLoaded(fileName=short.bin) count == 1 ; event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; event seqSched.SeqCompleted(row=0, response=OK) count == 1 ; event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0) ; last(seqSched.RowsExecuted) == 1 ; row 0 run no earlier than the time set in the row (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
   },
   {
    "id": "L2-3",
@@ -1366,7 +1367,7 @@
      "text": "8 s planned delay + 1 s tick + 1 s command latency"
     },
     {
-     "pred": "W1: row 3 run no earlier than 6 s after SET_ROW (helper)",
+     "pred": "W1: row 3 run no earlier than the time set in the row (helper)",
      "text": "8 s planned delay less 1 s tick and 1 s for reading FSW time from the last event"
     },
     {
@@ -1382,7 +1383,7 @@
     "row_time_late",
     "wrong_seq"
    ],
-   "evidence": "RowSet, then SeqRun(3, short2.bin) -> CS_SequenceComplete(short2.bin) -> SeqCompleted(3, OK); a second SeqRun(3) after the second SET_ROW. Named checks the test declares: W1: STD (require) ; W1: ABS ; W1: event seqSched.RowSet(row=3, mode=ABSOLUTE, fileName=short2.bin, busyPolicy=WAIT_FOR_RUNNING) count == 1 ; W1: event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1 ; W1: event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1 ; W1: event seqSched.SeqCompleted(row=3, response=OK) count == 1 ; W1: event seqSched.SeqRun count == 1 ; W1: event seqSched.RowEnabledSet(row=3) count == 3 ; W1: last(seqSched.RowsExecuted) == 1 ; W1: last(seqSched.RowsPending) == 15 ; W1: row 3 run no earlier than 6 s after SET_ROW (helper) ; W1: row 3 run no later than 10 s after SET_ROW (helper) ; W2: STD (require) ; W2: ABS ; W2: event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1 ; W2: event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1 ; W2: last(seqSched.RowsExecuted) == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+   "evidence": "RowSet, then SeqRun(3, short2.bin) -> CS_SequenceComplete(short2.bin) -> SeqCompleted(3, OK); a second SeqRun(3) after the second SET_ROW. Named checks the test declares: W1: STD (require) ; W1: ABS ; W1: event seqSched.RowSet(row=3, mode=ABSOLUTE, fileName=short2.bin, busyPolicy=WAIT_FOR_RUNNING) count == 1 ; W1: event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1 ; W1: event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1 ; W1: event seqSched.SeqCompleted(row=3, response=OK) count == 1 ; W1: event seqSched.SeqRun count == 1 ; W1: event seqSched.RowEnabledSet(row=3) count == 3 ; W1: last(seqSched.RowsExecuted) == 1 ; W1: last(seqSched.RowsPending) == 15 ; W1: row 3 run no earlier than the time set in the row (helper) ; W1: row 3 run no later than 10 s after SET_ROW (helper) ; W2: STD (require) ; W2: ABS ; W2: event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1 ; W2: event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1 ; W2: last(seqSched.RowsExecuted) == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
   },
   {
    "id": "L2-12",
