@@ -100,7 +100,10 @@ def recorder(args):
 
     Runs `fprime-cli events`, which logs every event, as it is received, as one line of event.log under `logs`.
     Each line of that log is copied to `logs`/event-recv.log behind the host time at which it appeared there
-    (polled every 20 ms). What `fprime-cli events` prints is not used: it is not one line per event."""
+    (polled every 20 ms). What `fprime-cli events` prints is not used: it is not one line per event.
+
+    The log followed is the first event.log that appears after this recorder starts, chosen once: one recorder
+    writes one event.log. A last line without its line end is written when the recorder stops."""
     before = set(Path(args.logs).glob("fprime-cli-*/event.log"))
     cmd = ["fprime-cli", "events", "--dictionary", args.dictionary, "--logs", args.logs]
     cli = subprocess.Popen(cmd, stdout=subprocess.DEVNULL)
@@ -127,6 +130,8 @@ def recorder(args):
                     if line.strip():
                         out.write(f"{now:.6f} {line}\n")
             if ending:
+                if held.strip():  # a last line the recorder did not end
+                    out.write(f"{time.time():.6f} {held}\n")
                 break
             time.sleep(0.02)
     cli.wait()
