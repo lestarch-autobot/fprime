@@ -125,7 +125,6 @@ using Mutex = DelegateMutex;
 class DelegateConditionVariable;
 using ConditionVariable = DelegateConditionVariable;
 
-// Mirrored by the fallback in Os/FileSystemInterface.hpp
 class DelegateFileSystem;
 using FileSystem = DelegateFileSystem;
 

@@ -174,7 +174,7 @@ This optimization is most valuable for bare-metal systems with high-frequency op
 
 ### How Projects Override for Compile-Time Selection
 
-Projects override compile-time selection by providing their own configuration header that replaces F´'s default. The override replaces the whole `config/OsSelection.hpp`, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed. The one exception is `FileSystem`: when the override defines neither `Os::FileSystem` nor `OS_FILE_SYSTEM_HEADER`, `Os/FileSystemInterface.hpp` selects the link-time delegate. An override that selects `FileSystem` must define both: with only the alias the build stops on a conflicting declaration of `Os::FileSystem`, and with only the macro on `FileSystem` not naming a type. For `RawTime`, create a project-specific override of `config/OsSelection.hpp`:
+Projects override compile-time selection by providing their own configuration header that replaces F´'s default. The override replaces the whole `config/OsSelection.hpp`, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed. For `RawTime`, create a project-specific override of `config/OsSelection.hpp`:
 
 **Step 1:** In your project's config directory, create `OsSelection.hpp`:
 
@@ -192,21 +192,24 @@ namespace MyPlatform {
 
 namespace Os {
     class DelegateMutex;             // Forward-declare the link-time delegates
-    class DelegateConditionVariable; // kept for Mutex and ConditionVariable
+    class DelegateConditionVariable; // kept for Mutex, ConditionVariable
+    class DelegateFileSystem;        // and FileSystem
 
     // Alias Os::RawTime directly to your implementation (no delegate wrapper)
     using RawTime = MyPlatform::MyRawTime;
 
     // The override file replaces the whole default, so every selection must be
-    // present: keep Mutex and ConditionVariable on the link-time delegates
+    // present: keep Mutex, ConditionVariable and FileSystem on the link-time delegates
     using Mutex = DelegateMutex;
     using ConditionVariable = DelegateConditionVariable;
+    using FileSystem = DelegateFileSystem;
 }
 
 // Point to your implementation header (will be included after RawTimeInterface.hpp)
 #define OS_RAW_TIME_HEADER "MyPlatform/Os/RawTime.hpp"
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_FILE_SYSTEM_HEADER <Os/DelegateFileSystem.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP
 ```
