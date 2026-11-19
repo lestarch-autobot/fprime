@@ -757,3 +757,206 @@ def test_L2_11(window, send, bench, check, require):
     except BaseException:
         settle(bench)
         raise
+
+
+def first_set_before_test(base):
+    """This start's first TimeBaseSet(base) is recorded before the opening marker of the window."""
+    def judge(h):
+        row = first_set_of_start(h, base)
+        return (row is not None and row.t < h.window.start_marker.t, f"first TimeBaseSet({base}): "
+                f"{row.line if row else None}")
+    return judge
+
+
+def test_L2_12(window, send, bench, check, require):
+    with window(293, 294):
+        require("STD")
+        standard_requires(require)
+        bench.action("write_T_BASE")
+        send(S + ".LOAD_TABLE")
+        send(S + ".SET_ROW_ENABLED", [0, True])
+        send(S + ".SET_ROW", [0, time_value("TB_SC_TIME", 1000000), "TIME_BASE_RELATIVE", "short.bin",
+                              "WAIT_FOR_RUNNING"])
+        bracket(bench)
+        elapsed = elapsed_of(bench)
+        send(S + ".SET_ROW", [0, time_value("TB_SC_TIME", elapsed + 20), "TIME_BASE_RELATIVE", "short.bin",
+                              "WAIT_FOR_RUNNING"])
+        send(T + ".SET_TIME_BASE", ["TB_SC_TIME"])
+        bench.wait(3)
+        send(T + ".CLEAR_TIME_BASE")
+        bench.wait(20)
+        bracket(bench)
+        check("ABS")
+        check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
+        check("event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1")
+        check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
+        check("event seqSched.RowLate count == 0")
+        check("last(seqSched.RowsExecuted) == 1")
+        check("row 0 run between 14 and 22 s after the second SET_ROW", run_after(0, "seqSched.SET_ROW", 14, 22, 1))
+        check("elapsed is within 3 s of FSW time at the sample less the time of this start's first "
+              "timeBaseSetter.TimeBaseSet(TB_SC_TIME) event", elapsed_since_first_set("TB_SC_TIME"))
+        require("the first TimeBaseSet(TB_SC_TIME) of this start is in the record, in an earlier test",
+                first_set_before_test("TB_SC_TIME"))
+
+
+def bracket_both(bench):
+    bracket(bench)
+    bench.wait_samples(SAMPLE_B, 2)
+
+
+def test_L2_13(window, send, bench, check, require):
+    with window(295, 296):
+        require("STD")
+        standard_requires(require, fresh=True)
+        bench.action("write_T_BASE_B")
+        send(B + ".LOAD_TABLE")
+        for row in range(5):
+            send(B + ".SET_ROW_ENABLED", [row, True])
+        send(B + ".SET_ROW", [4] + abs_row(bench, 18, "short2.bin", "WAIT_FOR_RUNNING"))
+        send(B + ".SET_ROW", [2] + abs_row(bench, 14, "short.bin", "CANCEL_RUNNING"))
+        send(B + ".SET_ROW", [3] + abs_row(bench, 11, "short.bin", "WAIT_FOR_RUNNING"))
+        send(B + ".SET_ROW", [1] + abs_row(bench, 9, "short.bin", "WAIT_FOR_RUNNING"))
+        send(B + ".SET_ROW", [0] + abs_row(bench, 6, "long.bin", "WAIT_FOR_RUNNING"))
+        bench.wait(31)
+        bracket_both(bench)
+        check("event seqSchedB.SeqRun(row=0, fileName=long.bin) count == 1")
+        check("event seqSchedB.SeqCancelled(cancelledRow=0, row=2) count == 1")
+        check("event schedSeqB.CS_SequenceCanceled(fileName=long.bin) count == 1")
+        check("event schedSeqB.CS_SequenceComplete(fileName=long.bin) count == 0")
+        check("event seqSchedB.RowSkippedByCancel(row=1, cancelRow=2) count == 1")
+        check("event seqSchedB.RowSkippedByCancel(row=3, cancelRow=2) count == 1")
+        check("event seqSchedB.RowSkippedByCancel count == 2")
+        check("event seqSchedB.SeqRun(row=1) count == 0")
+        check("event seqSchedB.SeqRun(row=3) count == 0")
+        check("event seqSchedB.SeqRun(row=2, fileName=short.bin) count == 1")
+        check("event seqSchedB.SeqRun(row=4, fileName=short2.bin) count == 1")
+        check("event schedSeqB.CS_SequenceComplete(fileName=short.bin) count == 1")
+        check("event schedSeqB.CS_SequenceComplete(fileName=short2.bin) count == 1")
+        check("event seqSchedB.SeqCancelled(row=2) precedes event seqSchedB.SeqRun(row=2)")
+        check("event seqSchedB.SeqCompleted(row=2) precedes event seqSchedB.SeqRun(row=4)")
+        check("event seqSchedB.SeqCompleted(row=2, response=OK) count == 1")
+        check("event seqSchedB.SeqCompleted(row=4, response=OK) count == 1")
+        check("event seqSchedB.SeqCancelled count == 1")
+        check("last(seqSchedB.RowsSkipped) == 2")
+        check("last(seqSchedB.RowsExecuted) == 3")
+        check("last(seqSchedB.RowsWaiting) == 0")
+        check("event seqSchedB.SeqCompleted(row=0, response=EXECUTION_ERROR) count == 1")
+        check("event seqSchedB.SeqCompleted(row=0) precedes event seqSchedB.SeqRun(row=2)")
+        check("event seqSched.SeqRun count == 0")
+        check("event seqSched.SeqCancelled count == 0")
+        check("event seqSched.RowSkippedByCancel count == 0")
+        check("event schedSeq.CS_SequenceCanceled count == 0")
+        require("SeqSchedB samples >= 2 in every window", samples_b)
+
+
+def test_L2_14(window, send, bench, check, require):
+    with window(297, 298):
+        require("STD")
+        standard_requires(require, fresh=True)
+        bench.action("write_T_BASE_B")
+        send(B + ".LOAD_TABLE")
+        for row in range(5):
+            send(B + ".SET_ROW_ENABLED", [row, True])
+        send(B + ".SET_ROW", [1] + abs_row(bench, 16, "short.bin", "WAIT_FOR_RUNNING"))
+        send(B + ".SET_ROW", [3] + abs_row(bench, 13, "short.bin", "SKIP_WHEN_RUNNING"))
+        due = time_value("TB_WORKSTATION_TIME", fsw_now(bench) + 10)
+        send(B + ".SET_ROW", [4, due, "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
+        send(B + ".SET_ROW", [2, due, "ABSOLUTE", "short2.bin", "WAIT_FOR_RUNNING"])
+        send(B + ".SET_ROW", [0] + abs_row(bench, 6, "long.bin", "WAIT_FOR_RUNNING"))
+        bench.wait(44)
+        bracket_both(bench)
+        check("event seqSchedB.SeqRun(row=0, fileName=long.bin) count == 1")
+        check("event seqSchedB.RowSkippedBusy(row=3, runningRow=0) count == 1")
+        check("event seqSchedB.SeqRun(row=3) count == 0")
+        check("event seqSchedB.SeqRun(row=2, fileName=short2.bin) count == 1")
+        check("event seqSchedB.SeqRun(row=4, fileName=short.bin) count == 1")
+        check("event seqSchedB.SeqRun(row=1, fileName=short.bin) count == 1")
+        check("event seqSchedB.SeqCompleted(row=0) precedes event seqSchedB.SeqRun(row=2)")
+        check("event seqSchedB.SeqCompleted(row=2) precedes event seqSchedB.SeqRun(row=4)")
+        check("event seqSchedB.SeqCompleted(row=4) precedes event seqSchedB.SeqRun(row=1)")
+        check("event schedSeqB.CS_SequenceComplete(fileName=long.bin) count == 1")
+        check("event schedSeqB.CS_SequenceCanceled count == 0")
+        check("event seqSchedB.RowLate count == 0")
+        check("event seqSchedB.RowSkippedByCancel count == 0")
+        check("last(seqSchedB.RowsExecuted) == 4")
+        check("last(seqSchedB.RowsSkipped) == 1")
+        check("event seqSched.SeqRun count == 0")
+        check("event seqSched.RowSkippedBusy count == 0")
+        require("SeqSchedB samples >= 2 in every window", samples_b)
+
+
+def up_at_marker(seconds):
+    """The Ref process had run at least `seconds` when the window opened (bench-recorded start)."""
+    def judge(h):
+        start = [r for r in h.evidence("ref_start") if r]
+        if not start:
+            return (False, "no evidence")
+        up = h.window.start_marker.fsw - start[0]["start"]
+        return (up >= seconds, f"up {up:.3f} s")
+    return judge
+
+
+def run_after_restart(row, low, high):
+    """Row run between low and high s after the start of the Ref process recorded after the restart."""
+    def judge(h):
+        start, run = [r for r in h.evidence("ref_start") if r], run_time(h, row)
+        if len(start) < 2 or run is None:
+            return (False, f"{len(start)} recorded starts, run {run}")
+        return (low <= run - start[-1]["start"] <= high, f"{run - start[-1]['start']:.3f} s")
+    return judge
+
+
+def test_L3_1(window, send, bench, check, require):
+    with window(300, 301):
+        require("STD")
+        standard_requires(require, fresh=True)
+        bench.action("ref_start")
+        bench.action("write_T_BASE")
+        send(S + ".LOAD_TABLE")
+        send(S + ".SET_ROW_ENABLED", [0, True])
+        send(S + ".SET_ROW_ENABLED", [1, True])
+        send(S + ".SET_ROW", [1, time_value("TB_NONE", 1), "START_RELATIVE", "short.bin", "WAIT_FOR_RUNNING"])
+        send(S + ".SET_ROW", [0] + abs_row(bench, 6, "short.bin", "WAIT_FOR_RUNNING"))
+        bench.wait(12)
+        send(S + ".LOAD_TABLE")
+        bracket(bench)
+        check("event seqSched.TableLoaded count == 2")
+        check("event seqSched.SeqRun(row=0) count == 1")
+        check("event seqSched.RowLate(row=1) count == 1")
+        check("last(seqSched.RowsPending) == 16")
+        check("last(seqSched.RowsExecuted) == 0")
+    with window(301, 302):
+        require("STD")
+        require("Ref process up >= 70 s at marker 301", up_at_marker(70))
+        send(S + ".SET_ROW_ENABLED", [0, True])
+        send(S + ".SET_ROW", [0] + abs_row(bench, 6, "short.bin", "WAIT_FOR_RUNNING"))
+        bench.wait(12)
+        send(S + ".SET_ROW_ENABLED", [1, True])
+        send(S + ".SET_ROW", [1, time_value("TB_NONE", 60), "START_RELATIVE", "short.bin", "WAIT_FOR_RUNNING"])
+        bench.wait(3)
+        send(S + ".SAVE_TABLE")
+        bracket(bench)
+        check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
+        check("event seqSched.TableSaved count == 1")
+        check("event seqSched.RowLate(row=1) count == 1")
+        check("last(seqSched.RowsSkipped) == 1")
+        check("last(seqSched.RowsExecuted) == 1")
+    with window(302, 303):
+        bench.reset()
+        bench.action("ref_start")
+        require("both markers present")
+        check("event seqSched.TableLoaded count == 1")
+    with window(303, 304):
+        require("STD")
+        bench.wait(70)
+        bracket(bench)
+        check("event seqSched.SeqRun(row=0) count == 0")
+        check("event seqSched.SeqRun(row=1, fileName=short.bin) count == 1")
+        check("event seqSched.RowLate count == 0")
+        check("last(seqSched.TableLoaded) == True")
+        check("last(seqSched.RowsExecuted) == 1")
+        check("last(seqSched.RowsSkipped) == 1")
+        check("last(seqSched.RowsPending) == 14")
+        check("event seqSched.RowSkippedDisabled count == 0")
+        check("row 1 run between 57 and 66 s after the bench-recorded start of the Ref process",
+              run_after_restart(1, 57, 66))
