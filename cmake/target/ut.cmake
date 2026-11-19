@@ -139,7 +139,7 @@ function(ut_add_ctest UT_EXECUTABLE_TARGET)
     fprime_util_metadata_add_test("${UT_EXECUTABLE_TARGET}")
     # Every test is labeled FPRIME_UNIVERSE_TEST_LABEL; tests built by "all" (not EXCLUDE_FROM_ALL) are also labeled
     # FPRIME_PROJECT_TEST_LABEL and listed by name in the root metadata, the fallback for tools that do not run by label.
-    # Tests excluded with fprime_exclude_test_from_project are neither.
+    # A test excluded with fprime_exclude_test_from_project keeps FPRIME_UNIVERSE_TEST_LABEL only and is not listed.
     get_target_property(UT_EXCLUDED_FROM_ALL "${UT_EXECUTABLE_TARGET}" EXCLUDE_FROM_ALL)
     set(UT_LABELS "${FPRIME_UNIVERSE_TEST_LABEL}")
     get_property(UT_PROJECT_EXCLUDED_TESTS GLOBAL PROPERTY FPRIME__INTERNAL_PROJECT_EXCLUDED_TESTS)
