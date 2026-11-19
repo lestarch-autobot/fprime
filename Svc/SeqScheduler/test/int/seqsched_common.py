@@ -99,14 +99,17 @@ def run_time(h, row, window=None):
 
 
 def run_not_before_row_time(row):
-    """Row run at or after the time its (first) RowSet event in the window reports for it."""
+    """Row run at or after the time its (first) SET_ROW command of the window carries; RowSet reports that time."""
     def judge(h):
         run = run_time(h, row)
+        sent = [c for c in h.window.cmds if c.short == "seqSched.SET_ROW" and c.args[:1] == [row]]
         sets = [e for e in h.window.events("seqSched.RowSet") if e.args.get("row") == row]
         found = re.search(r"'seconds': (\d+)", sets[0].text) if sets else None
-        if run is None or found is None:
-            return (False, f"run {run}, RowSet {sets[0].text if sets else None}")
-        return (run >= int(found.group(1)), f"run {run:.3f}, row time {found.group(1)}")
+        if run is None or found is None or not sent or len(sent[0].args) < 3:
+            return (False, f"run {run}, SET_ROW commands {len(sent)}, RowSet {sets[0].text if sets else None}")
+        seconds = sent[0].args[2]
+        return (run >= seconds and int(found.group(1)) == seconds,
+                f"run {run:.3f}, commanded row time {seconds}, RowSet {found.group(1)}")
     return judge
 
 
@@ -152,9 +155,14 @@ def bracket(bench, n=2):
 
 
 def version_strings_match(h):
-    """Every version event of the window is present and non-empty; identity is judged against the manifest by the audit."""
-    rows = [e for e in h.window.ev if ".version." in e.name]
-    return (len(rows) > 0 and all(e.text.strip() for e in rows), f"{len(rows)} version events")
+    """Every describe string of the manifest's repositories is in the text of a version event of the window."""
+    rows = [r for r in h.evidence("manifest_versions") if r]
+    wanted = rows[0].get("describe", []) if rows else []
+    texts = [e.text for e in h.window.ev if ".version." in e.name]
+    if not wanted or not texts:
+        return (False, f"{len(wanted)} manifest describe strings, {len(texts)} version events")
+    missing = [d for d in wanted if not any(d in t for t in texts)]
+    return (not missing, f"{len(texts)} version events; manifest strings not found: {missing}")
 
 
 

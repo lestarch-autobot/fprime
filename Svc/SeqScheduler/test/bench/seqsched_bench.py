@@ -138,6 +138,17 @@ def ref_start(args):
     evidence({"start": float(START_FILE.read_text()), "pid": int(PID_FILE.read_text())})
 
 
+def manifest_versions(args):
+    """Describe strings of the repositories the run's manifest pins (`fth run` names the manifest in FTH_MANIFEST)."""
+    path = os.environ.get("FTH_MANIFEST")
+    if not path:
+        evidence({"describe": []})
+        return
+    with open(path, encoding="utf-8") as manifest:
+        repos = json.load(manifest).get("repos", [])
+    evidence({"describe": sorted({str(r["describe"]) for r in repos if r.get("describe")})})
+
+
 def base_rows(file_name="short.bin"):
     return [{"timeBase": "TB_WORKSTATION_TIME", "seconds": YEAR_2100, "mode": "ABSOLUTE", "fileName": file_name,
              "busyPolicy": "WAIT_FOR_RUNNING", "enabled": False} for _ in range(16)]
@@ -255,6 +266,8 @@ def main():
     p.set_defaults(fn=next_due)
     p = sub.add_parser("ref-start")
     p.set_defaults(fn=ref_start)
+    p = sub.add_parser("manifest-versions")
+    p.set_defaults(fn=manifest_versions)
     p = sub.add_parser("read-table")
     p.add_argument("name")
     p.set_defaults(fn=read_table)
