@@ -12,6 +12,9 @@
 
 // Define configuration values for dispatcher
 
+// The only line that differs from default/config is CMD_DISPATCHER_DISPATCH_TABLE_SIZE (150 there):
+// Ref registers more than 150 opcodes with its two SeqScheduler instances, their two sequencers and
+// the time-base setter, and the dispatcher asserts when its table is full.
 enum {
     CMD_DISPATCHER_DISPATCH_TABLE_SIZE = 250,  // !< The size of the table holding opcodes to dispatch
     CMD_DISPATCHER_SEQUENCER_TABLE_SIZE = 25,  // !< The size of the table holding commands in progress

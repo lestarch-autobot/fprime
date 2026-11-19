@@ -11,7 +11,7 @@ Each row is a JSON object:
    "fileName": "/seq/downlink.bin"}
 
 "timeBase" and "useconds" default to TB_NONE and 0, "busyPolicy" to WAIT_FOR_RUNNING and
-"enabled" to true. An empty object is an empty row. The sizes are those of the default
+"enabled" to true when the row has a file name. An empty object is an empty row. The sizes are those of the default
 F Prime configuration; pass --file-name-size when FileNameStringSize differs.
 """
 import argparse
@@ -107,7 +107,17 @@ def unpack_table(data, name_size):
     for index in range(count):
         offset = HEADER.size + index * row_size
         base, _, seconds, useconds, mode, policy, enabled = ROW_HEAD.unpack_from(data, offset)
-        name = data[offset + ROW_HEAD.size : offset + row_size].split(b"\0", 1)[0].decode("ascii")
+        try:
+            name = data[offset + ROW_HEAD.size : offset + row_size].split(b"\0", 1)[0].decode("ascii")
+        except UnicodeDecodeError:
+            raise TableError(f"row {index}: file name is not ASCII") from None
+        # The checks the component makes on a row (SDD section 4.2)
+        if useconds > 999999:
+            raise TableError(f"row {index}: microseconds {useconds} above 999999")
+        if enabled > 1:
+            raise TableError(f"row {index}: enabled is {enabled}, not 0 or 1")
+        if enabled == 1 and not name:
+            raise TableError(f"row {index}: enabled with no file name")
         try:
             rows.append(
                 {

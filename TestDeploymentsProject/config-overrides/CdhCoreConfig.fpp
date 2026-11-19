@@ -4,8 +4,11 @@ module CdhCoreConfig {
     
     module QueueSizes {
         constant cmdDisp     = 10
+        # The only line that differs from the subtopology default (events = 10).
         # One schedule tick that runs a two-command sequence logs 13 events before the event
-        # manager's thread runs; the default of 10 dropped one of them
+        # manager's thread runs: the scheduler's own, bounded per tick (SeqScheduler SDD section 7),
+        # and those of the sequencer and the command dispatcher for the commands of the sequence.
+        # The default of 10 dropped one of them.
         constant events      = 30
         constant tlmSend     = 10
         constant $health     = 25
