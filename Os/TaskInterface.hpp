@@ -14,7 +14,9 @@
 #include <Os/TaskString.hpp>
 #include "config/OsSelection.hpp"  // may define the Os::Task alias and OS_TASK_HEADER consumed by Os/Task.hpp
 
-// Fall back to link-time selection when the project's config/OsSelection.hpp does not select an Os::Task
+// Fall back to link-time selection when the project's config/OsSelection.hpp does not select an Os::Task. This keeps
+// project overrides that predate the Task alias building. An override that aliases Os::Task must also define
+// OS_TASK_HEADER; otherwise the alias below is reported as a conflicting declaration.
 #ifndef OS_TASK_HEADER
 namespace Os {
 class DelegateTask;

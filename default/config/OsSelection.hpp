@@ -91,9 +91,10 @@
 // ----------------------------------------------------------------------
 // Task
 //
-// A project OsSelection.hpp that defines neither the Os::Task alias nor
-// OS_TASK_HEADER gets the link-time Os::DelegateTask (see
-// Os/TaskInterface.hpp).
+// Exception to the rule above: a project OsSelection.hpp that predates the
+// Task alias and defines neither the Os::Task alias nor OS_TASK_HEADER gets
+// the link-time Os::DelegateTask (see Os/TaskInterface.hpp). Defining only
+// one of the two is a build error.
 //
 // A compile-time selection MUST derive from Os::TaskInterface, which holds the
 // common Os::Task state and functions (state tracking, task registry, task
