@@ -53,8 +53,13 @@ class DirectoryInterface {
     DirectoryInterface& operator=(const DirectoryInterface& other) = delete;
 
     //! \brief Check if Directory is open or not
+    //!
+    //! The open state is owned by the implementation. The link-time delegate tracks it itself, so an
+    //! implementation used only through the delegate may keep this default; an implementation selected
+    //! directly as Os::Directory must override it (enforced in Os/Directory.hpp).
+    //!
     //! \return true if Directory is open, false otherwise
-    bool isOpen() const;
+    virtual bool isOpen() const;
 
     //! \brief return the underlying Directory handle (implementation specific)
     //! \return internal Directory handle representation
@@ -152,19 +157,6 @@ class DirectoryInterface {
     //! \param fileCount Reference to a variable where the file count will be stored.
     //! \return Status indicating the result of the operation.
     Status getFileCount(FwSizeType& fileCount);
-
-  protected:
-    //! \brief set whether the directory is currently tracked as open
-    //!
-    //! Called from `open`/`close` by the link-time delegate and by every implementation usable as a direct
-    //! alias, to update the open state tracked by this base class.
-    //!
-    //! \param is_open: new open state to track
-    //!
-    void setOpen(bool is_open);
-
-  private:
-    bool m_is_open = false;  //!< Flag indicating if the directory is open
 };
 }  // namespace Os
 

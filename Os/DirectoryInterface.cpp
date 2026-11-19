@@ -9,11 +9,7 @@
 namespace Os {
 
 bool DirectoryInterface::isOpen() const {
-    return this->m_is_open;
-}
-
-void DirectoryInterface::setOpen(bool is_open) {
-    this->m_is_open = is_open;
+    return false;
 }
 
 DirectoryInterface::Status DirectoryInterface::read(Fw::StringBase& filename) {

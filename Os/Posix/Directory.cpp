@@ -22,6 +22,10 @@ PosixDirectory::~PosixDirectory() {
     PosixDirectory::close();
 }
 
+bool PosixDirectory::isOpen() const {
+    return this->m_handle.m_dir_descriptor != nullptr;
+}
+
 DirectoryHandle* PosixDirectory::getHandle() {
     return &this->m_handle;
 }
@@ -58,7 +62,6 @@ PosixDirectory::Status PosixDirectory::open(const char* path, OpenMode mode) {
     }
 
     this->m_handle.m_dir_descriptor = dir;
-    this->setOpen(dir != nullptr);
     return status;
 }
 
@@ -116,7 +119,6 @@ void PosixDirectory::close() {
         (void)::closedir(this->m_handle.m_dir_descriptor);
     }
     this->m_handle.m_dir_descriptor = nullptr;
-    this->setOpen(false);
 }
 
 }  // namespace Directory

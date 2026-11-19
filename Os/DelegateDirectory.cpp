@@ -20,6 +20,10 @@ DelegateDirectory::~DelegateDirectory() {
     this->m_delegate.~DirectoryInterface();
 }
 
+bool DelegateDirectory::isOpen() const {
+    return this->m_is_open;
+}
+
 DirectoryHandle* DelegateDirectory::getHandle() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
     return this->m_delegate.getHandle();
@@ -34,7 +38,7 @@ DelegateDirectory::Status DelegateDirectory::open(const char* path, OpenMode mod
         this->close();
     }
     Status status = this->m_delegate.open(path, mode);
-    this->setOpen(status == Status::OP_OK);
+    this->m_is_open = (status == Status::OP_OK);
     return status;
 }
 
@@ -60,7 +64,7 @@ DelegateDirectory::Status DelegateDirectory::read(char* fileNameBuffer, FwSizeTy
 
 void DelegateDirectory::close() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
-    this->setOpen(false);
+    this->m_is_open = false;
     return this->m_delegate.close();
 }
 

@@ -34,7 +34,11 @@ StubDirectory::Status StubDirectory::read(char* fileNameBuffer, FwSizeType bufSi
 }
 
 void StubDirectory::close() {
-    this->setOpen(false);
+    // no-op
+}
+
+bool StubDirectory::isOpen() const {
+    return false;
 }
 
 DirectoryHandle* StubDirectory::getHandle() {

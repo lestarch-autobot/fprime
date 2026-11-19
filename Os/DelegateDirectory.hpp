@@ -31,6 +31,10 @@ class DelegateDirectory final : public DirectoryInterface {
     // Directory operations forwarded to the link-time implementation
     // ------------------------------------------------------------
 
+    //! \brief Check if Directory is open or not
+    //! \return true if Directory is open, false otherwise
+    bool isOpen() const override;
+
     // Bring the DirectoryInterface convenience overloads into scope; overriding a
     // single `read` overload below would otherwise hide all of them.
     using DirectoryInterface::read;
@@ -81,6 +85,7 @@ class DelegateDirectory final : public DirectoryInterface {
     // the byte-array here and set `handle` to that address for storage.
     alignas(FW_HANDLE_ALIGNMENT) DirectoryHandleStorage m_handle_storage;  //!< Directory handle storage
     DirectoryInterface& m_delegate;
+    bool m_is_open = false;  //!< Flag indicating if the directory is open
 };
 
 }  // namespace Os

@@ -30,10 +30,14 @@
 #ifndef Os_Directory_hpp
 #define Os_Directory_hpp
 
+#include <type_traits>
 #include "Os/DirectoryInterface.hpp"
 
 #ifdef OS_DIRECTORY_HEADER
 #include OS_DIRECTORY_HEADER
+// The selected implementation owns the open state: the DirectoryInterface default is for delegates only
+static_assert(not std::is_same<decltype(&Os::Directory::isOpen), bool (Os::DirectoryInterface::*)() const>::value,
+              "The implementation selected as Os::Directory must override DirectoryInterface::isOpen()");
 #else
 // A project config/OsSelection.hpp that predates the Directory selection defines neither the Os::Directory
 // alias nor OS_DIRECTORY_HEADER: keep the link-time delegate so such projects build unchanged.

@@ -29,6 +29,10 @@ class PosixDirectory final : public DirectoryInterface {
     //! Closes the directory if it is open.
     ~PosixDirectory() override;
 
+    //! \brief Check if Directory is open or not
+    //! \return true if the directory stream is open, false otherwise
+    bool isOpen() const override;
+
     //! \brief return the underlying Directory handle (implementation specific)
     //! \return internal Directory handle representation
     DirectoryHandle* getHandle() override;

@@ -25,6 +25,10 @@ class StubDirectory final : public DirectoryInterface {
     //! \brief destructor
     ~StubDirectory() override = default;
 
+    //! \brief Check if Directory is open or not
+    //! \return false: the stub directory is never open
+    bool isOpen() const override;
+
     //! \brief return the underlying Directory handle (implementation specific)
     //! \return internal Directory handle representation
     DirectoryHandle* getHandle() override;

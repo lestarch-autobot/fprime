@@ -92,11 +92,11 @@
 // Directory
 //
 // WARNING: compile-time selections MUST derive from Os::DirectoryInterface
-// (isOpen(), read(Fw::StringBase&), readDirectory() and getFileCount() are
-// defined there). No link-time delegate wraps a directly aliased
-// implementation, so the implementation itself MUST perform the checks the
-// delegate otherwise provides: assert the open() arguments, track the open
-// state with setOpen(), return NOT_OPENED from rewind()/read() when closed,
+// (read(Fw::StringBase&), readDirectory() and getFileCount() are defined
+// there). No link-time delegate wraps a directly aliased implementation, so
+// the implementation itself MUST perform the checks the delegate otherwise
+// provides: assert the open() arguments, report its open state by overriding
+// isOpen(), return NOT_OPENED from rewind()/read() when closed,
 // assert the read() buffer, null-terminate what read() writes, close an
 // already open directory before open() opens another (leaving it closed when
 // that open fails), and release its resources on destruction.
