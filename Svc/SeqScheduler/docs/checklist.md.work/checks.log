@@ -1,0 +1,142 @@
+prepare-build: fprime-util build in /home/ubuntu/campaign/uut/Svc/SeqScheduler rc 0; output in prepare-build.log
+clang-tidy: no translation units of /home/ubuntu/campaign/uut/Svc/SeqScheduler in /home/ubuntu/campaign/uut/build-fprime-automatic-native/compile_commands.json; build the module first
+FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'LOAD_TABLE' has no requirement referencing it (add a requirement mentioning 'LOAD_TABLE')
+FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SAVE_TABLE' has no requirement referencing it (add a requirement mentioning 'SAVE_TABLE')
+FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_ROW_ENABLED' has no requirement referencing it (add a requirement mentioning 'SET_ROW_ENABLED')
+FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_SEQ_ENABLED' has no requirement referencing it (add a requirement mentioning 'SET_SEQ_ENABLED')
+FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_ROW' has no requirement referencing it (add a requirement mentioning 'SET_ROW')
+FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'DUMP_TABLE' has no requirement referencing it (add a requirement mentioning 'DUMP_TABLE')
+FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'REPORT_ACTIVE_ROW' has no requirement referencing it (add a requirement mentioning 'REPORT_ACTIVE_ROW')
+FAIL [R1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_ENABLED' has no requirement referencing it (add a requirement mentioning 'SET_ENABLED')
+FAIL [R1] Requirement per command: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 8 problem(s) found
+FAIL [R2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: telemetry channel 'NextRow' has no requirement referencing it (add a requirement mentioning 'NextRow')
+FAIL [R2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: telemetry channel 'NextTimeDue' has no requirement referencing it (add a requirement mentioning 'NextTimeDue')
+FAIL [R2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: telemetry channel 'TableLoaded' has no requirement referencing it (add a requirement mentioning 'TableLoaded')
+FAIL [R2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: telemetry channel 'LastExecutedRow' has no requirement referencing it (add a requirement mentioning 'LastExecutedRow')
+FAIL [R2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: telemetry channel 'RunningRow' has no requirement referencing it (add a requirement mentioning 'RunningRow')
+FAIL [R2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: telemetry channel 'RowsWaiting' has no requirement referencing it (add a requirement mentioning 'RowsWaiting')
+FAIL [R2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: telemetry channel 'RowsPending' has no requirement referencing it (add a requirement mentioning 'RowsPending')
+FAIL [R2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: telemetry channel 'RowsExecuted' has no requirement referencing it (add a requirement mentioning 'RowsExecuted')
+FAIL [R2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: telemetry channel 'RowsSkipped' has no requirement referencing it (add a requirement mentioning 'RowsSkipped')
+FAIL [R2] Requirement per telemetry channel: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 9 problem(s) found
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'TableLoaded' has no requirement referencing it (add a requirement mentioning 'TableLoaded')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'TableFileMissing' has no requirement referencing it (add a requirement mentioning 'TableFileMissing')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'TableFileRowsDropped' has no requirement referencing it (add a requirement mentioning 'TableFileRowsDropped')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'TableLoadFailed' has no requirement referencing it (add a requirement mentioning 'TableLoadFailed')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'TableSaved' has no requirement referencing it (add a requirement mentioning 'TableSaved')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'TableSaveFailed' has no requirement referencing it (add a requirement mentioning 'TableSaveFailed')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'SeqRun' has no requirement referencing it (add a requirement mentioning 'SeqRun')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'SeqCompleted' has no requirement referencing it (add a requirement mentioning 'SeqCompleted')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'SeqCancelled' has no requirement referencing it (add a requirement mentioning 'SeqCancelled')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'SeqDoneUnexpected' has no requirement referencing it (add a requirement mentioning 'SeqDoneUnexpected')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'RowSkippedBusy' has no requirement referencing it (add a requirement mentioning 'RowSkippedBusy')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'RowSkippedByCancel' has no requirement referencing it (add a requirement mentioning 'RowSkippedByCancel')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'RowLate' has no requirement referencing it (add a requirement mentioning 'RowLate')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'RowSkippedDisabled' has no requirement referencing it (add a requirement mentioning 'RowSkippedDisabled')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'TimeBaseNotRecorded' has no requirement referencing it (add a requirement mentioning 'TimeBaseNotRecorded')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'RowEnabledSet' has no requirement referencing it (add a requirement mentioning 'RowEnabledSet')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'SeqEnabledSet' has no requirement referencing it (add a requirement mentioning 'SeqEnabledSet')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'RowSet' has no requirement referencing it (add a requirement mentioning 'RowSet')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'CmdRejected' has no requirement referencing it (add a requirement mentioning 'CmdRejected')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'ActiveRow' has no requirement referencing it (add a requirement mentioning 'ActiveRow')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'NoActiveRow' has no requirement referencing it (add a requirement mentioning 'NoActiveRow')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'EnabledSet' has no requirement referencing it (add a requirement mentioning 'EnabledSet')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'TableDumped' has no requirement referencing it (add a requirement mentioning 'TableDumped')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'TableDumpTruncated' has no requirement referencing it (add a requirement mentioning 'TableDumpTruncated')
+FAIL [R3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: event 'TableDumpFailed' has no requirement referencing it (add a requirement mentioning 'TableDumpFailed')
+FAIL [R3] Requirement per event: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 25 problem(s) found
+PASS [R4] Requirement per parameter: /home/ubuntu/campaign/uut/Svc/SeqScheduler (2 parameter(s) traced against 56 requirement(s))
+FAIL [R5] /home/ubuntu/campaign/uut/Svc/SeqScheduler: data product 'RowRecord' has no requirement referencing it (add a requirement mentioning 'RowRecord')
+FAIL [R5] /home/ubuntu/campaign/uut/Svc/SeqScheduler: data product 'TableContainer' has no requirement referencing it (add a requirement mentioning 'TableContainer')
+FAIL [R5] Requirement per data product: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 2 problem(s) found
+PASS [R6] Requirement per port/interface: /home/ubuntu/campaign/uut/Svc/SeqScheduler (7 port(s) traced against 56 requirement(s); 7 covered by companion/SDD evidence)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-001' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:16) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-002' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:17) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-003' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:18) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-004' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:19) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-005' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:20) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-006' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:21) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-007' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:22) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-008' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:23) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-009' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:24) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-010' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:25) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-011' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:26) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-012' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:27) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-013' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:28) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-014' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:29) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-015' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:30) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-016' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:31) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-017' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:32) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-018' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:33) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-019' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:34) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-020' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:35) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-021' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:36) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-022' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:37) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-023' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:38) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-025' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:39) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-026' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:40) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-027' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:41) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-028' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:42) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-029' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:43) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-030' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:44) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-031' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:45) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-032' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:46) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-033' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:47) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-034' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:48) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-035' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:49) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-036' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:50) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-037' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:51) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-038' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:52) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-039' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:53) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-040' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:54) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-041' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:55) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-042' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:56) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-044' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:57) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-045' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:58) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-046' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:59) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-047' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:60) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-051' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:61) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-052' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:62) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-053' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:63) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-054' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:64) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-055' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:65) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-056' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:66) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-057' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:67) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-058' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:68) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-059' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:69) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-060' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:70) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] /home/ubuntu/campaign/uut/Svc/SeqScheduler: requirement 'REQ-SeqScheduler-061' (/home/ubuntu/campaign/uut/Svc/SeqScheduler/docs/sdd.md:71) has no parent trace (add a Parent/Trace column entry linking a parent requirement)
+FAIL [R7] Requirement parent traceability: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 56 problem(s) found
+PASS [R8] Requirement verification method: /home/ubuntu/campaign/uut/Svc/SeqScheduler (56 requirement(s) checked)
+FAIL [D1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: input port 'run' (sync) has no 'run_handler' override in the implementation
+FAIL [D1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: input port 'seqDoneIn' (async) has no 'seqDoneIn_handler' override in the implementation
+FAIL [D1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: input port 'queryIn' (guarded) has no 'queryIn_handler' override in the implementation
+FAIL [D1] /home/ubuntu/campaign/uut/Svc/SeqScheduler: input port 'pingIn' (async) has no 'pingIn_handler' override in the implementation
+FAIL [D1] Input port handlers defined: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 4 problem(s) found
+FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'LOAD_TABLE' has no 'LOAD_TABLE_cmdHandler' in the implementation
+FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SAVE_TABLE' has no 'SAVE_TABLE_cmdHandler' in the implementation
+FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_ROW_ENABLED' has no 'SET_ROW_ENABLED_cmdHandler' in the implementation
+FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_SEQ_ENABLED' has no 'SET_SEQ_ENABLED_cmdHandler' in the implementation
+FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_ROW' has no 'SET_ROW_cmdHandler' in the implementation
+FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'DUMP_TABLE' has no 'DUMP_TABLE_cmdHandler' in the implementation
+FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'REPORT_ACTIVE_ROW' has no 'REPORT_ACTIVE_ROW_cmdHandler' in the implementation
+FAIL [D2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: command 'SET_ENABLED' has no 'SET_ENABLED_cmdHandler' in the implementation
+FAIL [D2] Command handlers defined: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 8 problem(s) found
+SKIP [D3] State machine actions defined: /home/ubuntu/campaign/uut/Svc/SeqScheduler: no state machines declared
+PASS [D4] Data product containers have default priority: /home/ubuntu/campaign/uut/Svc/SeqScheduler (1 container(s) checked)
+PASS [D5] Requirements mapped to design artifacts: /home/ubuntu/campaign/uut/Svc/SeqScheduler (56 requirement(s) checked)
+PASS [D7] SDD port table matches FPP: /home/ubuntu/campaign/uut/Svc/SeqScheduler (7 port(s) checked)
+PASS [D8] SDD dictionary tables match FPP: /home/ubuntu/campaign/uut/Svc/SeqScheduler (47 dictionary item(s) checked)
+PASS [D9] SDD design sections present: /home/ubuntu/campaign/uut/Svc/SeqScheduler (external references table: None (declared))
+PASS [D10] Input port behaviour documented: /home/ubuntu/campaign/uut/Svc/SeqScheduler (4 input port(s) checked)
+SKIP [I1] Source dependencies listed in CMakeLists: /home/ubuntu/campaign/uut/Svc/SeqScheduler: no C++ sources found
+FAIL [I3] /home/ubuntu/campaign/uut/Svc/SeqScheduler: container 'TableContainer' priority is not configurable: no command or parameter mentioning 'priority' found
+FAIL [I3] Data product priorities configurable: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 1 problem(s) found
+SKIP [U3] Unit-test dependencies in CMakeLists: /home/ubuntu/campaign/uut/Svc/SeqScheduler: no unit-test sources found
+FAIL [C2] /home/ubuntu/campaign/uut/Svc/SeqScheduler: no docs/hardware-run.md: record the hardware run (Platform, Deployment, Commit, Date, Result, Tester)
+FAIL [C2] Hardware run record: /home/ubuntu/campaign/uut/Svc/SeqScheduler: 1 problem(s) found
+PASS [D6] FPP compiles and generates auto-code: /home/ubuntu/campaign/uut/Svc/SeqScheduler (1 FPP file(s) checked)
+PASS [I2] Compiles without warnings: /home/ubuntu/campaign/uut/Svc/SeqScheduler (1 log(s) scanned)
+previous checklist ../out/checklist-prev.md: 6 recorded decision(s) applied (6 stale), 0 audit(s) lapsed []
+previous checklist ../out/checklist-prev.md: carried 0 Markdown review decision(s) []
+stage design: 6 row(s) queued for review, 5 deferred

@@ -58,6 +58,8 @@ void configureTopology() {
 
     // Command sequencer needs to allocate memory to hold contents of command sequences
     cmdSeq.allocateBuffer(0, mallocator, 5 * 1024);
+    schedSeq.allocateBuffer(0, mallocator, 5 * 1024);
+    schedSeqB.allocateBuffer(0, mallocator, 5 * 1024);
 
     // Restrict file access to the working directory (where PrmDb.dat lives)
     FileHandling::fileUplink.configure(".");
@@ -119,6 +121,8 @@ void teardownTopology(const TopologyState& state) {
 
     // Resource deallocation
     cmdSeq.deallocateBuffer(mallocator);
+    schedSeq.deallocateBuffer(mallocator);
+    schedSeqB.deallocateBuffer(mallocator);
     tearDownComponents(state);
     deinitComponents(state);
 }

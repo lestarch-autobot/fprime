@@ -1,0 +1,33 @@
+{
+  "deployment": "",
+  "dictionary": "uut/TestDeploymentsProject/build-artifacts/Linux/Ref/dict/RefTopologyDictionary.json",
+  "serial": "",
+  "vars": {
+    "bench": "uut/Svc/SeqScheduler/test/bench/seqsched_bench.py",
+    "port": "50000"
+  },
+  "flash": "python3 {bench} flash {image}",
+  "dump": "python3 {bench} dump {readback}",
+  "reset": "python3 {bench} reset --port {port}",
+  "gds": "python3 {bench} gds {dictionary} {logs} --port {port}",
+  "recorder": "fprime-cli events --dictionary {dictionary} --logs {logs}",
+  "send": "fprime-cli command-send --dictionary {dictionary} --logs {logs} {command} --arguments {args}",
+  "actions": {
+    "write_T_BASE": "python3 {bench} write-table T-BASE",
+    "write_T_BASE_B": "python3 {bench} write-table T-BASE-B",
+    "write_T_FIELDS": "python3 {bench} write-table T-FIELDS"
+  },
+  "timeouts": {
+    "flash_s": 60,
+    "gds_start_s": 20,
+    "recorder_start_s": 3,
+    "send_s": 60,
+    "command_s": 30,
+    "reset_settle_s": 12
+  },
+  "provenance": {
+    "serial_re": "Serial# = (\\S+)",
+    "note": "native bench: no debugger; the flash action prints the host name where the tool expects a probe serial"
+  },
+  "notes": "Native Linux Ref and fprime-gds on one host. Relative paths only: run from the campaign root. Ref runs in ./bench-work."
+}

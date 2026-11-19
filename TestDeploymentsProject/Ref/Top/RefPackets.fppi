@@ -293,6 +293,29 @@ telemetry packets RefPackets {
   packet Empty id 39 group 3 {
   }
 
+  packet SeqSched id 40 group 2 {
+    seqSched.NextRow
+    seqSched.NextTimeDue
+    seqSched.TableLoaded
+    seqSched.Enabled
+    seqSched.LastExecutedRow
+    seqSched.RunningRow
+    seqSched.RowsWaiting
+    seqSched.RowsPending
+    seqSched.RowsExecuted
+    seqSched.RowsSkipped
+    seqSchedB.NextRow
+    seqSchedB.NextTimeDue
+    seqSchedB.TableLoaded
+    seqSchedB.Enabled
+    seqSchedB.LastExecutedRow
+    seqSchedB.RunningRow
+    seqSchedB.RowsWaiting
+    seqSchedB.RowsPending
+    seqSchedB.RowsExecuted
+    seqSchedB.RowsSkipped
+  }
+
   # Uncomment to enable DpCompression subtopology
   #packet DpCompression id 38 group 3 {
     #DpCompression.dpZLibCompressorBufferManager.TotalBuffs
@@ -305,5 +328,17 @@ telemetry packets RefPackets {
 } omit {
   CdhCore.cmdDisp.CommandErrors
   cmdSeq.CS_CurrentSequence
+  schedSeq.CS_LoadCommands
+  schedSeq.CS_CancelCommands
+  schedSeq.CS_CommandsExecuted
+  schedSeq.CS_SequencesCompleted
+  schedSeq.CS_Errors
+  schedSeq.CS_CurrentSequence
+  schedSeqB.CS_LoadCommands
+  schedSeqB.CS_CancelCommands
+  schedSeqB.CS_CommandsExecuted
+  schedSeqB.CS_SequencesCompleted
+  schedSeqB.CS_Errors
+  schedSeqB.CS_CurrentSequence
   wasmSeq.SeqName
 }

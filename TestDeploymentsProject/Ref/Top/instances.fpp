@@ -58,6 +58,40 @@ module Ref {
     stack size Default.STACK_SIZE \
     priority 20
 
+  instance schedSeq: Svc.CmdSequencer base id 0x10008000 \
+    queue size Default.QUEUE_SIZE \
+    stack size Default.STACK_SIZE \
+    priority 20
+
+  instance schedSeqB: Svc.CmdSequencer base id 0x10009000 \
+    queue size Default.QUEUE_SIZE \
+    stack size Default.STACK_SIZE \
+    priority 20
+
+  instance seqSched: Svc.SeqScheduler base id 0x1000A000 \
+    queue size Default.QUEUE_SIZE \
+    stack size Default.STACK_SIZE \
+    priority 21 {
+      phase Fpp.ToCpp.Phases.configComponents """
+        seqSched.configure(Fw::String("seqSched.tbl"), 16, 1000000, memAllocator);
+        """
+      phase Fpp.ToCpp.Phases.tearDownComponents """
+        seqSched.cleanup();
+        """
+    }
+
+  instance seqSchedB: Svc.SeqScheduler base id 0x1000B000 \
+    queue size Default.QUEUE_SIZE \
+    stack size Default.STACK_SIZE \
+    priority 21 {
+      phase Fpp.ToCpp.Phases.configComponents """
+        seqSchedB.configure(Fw::String("seqSchedB.tbl"), 16, 1000000, memAllocator);
+        """
+      phase Fpp.ToCpp.Phases.tearDownComponents """
+        seqSchedB.cleanup();
+        """
+    }
+
   instance wasmSeq: Svc.WasmSequencer base id 0x10007000 \
     queue size Default.QUEUE_SIZE \
     stack size Default.STACK_SIZE \
@@ -99,6 +133,8 @@ module Ref {
   # ----------------------------------------------------------------------
 
   instance posixTime: Svc.PosixTime base id 0x10020000
+
+  instance timeBaseSetter: Ref.TimeBaseSetter base id 0x10026000
 
   instance rateGroupDriverComp: Svc.RateGroupDriver base id 0x10021000
 

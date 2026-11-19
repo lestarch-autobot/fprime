@@ -47,6 +47,11 @@ module Ref {
     instance comDriver
     instance cmdSeq
     instance wasmSeq
+    instance schedSeq
+    instance schedSeqB
+    instance seqSched
+    instance seqSchedB
+    instance timeBaseSetter
 
     # ----------------------------------------------------------------------
     # Pattern graph specifiers
@@ -64,7 +69,8 @@ module Ref {
 
     param connections instance FileHandling.prmDb
 
-    time connections instance posixTime
+    # Every time request goes through timeBaseSetter, which asks posixTime
+    time connections instance timeBaseSetter
 
     # ----------------------------------------------------------------------
     # Telemetry packets
@@ -91,6 +97,8 @@ module Ref {
       rateGroup1Comp.RateGroupMemberOut[5] -> ComCcsds.Subtopology.comQueueRun
       rateGroup1Comp.RateGroupMemberOut[6] -> CdhCore.Subtopology.cmdDispRun
       rateGroup1Comp.RateGroupMemberOut[7] -> ComCcsds.Subtopology.aggregatorTimeout
+      rateGroup1Comp.RateGroupMemberOut[8] -> seqSched.run
+      rateGroup1Comp.RateGroupMemberOut[9] -> seqSchedB.run
 
       # Rate group 2
       rateGroupDriverComp.CycleOut[Ports_RateGroups.rateGroup2] -> rateGroup2Comp.CycleIn
@@ -103,6 +111,8 @@ module Ref {
       rateGroup2Comp.RateGroupMemberOut[5] -> FileHandling.Subtopology.fileManagerSchedIn
       rateGroup2Comp.RateGroupMemberOut[6] -> wasmSeq.checkTimers
       rateGroup2Comp.RateGroupMemberOut[7] -> wasmSeq.writeTelemetry
+      rateGroup2Comp.RateGroupMemberOut[8] -> schedSeq.schedIn
+      rateGroup2Comp.RateGroupMemberOut[9] -> schedSeqB.schedIn
 
       # Rate group 3
       rateGroupDriverComp.CycleOut[Ports_RateGroups.rateGroup3] -> rateGroup3Comp.CycleIn
@@ -155,6 +165,25 @@ module Ref {
       wasmSeq.getParam ->   FileHandling.prmDb.getPrm
     }
 
+    connections SeqSchedulers {
+      # Time: timeBaseSetter passes the time of posixTime, with its time base overridden on command
+      timeBaseSetter.timeSourceOut -> posixTime.timeGetPort
+
+      # Each scheduler runs its table on its own sequencer
+      seqSched.seqRunOut     -> schedSeq.seqRunIn
+      seqSched.seqCancelOut  -> schedSeq.seqCancelIn
+      schedSeq.seqDone       -> seqSched.seqDoneIn
+      seqSchedB.seqRunOut    -> schedSeqB.seqRunIn
+      seqSchedB.seqCancelOut -> schedSeqB.seqCancelIn
+      schedSeqB.seqDone      -> seqSchedB.seqDoneIn
+
+      # Table data products
+      seqSched.productGetOut   -> DataProducts.Subtopology.productGetIn
+      seqSched.productSendOut  -> DataProducts.Subtopology.productSendIn
+      seqSchedB.productGetOut  -> DataProducts.Subtopology.productGetIn
+      seqSchedB.productSendOut -> DataProducts.Subtopology.productSendIn
+    }
+
     connections ComCcsds_CdhCore {
       # Events and telemetry to comQueue
       CdhCore.Subtopology.eventsPktSend  -> ComCcsds.Subtopology.comPacketQueueIn[ComCcsds.Ports_ComPacketQueue.EVENTS]
@@ -167,6 +196,10 @@ module Ref {
       CdhCore.Subtopology.seqCmdStatus       -> cmdSeq.cmdResponseIn
       wasmSeq.cmdOut                         -> CdhCore.Subtopology.seqCmdBuff
       CdhCore.Subtopology.seqCmdStatus       -> wasmSeq.cmdResponseIn
+      schedSeq.comCmdOut                     -> CdhCore.Subtopology.seqCmdBuff
+      CdhCore.Subtopology.seqCmdStatus       -> schedSeq.cmdResponseIn
+      schedSeqB.comCmdOut                    -> CdhCore.Subtopology.seqCmdBuff
+      CdhCore.Subtopology.seqCmdStatus       -> schedSeqB.cmdResponseIn
     }
 
     connections ComCcsds_FileHandling {

@@ -1,0 +1,6 @@
+ninja: no work to do.
+ninja: no work to do.
+[WARNING] fprime-gds has unexpected version. Expected: 4.4.0 found 4.4.2.dev10+g32dc5f381
+[WARNING] fprime-fpp is not installed
+[WARNING] Git submodule 'googletest' appears uninitialized (directory is empty): /home/ubuntu/campaign/uut/googletest
+  Run 'git submodule update --init --recursive' to initialize submodules.

@@ -1,0 +1,2098 @@
+{
+ "image_version": {
+  "policy": "required"
+ },
+ "name": "QUAL-SEQSCHED — Svc.SeqScheduler on Ref",
+ "markers": {
+  "command": "CdhCore.cmdDisp.CMD_NO_OP_STRING",
+  "event": "CdhCore.cmdDisp.NoOpStringReceived",
+  "arg": "id",
+  "reserved_min": 4294901760
+ },
+ "event_patterns": {
+  "CdhCore.cmdDisp.NoOpStringReceived": "Received a NO-OP string=(?P<id>\\d+)$",
+  "Ref.seqSched.TableLoaded": "Loaded sequence schedule table (?P<fileName>\\S+): (?P<rows>\\d+) rows$",
+  "Ref.seqSched.TableFileMissing": "Sequence schedule table (?P<fileName>\\S+) not found: table is empty$",
+  "Ref.seqSched.RowSkippedDisabled": "Row (?P<row>\\d+) skipped: disabled$",
+  "Ref.seqSched.ActiveRow": "Row (?P<row>\\d+) is next, due at (?P<timeDue>.*): sequence (?P<fileName>\\S+)$",
+  "Ref.seqSched.NoActiveRow": "No row is upcoming$",
+  "Ref.seqSched.EnabledSet": "Sequence scheduler enabled flag set to (?P<enabled>\\w+)$",
+  "Ref.seqSched.TableLoadFailed": "Failed to load sequence schedule table (?P<fileName>\\S*): (?:[\\w.]*\\.)?(?P<reason>\\w+)$",
+  "Ref.seqSched.TableSaved": "Saved sequence schedule table (?P<fileName>\\S+)$",
+  "Ref.seqSched.SeqRun": "Row (?P<row>\\d+) ran sequence (?P<fileName>\\S+)$",
+  "Ref.seqSched.SeqCompleted": "Row (?P<row>\\d+) sequence completed: (?:[\\w.]*\\.)?(?P<response>\\w+)$",
+  "Ref.seqSched.SeqCancelled": "Row (?P<cancelledRow>\\d+) sequence cancelled for row (?P<row>\\d+)$",
+  "Ref.seqSched.SeqDoneUnexpected": "Completion report with no sequence running: (?:[\\w.]*\\.)?(?P<response>\\w+)$",
+  "Ref.seqSched.RowSkippedBusy": "Row (?P<row>\\d+) skipped: row (?P<runningRow>\\d+) sequence running$",
+  "Ref.seqSched.RowSkippedByCancel": "Row (?P<row>\\d+) skipped: row (?P<cancelRow>\\d+) due after it cancels$",
+  "Ref.seqSched.RowLate": "Row (?P<row>\\d+) skipped: found past its due time$",
+  "Ref.seqSched.RowEnabledSet": "Row (?P<row>\\d+) enabled flag set to (?P<enabled>\\w+)$",
+  "Ref.seqSched.SeqEnabledSet": "Sequence (?P<fileName>\\S+) enabled flag set to (?P<enabled>\\w+) in (?P<rows>\\d+) rows$",
+  "Ref.seqSched.RowSet": "Row (?P<row>\\d+) set: time (?P<time>.*) mode (?:[\\w.]*\\.)?(?P<mode>\\w+) sequence (?P<fileName>\\S+) busy policy (?:[\\w.]*\\.)?(?P<busyPolicy>\\w+)$",
+  "Ref.seqSched.CmdRejected": "Command (?P<opCode>\\w+) rejected: (?:[\\w.]*\\.)?(?P<reason>\\w+)$",
+  "Ref.seqSched.TableDumped": "Table data product sent$",
+  "Ref.schedSeq.CS_SequenceLoaded": "Loaded sequence (?P<fileName>\\S+)$",
+  "Ref.schedSeq.CS_SequenceComplete": "Sequence file (?P<fileName>\\S+) complete$",
+  "Ref.schedSeq.CS_SequenceCanceled": "Sequence file (?P<fileName>\\S+) canceled$",
+  "Ref.schedSeq.CS_FileNotFound": "Sequence file (?P<fileName>\\S+) not found\\.$",
+  "Ref.schedSeqB.CS_SequenceLoaded": "Loaded sequence (?P<fileName>\\S+)$",
+  "Ref.schedSeqB.CS_SequenceComplete": "Sequence file (?P<fileName>\\S+) complete$",
+  "Ref.timeBaseSetter.TimeBaseSet": "Time base override set to (?:[\\w.]*\\.)?(?P<timeBase>\\w+)$",
+  "Ref.timeBaseSetter.TimeBaseCleared": "Time base override cleared$",
+  "Ref.seqSchedB.TableLoaded": "Loaded sequence schedule table (?P<fileName>\\S+): (?P<rows>\\d+) rows$",
+  "Ref.seqSchedB.TableFileMissing": "Sequence schedule table (?P<fileName>\\S+) not found: table is empty$",
+  "Ref.seqSchedB.RowSkippedDisabled": "Row (?P<row>\\d+) skipped: disabled$",
+  "Ref.seqSchedB.ActiveRow": "Row (?P<row>\\d+) is next, due at (?P<timeDue>.*): sequence (?P<fileName>\\S+)$",
+  "Ref.seqSchedB.NoActiveRow": "No row is upcoming$",
+  "Ref.seqSchedB.EnabledSet": "Sequence scheduler enabled flag set to (?P<enabled>\\w+)$",
+  "Ref.seqSchedB.TableLoadFailed": "Failed to load sequence schedule table (?P<fileName>\\S*): (?:[\\w.]*\\.)?(?P<reason>\\w+)$",
+  "Ref.seqSchedB.TableSaved": "Saved sequence schedule table (?P<fileName>\\S+)$",
+  "Ref.seqSchedB.SeqRun": "Row (?P<row>\\d+) ran sequence (?P<fileName>\\S+)$",
+  "Ref.seqSchedB.SeqCompleted": "Row (?P<row>\\d+) sequence completed: (?:[\\w.]*\\.)?(?P<response>\\w+)$",
+  "Ref.seqSchedB.SeqCancelled": "Row (?P<cancelledRow>\\d+) sequence cancelled for row (?P<row>\\d+)$",
+  "Ref.seqSchedB.SeqDoneUnexpected": "Completion report with no sequence running: (?:[\\w.]*\\.)?(?P<response>\\w+)$",
+  "Ref.seqSchedB.RowSkippedBusy": "Row (?P<row>\\d+) skipped: row (?P<runningRow>\\d+) sequence running$",
+  "Ref.seqSchedB.RowSkippedByCancel": "Row (?P<row>\\d+) skipped: row (?P<cancelRow>\\d+) due after it cancels$",
+  "Ref.seqSchedB.RowLate": "Row (?P<row>\\d+) skipped: found past its due time$",
+  "Ref.seqSchedB.RowEnabledSet": "Row (?P<row>\\d+) enabled flag set to (?P<enabled>\\w+)$",
+  "Ref.seqSchedB.SeqEnabledSet": "Sequence (?P<fileName>\\S+) enabled flag set to (?P<enabled>\\w+) in (?P<rows>\\d+) rows$",
+  "Ref.seqSchedB.RowSet": "Row (?P<row>\\d+) set: time (?P<time>.*) mode (?:[\\w.]*\\.)?(?P<mode>\\w+) sequence (?P<fileName>\\S+) busy policy (?:[\\w.]*\\.)?(?P<busyPolicy>\\w+)$",
+  "Ref.seqSchedB.CmdRejected": "Command (?P<opCode>\\w+) rejected: (?:[\\w.]*\\.)?(?P<reason>\\w+)$",
+  "Ref.seqSchedB.TableDumped": "Table data product sent$",
+  "Ref.schedSeqB.CS_SequenceCanceled": "Sequence file (?P<fileName>\\S+) canceled$",
+  "Ref.schedSeqB.CS_FileNotFound": "Sequence file (?P<fileName>\\S+) not found\\.$"
+ },
+ "packets": {
+  "SeqSched": [
+   "Ref.seqSched.NextRow",
+   "Ref.seqSched.NextTimeDue",
+   "Ref.seqSched.TableLoaded",
+   "Ref.seqSched.RunningRow",
+   "Ref.seqSched.RowsWaiting",
+   "Ref.seqSched.Enabled",
+   "Ref.seqSched.LastExecutedRow",
+   "Ref.seqSched.RowsPending",
+   "Ref.seqSched.RowsExecuted",
+   "Ref.seqSched.RowsSkipped"
+  ],
+  "SeqSchedB": [
+   "Ref.seqSchedB.NextRow",
+   "Ref.seqSchedB.NextTimeDue",
+   "Ref.seqSchedB.TableLoaded",
+   "Ref.seqSchedB.RunningRow",
+   "Ref.seqSchedB.RowsWaiting",
+   "Ref.seqSchedB.Enabled",
+   "Ref.seqSchedB.LastExecutedRow",
+   "Ref.seqSchedB.RowsPending",
+   "Ref.seqSchedB.RowsExecuted",
+   "Ref.seqSchedB.RowsSkipped"
+  ]
+ },
+ "std_complete": [
+  "both markers present",
+  "commands_sent == count(event CdhCore.cmdDisp.OpCodeDispatched)",
+  "event CdhCore.cmdDisp.TooManyCommands count == 0",
+  "no sample of CdhCore.events.EventsDropped in the window differs from the last sample before it; with no earlier sample in the record, any non-zero sample in the window fails (helper)",
+  "no sample of ComCcsds.comQueue.comIngressDropped or ComCcsds.comQueue.comManagedDropped in the window differs, in any element, from the last sample before it; with no earlier sample in the record, any sample in the window with a non-zero element fails (helper)",
+  "SeqSched samples >= 2",
+  "event CdhCore.cmdDisp.OpCodeError count == 0"
+ ],
+ "abs": {
+  "ABS": [
+   "event Ref.seqSched.TableLoadFailed count == 0",
+   "event Ref.seqSched.CmdRejected count == 0",
+   "event Ref.seqSched.SeqDoneUnexpected count == 0"
+  ],
+  "STD-ERR": [
+   "both markers present",
+   "commands_sent == count(event CdhCore.cmdDisp.OpCodeDispatched)",
+   "event CdhCore.cmdDisp.TooManyCommands count == 0",
+   "no sample of CdhCore.events.EventsDropped in the window differs from the last sample before it; with no earlier sample in the record, any non-zero sample in the window fails (helper)",
+   "no sample of ComCcsds.comQueue.comIngressDropped or ComCcsds.comQueue.comManagedDropped in the window differs, in any element, from the last sample before it; with no earlier sample in the record, any sample in the window with a non-zero element fails (helper)",
+   "SeqSched samples >= 2"
+  ]
+ },
+ "helpers_module": "planted_faults.py",
+ "helpers": [
+  {
+   "instance": "Ref.timeBaseSetter",
+   "component": "TimeBaseSetter",
+   "src": "TestDeploymentsProject/Ref/TimeBaseSetter",
+   "repo": "https://github.com/lestarch-autobot/fprime"
+  }
+ ],
+ "uut": "Svc.SeqScheduler (lestarch-autobot/fprime, branch seq-scheduler)",
+ "deployment": "TestDeploymentsProject/Ref with helper component timeBaseSetter, instances seqSched + schedSeq and seqSchedB + schedSeqB",
+ "coverage": {
+  "ut": {
+   "lines_min": 95
+  },
+  "system": {
+   "lines_min": 75
+  },
+  "not_covered_ack": [
+   "File write and rename errors of SAVE_TABLE (REQ-033): unit tests force them; not plantable on the bench without changing the image.",
+   "Data product buffer refusal (REQ-036): unit tests; Ref's buffer manager always grants.",
+   "queryIn handler (REQ-037, 038, 039): unit tests; no component in Ref calls it.",
+   "ticks counted while one is queued: unit test; the Ref component thread keeps up at 1 Hz.",
+   "TimeBaseNotRecorded and load failures READ, VERSION, ROW_CONTENT: unit tests; L5-1 plants OPEN, SIZE and CHECKSUM only."
+  ],
+  "rationale": "Baselines of the test-design skill, unchanged: unit tests on the host can force every error branch (95 % lines); the system run cannot force file, buffer and queue faults (75 % lines)."
+ },
+ "requirements": {
+  "REQ-SeqScheduler-001": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test; the restart of L3-1 shows it once (TableLoaded with no command, before any run) — not counted, a second restart test adds bench time and no new evidence"
+  },
+  "REQ-SeqScheduler-002": {
+   "tests": [
+    "L2-1",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L2-1, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-003": {
+   "tests": [
+    "L5-1",
+    "L5-3"
+   ],
+   "verification": "Unit Test, L5-1, L5-3",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-004": {
+   "tests": [
+    "L2-1",
+    "L6-1"
+   ],
+   "verification": "Unit Test, L2-1, L6-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-005": {
+   "tests": [
+    "L3-1",
+    "L5-1",
+    "L5-3",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L3-1, L5-1, L5-3, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-006": {
+   "tests": [
+    "L2-2",
+    "L2-3",
+    "L2-11"
+   ],
+   "verification": "Unit Test, L2-2, L2-3, L2-11",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-007": {
+   "tests": [
+    "L2-3",
+    "L2-10"
+   ],
+   "verification": "Unit Test, L2-3, L2-10",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-008": {
+   "tests": [
+    "L2-4",
+    "L3-1"
+   ],
+   "verification": "Unit Test, L2-4, L3-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-009": {
+   "tests": [
+    "L2-5",
+    "L2-12"
+   ],
+   "verification": "Unit Test, L2-5, L2-12",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-010": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test (TickRounding, TicksWhileBusy): on a bench with no system-time jump a tick count and elapsed time cannot be told apart"
+  },
+  "REQ-SeqScheduler-011": {
+   "tests": [
+    "L2-5",
+    "L2-12"
+   ],
+   "verification": "Unit Test, L2-5, L2-12",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-012": {
+   "tests": [
+    "L2-2",
+    "L2-6",
+    "L2-8",
+    "L2-9",
+    "L2-10",
+    "L2-11"
+   ],
+   "verification": "Unit Test, L2-2, L2-6, L2-8, L2-9, L2-10, L2-11",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-013": {
+   "tests": [
+    "L2-6",
+    "L2-7",
+    "L2-8",
+    "L2-14"
+   ],
+   "verification": "Unit Test, L2-6, L2-7, L2-8, L2-14",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-014": {
+   "tests": [
+    "L2-6",
+    "L2-14"
+   ],
+   "verification": "Unit Test, L2-6, L2-14",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-015": {
+   "tests": [
+    "L2-7",
+    "L2-13"
+   ],
+   "verification": "Unit Test, L2-7, L2-13",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-016": {
+   "tests": [
+    "L2-8",
+    "L2-14"
+   ],
+   "verification": "Unit Test, L2-8, L2-14",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-017": {
+   "tests": [
+    "L2-6",
+    "L2-14"
+   ],
+   "verification": "Unit Test, L2-6, L2-14",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-018": {
+   "tests": [
+    "L5-4",
+    "L6-2"
+   ],
+   "verification": "Unit Test, L5-4, L6-2",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-019": {
+   "tests": [
+    "L2-1",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L2-1, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-020": {
+   "tests": [
+    "L2-2",
+    "L2-11"
+   ],
+   "verification": "Unit Test, L2-2, L2-11",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-021": {
+   "tests": [
+    "L2-3",
+    "L3-1"
+   ],
+   "verification": "Unit Test, L2-3, L3-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-022": {
+   "tests": [
+    "L2-9",
+    "L2-10"
+   ],
+   "verification": "Unit Test, L2-9, L2-10",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-023": {
+   "tests": [
+    "L3-1",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L3-1, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-025": {
+   "tests": [
+    "L2-9",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L2-9, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-026": {
+   "tests": [
+    "L2-9",
+    "L2-10"
+   ],
+   "verification": "Unit Test, L2-9, L2-10",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-027": {
+   "tests": [
+    "L2-9",
+    "L2-11",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L2-9, L2-11, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-028": {
+   "tests": [
+    "L2-11",
+    "L5-4",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L2-11, L5-4, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-029": {
+   "tests": [
+    "L2-9",
+    "L2-11",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L2-9, L2-11, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-030": {
+   "tests": [
+    "L5-2",
+    "L5-4"
+   ],
+   "verification": "Unit Test, L5-2, L5-4",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-031": {
+   "tests": [
+    "L3-1",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L3-1, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-032": {
+   "tests": [
+    "L3-1",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L3-1, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-033": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: file error not plantable on this bench without changing the image"
+  },
+  "REQ-SeqScheduler-034": {
+   "tests": [
+    "L2-10",
+    "L6-1"
+   ],
+   "verification": "Unit Test, L2-10, L6-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-035": {
+   "tests": [
+    "L2-1",
+    "L6-1",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L2-1, L6-1, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-036": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: buffer refusal not plantable on this bench"
+  },
+  "REQ-SeqScheduler-037": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: queryIn has no ground path in Ref"
+  },
+  "REQ-SeqScheduler-038": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: queryIn has no ground path in Ref"
+  },
+  "REQ-SeqScheduler-039": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: queryIn has no ground path in Ref; NextRow and NextTimeDue show the soonest upcoming row only (L2-3, L2-4)"
+  },
+  "REQ-SeqScheduler-040": {
+   "tests": [
+    "L2-2",
+    "L2-6",
+    "L2-10",
+    "L2-11",
+    "L5-2",
+    "L6-2"
+   ],
+   "verification": "Unit Test, L2-2, L2-6, L2-10, L2-11, L5-2, L6-2",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-041": {
+   "tests": [
+    "L2-1",
+    "L2-4",
+    "L2-6"
+   ],
+   "verification": "Unit Test, L2-1, L2-4, L2-6",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-042": {
+   "tests": [
+    "L2-10",
+    "L2-13",
+    "L2-14",
+    "L2-16",
+    "L5-4"
+   ],
+   "verification": "Integration Test, L2-10, L2-13, L2-14, L2-16, L5-4",
+   "note": "Integration Test, system test"
+  },
+  "REQ-SeqScheduler-044": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: 1 Hz tick; a tolerance below the tick period is not observable at event-time resolution"
+  },
+  "REQ-SeqScheduler-045": {
+   "tests": [
+    "L2-6",
+    "L2-13",
+    "L2-14"
+   ],
+   "verification": "Unit Test, L2-6, L2-13, L2-14",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-046": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test (QueryRelative); L2-4 shows it once (NextTimeDue of a START_RELATIVE row steady while time advances) — not counted: the other START_RELATIVE row on the bench (L3-1) is due 60 s after a restart, where NextTimeDue is not sampled before the run"
+  },
+  "REQ-SeqScheduler-047": {
+   "tests": [
+    "L2-4",
+    "L2-12"
+   ],
+   "verification": "Unit Test, L2-4, L2-12",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-051": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: every bench table file is written with all 16 rows; a shorter file needs a second table-file set for one check"
+  },
+  "REQ-SeqScheduler-052": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: a file longer than the table needs a second table-file set for one check"
+  },
+  "REQ-SeqScheduler-053": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: needs a restart of the image with no table file, which every later test would have to undo"
+  },
+  "REQ-SeqScheduler-054": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: an empty row is observable on the bench only as an absence"
+  },
+  "REQ-SeqScheduler-055": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: an all-empty table arises on the bench only from the restart of REQ-053"
+  },
+  "REQ-SeqScheduler-056": {
+   "tests": [
+    "L3-1",
+    "L7-1"
+   ],
+   "verification": "Unit Test, L3-1, L7-1",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-057": {
+   "tests": [
+    "L2-15",
+    "L2-16"
+   ],
+   "verification": "Unit Test, L2-15, L2-16",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-058": {
+   "tests": [
+    "L2-15",
+    "L2-16"
+   ],
+   "verification": "Unit Test, L2-15, L2-16",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-059": {
+   "tests": [],
+   "verification": "Unit Test",
+   "note": "unit test: a full container is not plantable on this bench; L2-1 decodes one record per row"
+  },
+  "REQ-SeqScheduler-060": {
+   "tests": [
+    "L2-7",
+    "L2-13"
+   ],
+   "verification": "Unit Test, L2-7, L2-13",
+   "note": "Unit Test, system test"
+  },
+  "REQ-SeqScheduler-061": {
+   "tests": [
+    "L2-5",
+    "L2-12"
+   ],
+   "verification": "Unit Test, L2-5, L2-12",
+   "note": "Unit Test, system test"
+  }
+ },
+ "scope": [
+  "- Ref `configure` values the plan depends on: 16 rows, a tick period of 1 s (rate group 1 Hz) and a default table file that the plan overrides with `TABLE_FILE`, for both `seqSched` and `seqSchedB`.",
+  "- L0: desk-checked; bench confirmation pending.",
+  "- UUT: `Svc.SeqScheduler`, `lestarch-autobot/fprime` branch `seq-scheduler`; SHA recorded in the manifest.",
+  "- Test fixture: `Ref.TimeBaseSetter`, instance `timeBaseSetter`, between every component's time port and `posixTime`.",
+  "- Deployment: `TestDeploymentsProject/Ref`, the repository's full reference deployment, with `seqSched` -> `schedSeq` (`Svc.CmdSequencer`) and `seqSchedB` -> `schedSeqB`, both schedulers on the 1 Hz rate group, their channels in a new `SeqSched` telemetry packet.",
+  "- Bench: native Linux `Ref` and `fprime-gds` on the session VM, one file system shared by the image and the harness; no hardware, no power control. Restart = stop and start the `Ref` process.",
+  "- Ground system: `fprime-gds` from the UUT's `requirements.txt`; sequences built with `fprime-seqgen`; table files written by `Svc/SeqScheduler/scripts/seq_schedule_table.py`.",
+  "- Sequencer idle (require on every test) = every `CS_SequenceLoaded` or `CS_PortSequenceStarted` of this start of `Ref` in the record is followed by a complete or cancel event of the same sequencer before the test's opening marker.",
+  "- Parameters at plan values (require on every test) = for each parameter, the last `*_PRM_SET` command of this start in the record, with its `OpCodeCompleted`, carries the plan value, or none was sent since the start (the image starts from the plan's parameter file).",
+  "- Out of scope: `Svc.WasmSequencer` and FPy sequencers as the attached sequencer; uplink of table and sequence files (written directly to the shared file system)."
+ ],
+ "entry_gates": [
+  "- The harness sends each command only after the completion of the previous one is recorded, so the component queue (size 10) is never filled by commands.",
+  "- Unit tests of `Svc/SeqScheduler` pass with every row of the SDD unit-test list implemented; unit tests of the fixture `Ref/TimeBaseSetter` pass.",
+  "- `Ref` built from the manifest SHA; `fth verify-plan plan.json --tests .` passes.",
+  "- Marker round-trip: `CdhCore.cmdDisp.CMD_NO_OP_STRING(\"100\")` logged as `Received a NO-OP string=100` (L0-1).",
+  "- Event budget: the busiest window (L2-14) raises under 50 events in 60 s; Ref's TCP downlink has no rate limit.",
+  "- Sequence files built and present: `short.bin` and `short2.bin` = two `CdhCore.cmdDisp.CMD_NO_OP` records, relative delay 0, no wait, run time under 2 s; `long.bin` = `CMD_NO_OP`, a 20 s relative wait, `CMD_NO_OP`. `missing.bin` absent. The dry run confirms the run times.",
+  "- A time base override does not stop the image: confirmed in L0-2, which runs short.bin under the override, before any other test. `Fw::Time` comparison across bases is `INCOMPARABLE`, not an assert (`Fw/Time/Time.cpp`), but a `Svc.CmdSequencer` wait started in one base never expires in another: no test changes the override while `long.bin` runs.",
+  "- Run order: L0-1, L0-2 first; L2-5 and L2-11 in the same start of `Ref` as the first report of their time base; L3-1 (restart) after them. The order is fixed, not drawn."
+ ],
+ "levels": [
+  "L0 provenance/feasibility · L2 functional · L3 persistence/restart · L5 fault paths · L6 negative controls · L7 final state for independent verification. No L4: the component has no performance requirement."
+ ],
+ "final_state": {
+  "accepted_evidence": "the table file and the data product file written in L7-1, on the bench file system",
+  "rationale": "Both files are outside the UUT's event and telemetry path; the auditor reads them with the table script's reader."
+ },
+ "not_covered": [
+  "- REQ-SeqScheduler-001: unit test; the restart of L3-1 shows it once (TableLoaded with no command, before any run) — not counted, a second restart test adds bench time and no new evidence",
+  "- REQ-SeqScheduler-010: unit test (TickRounding, TicksWhileBusy): on a bench with no system-time jump a tick count and elapsed time cannot be told apart",
+  "- REQ-SeqScheduler-033: unit test: file error not plantable on this bench without changing the image",
+  "- REQ-SeqScheduler-036: unit test: buffer refusal not plantable on this bench",
+  "- REQ-SeqScheduler-037: unit test: queryIn has no ground path in Ref",
+  "- REQ-SeqScheduler-038: unit test: queryIn has no ground path in Ref",
+  "- REQ-SeqScheduler-039: unit test: queryIn has no ground path in Ref; NextRow and NextTimeDue show the soonest upcoming row only (L2-3, L2-4)",
+  "- REQ-SeqScheduler-044: unit test: 1 Hz tick; a tolerance below the tick period is not observable at event-time resolution",
+  "- REQ-SeqScheduler-046: unit test (QueryRelative); L2-4 shows it once (NextTimeDue of a START_RELATIVE row steady while time advances) — not counted: the other START_RELATIVE row on the bench (L3-1) is due 60 s after a restart, where NextTimeDue is not sampled before the run",
+  "- REQ-SeqScheduler-051: unit test: every bench table file is written with all 16 rows; a shorter file needs a second table-file set for one check",
+  "- REQ-SeqScheduler-052: unit test: a file longer than the table needs a second table-file set for one check",
+  "- REQ-SeqScheduler-053: unit test: needs a restart of the image with no table file, which every later test would have to undo",
+  "- REQ-SeqScheduler-054: unit test: an empty row is observable on the bench only as an absence",
+  "- REQ-SeqScheduler-055: unit test: an all-empty table arises on the bench only from the restart of REQ-053",
+  "- REQ-SeqScheduler-059: unit test: a full container is not plantable on this bench; L2-1 decodes one record per row",
+  "- Event severities (REQ-SeqScheduler-003, -016, -018, -021, -034, -036, -040, -060): unit tests assert the severity; system predicates count events by name.",
+  "- Tick-counted relative delays (REQ-SeqScheduler-010): unit tests; see the requirements table.",
+  "- A sequence that is never reported complete (SDD §7): `Svc.CmdSequencer` always reports; unit test `NoCompletion`.",
+  "- Sequencers other than `Svc.CmdSequencer`.",
+  "- Schedule ticks other than 1 Hz.",
+  "- Behaviour over a system-time jump (Ref's clock is the host clock)."
+ ],
+ "decision_log": [
+  "1. 2026-11-16 designer — marker = `CdhCore.cmdDisp.CMD_NO_OP_STRING` with a decimal id; Ref has the command and 40-character strings.",
+  "2. 2026-11-16 designer — a dedicated `Svc.CmdSequencer` per scheduler instance (SDD §3.5); `cmdSeq` stays the ground's sequencer.",
+  "3. 2026-11-16 designer — table and sequence files are written to the shared file system, not uplinked; planted faults are therefore command rewrites and insertions only.",
+  "4. 2026-11-16 designer — relative-row tests read elapsed ticks through `NextTimeDue` of a far-future row (time due less the sample's own time is the delay remaining) to place the row's due time, and check that elapsed value against an origin recorded outside the scheduler: the bench's process start time (L2-4, L3-1) or the record's first `TimeBaseSet` event for the base (L2-5, L2-11). Review round 1, TD-01.",
+  "5. 2026-11-16 designer — coverage thresholds left at the skill baselines.",
+  "6. 2026-11-16 designer — `Ref.TimeBaseSetter` is the plan's helper component, with unit tests of its own; superseded in part by decision 8.",
+  "7. 2026-11-16 designer — redundancy: every requirement with system coverage has two or more covering tests, at least one of them carrying no planted fault another covering test carries. Second tests reuse the second scheduler instance (L2-10, L2-13, L2-14, L5-4) and a second time base (L2-12) rather than repeat a test. REQ-001 and REQ-024 need a second restart test to be redundant; they are verified by unit test and listed under not-covered.",
+  "8. 2026-11-16 human (Michael Starch, 12:55 PST) — one SDD, for the component asked for: `Svc.SeqScheduler` is the only unit under test. `Ref.TimeBaseSetter` is a test fixture of the `Ref` deployment with no SDD and no requirements of its own; its unit tests and L0-2 show it fit for use. Closes TD-09 as a helper; the plan moved to `Svc/SeqScheduler/test/int`.",
+  "9. 2026-11-16 designer — `FSW time + N s` means the seconds of an event received at most 1 s before the command is sent, used with the row's commanded time base; an override leaves seconds unchanged (L0-2). Review round 1, TD-14.",
+  "10. 2026-11-16 designer — planted faults now reach an absence check (`early_override`, L2-3 W1), the second instance (`cross_instance`, L2-10) and a fault-path test (`missing_file_present`, L5-1); `wrong_seq` is classed `stimulus`. Whether a `precedes` or latency predicate with an absent operand reports FAIL or UNVERIFIED is confirmed with a replay vector in the dry run before sealing (TD-21).",
+  "11. 2026-11-16 designer — L5-2 expectations follow `Svc.CmdSequencer` as read: a run refused while busy is answered at once with `seqDone(EXECUTION_ERROR)`. SDD §7 describes a sequencer that stays silent; the wording is raised at Approve SDD, not edited here.",
+  "12. 2026-11-16 designer — review round 2: sequence file contents and run times fixed in entry gate 5 (TD-22); L0-2 waits for `short.bin` to complete before clearing the override and requires a record from each of five instances inside the span (TD-22, TD-24); the two common requires are defined from the record (TD-23).",
+  "13. 2026-11-16 designer — instance names are the dictionary's qualified names: `Ref.` for the deployment's own instances, `CdhCore.`, `FileHandling.`, `DataProducts.`, `ComCcsds.` for subtopology instances (read from the topology model).",
+  "14. 2026-11-16 designer — review round 3 (closed by the author after the last review of the bound; unverified): downlink-loss guard uses channels that exist in Ref's packets, `CdhCore.events.EventsDropped` and the two `ComCcsds.comQueue` drop channels, to be confirmed against the built dictionary in the L0 bench check (TD-26); L0-2 checks the time tag of the component's own event (TD-27); helper and require strings use qualified names (TD-28).",
+  "15. 2026-11-16 human (Michael Starch, 15:16 PST) and designer — plan regenerated for the reworked requirements (48 rows): no completion time-out (old L5-2 and L5-4 replaced by tests of edits and a load during a running sequence); busy policies WAIT_FOR_RUNNING, CANCEL_RUNNING, SKIP_WHEN_RUNNING (L2-6, L2-7, L2-8, L2-13, L2-14); one SET_ROW command; `SeqRun`, `SeqDoneUnexpected`, `RowSkippedBusy`, `RowSet` events; `NextTimeDue` and `RowsWaiting` channels. Entry 11 no longer applies. Requirement numbers in entries 1-14 are those of the first gate.",
+  "16. 2026-11-16 designer — reopened review round 1: `wrong_seq` no longer applies to L7-1 (a stimulus fault must leave the final state right); latency bounds on tests with two windows are helper checks scoped to their window, not unscoped metrics; L2-1 loads T-FIELDS, whose rows 14 and 15 hold a non-default value in every field; REQ-005 traces to L3-1 and L7-1, where a load replaces edited content. The GDS rendering of a `Fw.TimeValue` argument (the `RowSet` pattern, the `row_time_late` argument form, the row times read back in L7-1) is confirmed in the dry run before sealing (RT-15), with TD-21. A 'run no earlier than' helper holds when the row is not run in the window; a 'run no later than' helper fails; both are confirmed in the same dry run (RT-17).",
+  "17. 2026-11-18 human (Michael Starch, 09:07 PST) — the per-row late policy proposed on 2026-11-17 is withdrawn: a row found more than `LATE_TOLERANCE_SEC` past due is skipped, as an operations constraint. `RowLate` and `RowSkippedBusy` are WARNING_LO; the query port argument is `i`. The plan is the one reviewed on 2026-11-16, with REQ-SeqScheduler-042 given as Integration Test.",
+  "18. 2026-11-18 human (Michael Starch, 09:20 PST) — `TicksDropped` telemetry and the queue-overflow hooks are removed: `run` counts ticks and queues at most one tick message; any other queue overflow is the framework assertion.",
+  "19. 2026-11-18 human (Michael Starch, 14:32 and 14:35 PST) — table length, default table file and tick period come from `configure` (no `TICK_PERIOD_USEC` parameter, REQ-048 removed); a missing table file at start-up gives an empty table (unit test); disabled-row skips emit `RowSkippedDisabled`; `EXECUTING` state; `SET_ENABLED` and `REPORT_ACTIVE_ROW` (L2-15, L2-16 added); requirements 051 to 059 added, seven of them verified by unit test only.",
+  "20. 2026-11-18 human (Michael Starch, 16:12 PST) — row state is not saved: every loaded row is PENDING and a past row is skipped with no event on the first tick after a load (L2-1, L3-1, L7-1 reworked; REQ-024 removed; REQ-056 now has system coverage); a failed load leaves an empty table that commands can fill (REQ-043 and `NO_TABLE` removed; L5-1, L5-3 reworked; L5-1 says truncated, not short); due rows are handled by time due, then index, and a due CANCEL_RUNNING row skips every due row ahead of it (REQ-060, `RowSkippedByCancel`; L2-13 reworked); a relative row's time due is its origin's system time plus its time (REQ-046, REQ-061).",
+  "21. 2026-11-18 human (Michael Starch, 16:24 PST) and designer — the due rows are held in the existing `Fw::ExternalRedBlackTreeSet`; tests of several rows due with a later CANCEL_RUNNING row, and with the cancel row between other due rows, are added (L2-7 and L2-13 reworked, REQ-060 now has system coverage; unit tests CancelLastOfSeveralDue, CancelBetweenDue, TwoCancelsDue). From review round 13: a failed load command leaves the table unchanged, only a failed start-up load leaves it empty (L5-1 and L5-3 reworked: the row due after the failed load is run)."
+ ],
+ "tests": [
+  {
+   "id": "L0-1",
+   "title": "Marker round-trip and image identity",
+   "purpose": "The record's markers round-trip and the running image reports the manifest's versions.",
+   "covers": [],
+   "covers_note": "",
+   "setup": "Ref started from the manifest's build, GDS attached.",
+   "procedure": [
+    "CMD_NO_OP_STRING(100)",
+    "bracket (2 SeqSched samples)",
+    "CdhCore.version.VERSION(ALL)",
+    "CMD_NO_OP_STRING(101)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 100,
+     "end_id": 101,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [],
+   "knobs": [],
+   "evidence": "Version events and the marker rows. Named checks the test declares: STD (require) ; version payloads == manifest describe strings (helper) ; event CdhCore.cmdDisp.NoOpStringReceived(id=100) count == 1"
+  },
+  {
+   "id": "L0-2",
+   "title": "Time base override round trip",
+   "purpose": "Setting the override changes the time base of every component's records, and only the time base, until it is cleared.",
+   "covers": [],
+   "covers_note": "Feasibility of the test fixture Ref.TimeBaseSetter; it traces to no requirement of the unit under test.",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; no override set.",
+   "procedure": [
+    "CMD_NO_OP_STRING(110)",
+    "bracket (2 SeqSched samples)",
+    "Ref.timeBaseSetter.SET_TIME_BASE(TB_SC_TIME)",
+    "wait 2 s",
+    "Ref.schedSeq.CS_RUN(short.bin, NO_BLOCK)",
+    "CdhCore.cmdDisp.CMD_NO_OP()",
+    "CdhCore.health.HLTH_ENABLE(ENABLED)",
+    "Ref.seqSched.LOAD_TABLE()",
+    "wait for Ref.schedSeq.CS_SequenceComplete(short.bin), at most 5 s",
+    "Ref.timeBaseSetter.SET_TIME_BASE(TB_SC_TIME)",
+    "wait 3 s",
+    "Ref.timeBaseSetter.CLEAR_TIME_BASE()",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(111)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 110,
+     "end_id": 111,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "the time tag of the second Ref.timeBaseSetter.TimeBaseSet event carries TB_SC_TIME (helper)",
+     "text": "the component's own events are stamped through its own time port, override included (fixture model); the second set, sent while the override is already set, is the one event of the component clear of the span's ends; the span of the two record checks (every record in the span carries TB_SC_TIME; each of the five instances has a record in the span) runs from the first TimeBaseSet"
+    },
+    {
+     "pred": "every event and channel record of CdhCore.cmdDisp, CdhCore.health, Ref.seqSched, Ref.schedSeq and Ref.systemResources time-tagged more than 1 s after the first TimeBaseSet and more than 1 s before TimeBaseCleared carries TB_SC_TIME, and no record of the window more than 1 s outside that span does (helper)",
+     "text": "the time base is read from the raw time tag of each logged record, not from timeBaseSetter's events: a set that changes nothing, or reaches only some components, fails. The five instances run on five threads; four are made to log by a command inside the span (CMD_NO_OP, HLTH_ENABLE, LOAD_TABLE, CS_RUN) and systemResources by its periodic channels; records within 1 s of either event are left out because their order against the event is not defined"
+    },
+    {
+     "pred": "FSW seconds of every record in the override span are within 2 s of its ground receive time (helper)",
+     "text": "an override that altered seconds would show as an offset from host time, which the ground receive time tracks on this one-VM bench"
+    },
+    {
+     "pred": "event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1",
+     "text": "a sequence loaded and run under the override completes and the image does not restart: entry gate 6"
+    }
+   ],
+   "knobs": [],
+   "evidence": "TimeBaseSet then TimeBaseCleared; the raw time tags of the five instances' records between and around them; short.bin completing under the override. Named checks the test declares: STD (require) ; no image start-up event in the window (require) ; event Ref.timeBaseSetter.TimeBaseSet(timeBase=TB_SC_TIME) count == 2 ; event Ref.timeBaseSetter.TimeBaseCleared count == 1 ; at least one record from each of CdhCore.cmdDisp, CdhCore.health, Ref.seqSched, Ref.schedSeq and Ref.systemResources lies inside the override span, 1 s clear of both ends (require) ; every event and channel record of CdhCore.cmdDisp, CdhCore.health, Ref.seqSched, Ref.schedSeq and Ref.systemResources time-tagged more than 1 s after the first TimeBaseSet and more than 1 s before TimeBaseCleared carries TB_SC_TIME, and no record of the window more than 1 s outside that span does (helper) ; FSW seconds of every record in the override span are within 2 s of its ground receive time (helper) ; the time tag of the second Ref.timeBaseSetter.TimeBaseSet event carries TB_SC_TIME (helper) ; event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require)"
+  },
+  {
+   "id": "L2-1",
+   "title": "Table load and data product",
+   "purpose": "A commanded load reads the table file and the dumped data product equals the authored table, field by field.",
+   "covers": [
+    "REQ-SeqScheduler-019",
+    "REQ-SeqScheduler-035",
+    "REQ-SeqScheduler-041",
+    "REQ-SeqScheduler-002",
+    "REQ-SeqScheduler-004"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; table file T-FIELDS = T-BASE with row 14 (year 2100 in TB_SC_TIME, ABSOLUTE, short2.bin, CANCEL_RUNNING, enabled) and row 15 (1000000 s, START_RELATIVE, short.bin, SKIP_WHEN_RUNNING, disabled).",
+   "procedure": [
+    "CMD_NO_OP_STRING(200)",
+    "bracket (2 SeqSched samples)",
+    "action: write table file T-FIELDS",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.DUMP_TABLE()",
+    "wait for DataProducts.dpWriter.FileWritten",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(201)",
+    "finally: action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(202)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 200,
+     "end_id": 201,
+     "reset": false
+    },
+    {
+     "name": "C",
+     "start_id": 201,
+     "end_id": 202,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "W: last(Ref.seqSched.NextRow) == 16",
+     "text": "the row count given to configure in Ref, 16, means no upcoming row (SDD §5.3); every T-FIELDS row is disabled, but for row 14, which is ABSOLUTE in a time base not reported and so not upcoming"
+    },
+    {
+     "pred": "W: data product file decodes to table T-FIELDS, every field of every row as authored (helper)",
+     "text": "the decode succeeds only for exactly 16 rows (REQ-004) and compares all six fields of each row; rows 14 and 15 hold, between them, a non-default value in every field the file holds (REQ-002)"
+    },
+    {
+     "pred": "W: last(Ref.seqSched.RowsSkipped) == 0",
+     "text": "the file holds no row state: every loaded row is PENDING, and the count and the product report it (REQ-019)"
+    }
+   ],
+   "knobs": [
+    "stray_edit"
+   ],
+   "evidence": "TableLoaded, TableDumped, DataProducts.dpWriter.FileWritten; the product file on the bench file system, decoded by the checker independently of the UUT's events. Named checks the test declares: W: STD (require) ; W: ABS ; W: event Ref.seqSched.TableLoaded count == 1 ; W: event Ref.seqSched.TableDumped count == 1 ; W: last(Ref.seqSched.TableLoaded) == True ; W: last(Ref.seqSched.RowsPending) == 16 ; W: last(Ref.seqSched.RowsExecuted) == 0 ; W: last(Ref.seqSched.RowsSkipped) == 0 ; W: last(Ref.seqSched.RowsWaiting) == 0 ; W: last(Ref.seqSched.NextRow) == 16 ; W: last(Ref.seqSched.RunningRow) == 16 ; W: data product file decodes to table T-FIELDS, every field of every row as authored (helper) ; C: both markers present (require) ; C: event Ref.seqSched.TableLoaded count == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require)"
+  },
+  {
+   "id": "L2-2",
+   "title": "ABSOLUTE row dispatch",
+   "purpose": "An enabled ABSOLUTE row is run at its time and the sequencer runs its file to completion.",
+   "covers": [
+    "REQ-SeqScheduler-006",
+    "REQ-SeqScheduler-012",
+    "REQ-SeqScheduler-020",
+    "REQ-SeqScheduler-040"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE",
+   "procedure": [
+    "CMD_NO_OP_STRING(210)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 10 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 16 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(211)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 210,
+     "end_id": 211,
+     "reset": false
+    }
+   ],
+   "metrics": [
+    "t(event Ref.seqSched.SeqRun(row=0)) - t(Ref.seqSched.SET_ROW sent) <= 12 s"
+   ],
+   "rationale": [
+    {
+     "pred": "t(event Ref.seqSched.SeqRun(row=0)) - t(Ref.seqSched.SET_ROW sent) <= 12 s",
+     "text": "10 s planned delay + 1 s tick + 1 s command latency"
+    },
+    {
+     "pred": "row 0 run no earlier than 8 s after SET_ROW (helper)",
+     "text": "10 s planned delay less 1 s tick and 1 s for reading FSW time from the last event"
+    }
+   ],
+   "knobs": [
+    "row_time_late",
+    "disable_row"
+   ],
+   "evidence": "SeqRun(0) -> schedSeq CS_SequenceLoaded -> CS_SequenceComplete -> SeqCompleted(0, OK); the sequencer's own events are the evidence outside the UUT. Named checks the test declares: STD (require) ; ABS ; event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; event Ref.schedSeq.CS_SequenceLoaded(fileName=short.bin) count == 1 ; event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1 ; event Ref.seqSched.SeqRun(row=0) precedes event Ref.seqSched.SeqCompleted(row=0) ; last(Ref.seqSched.RowsExecuted) == 1 ; row 0 run no earlier than 8 s after SET_ROW (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L2-3",
+   "title": "ABSOLUTE row and time base mismatch",
+   "purpose": "An ABSOLUTE row in another time base stays pending, and is judged only once that base is reported.",
+   "covers": [
+    "REQ-SeqScheduler-007",
+    "REQ-SeqScheduler-021",
+    "REQ-SeqScheduler-006"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; no override set. The override is cleared only after short.bin has completed.",
+   "procedure": [
+    "CMD_NO_OP_STRING(220)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 5 s in TB_SC_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(1, FSW time + 30 s in TB_SC_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 12 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(221)",
+    "Ref.timeBaseSetter.SET_TIME_BASE(TB_SC_TIME)",
+    "wait 24 s",
+    "bracket (2 SeqSched samples)",
+    "Ref.timeBaseSetter.CLEAR_TIME_BASE()",
+    "CMD_NO_OP_STRING(222)"
+   ],
+   "windows": [
+    {
+     "name": "W1",
+     "start_id": 220,
+     "end_id": 221,
+     "reset": false
+    },
+    {
+     "name": "W2",
+     "start_id": 221,
+     "end_id": 222,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "W2: row 1 run between 27 and 33 s after its SET_ROW (helper)",
+     "text": "30 s planned, +/- 1 s tick, 1 s event time resolution, 1 s command latency; holds only if the override leaves seconds unchanged (L0-2)"
+    },
+    {
+     "pred": "W1: last(Ref.seqSched.RowsPending) == 16",
+     "text": "row 0 is 7 s past due in W1 yet still PENDING: system time is TB_WORKSTATION_TIME, the row's base is TB_SC_TIME"
+    },
+    {
+     "pred": "W1: last(Ref.seqSched.NextRow) == 16",
+     "text": "an ABSOLUTE row in another time base is not upcoming (SDD §3.6.3); two such rows are enabled and PENDING"
+    }
+   ],
+   "knobs": [
+    "early_override"
+   ],
+   "evidence": "No scheduler event in W1; after TimeBaseSet: RowLate(0), then SeqRun(1) at its time. The scheduler acting on TB_SC_TIME shows its time comes through timeBaseSetter. Named checks the test declares: W1: STD (require) ; W1: event Ref.seqSched.SeqRun count == 0 ; W1: event Ref.seqSched.RowLate count == 0 ; W1: last(Ref.seqSched.RowsPending) == 16 ; W1: last(Ref.seqSched.NextRow) == 16 ; W2: STD (require) ; W2: event Ref.seqSched.RowLate(row=0) count == 1 ; W2: event Ref.seqSched.SeqRun(row=0) count == 0 ; W2: event Ref.seqSched.SeqRun(row=1, fileName=short.bin) count == 1 ; W2: event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; W2: last(Ref.seqSched.RowsSkipped) == 1 ; W2: event Ref.timeBaseSetter.TimeBaseSet(timeBase=TB_SC_TIME) count == 1 ; W2: event Ref.timeBaseSetter.TimeBaseCleared count == 1 ; W2: row 1 run between 27 and 33 s after its SET_ROW (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L2-4",
+   "title": "START_RELATIVE row dispatch",
+   "purpose": "A START_RELATIVE row is run its delay after the first schedule tick, whenever the table was loaded.",
+   "covers": [
+    "REQ-SeqScheduler-008",
+    "REQ-SeqScheduler-041",
+    "REQ-SeqScheduler-047"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE",
+   "procedure": [
+    "CMD_NO_OP_STRING(230)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW(0, 1000000 s, START_RELATIVE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 4 s",
+    "bracket (2 SeqSched samples)",
+    "action: elapsed = 1000000 s - (last NextTimeDue - FSW time of that sample)",
+    "CMD_NO_OP_STRING(231)",
+    "Ref.seqSched.SET_ROW(0, elapsed + 12 s, START_RELATIVE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 18 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(232)"
+   ],
+   "windows": [
+    {
+     "name": "W1",
+     "start_id": 230,
+     "end_id": 231,
+     "reset": false
+    },
+    {
+     "name": "W2",
+     "start_id": 231,
+     "end_id": 232,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "W2: row 0 run no later than 15 s after the second SET_ROW (helper)",
+     "text": "12 s planned delay + 1 s tick + 1 s telemetry age of NextTimeDue + 1 s command latency"
+    },
+    {
+     "pred": "W2: row 0 run no earlier than 9 s after the second SET_ROW (helper)",
+     "text": "12 s planned delay less 1 s tick, 1 s telemetry age, 1 s latency"
+    },
+    {
+     "pred": "W1: seconds of those NextTimeDue samples are equal within 1 s (helper)",
+     "text": "an image reporting the delay remaining would change by 4 s or more over the span; time due of a START_RELATIVE row is the system time of the first tick plus its time, a fixed value (REQ-046)"
+    },
+    {
+     "pred": "W1: elapsed is within 3 s of FSW time at the sample less the bench-recorded start of the Ref process (helper)",
+     "text": "the origin of START_RELATIVE is the first tick of this start; the bench records the process start time itself. A scheduler counting from the load or the edit reports an elapsed of a few seconds and fails (REQ-047); 3 s = first tick within 2 s of process start + 1 s telemetry age"
+    }
+   ],
+   "knobs": [],
+   "evidence": "NextTimeDue steady in W1; SeqRun(0) 12 s after the second SET_ROW in W2. Named checks the test declares: W1: STD (require) ; W1: last(Ref.seqSched.NextRow) == 0 ; W1: event Ref.seqSched.SeqRun count == 0 ; W1: at least 3 NextTimeDue samples time-tagged after RowSet(row=0), spanning >= 4 s (require) ; W1: seconds of those NextTimeDue samples are equal within 1 s (helper) ; W2: STD (require) ; W2: event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; W2: event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1 ; W2: row 0 run no earlier than 9 s after the second SET_ROW (helper) ; W2: row 0 run no later than 15 s after the second SET_ROW (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; W1: elapsed is within 3 s of FSW time at the sample less the bench-recorded start of the Ref process (helper) ; W1: Ref process not restarted since the bench recorded its start (require)"
+  },
+  {
+   "id": "L2-5",
+   "title": "TIME_BASE_RELATIVE row dispatch",
+   "purpose": "A TIME_BASE_RELATIVE row counts from its base's first tick, also while that base is not reported.",
+   "covers": [
+    "REQ-SeqScheduler-009",
+    "REQ-SeqScheduler-011",
+    "REQ-SeqScheduler-061"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; no override set. Run order: in the same start of Ref as the first TimeBaseSet(TB_PROC_TIME).",
+   "procedure": [
+    "CMD_NO_OP_STRING(240)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.timeBaseSetter.SET_TIME_BASE(TB_PROC_TIME)",
+    "wait 3 s",
+    "Ref.timeBaseSetter.CLEAR_TIME_BASE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW(0, 1000000 s in TB_PROC_TIME, TIME_BASE_RELATIVE, short.bin, WAIT_FOR_RUNNING)",
+    "bracket (2 SeqSched samples)",
+    "action: elapsed = 1000000 s - (last NextTimeDue - FSW time of that sample)",
+    "CMD_NO_OP_STRING(241)",
+    "Ref.timeBaseSetter.SET_TIME_BASE(TB_PROC_TIME)",
+    "wait 3 s",
+    "Ref.timeBaseSetter.CLEAR_TIME_BASE()",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(242)",
+    "Ref.seqSched.SET_ROW(0, elapsed + 20 s in TB_PROC_TIME, TIME_BASE_RELATIVE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 20 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(243)"
+   ],
+   "windows": [
+    {
+     "name": "W1",
+     "start_id": 240,
+     "end_id": 241,
+     "reset": false
+    },
+    {
+     "name": "W2",
+     "start_id": 241,
+     "end_id": 242,
+     "reset": false
+    },
+    {
+     "name": "W3",
+     "start_id": 242,
+     "end_id": 243,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "W3: row 0 run between 11 and 21 s after the W1 NextTimeDue sample (helper)",
+     "text": "due = sample time + 20 s less the ~6 s of W2; bounds allow 1 s tick, 1 s telemetry age, 3 s command latency over six commands"
+    },
+    {
+     "pred": "W1: last(Ref.seqSched.NextRow) == 0",
+     "text": "row 0 has a time due only because the scheduler saw TB_PROC_TIME, which exists in this image only as timeBaseSetter's override"
+    },
+    {
+     "pred": "W2: seconds of NextTimeDue are equal within 1 s across the second TB_PROC_TIME report (helper)",
+     "text": "a start tick moved by the second report would show as a jump of 3 s or more in the time due (REQ-011); a steady time due is REQ-061"
+    },
+    {
+     "pred": "W1: elapsed is within 3 s of FSW time at the sample less the time of this start's first Ref.timeBaseSetter.TimeBaseSet(TB_PROC_TIME) event (helper)",
+     "text": "the origin is the first tick reporting TB_PROC_TIME, which exists only between a TimeBaseSet(TB_PROC_TIME) and its clear; the harness takes that event's time from the record, not from the scheduler. A scheduler counting from the edit, the load or the last report fails"
+    }
+   ],
+   "knobs": [],
+   "evidence": "NextTimeDue steady across W2; SeqRun(0) in W3 while system time is TB_WORKSTATION_TIME. Named checks the test declares: W1: STD (require) ; W1: last(Ref.seqSched.NextRow) == 0 ; W1: event Ref.timeBaseSetter.TimeBaseSet(timeBase=TB_PROC_TIME) count == 1 ; W2: STD (require) ; W2: seconds of NextTimeDue are equal within 1 s across the second TB_PROC_TIME report (helper) ; W3: STD (require) ; W3: event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; W3: event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; W3: row 0 run between 11 and 21 s after the W1 NextTimeDue sample (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; W1: elapsed is within 3 s of FSW time at the sample less the time of this start's first Ref.timeBaseSetter.TimeBaseSet(TB_PROC_TIME) event (helper) ; W1: the first TimeBaseSet(TB_PROC_TIME) of this start is in the record, in this test or an earlier one (require)"
+  },
+  {
+   "id": "L2-6",
+   "title": "WAIT_FOR_RUNNING rows wait, in index order",
+   "purpose": "Rows due together are run one at a time in the order they came due, then index, each after the previous is reported complete, successfully or not.",
+   "covers": [
+    "REQ-SeqScheduler-013",
+    "REQ-SeqScheduler-014",
+    "REQ-SeqScheduler-017",
+    "REQ-SeqScheduler-045",
+    "REQ-SeqScheduler-012",
+    "REQ-SeqScheduler-040",
+    "REQ-SeqScheduler-041"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; sequence file missing.bin absent.",
+   "procedure": [
+    "CMD_NO_OP_STRING(250)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(2, True)",
+    "Ref.seqSched.SET_ROW(2, FSW time + 12 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(1, same time, ABSOLUTE, missing.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(0, same time, ABSOLUTE, long.bin, WAIT_FOR_RUNNING)",
+    "wait 17 s",
+    "CMD_NO_OP_STRING(252)",
+    "wait 23 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(251)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 250,
+     "end_id": 251,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "a SeqSched sample time-tagged between SeqRun(row=0) and SeqCompleted(row=0) holds RowsWaiting == 2 and RunningRow == 0 (helper)",
+     "text": "the operator's view of a hold (SDD §7): long.bin runs 20 s and the packet is sent every second (REQ-041)"
+    },
+    {
+     "pred": "row 1 run at least 15 s after row 0 (helper)",
+     "text": "long.bin holds a 20 s relative wait; rows 1 and 2 wait 20 s past due, beyond LATE_TOLERANCE_SEC = 1, and still run (REQ-014, REQ-021)"
+    },
+    {
+     "pred": "event Ref.seqSched.SeqCompleted(row=1) precedes event Ref.seqSched.SeqRun(row=2)",
+     "text": "rows 1 and 2 share a time due and were set in the order 2, 1, 0: they run in index order (REQ-017, REQ-045), and row 2 runs after row 1's error report (REQ-014)"
+    }
+   ],
+   "knobs": [],
+   "evidence": "Run(0) -> Completed(0) -> Run(1) -> Completed(1, EXECUTION_ERROR) -> Run(2) -> Completed(2); no RowLate. Named checks the test declares: STD (require) ; event Ref.seqSched.SeqRun(row=0, fileName=long.bin) count == 1 ; event Ref.seqSched.SeqRun(row=1, fileName=missing.bin) count == 1 ; event Ref.seqSched.SeqRun(row=2, fileName=short.bin) count == 1 ; event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1 ; event Ref.seqSched.SeqCompleted(row=1, response=EXECUTION_ERROR) count == 1 ; event Ref.seqSched.SeqCompleted(row=2, response=OK) count == 1 ; last(Ref.seqSched.RowsExecuted) before marker 252 == 0 (helper) ; last(Ref.seqSched.RunningRow) before marker 252 == 0 (helper) ; event Ref.seqSched.SeqCompleted(row=0) precedes event Ref.seqSched.SeqRun(row=1) ; event Ref.seqSched.SeqCompleted(row=1) precedes event Ref.seqSched.SeqRun(row=2) ; event Ref.seqSched.RowLate count == 0 ; event Ref.seqSched.SeqCancelled count == 0 ; event Ref.seqSched.RowSkippedBusy count == 0 ; event Ref.schedSeq.CS_FileNotFound(fileName=missing.bin) count == 1 ; event Ref.schedSeq.CS_SequenceComplete(fileName=long.bin) precedes event Ref.schedSeq.CS_FileNotFound(fileName=missing.bin) ; row 1 run at least 15 s after row 0 (helper) ; last(Ref.seqSched.RowsExecuted) == 3 ; last(Ref.seqSched.RowsWaiting) == 0 ; a SeqSched sample time-tagged between SeqRun(row=0) and SeqCompleted(row=0) holds RowsWaiting == 2 and RunningRow == 0 (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L2-7",
+   "title": "CANCEL_RUNNING row",
+   "purpose": "A due CANCEL_RUNNING row cancels the running sequence, the row waiting ahead of it is skipped, and the cancel row is run once the cancel is reported.",
+   "covers": [
+    "REQ-SeqScheduler-015",
+    "REQ-SeqScheduler-013",
+    "REQ-SeqScheduler-060"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE",
+   "procedure": [
+    "CMD_NO_OP_STRING(260)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(2, True)",
+    "Ref.seqSched.SET_ROW(1, FSW time + 16 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, CANCEL_RUNNING)",
+    "Ref.seqSched.SET_ROW(2, FSW time + 11 s in TB_WORKSTATION_TIME, ABSOLUTE, short2.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, long.bin, WAIT_FOR_RUNNING)",
+    "wait 24 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(261)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 260,
+     "end_id": 261,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "event Ref.seqSched.SeqCompleted(row=0, response=EXECUTION_ERROR) count == 1",
+     "text": "Svc.CmdSequencer reports a cancelled sequence with EXECUTION_ERROR; row 1 runs only after that report (REQ-015)"
+    },
+    {
+     "pred": "event Ref.seqSched.RowSkippedByCancel(row=2, cancelRow=1) count == 1",
+     "text": "row 2 (WAIT_FOR_RUNNING, higher index) came due 5 s before row 1 and waits; it is ahead of the CANCEL_RUNNING row in the order rows came due, so it is skipped and never run (REQ-060)"
+    }
+   ],
+   "knobs": [],
+   "evidence": "Run(0) -> RowSkippedByCancel(2 for 1), SeqCancelled(0 for 1) -> schedSeq CS_SequenceCanceled(long.bin) -> Run(1) -> CS_SequenceComplete(short.bin); no SeqRun(2). Named checks the test declares: STD (require) ; event Ref.seqSched.SeqRun(row=0, fileName=long.bin) count == 1 ; event Ref.seqSched.SeqCancelled(cancelledRow=0, row=1) count == 1 ; event Ref.schedSeq.CS_SequenceCanceled(fileName=long.bin) count == 1 ; event Ref.schedSeq.CS_SequenceComplete(fileName=long.bin) count == 0 ; event Ref.seqSched.RowSkippedByCancel(row=2, cancelRow=1) count == 1 ; event Ref.seqSched.RowSkippedByCancel count == 1 ; event Ref.seqSched.SeqRun(row=2) count == 0 ; event Ref.schedSeq.CS_SequenceLoaded(fileName=short2.bin) count == 0 ; event Ref.seqSched.SeqRun(row=1, fileName=short.bin) count == 1 ; event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; event Ref.seqSched.SeqCancelled(row=1) precedes event Ref.seqSched.SeqRun(row=1) ; event Ref.schedSeq.CS_SequenceCanceled(fileName=long.bin) precedes event Ref.schedSeq.CS_SequenceLoaded(fileName=short.bin) ; event Ref.seqSched.SeqCompleted(row=1, response=OK) count == 1 ; event Ref.seqSched.SeqCancelled count == 1 ; last(Ref.seqSched.RowsSkipped) == 1 ; last(Ref.seqSched.RowsWaiting) == 0 ; event Ref.seqSched.SeqCompleted(row=0, response=EXECUTION_ERROR) count == 1 ; event Ref.seqSched.SeqCompleted(row=0) precedes event Ref.seqSched.SeqRun(row=1) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L2-8",
+   "title": "SKIP_WHEN_RUNNING row",
+   "purpose": "A SKIP_WHEN_RUNNING row that comes due while a sequence is running is skipped with a warning, and is run when none is running.",
+   "covers": [
+    "REQ-SeqScheduler-016",
+    "REQ-SeqScheduler-013",
+    "REQ-SeqScheduler-012"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE",
+   "procedure": [
+    "CMD_NO_OP_STRING(262)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(2, True)",
+    "Ref.seqSched.SET_ROW(2, FSW time + 34 s in TB_WORKSTATION_TIME, ABSOLUTE, short2.bin, SKIP_WHEN_RUNNING)",
+    "Ref.seqSched.SET_ROW(1, FSW time + 12 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, SKIP_WHEN_RUNNING)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, long.bin, WAIT_FOR_RUNNING)",
+    "wait 42 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(263)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 262,
+     "end_id": 263,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "event Ref.seqSched.SeqRun(row=2, fileName=short2.bin) count == 1",
+     "text": "row 2 has the same policy and comes due about 8 s after long.bin (20 s wait) completes: with no sequence running it is run (REQ-012)"
+    }
+   ],
+   "knobs": [],
+   "evidence": "Run(0) -> RowSkippedBusy(1, running 0) -> long.bin completes uncancelled -> Run(2). Named checks the test declares: STD (require) ; ABS ; event Ref.seqSched.SeqRun(row=0, fileName=long.bin) count == 1 ; event Ref.seqSched.RowSkippedBusy(row=1, runningRow=0) count == 1 ; event Ref.seqSched.SeqRun(row=1) count == 0 ; event Ref.schedSeq.CS_SequenceLoaded(fileName=short.bin) count == 0 ; event Ref.schedSeq.CS_SequenceComplete(fileName=long.bin) count == 1 ; event Ref.schedSeq.CS_SequenceCanceled count == 0 ; event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1 ; event Ref.seqSched.SeqRun(row=2, fileName=short2.bin) count == 1 ; event Ref.schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1 ; event Ref.seqSched.RowSkippedBusy count == 1 ; event Ref.seqSched.RowLate count == 0 ; last(Ref.seqSched.RowsSkipped) == 1 ; last(Ref.seqSched.RowsExecuted) == 2 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L2-9",
+   "title": "Table edits",
+   "purpose": "Enable, disable-by-name and row edits take effect on the rows named and on no other.",
+   "covers": [
+    "REQ-SeqScheduler-025",
+    "REQ-SeqScheduler-026",
+    "REQ-SeqScheduler-027",
+    "REQ-SeqScheduler-022",
+    "REQ-SeqScheduler-029",
+    "REQ-SeqScheduler-012"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE",
+   "procedure": [
+    "CMD_NO_OP_STRING(270)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(2, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(3, True)",
+    "Ref.seqSched.SET_ROW(2, year 2100 in TB_WORKSTATION_TIME, ABSOLUTE, long.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(3, FSW time + 12 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(1, same time, ABSOLUTE, long.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(0, same time, ABSOLUTE, short2.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_SEQ_ENABLED(long.bin, False)",
+    "Ref.seqSched.SET_ROW_ENABLED(3, False)",
+    "wait 18 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(271)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 270,
+     "end_id": 271,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "last(Ref.seqSched.RowsSkipped) == 2",
+     "text": "rows 1 and 3 reach their time disabled: SKIPPED without RowLate (REQ-022); row 2, disabled by name with a year-2100 time, stays PENDING: disabling does not change state (REQ-029)"
+    }
+   ],
+   "knobs": [],
+   "evidence": "Edit events, then exactly one SeqRun (row 0, short2.bin); counters 1 executed / 2 skipped / 13 pending. Named checks the test declares: STD (require) ; ABS ; event Ref.seqSched.RowSet(row=0, fileName=short2.bin) count == 1 ; event Ref.seqSched.RowSet count == 4 ; event Ref.seqSched.SeqEnabledSet(fileName=long.bin, enabled=False, rows=2) count == 1 ; event Ref.seqSched.RowEnabledSet(row=3, enabled=False) count == 1 ; event Ref.seqSched.SeqRun(row=0, fileName=short2.bin) count == 1 ; event Ref.schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1 ; event Ref.seqSched.SeqRun count == 1 ; event Ref.seqSched.RowLate count == 0 ; event Ref.seqSched.RowSkippedDisabled(row=1) count == 1 ; event Ref.seqSched.RowSkippedDisabled(row=3) count == 1 ; event Ref.seqSched.RowSkippedDisabled count == 2 ; event Ref.schedSeq.CS_SequenceLoaded(fileName=long.bin) count == 0 ; last(Ref.seqSched.RowsExecuted) == 1 ; last(Ref.seqSched.RowsSkipped) == 2 ; last(Ref.seqSched.RowsPending) == 13 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L2-10",
+   "title": "Two independent instances",
+   "purpose": "Two scheduler instances run their own tables on their own sequencers without affecting each other.",
+   "covers": [
+    "REQ-SeqScheduler-042",
+    "REQ-SeqScheduler-012",
+    "REQ-SeqScheduler-040",
+    "REQ-SeqScheduler-007",
+    "REQ-SeqScheduler-022",
+    "REQ-SeqScheduler-026",
+    "REQ-SeqScheduler-034"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; seqSchedB TABLE_FILE names a second copy of T-BASE with short2.bin in row 0; no override set.",
+   "procedure": [
+    "CMD_NO_OP_STRING(280)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "action: write table file T-BASE-B",
+    "Ref.seqSchedB.LOAD_TABLE()",
+    "Ref.seqSched.SET_SEQ_ENABLED(short.bin, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(16, True)",
+    "Ref.seqSchedB.SET_ROW(1, FSW time + 6 s in TB_SC_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSchedB.SET_ROW(2, FSW time + 12 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSchedB.SET_ROW(0, same time, ABSOLUTE, short2.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(0, same time, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 22 s",
+    "bracket (2 SeqSched and 2 SeqSchedB samples)",
+    "CMD_NO_OP_STRING(281)",
+    "finally: wait for Ref.schedSeq.CS_SequenceComplete or 25 s if a sequence is running"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 280,
+     "end_id": 281,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "last(Ref.seqSchedB.RowsPending) == 14",
+     "text": "row 0 EXECUTED, row 2 (disabled, same due time) SKIPPED; row 1 is 12 s past its TB_SC_TIME time and still PENDING because system time is TB_WORKSTATION_TIME (REQ-007)"
+    },
+    {
+     "pred": "last(Ref.seqSchedB.RowsSkipped) == 1",
+     "text": "row 2 reached its time disabled: SKIPPED, and RowLate count == 0 shows no warning (REQ-022)"
+    },
+    {
+     "pred": "STD-ERR (require)",
+     "text": "STD without the OpCodeError absence: SET_ROW_ENABLED(16) is rejected by design"
+    },
+    {
+     "pred": "event Ref.seqSched.SeqEnabledSet(fileName=short.bin, enabled=True, rows=16) count == 1",
+     "text": "every T-BASE row names short.bin; one command enables all 16, and row 0 then runs (REQ-026)"
+    }
+   ],
+   "knobs": [
+    "cross_instance"
+   ],
+   "evidence": "One SeqRun per instance, each file completing on that instance's sequencer only; seqSchedB's rejection, skipped row and pending TB_SC_TIME row leave seqSched's counts untouched. Named checks the test declares: STD-ERR (require) ; ABS ; event CdhCore.cmdDisp.OpCodeError count == 1 ; event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; event Ref.seqSchedB.SeqRun(row=0, fileName=short2.bin) count == 1 ; event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; event Ref.schedSeqB.CS_SequenceComplete(fileName=short2.bin) count == 1 ; event Ref.schedSeq.CS_SequenceLoaded(fileName=short2.bin) count == 0 ; event Ref.schedSeqB.CS_SequenceLoaded(fileName=short.bin) count == 0 ; event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1 ; event Ref.seqSchedB.SeqCompleted(row=0, response=OK) count == 1 ; event Ref.seqSched.SeqEnabledSet(fileName=short.bin, enabled=True, rows=16) count == 1 ; event Ref.seqSched.SeqRun count == 1 ; event Ref.seqSchedB.SeqRun count == 1 ; event Ref.seqSchedB.CmdRejected(reason=ROW_INDEX) count == 1 ; event Ref.seqSched.CmdRejected count == 0 ; event Ref.seqSchedB.RowLate count == 0 ; event Ref.seqSchedB.RowSkippedDisabled(row=2) count == 1 ; event Ref.seqSchedB.RowSkippedDisabled count == 1 ; last(Ref.seqSched.RowsExecuted) == 1 ; last(Ref.seqSched.RowsPending) == 15 ; last(Ref.seqSchedB.RowsExecuted) == 1 ; last(Ref.seqSchedB.RowsSkipped) == 1 ; last(Ref.seqSchedB.RowsPending) == 14 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require) ; SeqSchedB samples >= 2 in every window (require)"
+  },
+  {
+   "id": "L2-11",
+   "title": "Row set by command, run, and set again",
+   "purpose": "A row set by one command is run at that time with that file, keeps its state through enable edits, and runs again once set again.",
+   "covers": [
+    "REQ-SeqScheduler-006",
+    "REQ-SeqScheduler-012",
+    "REQ-SeqScheduler-020",
+    "REQ-SeqScheduler-040",
+    "REQ-SeqScheduler-027",
+    "REQ-SeqScheduler-028",
+    "REQ-SeqScheduler-029"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE",
+   "procedure": [
+    "CMD_NO_OP_STRING(290)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(3, True)",
+    "Ref.seqSched.SET_ROW(3, FSW time + 8 s in TB_WORKSTATION_TIME, ABSOLUTE, short2.bin, WAIT_FOR_RUNNING)",
+    "wait 14 s",
+    "Ref.seqSched.SET_ROW_ENABLED(3, False)",
+    "Ref.seqSched.SET_ROW_ENABLED(3, True)",
+    "wait 4 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(291)",
+    "Ref.seqSched.SET_ROW(3, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, short2.bin, WAIT_FOR_RUNNING)",
+    "wait 12 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(292)",
+    "finally: wait for Ref.schedSeq.CS_SequenceComplete or 25 s if a sequence is running"
+   ],
+   "windows": [
+    {
+     "name": "W1",
+     "start_id": 290,
+     "end_id": 291,
+     "reset": false
+    },
+    {
+     "name": "W2",
+     "start_id": 291,
+     "end_id": 292,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "W1: row 3 run no later than 10 s after SET_ROW (helper)",
+     "text": "8 s planned delay + 1 s tick + 1 s command latency"
+    },
+    {
+     "pred": "W1: row 3 run no earlier than 6 s after SET_ROW (helper)",
+     "text": "8 s planned delay less 1 s tick and 1 s for reading FSW time from the last event"
+    },
+    {
+     "pred": "W1: last(Ref.seqSched.RowsPending) == 15",
+     "text": "sampled after row 3, already EXECUTED, was disabled and enabled again: it is still EXECUTED and is not run a second time (REQ-029)"
+    },
+    {
+     "pred": "W2: event Ref.seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
+     "text": "the second SET_ROW returned the EXECUTED row to PENDING, so it runs again (REQ-028)"
+    }
+   ],
+   "knobs": [
+    "row_time_late",
+    "wrong_seq"
+   ],
+   "evidence": "RowSet, then SeqRun(3, short2.bin) -> CS_SequenceComplete(short2.bin) -> SeqCompleted(3, OK); a second SeqRun(3) after the second SET_ROW. Named checks the test declares: W1: STD (require) ; W1: ABS ; W1: event Ref.seqSched.RowSet(row=3, mode=ABSOLUTE, fileName=short2.bin, busyPolicy=WAIT_FOR_RUNNING) count == 1 ; W1: event Ref.seqSched.SeqRun(row=3, fileName=short2.bin) count == 1 ; W1: event Ref.schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1 ; W1: event Ref.seqSched.SeqCompleted(row=3, response=OK) count == 1 ; W1: event Ref.seqSched.SeqRun count == 1 ; W1: event Ref.seqSched.RowEnabledSet(row=3) count == 3 ; W1: last(Ref.seqSched.RowsExecuted) == 1 ; W1: last(Ref.seqSched.RowsPending) == 15 ; W1: row 3 run no earlier than 6 s after SET_ROW (helper) ; W1: row 3 run no later than 10 s after SET_ROW (helper) ; W2: STD (require) ; W2: ABS ; W2: event Ref.seqSched.SeqRun(row=3, fileName=short2.bin) count == 1 ; W2: event Ref.schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1 ; W2: last(Ref.seqSched.RowsExecuted) == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L2-12",
+   "title": "TIME_BASE_RELATIVE row in a second time base",
+   "purpose": "A TIME_BASE_RELATIVE row in TB_SC_TIME counts from that base's first tick, unmoved by a later load or a later report of the base.",
+   "covers": [
+    "REQ-SeqScheduler-009",
+    "REQ-SeqScheduler-011",
+    "REQ-SeqScheduler-047",
+    "REQ-SeqScheduler-061"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; no override set; TB_SC_TIME first reported in L0-2. Run order: after L0-2 in the same start of Ref, before the restart of L3-1.",
+   "procedure": [
+    "CMD_NO_OP_STRING(293)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW(0, 1000000 s in TB_SC_TIME, TIME_BASE_RELATIVE, short.bin, WAIT_FOR_RUNNING)",
+    "bracket (2 SeqSched samples)",
+    "action: elapsed = 1000000 s - (last NextTimeDue - FSW time of that sample)",
+    "Ref.seqSched.SET_ROW(0, elapsed + 20 s in TB_SC_TIME, TIME_BASE_RELATIVE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.timeBaseSetter.SET_TIME_BASE(TB_SC_TIME)",
+    "wait 3 s",
+    "Ref.timeBaseSetter.CLEAR_TIME_BASE()",
+    "wait 20 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(294)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 293,
+     "end_id": 294,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "row 0 run between 14 and 22 s after the second SET_ROW (helper)",
+     "text": "20 s less up to 4 s between the telemetry sample and the command, + 1 s tick + 1 s event time resolution; a start tick moved by the re-report of TB_SC_TIME would put the run 1000000 s away (REQ-011)"
+    },
+    {
+     "pred": "elapsed is within 3 s of FSW time at the sample less the time of this start's first Ref.timeBaseSetter.TimeBaseSet(TB_SC_TIME) event (helper)",
+     "text": "as L2-5 for TB_SC_TIME, first reported in L0-2 or L2-3 of the same start: the origin is minutes old, so a scheduler counting from the load or the edit is off by minutes (REQ-047)"
+    }
+   ],
+   "knobs": [],
+   "evidence": "SeqRun(0) about 20 s after the row is set, across a re-report of TB_SC_TIME, while system time is TB_WORKSTATION_TIME. Named checks the test declares: STD (require) ; ABS ; event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1 ; event Ref.seqSched.RowLate count == 0 ; last(Ref.seqSched.RowsExecuted) == 1 ; row 0 run between 14 and 22 s after the second SET_ROW (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; elapsed is within 3 s of FSW time at the sample less the time of this start's first Ref.timeBaseSetter.TimeBaseSet(TB_SC_TIME) event (helper) ; the first TimeBaseSet(TB_SC_TIME) of this start is in the record, in an earlier test (require)"
+  },
+  {
+   "id": "L2-13",
+   "title": "CANCEL_RUNNING row between other due rows on the second instance",
+   "purpose": "On seqSchedB a CANCEL_RUNNING row that comes due between other due rows cancels the sequence running on schedSeqB only, the rows waiting ahead of it are skipped, and the row due after it is run after it.",
+   "covers": [
+    "REQ-SeqScheduler-015",
+    "REQ-SeqScheduler-042",
+    "REQ-SeqScheduler-060",
+    "REQ-SeqScheduler-045"
+   ],
+   "covers_note": "",
+   "setup": "As L2-10; schedSeq idle.",
+   "procedure": [
+    "CMD_NO_OP_STRING(295)",
+    "action: write table file T-BASE-B",
+    "Ref.seqSchedB.LOAD_TABLE()",
+    "Ref.seqSchedB.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(2, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(3, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(4, True)",
+    "Ref.seqSchedB.SET_ROW(4, FSW time + 18 s in TB_WORKSTATION_TIME, ABSOLUTE, short2.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSchedB.SET_ROW(2, FSW time + 14 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, CANCEL_RUNNING)",
+    "Ref.seqSchedB.SET_ROW(3, FSW time + 11 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSchedB.SET_ROW(1, FSW time + 9 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSchedB.SET_ROW(0, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, long.bin, WAIT_FOR_RUNNING)",
+    "wait 31 s",
+    "bracket (2 SeqSched and 2 SeqSchedB samples)",
+    "CMD_NO_OP_STRING(296)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 295,
+     "end_id": 296,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "event Ref.seqSchedB.RowSkippedByCancel count == 2",
+     "text": "rows 1 and 3 (WAIT_FOR_RUNNING) wait behind long.bin when row 2 (CANCEL_RUNNING) comes due; both are ahead of row 2 in the order rows came due, row 3 despite its higher index, so both are skipped and neither sequence is run (REQ-060)"
+    },
+    {
+     "pred": "event Ref.seqSchedB.SeqCompleted(row=2) precedes event Ref.seqSchedB.SeqRun(row=4)",
+     "text": "row 4 comes due 4 s after row 2, a margin over the spacing of the SET_ROW commands: it is after the cancel row in the order, so it is kept and is run after row 2 is reported complete (REQ-045, REQ-060)"
+    }
+   ],
+   "knobs": [],
+   "evidence": "seqSchedB: Run(0) -> RowSkippedByCancel(1 for 2), RowSkippedByCancel(3 for 2), SeqCancelled(0 for 2) -> schedSeqB CS_SequenceCanceled(long.bin) -> Run(2) -> Run(4); no SeqRun(1) or SeqRun(3); no event from seqSched or schedSeq. Named checks the test declares: STD (require) ; event Ref.seqSchedB.SeqRun(row=0, fileName=long.bin) count == 1 ; event Ref.seqSchedB.SeqCancelled(cancelledRow=0, row=2) count == 1 ; event Ref.schedSeqB.CS_SequenceCanceled(fileName=long.bin) count == 1 ; event Ref.schedSeqB.CS_SequenceComplete(fileName=long.bin) count == 0 ; event Ref.seqSchedB.RowSkippedByCancel(row=1, cancelRow=2) count == 1 ; event Ref.seqSchedB.RowSkippedByCancel(row=3, cancelRow=2) count == 1 ; event Ref.seqSchedB.RowSkippedByCancel count == 2 ; event Ref.seqSchedB.SeqRun(row=1) count == 0 ; event Ref.seqSchedB.SeqRun(row=3) count == 0 ; event Ref.seqSchedB.SeqRun(row=2, fileName=short.bin) count == 1 ; event Ref.seqSchedB.SeqRun(row=4, fileName=short2.bin) count == 1 ; event Ref.schedSeqB.CS_SequenceComplete(fileName=short.bin) count == 1 ; event Ref.schedSeqB.CS_SequenceComplete(fileName=short2.bin) count == 1 ; event Ref.seqSchedB.SeqCancelled(row=2) precedes event Ref.seqSchedB.SeqRun(row=2) ; event Ref.seqSchedB.SeqCompleted(row=2) precedes event Ref.seqSchedB.SeqRun(row=4) ; event Ref.seqSchedB.SeqCompleted(row=2, response=OK) count == 1 ; event Ref.seqSchedB.SeqCompleted(row=4, response=OK) count == 1 ; event Ref.seqSchedB.SeqCancelled count == 1 ; last(Ref.seqSchedB.RowsSkipped) == 2 ; last(Ref.seqSchedB.RowsExecuted) == 3 ; last(Ref.seqSchedB.RowsWaiting) == 0 ; event Ref.seqSchedB.SeqCompleted(row=0, response=EXECUTION_ERROR) count == 1 ; event Ref.seqSchedB.SeqCompleted(row=0) precedes event Ref.seqSchedB.SeqRun(row=2) ; event Ref.seqSched.SeqRun count == 0 ; event Ref.seqSched.SeqCancelled count == 0 ; event Ref.seqSched.RowSkippedByCancel count == 0 ; event Ref.schedSeq.CS_SequenceCanceled count == 0 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require) ; SeqSchedB samples >= 2 in every window (require)"
+  },
+  {
+   "id": "L2-14",
+   "title": "Waiting order and SKIP_WHEN_RUNNING on the second instance",
+   "purpose": "On seqSchedB waiting rows run in the order they came due, then by index, and a SKIP_WHEN_RUNNING row due meanwhile is skipped.",
+   "covers": [
+    "REQ-SeqScheduler-016",
+    "REQ-SeqScheduler-045",
+    "REQ-SeqScheduler-014",
+    "REQ-SeqScheduler-013",
+    "REQ-SeqScheduler-017",
+    "REQ-SeqScheduler-042"
+   ],
+   "covers_note": "",
+   "setup": "As L2-10; schedSeq idle.",
+   "procedure": [
+    "CMD_NO_OP_STRING(297)",
+    "action: write table file T-BASE-B",
+    "Ref.seqSchedB.LOAD_TABLE()",
+    "Ref.seqSchedB.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(2, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(3, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(4, True)",
+    "Ref.seqSchedB.SET_ROW(1, FSW time + 16 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSchedB.SET_ROW(3, FSW time + 13 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, SKIP_WHEN_RUNNING)",
+    "Ref.seqSchedB.SET_ROW(4, FSW time + 10 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSchedB.SET_ROW(2, same time, ABSOLUTE, short2.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSchedB.SET_ROW(0, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, long.bin, WAIT_FOR_RUNNING)",
+    "wait 44 s",
+    "bracket (2 SeqSched and 2 SeqSchedB samples)",
+    "CMD_NO_OP_STRING(298)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 297,
+     "end_id": 298,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "event Ref.seqSchedB.SeqCompleted(row=4) precedes event Ref.seqSchedB.SeqRun(row=1)",
+     "text": "rows 2 and 4 were due 6 s before row 1: waiting rows run by time due, so both run before the lower-index row 1 (REQ-045, REQ-017), each after a completion report (REQ-014)"
+    },
+    {
+     "pred": "event Ref.seqSchedB.SeqCompleted(row=2) precedes event Ref.seqSchedB.SeqRun(row=4)",
+     "text": "rows 2 and 4 came due on one tick and row 4 was set first: index order (REQ-017)"
+    }
+   ],
+   "knobs": [],
+   "evidence": "seqSchedB: Run(0) -> RowSkippedBusy(3) -> Completed(0) -> Run(2) -> Run(4) -> Run(1). Named checks the test declares: STD (require) ; event Ref.seqSchedB.SeqRun(row=0, fileName=long.bin) count == 1 ; event Ref.seqSchedB.RowSkippedBusy(row=3, runningRow=0) count == 1 ; event Ref.seqSchedB.SeqRun(row=3) count == 0 ; event Ref.seqSchedB.SeqRun(row=2, fileName=short2.bin) count == 1 ; event Ref.seqSchedB.SeqRun(row=4, fileName=short.bin) count == 1 ; event Ref.seqSchedB.SeqRun(row=1, fileName=short.bin) count == 1 ; event Ref.seqSchedB.SeqCompleted(row=0) precedes event Ref.seqSchedB.SeqRun(row=2) ; event Ref.seqSchedB.SeqCompleted(row=2) precedes event Ref.seqSchedB.SeqRun(row=4) ; event Ref.seqSchedB.SeqCompleted(row=4) precedes event Ref.seqSchedB.SeqRun(row=1) ; event Ref.schedSeqB.CS_SequenceComplete(fileName=long.bin) count == 1 ; event Ref.schedSeqB.CS_SequenceCanceled count == 0 ; event Ref.seqSchedB.RowLate count == 0 ; event Ref.seqSchedB.RowSkippedByCancel count == 0 ; last(Ref.seqSchedB.RowsExecuted) == 4 ; last(Ref.seqSchedB.RowsSkipped) == 1 ; event Ref.seqSched.SeqRun count == 0 ; event Ref.seqSched.RowSkippedBusy count == 0 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require) ; SeqSchedB samples >= 2 in every window (require)"
+  },
+  {
+   "id": "L3-1",
+   "title": "Saved table across a restart",
+   "purpose": "A saved table is loaded at start-up with every row pending: a row whose time has passed is skipped with no event and a relative row is run.",
+   "covers": [
+    "REQ-SeqScheduler-023",
+    "REQ-SeqScheduler-032",
+    "REQ-SeqScheduler-031",
+    "REQ-SeqScheduler-056",
+    "REQ-SeqScheduler-021",
+    "REQ-SeqScheduler-008",
+    "REQ-SeqScheduler-005"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; TABLE_FILE saved to the parameter file (FileHandling.prmDb.PRM_SAVE_FILE) so the restart finds it.",
+   "procedure": [
+    "CMD_NO_OP_STRING(300)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSched.SET_ROW(1, 1 s, START_RELATIVE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 12 s",
+    "Ref.seqSched.LOAD_TABLE()",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(301)",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 12 s",
+    "Ref.seqSched.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSched.SET_ROW(1, 60 s, START_RELATIVE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 3 s",
+    "Ref.seqSched.SAVE_TABLE()",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(302)",
+    "action: restart Ref",
+    "CMD_NO_OP_STRING(303)",
+    "wait 70 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(304)"
+   ],
+   "windows": [
+    {
+     "name": "W1",
+     "start_id": 300,
+     "end_id": 301,
+     "reset": false
+    },
+    {
+     "name": "W2",
+     "start_id": 301,
+     "end_id": 302,
+     "reset": false
+    },
+    {
+     "name": "R",
+     "start_id": 302,
+     "end_id": 303,
+     "reset": true
+    },
+    {
+     "name": "W3",
+     "start_id": 303,
+     "end_id": 304,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "W1: last(Ref.seqSched.RowsPending) == 16",
+     "text": "the second LOAD_TABLE re-reads the file, which no save has changed: the load replaces the edited table in memory with the file (REQ-005), which no save has changed, so the edits and the EXECUTED / SKIPPED states of W1 are gone (REQ-031)"
+    },
+    {
+     "pred": "W3: last(Ref.seqSched.RowsPending) == 14",
+     "text": "the file holds no row state: rows 0 and 1 are loaded PENDING (REQ-023); row 0, ABSOLUTE and long past, is SKIPPED on the first tick after the load, with RowLate count == 0 (REQ-056); row 1 START_RELATIVE is run (REQ-008)"
+    },
+    {
+     "pred": "W3: row 1 run between 57 and 66 s after the bench-recorded start of the Ref process (helper)",
+     "text": "60 s after the first tick of this start, anchored to the process start time the bench records, not to a UUT event; the first 1 Hz tick follows process start by under 4 s; +/- 1 s tick, 1 s event time resolution. The restart and GDS reconnect must take under 55 s (confirmed in the dry run) or the run falls in window R and the check fails"
+    },
+    {
+     "pred": "W2: event Ref.seqSched.RowLate(row=1) count == 1",
+     "text": "the image has run over 70 s, so a 60 s START_RELATIVE row is late and SKIPPED before the save; the save holds no state, so it comes back PENDING"
+    },
+    {
+     "pred": "W1: event Ref.seqSched.RowLate(row=1) count == 1",
+     "text": "START_RELATIVE 1 s is long past: the row is late and skipped (REQ-021), so W1 holds one SKIPPED row before the reload"
+    }
+   ],
+   "knobs": [],
+   "evidence": "W1: run, then reload discards it. W2: run and TableSaved. After the restart: TableLoaded with no command, row 0 skipped with no event, row 1 run 60 s after start. Named checks the test declares: W1: STD (require) ; W1: event Ref.seqSched.TableLoaded count == 2 ; W1: event Ref.seqSched.SeqRun(row=0) count == 1 ; W1: event Ref.seqSched.RowLate(row=1) count == 1 ; W1: last(Ref.seqSched.RowsPending) == 16 ; W1: last(Ref.seqSched.RowsExecuted) == 0 ; W2: STD (require) ; W2: event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; W2: event Ref.seqSched.TableSaved count == 1 ; W2: event Ref.seqSched.RowLate(row=1) count == 1 ; W2: last(Ref.seqSched.RowsSkipped) == 1 ; W2: Ref process up >= 70 s at marker 301 (require) ; W2: last(Ref.seqSched.RowsExecuted) == 1 ; R: both markers present (require) ; R: event Ref.seqSched.TableLoaded count == 1 ; W3: STD (require) ; W3: event Ref.seqSched.SeqRun(row=0) count == 0 ; W3: event Ref.seqSched.SeqRun(row=1, fileName=short.bin) count == 1 ; W3: event Ref.seqSched.RowLate count == 0 ; W3: last(Ref.seqSched.TableLoaded) == True ; W3: last(Ref.seqSched.RowsExecuted) == 1 ; W3: last(Ref.seqSched.RowsSkipped) == 1 ; W3: last(Ref.seqSched.RowsPending) == 14 ; W3: event Ref.seqSched.RowSkippedDisabled count == 0 ; W3: row 1 run between 57 and 66 s after the bench-recorded start of the Ref process (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L2-15",
+   "title": "Component disable and active-row report",
+   "purpose": "A disabled component runs no row and reports none upcoming; once enabled it reports the next-due row and runs it.",
+   "covers": [
+    "REQ-SeqScheduler-057",
+    "REQ-SeqScheduler-058"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; no override set.",
+   "procedure": [
+    "CMD_NO_OP_STRING(310)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 12 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ENABLED(False)",
+    "Ref.seqSched.REPORT_ACTIVE_ROW()",
+    "wait 18 s",
+    "Ref.seqSched.SET_ENABLED(True)",
+    "Ref.seqSched.SET_ROW(1, FSW time + 10 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.REPORT_ACTIVE_ROW()",
+    "wait 16 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(311)",
+    "finally: Ref.seqSched.SET_ENABLED(True)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 310,
+     "end_id": 311,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "event Ref.seqSched.SeqRun(row=0) count == 0",
+     "text": "row 0 is enabled and comes due while the component is disabled: it is treated as a disabled row, SKIPPED with RowSkippedDisabled and not run (REQ-058)"
+    },
+    {
+     "pred": "event Ref.seqSched.NoActiveRow count == 1",
+     "text": "sent while disabled: no row is upcoming although row 0 is enabled and PENDING (REQ-057, REQ-058)"
+    },
+    {
+     "pred": "event Ref.seqSched.ActiveRow(row=1) count == 1",
+     "text": "sent after enabling and setting row 1: row 1 is the next-due row; row 0 is SKIPPED (REQ-057)"
+    }
+   ],
+   "knobs": [],
+   "evidence": "EnabledSet twice, NoActiveRow, RowSkippedDisabled(row 0), ActiveRow(row 1), one SeqRun (row 1). Named checks the test declares: STD (require) ; event Ref.seqSched.EnabledSet(enabled=False) count == 1 ; event Ref.seqSched.EnabledSet(enabled=True) count == 1 ; event Ref.seqSched.NoActiveRow count == 1 ; event Ref.seqSched.ActiveRow(row=1) count == 1 ; event Ref.seqSched.ActiveRow count == 1 ; event Ref.seqSched.RowSkippedDisabled(row=0) count == 1 ; event Ref.seqSched.SeqRun(row=0) count == 0 ; event Ref.seqSched.SeqRun(row=1) count == 1 ; event Ref.seqSched.SeqRun count == 1 ; event Ref.schedSeq.CS_SequenceComplete count == 1 ; event Ref.seqSched.RowLate count == 0 ; event Ref.seqSched.NoActiveRow precedes event Ref.seqSched.RowSkippedDisabled(row=0) ; last(Ref.seqSched.Enabled) == True ; first(Ref.seqSched.Enabled) == True (require) ; last(Ref.seqSched.RowsSkipped) == 1 ; last(Ref.seqSched.RowsExecuted) == 1 ; last(Ref.seqSched.LastExecutedRow) == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L2-16",
+   "title": "Component disable and active-row report on the second instance",
+   "purpose": "The second instance, disabled, runs no row and reports none upcoming, and once enabled reports and runs its next-due row, while the first instance stays enabled and runs nothing.",
+   "covers": [
+    "REQ-SeqScheduler-057",
+    "REQ-SeqScheduler-058",
+    "REQ-SeqScheduler-042"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; seqSchedB TABLE_FILE names a second copy of T-BASE; seqSched table T-BASE loaded, all rows disabled; no override set.",
+   "procedure": [
+    "CMD_NO_OP_STRING(320)",
+    "action: write table file T-BASE-B",
+    "Ref.seqSchedB.LOAD_TABLE()",
+    "Ref.seqSchedB.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSchedB.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSchedB.SET_ROW(0, FSW time + 12 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSchedB.SET_ENABLED(False)",
+    "Ref.seqSchedB.REPORT_ACTIVE_ROW()",
+    "wait 18 s",
+    "Ref.seqSchedB.SET_ENABLED(True)",
+    "Ref.seqSchedB.SET_ROW(1, FSW time + 10 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSchedB.REPORT_ACTIVE_ROW()",
+    "wait 16 s",
+    "bracket (2 SeqSched and 2 SeqSchedB samples)",
+    "CMD_NO_OP_STRING(321)",
+    "finally: Ref.seqSchedB.SET_ENABLED(True)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 320,
+     "end_id": 321,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "event Ref.seqSchedB.SeqRun(row=0) count == 0",
+     "text": "row 0 is enabled and comes due while the component is disabled: it is treated as a disabled row, SKIPPED with RowSkippedDisabled and not run (REQ-058)"
+    },
+    {
+     "pred": "event Ref.seqSchedB.NoActiveRow count == 1",
+     "text": "sent while disabled: no row is upcoming although row 0 is enabled and PENDING (REQ-057, REQ-058)"
+    },
+    {
+     "pred": "event Ref.seqSchedB.ActiveRow(row=1) count == 1",
+     "text": "sent after enabling and setting row 1: row 1 is the next-due row; row 0 is SKIPPED (REQ-057)"
+    }
+   ],
+   "knobs": [],
+   "evidence": "EnabledSet twice, NoActiveRow, RowSkippedDisabled(row 0), ActiveRow(row 1), one SeqRun (row 1). Named checks the test declares: STD (require) ; event Ref.seqSchedB.EnabledSet(enabled=False) count == 1 ; event Ref.seqSchedB.EnabledSet(enabled=True) count == 1 ; event Ref.seqSchedB.NoActiveRow count == 1 ; event Ref.seqSchedB.ActiveRow(row=1) count == 1 ; event Ref.seqSchedB.ActiveRow count == 1 ; event Ref.seqSchedB.RowSkippedDisabled(row=0) count == 1 ; event Ref.seqSchedB.SeqRun(row=0) count == 0 ; event Ref.seqSchedB.SeqRun(row=1) count == 1 ; event Ref.seqSchedB.SeqRun count == 1 ; event Ref.schedSeqB.CS_SequenceComplete count == 1 ; event Ref.seqSchedB.RowLate count == 0 ; event Ref.seqSchedB.NoActiveRow precedes event Ref.seqSchedB.RowSkippedDisabled(row=0) ; last(Ref.seqSchedB.Enabled) == True ; first(Ref.seqSchedB.Enabled) == True (require) ; last(Ref.seqSchedB.RowsSkipped) == 1 ; last(Ref.seqSchedB.RowsExecuted) == 1 ; last(Ref.seqSchedB.LastExecutedRow) == 1 ; event Ref.seqSched.SeqRun count == 0 ; event Ref.seqSched.EnabledSet count == 0 ; last(Ref.seqSched.Enabled) == True ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require) ; SeqSchedB samples >= 2 in every window (require)"
+  },
+  {
+   "id": "L5-1",
+   "title": "Table load failures: missing and truncated file",
+   "purpose": "A load command naming a table file that is missing, or truncated, fails with its reason and leaves the table as it was: the row due afterwards is run.",
+   "covers": [
+    "REQ-SeqScheduler-003",
+    "REQ-SeqScheduler-005"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; file T-TRUNC (T-BASE less its last byte) written beside it.",
+   "procedure": [
+    "CMD_NO_OP_STRING(500)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 15 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.TABLE_FILE_PRM_SET(missing.tbl)",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.TABLE_FILE_PRM_SET(T-TRUNC)",
+    "Ref.seqSched.LOAD_TABLE()",
+    "wait 20 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(501)",
+    "finally: Ref.seqSched.TABLE_FILE_PRM_SET(T-BASE path)",
+    "Ref.seqSched.LOAD_TABLE()",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(502)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 500,
+     "end_id": 501,
+     "reset": false
+    },
+    {
+     "name": "C",
+     "start_id": 501,
+     "end_id": 502,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "W: event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1",
+     "text": "row 0 was set and enabled before the two failed load commands and is due after them; a failed load command leaves the table unchanged, so the row is still there and is run (REQ-003). A load that had replaced the table (REQ-005) would have left row 0 disabled with its T-BASE time"
+    },
+    {
+     "pred": "W: event Ref.seqSched.TableLoaded count == 1",
+     "text": "exactly one TableLoaded in the window, from the load of T-BASE at its start: neither failed command replaced the table (REQ-005 applies to a load that succeeds)"
+    },
+    {
+     "pred": "W: STD-ERR (require)",
+     "text": "STD without the OpCodeError absence: two failed loads answer with errors by design"
+    }
+   ],
+   "knobs": [
+    "missing_file_present"
+   ],
+   "evidence": "Two TableLoadFailed (OPEN, SIZE), TableLoaded telemetry still True, SeqRun(0) at row 0's time all the same; window C restores the table. Named checks the test declares: W: STD-ERR (require) ; W: event CdhCore.cmdDisp.OpCodeError count == 2 ; W: event Ref.seqSched.TableLoadFailed(reason=OPEN) count == 1 ; W: event Ref.seqSched.TableFileMissing count == 0 ; W: event Ref.seqSched.TableLoadFailed(reason=SIZE) count == 1 ; W: event Ref.seqSched.TableLoaded count == 1 ; W: event Ref.seqSched.CmdRejected count == 0 ; W: event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; W: event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; W: last(Ref.seqSched.TableLoaded) == True ; W: last(Ref.seqSched.RowsPending) == 15 ; W: last(Ref.seqSched.RowsExecuted) == 1 ; C: both markers present (require) ; C: event Ref.seqSched.TableLoaded count == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L5-2",
+   "title": "Edits and a load while a sequence runs",
+   "purpose": "Edits and a load during a running sequence leave it running to completion, and its completion is still reported.",
+   "covers": [
+    "REQ-SeqScheduler-030",
+    "REQ-SeqScheduler-040"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE",
+   "procedure": [
+    "CMD_NO_OP_STRING(510)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, long.bin, WAIT_FOR_RUNNING)",
+    "wait 10 s",
+    "Ref.seqSched.SET_ROW(0, year 2100 in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW_ENABLED(0, False)",
+    "Ref.seqSched.SET_SEQ_ENABLED(short.bin, False)",
+    "Ref.seqSched.LOAD_TABLE()",
+    "wait 24 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(511)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 510,
+     "end_id": 511,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1",
+     "text": "row 0 was set again, disabled, and replaced by a load while long.bin ran; the sequencer was not cancelled and the scheduler still attributes the completion to its running sequence (REQ-030)"
+    },
+    {
+     "pred": "both TableLoaded events precede CS_SequenceComplete(fileName=long.bin), the second after SeqRun(row=0) (helper)",
+     "text": "the edits and the load fall while long.bin runs, shown from the record and not from the plan's timing"
+    }
+   ],
+   "knobs": [],
+   "evidence": "Run(0, long.bin) -> edits and TableLoaded -> schedSeq CS_SequenceComplete(long.bin) -> SeqCompleted(0, OK); no cancel. Named checks the test declares: STD (require) ; ABS ; event Ref.seqSched.SeqRun(row=0, fileName=long.bin) count == 1 ; event Ref.seqSched.RowSet(row=0) count == 2 ; event Ref.seqSched.TableLoaded count == 2 ; event Ref.schedSeq.CS_SequenceCanceled count == 0 ; event Ref.seqSched.SeqCancelled count == 0 ; event Ref.schedSeq.CS_SequenceComplete(fileName=long.bin) count == 1 ; event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1 ; event Ref.seqSched.SeqDoneUnexpected count == 0 ; event Ref.seqSched.SeqRun(row=0) precedes event Ref.seqSched.RowSet(row=0, fileName=short.bin) ; both TableLoaded events precede CS_SequenceComplete(fileName=long.bin), the second after SeqRun(row=0) (helper) ; last(Ref.seqSched.RunningRow) == 16 ; last(Ref.seqSched.RowsPending) == 16 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L5-3",
+   "title": "Table load failure: bad checksum",
+   "purpose": "A load command naming a table file with a wrong checksum fails, leaves the file untouched and the table as it was: the row due afterwards is run.",
+   "covers": [
+    "REQ-SeqScheduler-003",
+    "REQ-SeqScheduler-005"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; file T-BADCRC (T-BASE, one row byte inverted) written beside it.",
+   "procedure": [
+    "CMD_NO_OP_STRING(520)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 15 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.TABLE_FILE_PRM_SET(T-BADCRC)",
+    "Ref.seqSched.LOAD_TABLE()",
+    "wait 20 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(521)",
+    "finally: Ref.seqSched.TABLE_FILE_PRM_SET(T-BASE path)",
+    "Ref.seqSched.LOAD_TABLE()",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(522)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 520,
+     "end_id": 521,
+     "reset": false
+    },
+    {
+     "name": "C",
+     "start_id": 521,
+     "end_id": 522,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "W: event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1",
+     "text": "row 0 was set and enabled before the failed load command and is due after it; the failed load left the table unchanged, so it is run (REQ-003)"
+    },
+    {
+     "pred": "W: event Ref.seqSched.TableLoaded count == 1",
+     "text": "exactly one TableLoaded in the window, from the load of T-BASE at its start (REQ-005 applies to a load that succeeds)"
+    },
+    {
+     "pred": "W: STD-ERR (require)",
+     "text": "STD without the OpCodeError absence: one failed load answers with an error by design"
+    }
+   ],
+   "knobs": [],
+   "evidence": "TableLoadFailed(CHECKSUM), SeqRun(0) at row 0's time all the same, T-BADCRC byte-identical afterwards; window C restores the table. Named checks the test declares: W: STD-ERR (require) ; W: event CdhCore.cmdDisp.OpCodeError count == 1 ; W: event Ref.seqSched.TableLoadFailed(reason=CHECKSUM) count == 1 ; W: event Ref.seqSched.TableLoadFailed count == 1 ; W: event Ref.seqSched.TableLoaded count == 1 ; W: event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; W: event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1 ; W: event Ref.seqSched.TableSaved count == 0 ; W: last(Ref.seqSched.TableLoaded) == True ; W: last(Ref.seqSched.RowsExecuted) == 1 ; W: file T-BADCRC unchanged on the bench file system (helper) ; C: both markers present (require) ; C: event Ref.seqSched.TableLoaded count == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L5-4",
+   "title": "Edits during a sequence and an unsolicited completion on the second instance",
+   "purpose": "seqSchedB warns of a completion it did not cause, and its edits leave its own running sequence alone.",
+   "covers": [
+    "REQ-SeqScheduler-030",
+    "REQ-SeqScheduler-018",
+    "REQ-SeqScheduler-042",
+    "REQ-SeqScheduler-028"
+   ],
+   "covers_note": "",
+   "setup": "As L2-10; schedSeq idle.",
+   "procedure": [
+    "CMD_NO_OP_STRING(530)",
+    "action: write table file T-BASE-B",
+    "Ref.seqSchedB.LOAD_TABLE()",
+    "Ref.schedSeqB.CS_RUN(short.bin, NO_BLOCK)",
+    "wait 4 s",
+    "Ref.seqSchedB.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSchedB.SET_ROW(0, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, long.bin, WAIT_FOR_RUNNING)",
+    "wait 10 s",
+    "Ref.seqSchedB.SET_ROW_ENABLED(0, False)",
+    "Ref.seqSchedB.SET_ROW(0, year 2100 in TB_WORKSTATION_TIME, ABSOLUTE, short2.bin, WAIT_FOR_RUNNING)",
+    "wait 24 s",
+    "bracket (2 SeqSched and 2 SeqSchedB samples)",
+    "CMD_NO_OP_STRING(531)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 530,
+     "end_id": 531,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "event Ref.seqSchedB.SeqDoneUnexpected count == 1",
+     "text": "short.bin was run on schedSeqB by ground command; its completion reaches seqSchedB with no sequence of its own running: one WARNING_LO event, nothing else changes (REQ-018)"
+    },
+    {
+     "pred": "last(Ref.seqSchedB.RowsExecuted) == 0",
+     "text": "row 0 ran and was set again while long.bin ran: it is PENDING again (REQ-028), yet long.bin completed uncancelled and was reported (REQ-030)"
+    }
+   ],
+   "knobs": [],
+   "evidence": "seqSchedB: SeqDoneUnexpected after the ground's short.bin; Run(0, long.bin) -> edits -> CS_SequenceComplete(long.bin) -> SeqCompleted(0, OK). Named checks the test declares: STD (require) ; event Ref.schedSeqB.CS_SequenceComplete(fileName=short.bin) count == 1 ; event Ref.seqSchedB.SeqDoneUnexpected count == 1 ; event Ref.seqSchedB.SeqRun(row=0, fileName=long.bin) count == 1 ; event Ref.schedSeqB.CS_SequenceComplete(fileName=long.bin) count == 1 ; event Ref.schedSeqB.CS_SequenceCanceled count == 0 ; event Ref.seqSchedB.SeqCompleted(row=0, response=OK) count == 1 ; event Ref.seqSchedB.SeqCompleted count == 1 ; event Ref.seqSchedB.SeqDoneUnexpected precedes event Ref.seqSchedB.SeqRun(row=0) ; event Ref.seqSchedB.SeqRun(row=0) precedes event Ref.seqSchedB.RowSet(row=0, fileName=short2.bin) ; event Ref.seqSchedB.RowSet(row=0, fileName=short2.bin) precedes event Ref.schedSeqB.CS_SequenceComplete(fileName=long.bin) ; last(Ref.seqSchedB.RunningRow) == 16 ; last(Ref.seqSchedB.RowsExecuted) == 0 ; event Ref.seqSched.SeqDoneUnexpected count == 0 ; event Ref.seqSched.SeqRun count == 0 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require) ; SeqSchedB samples >= 2 in every window (require)"
+  },
+  {
+   "id": "L6-1",
+   "title": "Rejected command arguments",
+   "purpose": "Each argument error of SDD §5.1 is rejected with its reason and changes nothing in the table.",
+   "covers": [
+    "REQ-SeqScheduler-034",
+    "REQ-SeqScheduler-004",
+    "REQ-SeqScheduler-035"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE",
+   "procedure": [
+    "CMD_NO_OP_STRING(600)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "bracket (2 SeqSched samples)",
+    "Ref.seqSched.SET_ROW_ENABLED(16, True)",
+    "Ref.seqSched.SET_ROW(16, FSW time + 5 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 5 s in TB_WORKSTATION_TIME, ABSOLUTE, \"\", WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 5 s, useconds 1000000, in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_SEQ_ENABLED(nosuch.bin, True)",
+    "Ref.seqSched.SET_SEQ_ENABLED(\"\", True)",
+    "Ref.seqSched.DUMP_TABLE()",
+    "wait 8 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(601)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 600,
+     "end_id": 601,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "data product file decodes to table T-BASE, all rows PENDING (helper)",
+     "text": "the dump after the six rejected commands is the evidence, outside the UUT's events, that the table is unchanged"
+    }
+   ],
+   "knobs": [],
+   "evidence": "Six CmdRejected with reasons, no edit event, and a dump equal to the authored table. Named checks the test declares: STD-ERR (require) ; event CdhCore.cmdDisp.OpCodeError count == 6 ; event Ref.seqSched.CmdRejected(reason=ROW_INDEX) count == 2 ; event Ref.seqSched.CmdRejected(reason=FILE_NAME) count == 2 ; event Ref.seqSched.CmdRejected(reason=TIME) count == 1 ; event Ref.seqSched.CmdRejected(reason=NO_MATCH) count == 1 ; event Ref.seqSched.RowEnabledSet count == 0 ; event Ref.seqSched.RowSet count == 0 ; event Ref.seqSched.SeqEnabledSet count == 0 ; event Ref.seqSched.SeqRun count == 0 ; last(Ref.seqSched.RowsPending) == 16 ; data product file decodes to table T-BASE, all rows PENDING (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L6-2",
+   "title": "Unsolicited completion",
+   "purpose": "A completion report for a sequence the scheduler did not run raises a warning and changes nothing.",
+   "covers": [
+    "REQ-SeqScheduler-018",
+    "REQ-SeqScheduler-040"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE",
+   "procedure": [
+    "CMD_NO_OP_STRING(610)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "bracket (2 SeqSched samples)",
+    "Ref.schedSeq.CS_RUN(short.bin, NO_BLOCK)",
+    "wait 4 s",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW(0, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 12 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(611)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 610,
+     "end_id": 611,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "event Ref.seqSched.SeqCompleted count == 1",
+     "text": "the sequencer completed short.bin twice (ground CS_RUN, then row 0); only the second was run by the scheduler, the first raised SeqDoneUnexpected"
+    }
+   ],
+   "knobs": [],
+   "evidence": "Two CS_SequenceComplete on schedSeq; one SeqDoneUnexpected, then one SeqCompleted after the scheduler's own run. Named checks the test declares: STD (require) ; ABS ; event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 2 ; event Ref.seqSched.SeqDoneUnexpected count == 1 ; event Ref.seqSched.SeqCompleted count == 1 ; event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1 ; event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1 ; event Ref.seqSched.SeqDoneUnexpected precedes event Ref.seqSched.SeqRun(row=0) ; event Ref.seqSched.SeqRun(row=0) precedes event Ref.seqSched.SeqCompleted(row=0) ; last(Ref.seqSched.RunningRow) == 16 ; last(Ref.seqSched.RowsExecuted) == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  },
+  {
+   "id": "L7-1",
+   "title": "Final table state",
+   "purpose": "The saved table file and the dumped data product both equal the table the plan leaves behind.",
+   "covers": [
+    "REQ-SeqScheduler-032",
+    "REQ-SeqScheduler-035",
+    "REQ-SeqScheduler-019",
+    "REQ-SeqScheduler-027",
+    "REQ-SeqScheduler-025",
+    "REQ-SeqScheduler-056",
+    "REQ-SeqScheduler-023",
+    "REQ-SeqScheduler-031",
+    "REQ-SeqScheduler-028",
+    "REQ-SeqScheduler-029",
+    "REQ-SeqScheduler-005",
+    "REQ-SeqScheduler-002"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE",
+   "procedure": [
+    "CMD_NO_OP_STRING(700)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(5, True)",
+    "Ref.seqSched.SET_ROW(5, year 2100 in TB_WORKSTATION_TIME, ABSOLUTE, short2.bin, SKIP_WHEN_RUNNING)",
+    "Ref.seqSched.SET_ROW_ENABLED(6, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(7, True)",
+    "Ref.seqSched.SET_ROW(8, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(6, FSW time + 6 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(7, FSW time + 9 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "wait 14 s",
+    "Ref.seqSched.SET_ROW_ENABLED(6, False)",
+    "Ref.seqSched.SET_ROW_ENABLED(6, True)",
+    "Ref.seqSched.SET_ROW(7, year 2100 in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SAVE_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(4, True)",
+    "Ref.seqSched.LOAD_TABLE()",
+    "wait 3 s",
+    "Ref.seqSched.DUMP_TABLE()",
+    "wait for DataProducts.dpWriter.FileWritten",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(701)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 700,
+     "end_id": 701,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "data product file decodes to T-FINAL with row states: rows 6 and 8 SKIPPED, every other row PENDING (helper)",
+     "text": "dumped after an unsaved edit (row 4 enabled) and a reload: the load replaced the table in memory with the file (REQ-005), so row 4 is disabled again (REQ-031); the file holds no row state, so every row was loaded PENDING (REQ-023); on the first tick after the load row 6, run before the save and now past its time, and row 8, disabled and past its time, became SKIPPED, and RowLate count == 0 with one RowSkippedDisabled, from before the load, shows neither event was emitted (REQ-056); row 7 was set again to year 2100, so it is PENDING (REQ-028); the product reports each state (REQ-019)"
+    },
+    {
+     "pred": "table file on the bench file system == T-FINAL: valid checksum; row 5 short2.bin SKIP_WHEN_RUNNING enabled, rows 6 and 7 enabled, row 8 disabled, every other row and field as T-BASE, no row state (helper)",
+     "text": "the file is read by the checker with the table-authoring script's reader, not through the UUT, and every field of rows 5 to 8 is compared (REQ-002); the file holds no state byte (REQ-032); the times of rows 6 and 8 are taken from the record's RowSet events"
+    }
+   ],
+   "knobs": [
+    "disable_row"
+   ],
+   "evidence": "TableSaved, TableDumped; the table file and product file left on the bench file system for the auditor. Named checks the test declares: STD (require) ; ABS ; event Ref.seqSched.SeqRun(row=6, fileName=short.bin) count == 1 ; event Ref.seqSched.SeqRun(row=7, fileName=short.bin) count == 1 ; event Ref.seqSched.TableSaved count == 1 ; event Ref.seqSched.TableDumped count == 1 ; event Ref.seqSched.TableLoaded count == 2 ; event Ref.seqSched.RowLate count == 0 ; event Ref.seqSched.RowSkippedDisabled(row=8) count == 1 ; event Ref.seqSched.RowSkippedDisabled count == 1 ; last(Ref.seqSched.RowsExecuted) == 0 ; last(Ref.seqSched.RowsSkipped) == 2 ; last(Ref.seqSched.RowsPending) == 14 ; table file on the bench file system == T-FINAL: valid checksum; row 5 short2.bin SKIP_WHEN_RUNNING enabled, rows 6 and 7 enabled, row 8 disabled, every other row and field as T-BASE, no row state (helper) ; data product file decodes to T-FINAL with row states: rows 6 and 8 SKIPPED, every other row PENDING (helper) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
+  }
+ ]
+}
