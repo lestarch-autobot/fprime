@@ -61,7 +61,9 @@
   "seqSchedB.CmdRejected": "Command (?P<opCode>\\w+) rejected: (?:[\\w.]*\\.)?(?P<reason>\\w+)$",
   "seqSchedB.TableDumped": "Table data product sent$",
   "schedSeqB.CS_SequenceCanceled": "Sequence file (?P<fileName>\\S+) canceled$",
-  "schedSeqB.CS_FileNotFound": "Sequence file (?P<fileName>\\S+) not found\\.$"
+  "schedSeqB.CS_FileNotFound": "Sequence file (?P<fileName>\\S+) not found\\.$",
+  "cmdDisp.OpCodeDispatched": "Opcode (?P<opCode>0x[0-9a-fA-F]+) dispatched to port (?P<port>\\d+)$",
+  "cmdDisp.OpCodeCompleted": "Opcode (?P<opCode>0x[0-9a-fA-F]+) completed$"
  },
  "packets": {
   "SeqSched": [
