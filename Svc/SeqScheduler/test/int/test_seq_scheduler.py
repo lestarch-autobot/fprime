@@ -466,3 +466,81 @@ def test_L2_5(window, send, bench, check, require):
         check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
         check("event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1")
         check("row 0 run between 11 and 21 s after the W1 NextTimeDue sample", run_after_w1_sample(11, 21))
+
+
+def last_before_marker(channel, marker, value):
+    """Last sample of a channel time-tagged before the inner marker event equals value."""
+    def judge(h):
+        marks = [e for e in h.window.events("cmdDisp.NoOpStringReceived") if e.args.get("id") == marker]
+        if not marks:
+            return (False, f"marker {marker} absent")
+        rows = [c for c in h.window.channel(channel) if c.fsw < marks[0].fsw]
+        return (bool(rows) and rows[-1].value == value, f"last value {rows[-1].value if rows else None}")
+    return judge
+
+
+def row_event_time(h, name, row):
+    rows = [e for e in h.window.events(name) if e.args.get("row") == row]
+    return rows[0].fsw if rows else None
+
+
+def run_gap(first, second, low):
+    def judge(h):
+        a, b = run_time(h, first), run_time(h, second)
+        if a is None or b is None:
+            return (False, f"runs {a}, {b}")
+        return (b - a >= low, f"{b - a:.3f} s")
+    return judge
+
+
+def sample_while_running(row, waiting):
+    """A SeqSched sample between SeqRun(row) and SeqCompleted(row) holds RowsWaiting == waiting and RunningRow == row."""
+    def judge(h):
+        start, end = row_event_time(h, "seqSched.SeqRun", row), row_event_time(h, "seqSched.SeqCompleted", row)
+        if start is None or end is None:
+            return (False, f"run {start}, completed {end}")
+        wait = {c.fsw: c.value for c in h.window.channel("seqSched.RowsWaiting") if start < c.fsw < end}
+        running = {c.fsw: c.value for c in h.window.channel("seqSched.RunningRow") if start < c.fsw < end}
+        hits = [t for t in wait if wait[t] == waiting and running.get(t) == row]
+        return (bool(hits), f"{len(wait)} samples in the span, {len(hits)} matching")
+    return judge
+
+
+def test_L2_6(window, send, bench, check, require):
+    with window(250, 251):
+        require("STD")
+        standard_requires(require, fresh=True)
+        bench.action("write_T_BASE")
+        send(S + ".LOAD_TABLE")
+        send(S + ".SET_ROW_ENABLED", [0, True])
+        send(S + ".SET_ROW_ENABLED", [1, True])
+        send(S + ".SET_ROW_ENABLED", [2, True])
+        due = time_value("TB_WORKSTATION_TIME", fsw_now(bench) + 12)
+        send(S + ".SET_ROW", [2, due, "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
+        send(S + ".SET_ROW", [1, due, "ABSOLUTE", "missing.bin", "WAIT_FOR_RUNNING"])
+        send(S + ".SET_ROW", [0, due, "ABSOLUTE", "long.bin", "WAIT_FOR_RUNNING"])
+        bench.wait(17)
+        send(MARK, [252])
+        bench.wait(23)
+        bracket(bench)
+        check("event seqSched.SeqRun(row=0, fileName=long.bin) count == 1")
+        check("event seqSched.SeqRun(row=1, fileName=missing.bin) count == 1")
+        check("event seqSched.SeqRun(row=2, fileName=short.bin) count == 1")
+        check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
+        check("event seqSched.SeqCompleted(row=1, response=EXECUTION_ERROR) count == 1")
+        check("event seqSched.SeqCompleted(row=2, response=OK) count == 1")
+        check("last(seqSched.RowsExecuted) before marker 252 == 0", last_before_marker("seqSched.RowsExecuted", 252, 0))
+        check("last(seqSched.RunningRow) before marker 252 == 0", last_before_marker("seqSched.RunningRow", 252, 0))
+        check("event seqSched.SeqCompleted(row=0) precedes event seqSched.SeqRun(row=1)")
+        check("event seqSched.SeqCompleted(row=1) precedes event seqSched.SeqRun(row=2)")
+        check("event seqSched.RowLate count == 0")
+        check("event seqSched.SeqCancelled count == 0")
+        check("event seqSched.RowSkippedBusy count == 0")
+        check("event schedSeq.CS_FileNotFound(fileName=missing.bin) count == 1")
+        check("event schedSeq.CS_SequenceComplete(fileName=long.bin) precedes "
+              "event schedSeq.CS_FileNotFound(fileName=missing.bin)")
+        check("row 1 run at least 15 s after row 0", run_gap(0, 1, 15))
+        check("last(seqSched.RowsExecuted) == 3")
+        check("last(seqSched.RowsWaiting) == 0")
+        check("a SeqSched sample time-tagged between SeqRun(row=0) and SeqCompleted(row=0) holds RowsWaiting == 2 "
+              "and RunningRow == 0", sample_while_running(0, 2))
