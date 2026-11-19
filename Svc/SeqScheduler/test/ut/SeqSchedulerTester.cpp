@@ -5,6 +5,7 @@
 
 #include "SeqSchedulerTester.hpp"
 
+#include <unistd.h>
 #include <cstdio>
 #include <cstring>
 
@@ -89,6 +90,17 @@ void SeqSchedulerTester::tickBatch(U32 count) {
         this->invoke_to_run(0, 0);
     }
     this->component.doDispatch();
+}
+
+FwSizeType SeqSchedulerTester::readBytes(const char* name, U8* bytes, FwSizeType capacity) {
+    Os::File file;
+    if (file.open(name, Os::File::OPEN_READ) != Os::File::OP_OK) {
+        return 0;
+    }
+    FwSizeType size = capacity;
+    const Os::File::Status status = file.read(bytes, size);
+    file.close();
+    return (status == Os::File::OP_OK) ? size : 0;
 }
 
 void SeqSchedulerTester::done(Fw::CmdResponse::T response) {
@@ -677,6 +689,60 @@ void SeqSchedulerTester::DisableThenEnableSkipsWaiting() {
     ASSERT_EQ(this->state(0), State::EXECUTED);
     ASSERT_EQ(this->state(1), State::SKIPPED);
     ASSERT_from_seqRunOut_SIZE(0);  // nothing run since the history was cleared
+}
+
+void SeqSchedulerTester::FirstTickStandsForSeveral() {
+    // SDD 3.4: the first handled tick that stands for several is recorded as tick 1, with its time moved back
+    this->tickBatch(3);
+    ASSERT_EQ(this->component.m_tick, 3U);
+    ASSERT_EQ(this->component.m_baseCount, 1U);
+    ASSERT_EQ(this->component.m_bases[0].firstTick, 1U);
+    ASSERT_EQ(this->component.m_bases[0].firstTime.getSeconds(), static_cast<U32>(T0));
+    this->cmdSetRow(0, Mode::START_RELATIVE, 4, "a.bin");
+    this->cmdRowEnabled(0, true);
+    this->tick();
+    ASSERT_from_seqRunOut_SIZE(0);
+    this->tick();  // tick 5: four periods after tick 1
+    this->assertRun(0, 0, "a.bin");
+}
+
+void SeqSchedulerTester::PingOnFullQueue() {
+    // A ping arriving on a full queue is dropped, not asserted on
+    const U32 depth = static_cast<U32>(this->component.m_queue.getDepth());
+    for (U32 i = 0; i < depth + 2; i++) {
+        this->invoke_to_pingIn(0, i);
+    }
+    for (U32 i = 0; i < depth; i++) {
+        this->component.doDispatch();
+    }
+    ASSERT_EQ(this->component.m_queue.getMessagesAvailable(), 0U);
+    ASSERT_from_pingOut_SIZE(depth);
+    ASSERT_from_pingOut(depth - 1, depth - 1);
+}
+
+void SeqSchedulerTester::SaveWriteFailureKeepsFile() {
+    // REQ-SeqScheduler-033: a save that cannot write leaves the old file as it was
+    this->startEmpty();
+    this->absRow(0, 50, "a.bin");
+    this->cmdSave();
+    ASSERT_EVENTS_TableSaved_SIZE(1);
+    U8 before[512];
+    U8 after[512];
+    const FwSizeType sizeBefore = this->readBytes(this->defaultFile(), before, sizeof(before));
+    ASSERT_GT(sizeBefore, 0U);
+    Fw::String tmp;
+    tmp.format("%s.tmp", this->defaultFile());
+    ASSERT_EQ(::symlink("/dev/full", tmp.toChar()), 0);  // every write to it fails
+    this->absRow(1, 60, "b.bin");
+    this->clearHistory();
+    this->cmdSave();
+    this->assertLastCmd(SeqScheduler::OPCODE_SAVE_TABLE, Fw::CmdResponse::EXECUTION_ERROR);
+    ASSERT_EVENTS_TableSaveFailed_SIZE(1);
+    ASSERT_EVENTS_TableSaveFailed(0, this->defaultFile(), SeqScheduler_SaveFailure::WRITE);
+    const FwSizeType sizeAfter = this->readBytes(this->defaultFile(), after, sizeof(after));
+    ASSERT_EQ(sizeAfter, sizeBefore);
+    ASSERT_EQ(::memcmp(before, after, sizeBefore), 0);
+    ASSERT_NE(::access(tmp.toChar(), F_OK), 0);  // the temporary file is not left behind
 }
 
 void SeqSchedulerTester::UnsolicitedDone() {

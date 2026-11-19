@@ -62,6 +62,8 @@ class SeqSchedulerTester final : public SeqSchedulerGTestBase {
     FwSizeType buildFile(U8* bytes, FwSizeType capacity, const FileRow* rows, FwSizeType count);
     //! Write raw bytes to a file
     void writeBytes(const char* name, const U8* bytes, FwSizeType size);
+    //! Read up to capacity bytes of a file; the count read, 0 on error
+    FwSizeType readBytes(const char* name, U8* bytes, FwSizeType capacity);
     //! Remove a file if present
     void removeFile(const char* name);
     //! Commands, each dispatched
@@ -132,6 +134,9 @@ class SeqSchedulerTester final : public SeqSchedulerGTestBase {
     void TwoCancelsDue();
     void FailedLoadKeepsTable();
     void DisableThenEnableSkipsWaiting();
+    void FirstTickStandsForSeveral();
+    void PingOnFullQueue();
+    void SaveWriteFailureKeepsFile();
     void UnsolicitedDone();
     void RunRefused();
     void ExecutingReplaced();

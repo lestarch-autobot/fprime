@@ -116,6 +116,21 @@ TEST(SeqScheduler, DisableThenEnableSkipsWaiting) {
     tester.DisableThenEnableSkipsWaiting();
 }
 
+TEST(SeqScheduler, FirstTickStandsForSeveral) {
+    Svc::SeqSchedulerTester tester;
+    tester.FirstTickStandsForSeveral();
+}
+
+TEST(SeqScheduler, PingOnFullQueue) {
+    Svc::SeqSchedulerTester tester;
+    tester.PingOnFullQueue();
+}
+
+TEST(SeqScheduler, SaveWriteFailureKeepsFile) {
+    Svc::SeqSchedulerTester tester;
+    tester.SaveWriteFailureKeepsFile();
+}
+
 TEST(SeqScheduler, UnsolicitedDone) {
     Svc::SeqSchedulerTester tester;
     tester.UnsolicitedDone();
