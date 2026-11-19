@@ -409,7 +409,7 @@ file is read and checked into the load copy, which is discarded:
 Saving. `SAVE_TABLE` writes the rows up to the last one that is not empty to the table file name
 + `.tmp`, then renames it onto the table file; the old file stands until the rename. The
 temporary name is built in a string four characters longer than the name, so it is never cut. A
-table whose rows are all empty is not saved: the command is rejected with `TABLE_EMPTY`. A failure emits `TableSaveFailed` with reason `OPEN`, `WRITE` or `RENAME`.
+table whose rows are all empty is not saved: the command is rejected with `TABLE_EMPTY`. A failure emits `TableSaveFailed` with reason `OPEN`, `WRITE` or `RENAME`. After a failed write or rename the temporary file is removed; a failure of that removal is not reported.
 
 ### 4.3. Data product
 
@@ -458,7 +458,7 @@ A command fails with `CmdRejected` (`WARNING_HI`), the table unchanged, on these
 | Parameter | Type | Default | Purpose | Read |
 |---|---|---|---|---|
 | `TABLE_FILE` | string size `FileNameStringSize` | `""` | Table file path; when not set or empty, the default name given to `configure` is used | At each load and save |
-| `LATE_TOLERANCE_SEC` | U32 | 1 | Seconds past due within which a row is still run; below the tick period, the tick period is used | Each tick |
+| `LATE_TOLERANCE_SEC` | U32 | 1 | Seconds past due within which a row is still run; below the tick period, or while the parameter is not valid (before the parameters are loaded), the tick period is used | Each tick |
 
 ### 5.3. Telemetry
 
@@ -597,7 +597,7 @@ base is first reported.
 | `TickRounding` | Relative delays round up to whole ticks and ignore system-time jumps. | REQ-SeqScheduler-010 |
 | `TicksWhileBusy` | Ticks arriving while one is queued or being handled queue no second message and are all counted by the next handled tick. | REQ-SeqScheduler-010 |
 | `FirstTickStandsForSeveral` | A first handled tick that stands for several is recorded as tick 1 with its time moved back, and a `START_RELATIVE` row comes due from that tick. | REQ-SeqScheduler-010 |
-| `DisableThenEnableSkipsWaiting` | A waiting row is `SKIPPED` by the disable command itself and is not run when the component is enabled again before the next tick. | REQ-SeqScheduler-021 |
+| `DisableThenEnableSkipsWaiting` | A waiting row is `SKIPPED` by the disable command itself and is not run when the component is enabled again before the next tick. | REQ-SeqScheduler-058 |
 | `LoadBeforeFirstTick` | A load command handled before the first tick leaves the first tick as tick 1 and relative rows due on the same ticks. | REQ-SeqScheduler-008, REQ-SeqScheduler-010 |
 | `TimeBaseRecordFull` | A base beyond `SeqSchedulerTimeBases` warns once while it stays the base that found the record full, and its rows stay `PENDING`. | REQ-SeqScheduler-009 |
 | `TimeBaseWarningThrottle` | `TimeBaseNotRecorded` is emitted at most 8 times until a successful load clears the throttle. White box: the test overwrites recorded bases, because the default `TimeBase` enumeration leaves only one base unrecorded. | REQ-SeqScheduler-009 |
@@ -633,7 +633,7 @@ base is first reported.
 | `SetWaitingRow` | Setting or disabling a waiting row removes it from the due rows. | REQ-SeqScheduler-028, REQ-SeqScheduler-022 |
 | `EditsDuringSequence` | No edit or load changes the running sequence or its completion handling. | REQ-SeqScheduler-030 |
 | `SaveTable` | Edits reach the file only on save; the file holds no row state and ends at the last non-empty row; the component enable is not saved. | REQ-SeqScheduler-031, REQ-SeqScheduler-032 |
-| `SaveFailures` | A save that cannot open or rename its file fails and warns with the reason. | REQ-SeqScheduler-033 |
+| `SaveFailures` | A save that cannot open or rename its file fails, warns with the reason, and leaves no temporary file after a failed rename. | REQ-SeqScheduler-033 |
 | `SaveWriteFailureKeepsFile` | A save whose write fails warns with `WRITE`, leaves the old file byte for byte and removes its temporary file. Runs only where `/dev/full` exists (skipped on macOS). | REQ-SeqScheduler-033 |
 | `ArgumentErrors` | Each argument error of §5.1, enabling an empty-named row included, fails with `WARNING_HI`, table unchanged. | REQ-SeqScheduler-034 |
 | `DumpTable` | The data product holds one record per row, in index order, with each row's state. | REQ-SeqScheduler-019, REQ-SeqScheduler-035, REQ-SeqScheduler-059 |

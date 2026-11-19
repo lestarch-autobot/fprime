@@ -735,6 +735,7 @@ void SeqSchedulerTester::SaveWriteFailureKeepsFile() {
     ASSERT_GT(sizeBefore, 0U);
     Fw::String tmp;
     tmp.format("%s.tmp", this->defaultFile());
+    this->removeFile(tmp.toChar());                      // a link left by an aborted run
     ASSERT_EQ(::symlink("/dev/full", tmp.toChar()), 0);  // every write to it fails
     this->absRow(1, 60, "b.bin");
     this->clearHistory();
@@ -1420,7 +1421,7 @@ void SeqSchedulerTester::SaveFailures() {
     this->cmdSave();
     ASSERT_EVENTS_TableSaveFailed_SIZE(2);
     ASSERT_EVENTS_TableSaveFailed(1, "seqsched_ut_dir", SeqScheduler_SaveFailure::RENAME);
-    this->removeFile("seqsched_ut_dir.tmp");
+    ASSERT_FALSE(Os::FileSystem::exists("seqsched_ut_dir.tmp"));  // removed by the failed save
     (void)Os::FileSystem::removeDirectory("seqsched_ut_dir");
 }
 
