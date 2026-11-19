@@ -268,6 +268,7 @@ void SeqSchedulerTester::MissingTableFile() {
     // REQ-SeqScheduler-053: missing file at the start-up load gives an empty table
     this->tick();
     ASSERT_EVENTS_TableFileMissing_SIZE(1);
+    ASSERT_EVENTS_TableFileMissing(0, this->defaultFile());
     ASSERT_EVENTS_TableLoaded_SIZE(0);
     ASSERT_EVENTS_TableLoadFailed_SIZE(0);
     ASSERT_TLM_TableLoaded(0, true);
@@ -656,6 +657,28 @@ void SeqSchedulerTester::LateRow() {
     ASSERT_EQ(this->state(1), State::SKIPPED);
 }
 
+void SeqSchedulerTester::DisableThenEnableSkipsWaiting() {
+    // SDD 7: a waiting row at a component disable is SKIPPED for good, also when the enable precedes the next tick
+    this->startEmpty();
+    this->absRow(0, 1, "a.bin");
+    this->absRow(1, 1, "b.bin");
+    this->tick();
+    ASSERT_EQ(this->state(0), State::EXECUTING);
+    ASSERT_EQ(this->component.m_due.getSize(), 1U);  // row 1 waits
+    this->clearHistory();
+    this->cmdEnabled(false);
+    ASSERT_EQ(this->state(1), State::SKIPPED);
+    ASSERT_EQ(this->component.m_due.getSize(), 0U);
+    ASSERT_EVENTS_RowSkippedDisabled_SIZE(1);
+    ASSERT_EVENTS_RowSkippedDisabled(0, 1);
+    this->cmdEnabled(true);
+    this->done();
+    this->tick(2);
+    ASSERT_EQ(this->state(0), State::EXECUTED);
+    ASSERT_EQ(this->state(1), State::SKIPPED);
+    ASSERT_from_seqRunOut_SIZE(0);  // nothing run since the history was cleared
+}
+
 void SeqSchedulerTester::UnsolicitedDone() {
     // REQ-SeqScheduler-018
     this->startEmpty();
@@ -664,6 +687,7 @@ void SeqSchedulerTester::UnsolicitedDone() {
     this->done();
     ASSERT_EVENTS_SIZE(1);
     ASSERT_EVENTS_SeqDoneUnexpected_SIZE(1);
+    ASSERT_EVENTS_SeqDoneUnexpected(0, Fw::CmdResponse::OK);
     ASSERT_EQ(this->state(0), State::PENDING);
     ASSERT_from_seqRunOut_SIZE(0);
 }
@@ -879,6 +903,8 @@ void SeqSchedulerTester::SetRow() {
     this->cmdSetRow(0, Mode::START_RELATIVE, 77, "b.bin", Policy::SKIP_WHEN_RUNNING, 5);
     this->assertLastCmd(SeqScheduler::OPCODE_SET_ROW, Fw::CmdResponse::OK);
     ASSERT_EVENTS_RowSet_SIZE(1);
+    ASSERT_EVENTS_RowSet(0, 0, Fw::TimeValue(TimeBase::TB_WORKSTATION_TIME, 0, 77, 5), Mode::START_RELATIVE, "b.bin",
+                         Policy::SKIP_WHEN_RUNNING);
     const SeqScheduler_Row& row = this->component.m_table[0];
     ASSERT_EQ(row.get_state(), State::PENDING);
     ASSERT_EQ(row.get_mode(), Mode::START_RELATIVE);
@@ -978,10 +1004,12 @@ void SeqSchedulerTester::FailedLoadKeepsTable() {
     const U8 bad[] = {9, 0, 0, 0, 0, 0, 0};
     this->writeBytes(this->defaultFile(), bad, sizeof(bad));
     this->clearHistory();
+    const SeqScheduler::LoadState loadState = this->component.m_loadState;
     this->cmdLoad();
     this->assertLastCmd(SeqScheduler::OPCODE_LOAD_TABLE, Fw::CmdResponse::EXECUTION_ERROR);
     ASSERT_EVENTS_TableLoadFailed_SIZE(1);
     ASSERT_EVENTS_TableLoadFailed(0, this->defaultFile(), SeqScheduler_LoadFailure::VERSION);
+    ASSERT_EQ(this->component.m_loadState, loadState);  // SDD 5.3: unchanged by a failed load command
     ASSERT_EQ(this->state(0), State::EXECUTING);
     ASSERT_EQ(this->component.m_due.getSize(), 1U);
     ASSERT_STREQ(this->component.m_table[2].get_fileName().toChar(), "c.bin");

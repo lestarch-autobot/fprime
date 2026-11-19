@@ -334,6 +334,10 @@ void SeqScheduler::SET_ENABLED_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, bool 
     this->lock();
     this->m_enabled = enabled;
     this->unLock();
+    if (!enabled) {
+        // A waiting row at a disable is skipped for good: an enable before the next tick does not revive it
+        this->skipDueRowsWhileDisabled();
+    }
     this->log_ACTIVITY_HI_EnabledSet(enabled);
     this->tlmWrite_Enabled(enabled);
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
@@ -768,10 +772,13 @@ bool SeqScheduler::writeTableFile(const Fw::StringBase& name, FwSizeType rows, S
     file.close();
     if (!ok) {
         reason = SeqScheduler_SaveFailure::WRITE;
+        // Best effort: the save has already failed, a temporary file left behind changes nothing in the report
+        (void)Os::FileSystem::removeFile(tmpName.toChar());
         return false;
     }
     if (Os::FileSystem::rename(tmpName.toChar(), name.toChar()) != Os::FileSystem::OP_OK) {
         reason = SeqScheduler_SaveFailure::RENAME;
+        (void)Os::FileSystem::removeFile(tmpName.toChar());
         return false;
     }
     return true;
@@ -915,6 +922,9 @@ SeqScheduler::DueInfo SeqScheduler::dueInfo(FwSizeType row) const {
 U64 SeqScheduler::lateToleranceUsec() {
     Fw::ParamValid valid = Fw::ParamValid::INVALID;
     const U64 tolerance = static_cast<U64>(this->paramGet_LATE_TOLERANCE_SEC(valid)) * USEC_PER_SEC;
+    if ((valid != Fw::ParamValid::VALID) && (valid != Fw::ParamValid::DEFAULT)) {
+        return this->m_tickPeriodUsec;
+    }
     return (tolerance < this->m_tickPeriodUsec) ? this->m_tickPeriodUsec : tolerance;
 }
 

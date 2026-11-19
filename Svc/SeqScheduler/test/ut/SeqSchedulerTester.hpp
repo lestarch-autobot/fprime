@@ -131,6 +131,7 @@ class SeqSchedulerTester final : public SeqSchedulerGTestBase {
     void CancelBetweenDue();
     void TwoCancelsDue();
     void FailedLoadKeepsTable();
+    void DisableThenEnableSkipsWaiting();
     void UnsolicitedDone();
     void RunRefused();
     void ExecutingReplaced();

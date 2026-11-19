@@ -111,6 +111,11 @@ TEST(SeqScheduler, LateRow) {
     tester.LateRow();
 }
 
+TEST(SeqScheduler, DisableThenEnableSkipsWaiting) {
+    Svc::SeqSchedulerTester tester;
+    tester.DisableThenEnableSkipsWaiting();
+}
+
 TEST(SeqScheduler, UnsolicitedDone) {
     Svc::SeqSchedulerTester tester;
     tester.UnsolicitedDone();
