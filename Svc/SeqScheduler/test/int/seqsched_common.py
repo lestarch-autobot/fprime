@@ -44,7 +44,7 @@ def time_value(base, seconds):
 def fsw_now(bench):
     """Seconds of the newest recorded event (0 in a dry run, where nothing is recorded)."""
     rows = bench.action("fsw_now")
-    if bench.dry_run and getattr(bench, "replay_record", None) is None:
+    if bench.dry_run and bench.replay_record is None:
         return 0  # a dry run records nothing; a replay is also a dry run of the bench, but it has the readings
     if not rows or not rows[-1]:
         raise RuntimeError("bench: no FSW time reading (fsw_now printed no event)")
