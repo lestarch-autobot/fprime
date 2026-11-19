@@ -9,6 +9,7 @@
   "arg": "id",
   "reserved_min": 4294901760
  },
+ "boot_event": "prmDb.PrmFileLoadComplete",
  "event_patterns": {
   "cmdDisp.NoOpStringReceived": "Received a NO-OP string=(?P<id>\\d+)$",
   "seqSched.TableLoaded": "Loaded sequence schedule table (?P<fileName>\\S+): (?P<rows>\\d+) rows$",

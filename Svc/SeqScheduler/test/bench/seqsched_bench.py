@@ -8,7 +8,9 @@ Ref runs with the work directory as its working directory, so table, sequence, p
 data product files are all found there.
 """
 import argparse
+import json
 import os
+import re
 import shutil
 import signal
 import socket
@@ -22,6 +24,8 @@ TABLE_SCRIPT = HERE.parents[1] / "scripts" / "seq_schedule_table.py"
 FILES = HERE.parent / "int" / "files"
 WORK = Path("bench-work")
 PID_FILE = WORK / "ref.pid"
+START_FILE = WORK / "ref.start"
+RAW_TIME = re.compile(r",\((\d+)\((\d+)\)-(\d+):(\d+)\),([^,]+),\d+,(.*)$")
 YEAR_2100 = 4102444800  # 2100-01-01T00:00:00Z
 
 
@@ -30,6 +34,7 @@ def start_ref(port):
     proc = subprocess.Popen(["./Ref", "-a", "127.0.0.1", "-p", str(port)], cwd=WORK, stdout=out,
                             stderr=subprocess.STDOUT, start_new_session=True)
     PID_FILE.write_text(f"{proc.pid}\n")
+    START_FILE.write_text(f"{time.time():.3f}\n")
     print(f"bench: Ref started pid={proc.pid}", flush=True)
     return proc
 
@@ -60,6 +65,8 @@ def flash(args):
     os.chmod(WORK / "Ref", 0o755)
     for name in os.listdir(FILES):
         shutil.copyfile(FILES / name, WORK / name)
+    for table in ("T-BASE", "T-BASE-B"):
+        write_table(argparse.Namespace(table=table))
     # No debugger on a native bench: the host name stands where the tool expects a probe serial
     print(f"Serial# = {socket.gethostname()}")
 
@@ -93,6 +100,43 @@ def reset(args):
     start_ref(args.port)
 
 
+def evidence(data):
+    """One evidence row of the run record (the test tool keeps stdout lines of this form)."""
+    print("EVIDENCE " + json.dumps(data, sort_keys=True))
+
+
+def last_row(logs, log_name, channel=None):
+    """Raw time and age of the newest recorder row (of one channel, if named)."""
+    files = sorted(Path(logs).glob(f"fprime-cli-*/{log_name}"))
+    if not files:
+        return None
+    found = None
+    for line in files[-1].read_text(errors="replace").splitlines():
+        m = RAW_TIME.search(line)
+        if m and (channel is None or m.group(5).endswith("." + channel)):
+            found = (m, line)
+    if found is None:
+        return None
+    m, line = found
+    return {"base": int(m.group(1)), "sec": int(m.group(3)), "usec": int(m.group(4)),
+            "age_s": round(time.time() - files[-1].stat().st_mtime, 3), "value": m.group(6)}
+
+
+def fsw_now(args):
+    """FSW time of the newest recorded event: the source of every 'FSW time + N s' of the plan."""
+    evidence(last_row(args.logs, "event.log"))
+
+
+def next_due(args):
+    """Newest NextTimeDue sample of a scheduler and the FSW time it was written at."""
+    evidence(last_row(args.logs, "channel.log", args.instance + ".NextTimeDue"))
+
+
+def ref_start(args):
+    """Ground time at which the bench started the running Ref process."""
+    evidence({"start": float(START_FILE.read_text()), "pid": int(PID_FILE.read_text())})
+
+
 def base_rows(file_name="short.bin"):
     return [{"timeBase": "TB_WORKSTATION_TIME", "seconds": YEAR_2100, "mode": "ABSOLUTE", "fileName": file_name,
              "busyPolicy": "WAIT_FOR_RUNNING", "enabled": False} for _ in range(16)]
@@ -112,7 +156,6 @@ def tables():
 
 
 def write_table(args):
-    import json
     name, rows = tables()[args.table]
     source = WORK / (args.table + ".json")
     source.write_text(json.dumps(rows, indent=1) + "\n")
@@ -141,6 +184,15 @@ def main():
     p = sub.add_parser("write-table")
     p.add_argument("table", choices=sorted(tables()))
     p.set_defaults(fn=write_table)
+    p = sub.add_parser("fsw-now")
+    p.add_argument("logs")
+    p.set_defaults(fn=fsw_now)
+    p = sub.add_parser("next-due")
+    p.add_argument("logs")
+    p.add_argument("instance")
+    p.set_defaults(fn=next_due)
+    p = sub.add_parser("ref-start")
+    p.set_defaults(fn=ref_start)
     args = parser.parse_args()
     args.fn(args)
 

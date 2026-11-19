@@ -9,13 +9,17 @@
   "flash": "python3 {bench} flash {image}",
   "dump": "python3 {bench} dump {readback}",
   "reset": "python3 {bench} reset --port {port}",
-  "gds": "python3 {bench} gds {dictionary} {logs} --port {port}",
+  "gds": "python3 {bench} gds {dictionary} {logs} --port {port} --delay 30",
   "recorder": "fprime-cli events --dictionary {dictionary} --logs {logs}",
   "send": "fprime-cli command-send --dictionary {dictionary} --logs {logs} {command} --arguments {args}",
   "actions": {
     "write_T_BASE": "python3 {bench} write-table T-BASE",
     "write_T_BASE_B": "python3 {bench} write-table T-BASE-B",
-    "write_T_FIELDS": "python3 {bench} write-table T-FIELDS"
+    "write_T_FIELDS": "python3 {bench} write-table T-FIELDS",
+    "fsw_now": "python3 {bench} fsw-now {logs}",
+    "next_due": "python3 {bench} next-due {logs} seqSched",
+    "next_due_b": "python3 {bench} next-due {logs} seqSchedB",
+    "ref_start": "python3 {bench} ref-start"
   },
   "timeouts": {
     "flash_s": 60,
