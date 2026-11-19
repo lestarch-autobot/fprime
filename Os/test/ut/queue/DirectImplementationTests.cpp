@@ -80,7 +80,7 @@ class DirectQueue : public ::testing::Test {
 };
 using Implementations =
     ::testing::Types<Os::Generic::PriorityQueue, Os::Generic::LocklessPriorityQueue, Os::Generic::PriorityMemQueue>;
-TYPED_TEST_SUITE(DirectQueue, Implementations);
+TYPED_TEST_SUITE(DirectQueue, Implementations, );
 
 TYPED_TEST(DirectQueue, UninitializedSendReceive) {
     U8 buffer[MESSAGE_SIZE] = {};
