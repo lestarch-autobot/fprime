@@ -12,17 +12,12 @@
 #include <Os/Mutex.hpp>
 #include <Os/Os.hpp>
 #include <Os/TaskString.hpp>
-#include "config/OsSelection.hpp"  // may define the Os::Task alias and OS_TASK_HEADER consumed by Os/Task.hpp
+#include "config/OsSelection.hpp"  // defines the Os::Task alias and OS_TASK_HEADER consumed by Os/Task.hpp; do not remove
 
-// Fall back to link-time selection when the project's config/OsSelection.hpp does not select an Os::Task. This keeps
-// project overrides that predate the Task alias building. An override that aliases Os::Task must also define
-// OS_TASK_HEADER; otherwise the alias below is reported as a conflicting declaration.
+// Validate that config/OsSelection.hpp selects an Os::Task. Checked here, not only in Os/Task.hpp, because this
+// header itself uses the Os::Task alias.
 #ifndef OS_TASK_HEADER
-namespace Os {
-class DelegateTask;
-using Task = DelegateTask;
-}  // namespace Os
-#define OS_TASK_HEADER <Os/DelegateTask.hpp>
+#error "config/OsSelection.hpp must select an Os::Task: define the Os::Task alias and OS_TASK_HEADER"
 #endif
 
 #include <Fw/Deprecate.hpp>
