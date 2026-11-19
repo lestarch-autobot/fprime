@@ -12,7 +12,16 @@
 #include <Os/Mutex.hpp>
 #include <Os/Os.hpp>
 #include <Os/TaskString.hpp>
-#include "config/OsSelection.hpp"  // defines Os::Task alias and OS_TASK_HEADER consumed by Os/Task.hpp; do not remove
+#include "config/OsSelection.hpp"  // may define the Os::Task alias and OS_TASK_HEADER consumed by Os/Task.hpp
+
+// Fall back to link-time selection when the project's config/OsSelection.hpp does not select an Os::Task
+#ifndef OS_TASK_HEADER
+namespace Os {
+class DelegateTask;
+using Task = DelegateTask;
+}  // namespace Os
+#define OS_TASK_HEADER <Os/DelegateTask.hpp>
+#endif
 
 #include <Fw/Deprecate.hpp>
 #include <limits>

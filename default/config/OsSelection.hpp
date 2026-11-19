@@ -91,6 +91,10 @@
 // ----------------------------------------------------------------------
 // Task
 //
+// A project OsSelection.hpp that defines neither the Os::Task alias nor
+// OS_TASK_HEADER gets the link-time Os::DelegateTask (see
+// Os/TaskInterface.hpp).
+//
 // A compile-time selection MUST derive from Os::TaskInterface, which holds the
 // common Os::Task state and functions (state tracking, task registry, task
 // count, delay(), getSingleton()). Its start(), join(), suspend() (where

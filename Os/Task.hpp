@@ -9,7 +9,8 @@
 // full rationale):
 //
 //   1. Os/TaskInterface.hpp includes config/OsSelection.hpp, which defines the
-//      Os::Task alias and OS_TASK_HEADER, then defines TaskHandle,
+//      Os::Task alias and OS_TASK_HEADER (when it defines neither, the
+//      link-time Os::DelegateTask is selected), then defines TaskHandle,
 //      TaskInterface, and TaskRegistry.
 //
 //   2. OS_TASK_HEADER points to the header of the class Os::Task names:
@@ -20,11 +21,6 @@
 #define Os_Task_hpp_
 
 #include "Os/TaskInterface.hpp"
-
-// Validate that OS_TASK_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_TASK_HEADER
-#error "OS_TASK_HEADER must be defined in config/OsSelection.hpp"
-#endif
 
 #include OS_TASK_HEADER
 
