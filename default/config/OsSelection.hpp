@@ -113,9 +113,10 @@
 // File and FileSystem.
 //
 // A project override of this header MUST select a Directory: it defines both
-// the Os::Directory alias and OS_DIRECTORY_HEADER (the two lines at the end
-// of this file keep the link-time delegate). Os/Directory.hpp reports a
-// missing OS_DIRECTORY_HEADER with an #error.
+// the Os::Directory alias and OS_DIRECTORY_HEADER (the Directory lines below
+// keep the link-time delegate). Os/Directory.hpp reports a missing
+// OS_DIRECTORY_HEADER with an #error; defining OS_DIRECTORY_HEADER without
+// the alias fails to compile with "'Directory' is not a member of 'Os'".
 //
 // Example compile-time selection override:
 //
