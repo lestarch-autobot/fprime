@@ -12,6 +12,7 @@
 #include <cstring>
 #include <list>
 #include "Fw/Types/ExternalString.hpp"
+#include "Fw/Types/String.hpp"
 #include "Os/File.hpp"
 #include "Os/Posix/File.hpp"
 #include "Os/test/ut/file/CommonTests.hpp"
@@ -415,14 +416,69 @@ TEST(PosixFileDirect, OpenStateFollowsDescriptor) {
     ASSERT_EQ(file.readline(buffer, size, Os::FileInterface::WaitType::NO_WAIT), Os::FileInterface::Status::NOT_OPENED);
     U32 crc = 0;
     ASSERT_EQ(file.calculateCrc(crc), Os::FileInterface::Status::NOT_OPENED);
-    // Handle restored: the file is open again and is closed normally
+    // Handle restored: the file is open again
     handle->m_file_descriptor = descriptor;
     ASSERT_TRUE(file.isOpen());
     size = sizeof(buffer);
     ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::OP_OK);
+    // Descriptor placed in a file that recorded no mode: open, but neither readable nor writable
+    handle->m_file_descriptor = -1;
+    file.close();
+    handle->m_file_descriptor = descriptor;
+    ASSERT_TRUE(file.isOpen());
+    size = sizeof(buffer);
+    ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::INVALID_MODE);
+    ASSERT_EQ(size, 0U);
+    size = sizeof(buffer);
+    ASSERT_EQ(file.write(buffer, size), Os::FileInterface::Status::INVALID_MODE);
+    ASSERT_EQ(size, 0U);
+    ASSERT_EQ(file.flush(), Os::FileInterface::Status::INVALID_MODE);
+    ASSERT_EQ(file.preallocate(0, 1), Os::FileInterface::Status::INVALID_MODE);
+    // close() releases whatever descriptor is held
     file.close();
     ASSERT_FALSE(file.isOpen());
     ASSERT_FALSE(descriptorIsOpen(descriptor));
+    (void)::unlink(path);
+}
+
+namespace {
+//! PosixFile subclass that counts the opens it sees, as a test double injecting open errors would
+class CountingPosixFile : public Os::Posix::File::PosixFile {
+  public:
+    Os::FileInterface::Status openImpl(const char* path, Mode mode, OverwriteType overwrite) override {
+        this->m_opens++;
+        return this->Os::Posix::File::PosixFile::openImpl(path, mode, overwrite);
+    }
+    U32 m_opens = 0;
+};
+}  // namespace
+
+// Every open overload reaches openImpl(), so a subclass overriding it sees every open
+TEST(PosixFileDirect, EveryOpenOverloadReachesOpenImpl) {
+    char path[] = "/tmp/fprime_posix_direct_XXXXXX";
+    const int fd = ::mkstemp(path);
+    ASSERT_NE(fd, -1);
+    (void)::close(fd);
+    const Fw::String string(path);
+    const FwSizeType length = static_cast<FwSizeType>(sizeof(path));
+    CountingPosixFile file;
+    ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
+              Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(file.open(path, length, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(
+        file.open(path, length, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
+        Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(file.open(string, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(file.open(string, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
+              Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(file.m_opens, 6U);
     (void)::unlink(path);
 }
 

@@ -29,13 +29,13 @@ void CmdSequencerTester::Interceptor::disable() {
     this->enabled = EnableType::t::NONE;
 }
 
-Os::FileInterface::Status CmdSequencerTester::Interceptor::PosixFileInterceptor::open(const char* path,
-                                                                                      Mode mode,
-                                                                                      OverwriteType overwrite) {
+Os::FileInterface::Status CmdSequencerTester::Interceptor::PosixFileInterceptor::openImpl(const char* path,
+                                                                                          Mode mode,
+                                                                                          OverwriteType overwrite) {
     if ((s_current_interceptor != nullptr) && (s_current_interceptor->enabled == EnableType::t::OPEN)) {
         return s_current_interceptor->fileStatus;
     }
-    return this->Os::Posix::File::PosixFile::open(path, mode, overwrite);
+    return this->Os::Posix::File::PosixFile::openImpl(path, mode, overwrite);
 }
 
 Os::File::Status CmdSequencerTester::Interceptor::PosixFileInterceptor::read(U8* buffer,

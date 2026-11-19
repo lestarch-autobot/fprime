@@ -99,6 +99,8 @@
 // 2. Override openImpl() with every check of open() except the
 //    FileNameStringSize path bound, and implement open() as
 //    FileInterface::assertValidPath() followed by openImpl().
+//    The FileInterface default of openImpl() calls open() back, so open() must
+//    not call openImpl() unless the class overrides it.
 // 3. Call markOpen() when openImpl() succeeds and markClosed() in close(); the
 //    read/write mode checks rely on that mode.
 // 4. Perform the argument and state checks that Os::DelegateFile performs

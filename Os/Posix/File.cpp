@@ -127,8 +127,8 @@ PosixFile::Status PosixFile::open(const char* filepath,
                                   PosixFile::Mode requested_mode,
                                   PosixFile::OverwriteType overwrite) {
     FileInterface::assertValidPath(filepath);
-    // Not dispatched virtually: the checks and the descriptor belong to this class
-    return this->PosixFile::openImpl(filepath, requested_mode, overwrite);
+    // Dispatched virtually so that a subclass overriding openImpl() sees every open
+    return this->openImpl(filepath, requested_mode, overwrite);
 }
 
 PosixFile::Status PosixFile::openImpl(const char* filepath,
@@ -235,7 +235,8 @@ PosixFile::Status PosixFile::preallocate(FwSizeType offset, FwSizeType length) {
     // Check that the file is open for writing before attempting operation
     if (not this->isOpen()) {
         return Status::NOT_OPENED;
-    } else if (OPEN_READ == this->m_mode) {
+    } else if ((OPEN_READ == this->m_mode) || (OPEN_NO_MODE == this->m_mode)) {
+        // A descriptor without a recorded mode (e.g. set through getHandle()) is not writable
         return Status::INVALID_MODE;
     }
     PosixFile::Status status = Status::NOT_SUPPORTED;
@@ -325,7 +326,8 @@ PosixFile::Status PosixFile::flush() {
     // Check that the file is open for writing before attempting operation
     if (not this->isOpen()) {
         return Status::NOT_OPENED;
-    } else if (OPEN_READ == this->m_mode) {
+    } else if ((OPEN_READ == this->m_mode) || (OPEN_NO_MODE == this->m_mode)) {
+        // A descriptor without a recorded mode (e.g. set through getHandle()) is not writable
         return Status::INVALID_MODE;
     }
     PosixFile::Status status = OP_OK;
@@ -393,7 +395,8 @@ PosixFile::Status PosixFile::write(const U8* buffer, FwSizeType& size, PosixFile
     if (not this->isOpen()) {
         size = 0;
         return Status::NOT_OPENED;
-    } else if (OPEN_READ == this->m_mode) {
+    } else if ((OPEN_READ == this->m_mode) || (OPEN_NO_MODE == this->m_mode)) {
+        // A descriptor without a recorded mode (e.g. set through getHandle()) is not writable
         size = 0;
         return Status::INVALID_MODE;
     }

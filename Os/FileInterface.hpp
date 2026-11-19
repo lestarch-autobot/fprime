@@ -225,7 +225,9 @@ class FileInterface {
     //! function, which performs every check of `open` except the FileNameStringSize bound. The default forwards to
     //! `open(path, mode, overwrite)`, which is correct for an implementation used only through the link-time
     //! delegate. An implementation selected directly as Os::File must override it (enforced in
-    //! Os/FileInterface.cpp) and must not call it from `open` without overriding it.
+    //! Os/FileInterface.cpp). A class that calls it from `open` MUST override it: the default calls `open` back.
+    //! A subclass of such an implementation that needs to see every open (e.g. a test double injecting errors)
+    //! must override `openImpl`, not `open`: the length and string overloads do not pass through `open`.
     //!
     //! \param path: c-string of path to open, terminated within a bound checked by the caller
     //! \param mode: file operation mode

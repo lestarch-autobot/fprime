@@ -16,7 +16,8 @@ bool StubFile::isOpenImpl() const {
 
 StubFile::Status StubFile::open(const char* filepath, StubFile::Mode open_mode, OverwriteType overwrite) {
     FileInterface::assertValidPath(filepath);
-    return this->StubFile::openImpl(filepath, open_mode, overwrite);
+    // Dispatched virtually so that a subclass overriding openImpl() sees every open
+    return this->openImpl(filepath, open_mode, overwrite);
 }
 
 StubFile::Status StubFile::openImpl(const char* filepath, StubFile::Mode open_mode, OverwriteType overwrite) {
