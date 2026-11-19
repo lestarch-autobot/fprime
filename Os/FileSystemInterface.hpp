@@ -15,6 +15,8 @@
 // A project config/OsSelection.hpp that predates the FileSystem selection (e.g. one supplied by a platform library)
 // defines neither the Os::FileSystem alias nor OS_FILE_SYSTEM_HEADER: select the link-time delegate so that such
 // projects keep building. A config that selects FileSystem must define both.
+// A conflicting declaration of Os::FileSystem reported below means the config defined the alias without
+// OS_FILE_SYSTEM_HEADER. This fallback mirrors the default selection in default/config/OsSelection.hpp.
 #ifndef OS_FILE_SYSTEM_HEADER
 namespace Os {
 class DelegateFileSystem;

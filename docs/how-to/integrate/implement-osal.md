@@ -174,7 +174,7 @@ This optimization is most valuable for bare-metal systems with high-frequency op
 
 ### How Projects Override for Compile-Time Selection
 
-Projects override compile-time selection by providing their own configuration header that replaces F´'s default. The override replaces the whole `config/OsSelection.hpp`, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed. The one exception is `FileSystem`: when the override defines neither `Os::FileSystem` nor `OS_FILE_SYSTEM_HEADER`, `Os/FileSystemInterface.hpp` selects the link-time delegate. For `RawTime`, create a project-specific override of `config/OsSelection.hpp`:
+Projects override compile-time selection by providing their own configuration header that replaces F´'s default. The override replaces the whole `config/OsSelection.hpp`, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed. The one exception is `FileSystem`: when the override defines neither `Os::FileSystem` nor `OS_FILE_SYSTEM_HEADER`, `Os/FileSystemInterface.hpp` selects the link-time delegate. An override that selects `FileSystem` must define both: with only the alias the build stops on a conflicting declaration of `Os::FileSystem`, and with only the macro on `FileSystem` not naming a type. For `RawTime`, create a project-specific override of `config/OsSelection.hpp`:
 
 **Step 1:** In your project's config directory, create `OsSelection.hpp`:
 

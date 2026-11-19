@@ -15,7 +15,8 @@
 //   2. Os/FileSystemInterface.hpp (IF) includes CFG, then defines
 //      FileSystemHandle and FileSystemInterface.
 //
-//   3. OS_FILE_SYSTEM_HEADER (IMPL) is defined by CFG and names the header
+//   3. OS_FILE_SYSTEM_HEADER (IMPL) is defined by CFG (or by IF, as the
+//      link-time delegate, when CFG selects nothing) and names the header
 //      defining the type selected as Os::FileSystem: Os/DelegateFileSystem.hpp
 //      for the link-time delegate, or the implementation header.
 //
