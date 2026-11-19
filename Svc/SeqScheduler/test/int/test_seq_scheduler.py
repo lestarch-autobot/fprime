@@ -653,3 +653,107 @@ def test_L2_9(window, send, bench, check, require):
         check("last(seqSched.RowsExecuted) == 1")
         check("last(seqSched.RowsSkipped) == 2")
         check("last(seqSched.RowsPending) == 13")
+
+
+def settle(bench):
+    """The plan's `finally` step: let a sequence left running by a failed procedure end before the next test."""
+    try:
+        bench.wait_event("schedSeq.CS_SequenceComplete", 25)
+    except Exception:  # noqa: BLE001 - the wait is pacing only; the next test's IDLE require judges the state
+        pass
+
+
+def samples_b(h):
+    counts = {name: len(w.channel(SAMPLE_B)) for name, w in h.windows.items()}
+    return (all(n >= 2 for n in counts.values()), f"SeqSchedB samples per window: {counts}")
+
+
+def test_L2_10(window, send, bench, check, require):
+    try:
+        with window(280, 281):
+            require("STD-ERR")
+            standard_requires(require, fresh=True)
+            bench.action("write_T_BASE")
+            send(S + ".LOAD_TABLE")
+            bench.action("write_T_BASE_B")
+            send(B + ".LOAD_TABLE")
+            send(S + ".SET_SEQ_ENABLED", ["short.bin", True])
+            send(B + ".SET_ROW_ENABLED", [0, True])
+            send(B + ".SET_ROW_ENABLED", [1, True])
+            send(B + ".SET_ROW_ENABLED", [16, True])
+            send(B + ".SET_ROW", [1, time_value("TB_SC_TIME", fsw_now(bench) + 6), "ABSOLUTE", "short.bin",
+                                  "WAIT_FOR_RUNNING"])
+            due = time_value("TB_WORKSTATION_TIME", fsw_now(bench) + 12)
+            send(B + ".SET_ROW", [2, due, "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
+            send(B + ".SET_ROW", [0, due, "ABSOLUTE", "short2.bin", "WAIT_FOR_RUNNING"])
+            send(S + ".SET_ROW", [0, due, "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
+            bench.wait(22)
+            bracket(bench)
+            bench.wait_samples(SAMPLE_B, 2)
+            check("ABS")
+            check("event cmdDisp.OpCodeError count == 1")
+            check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
+            check("event seqSchedB.SeqRun(row=0, fileName=short2.bin) count == 1")
+            check("event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1")
+            check("event schedSeqB.CS_SequenceComplete(fileName=short2.bin) count == 1")
+            check("event schedSeq.CS_SequenceLoaded(fileName=short2.bin) count == 0")
+            check("event schedSeqB.CS_SequenceLoaded(fileName=short.bin) count == 0")
+            check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
+            check("event seqSchedB.SeqCompleted(row=0, response=OK) count == 1")
+            check("event seqSched.SeqEnabledSet(fileName=short.bin, enabled=True, rows=16) count == 1")
+            check("event seqSched.SeqRun count == 1")
+            check("event seqSchedB.SeqRun count == 1")
+            check("event seqSchedB.CmdRejected(reason=ROW_INDEX) count == 1")
+            check("event seqSched.CmdRejected count == 0")
+            check("event seqSchedB.RowLate count == 0")
+            check("event seqSchedB.RowSkippedDisabled(row=2) count == 1")
+            check("event seqSchedB.RowSkippedDisabled count == 1")
+            check("last(seqSched.RowsExecuted) == 1")
+            check("last(seqSched.RowsPending) == 15")
+            check("last(seqSchedB.RowsExecuted) == 1")
+            check("last(seqSchedB.RowsSkipped) == 1")
+            check("last(seqSchedB.RowsPending) == 14")
+            require("SeqSchedB samples >= 2 in every window", samples_b)
+    except BaseException:
+        settle(bench)
+        raise
+
+
+def test_L2_11(window, send, bench, check, require):
+    try:
+        with window(290, 291):
+            require("STD")
+            standard_requires(require, fresh=True)
+            bench.action("write_T_BASE")
+            send(S + ".LOAD_TABLE")
+            send(S + ".SET_ROW_ENABLED", [3, True])
+            send(S + ".SET_ROW", [3] + abs_row(bench, 8, "short2.bin", "WAIT_FOR_RUNNING"))
+            bench.wait(14)
+            send(S + ".SET_ROW_ENABLED", [3, False])
+            send(S + ".SET_ROW_ENABLED", [3, True])
+            bench.wait(4)
+            bracket(bench)
+            check("ABS")
+            check("event seqSched.RowSet(row=3, mode=ABSOLUTE, fileName=short2.bin, busyPolicy=WAIT_FOR_RUNNING) "
+                  "count == 1")
+            check("event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1")
+            check("event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1")
+            check("event seqSched.SeqCompleted(row=3, response=OK) count == 1")
+            check("event seqSched.SeqRun count == 1")
+            check("event seqSched.RowEnabledSet(row=3) count == 3")
+            check("last(seqSched.RowsExecuted) == 1")
+            check("last(seqSched.RowsPending) == 15")
+            check("row 3 run no earlier than 6 s after SET_ROW", run_after(3, "seqSched.SET_ROW", 6, None))
+            check("row 3 run no later than 10 s after SET_ROW", run_after(3, "seqSched.SET_ROW", None, 10))
+        with window(291, 292):
+            require("STD")
+            send(S + ".SET_ROW", [3] + abs_row(bench, 6, "short2.bin", "WAIT_FOR_RUNNING"))
+            bench.wait(12)
+            bracket(bench)
+            check("ABS")
+            check("event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1")
+            check("event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1")
+            check("last(seqSched.RowsExecuted) == 1")
+    except BaseException:
+        settle(bench)
+        raise
