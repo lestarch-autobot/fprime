@@ -537,8 +537,9 @@ YEAR_2100 = 4102444800
 
 
 def samples_b(h):
-    counts = {name: len(w.channel(SAMPLE_B)) for name, w in h.windows.items()}
-    return (all(n >= 2 for n in counts.values()), f"SeqSchedB samples per window: {counts}")
+    """The helper's own window only: a window the live run has not reached yet holds no sample."""
+    n = len(h.window.channel(SAMPLE_B))
+    return (n >= 2, f"SeqSchedB samples={n}")
 
 
 

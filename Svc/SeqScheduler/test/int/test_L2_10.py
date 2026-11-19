@@ -50,7 +50,7 @@ def test_L2_10(window, send, bench, check, require):
             check("last(seqSchedB.RowsExecuted) == 1")
             check("last(seqSchedB.RowsSkipped) == 1")
             check("last(seqSchedB.RowsPending) == 14")
-            require("SeqSchedB samples >= 2 in every window", samples_b)
+            require("SeqSchedB samples >= 2", samples_b)
     finally:
         # clean-up window: a sequence left running by a failed procedure ends before the next test
         with window(281, 282):

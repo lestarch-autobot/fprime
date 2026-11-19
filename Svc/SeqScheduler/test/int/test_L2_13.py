@@ -50,4 +50,4 @@ def test_L2_13(window, send, bench, check, require):
         check("event seqSched.SeqCancelled count == 0")
         check("event seqSched.RowSkippedByCancel count == 0")
         check("event schedSeq.CS_SequenceCanceled count == 0")
-        require("SeqSchedB samples >= 2 in every window", samples_b)
+        require("SeqSchedB samples >= 2", samples_b)

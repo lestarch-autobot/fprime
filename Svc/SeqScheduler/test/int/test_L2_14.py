@@ -41,4 +41,4 @@ def test_L2_14(window, send, bench, check, require):
         check("last(seqSchedB.RowsSkipped) == 1")
         check("event seqSched.SeqRun count == 0")
         check("event seqSched.RowSkippedBusy count == 0")
-        require("SeqSchedB samples >= 2 in every window", samples_b)
+        require("SeqSchedB samples >= 2", samples_b)

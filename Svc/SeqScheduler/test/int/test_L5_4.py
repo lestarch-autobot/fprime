@@ -36,4 +36,4 @@ def test_L5_4(window, send, bench, check, require):
         check("last(seqSchedB.RowsExecuted) == 0")
         check("event seqSched.SeqDoneUnexpected count == 0")
         check("event seqSched.SeqRun count == 0")
-        require("SeqSchedB samples >= 2 in every window", samples_b)
+        require("SeqSchedB samples >= 2", samples_b)

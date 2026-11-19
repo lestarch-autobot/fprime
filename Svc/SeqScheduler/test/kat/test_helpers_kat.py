@@ -554,6 +554,15 @@ def test_samples_b():
         return simple(lambda rec: [rec.ch(sc.SAMPLE_B, T0 + 1 + i, due(1)) for i in range(n)])
     assert holds(sc.samples_b(case(2)))
     assert not holds(sc.samples_b(case(1)))
+    # judged live in the first window, a later window is not recorded yet: only the helper's own window counts
+    rec = Rec()
+    start = rec.mark(100, T0)
+    for i in range(2):
+        rec.ch(sc.SAMPLE_B, T0 + 1 + i, due(1))
+    w = rec.win(start, rec.mark(101, T0 + 40))
+    later = rec.win(rec.mark(102, T0 + 41), rec.mark(103, T0 + 42))
+    assert holds(sc.samples_b(rec.ctx(w, W=w, C=later)))
+    assert not holds(sc.samples_b(rec.ctx(later, W=w, C=later)))
 
 
 def test_first_set_before_test():
@@ -753,3 +762,81 @@ def test_every_predicate_has_a_known_answer_test():
     names = [n for n, f in vars(sc).items() if callable(f) and getattr(f, "__module__", "") == sc.__name__]
     missing = [n for n in names if n not in not_predicates and f"sc.{n}(" not in here]
     assert not missing, missing
+
+
+# One case per condition whose and/or flip survived the reviewer's mutation run (harness review R10-1, R10-2)
+
+def test_sequencers_idle_counts_this_start_up_to_the_opening_marker_only():
+    def case(fsw, epoch):
+        rec = Rec()
+        start = rec.mark(100, T0)
+        rec.ev("schedSeq.CS_SequenceLoaded", fsw, epoch=epoch)
+        return rec.ctx(rec.win(start, rec.mark(101, T0 + 60)))
+    assert holds(sc.sequencers_idle(case(T0 + 5, 0)))  # loaded inside the window: after the opening marker
+    assert holds(sc.sequencers_idle(case(T0 - 20, 1)))  # loaded by another start of the image
+    assert not holds(sc.sequencers_idle(case(T0 - 20, 0)))
+
+
+def test_plan_params_ignores_other_commands_and_sets_inside_the_window():
+    rec = Rec()
+    rec.cmd("seqSched.SET_ENABLED", 3, raw="['5']")  # not a plan parameter
+    start = rec.mark(100, T0)
+    rec.cmd("cmdDisp.CMD_NO_OP_STRING", 1, [100])
+    rec.cmd("seqSched.LATE_TOLERANCE_SEC_PRM_SET", 5, raw="['5']")  # set by the window itself
+    ctx = rec.ctx(rec.win(start, rec.mark(101, T0 + 60)))
+    ctx.window.cmds = rec.commands[2:]
+    assert holds(sc.plan_params(ctx))
+
+
+def test_run_not_before_row_time_takes_the_set_row_of_its_own_row():
+    def case(other_first):
+        def build(rec):
+            if other_first:
+                rec.cmd("seqSched.SET_ROW", 7, [1, 0, 1030, 0])  # another row, a later time
+                rec.cmd("seqSched.SET_ENABLED", 3, [0, 0, 1030, 0])  # another command with the row as first argument
+            rec.cmd("seqSched.SET_ROW", 7, [0, 0, 1010, 0])
+            row_set(rec, 0, 1010, T0 + 1)
+            rec.ev("seqSched.SeqRun", 1010.2, row=0)
+        return simple(build)
+    assert holds(sc.run_not_before_row_time(0)(case(False)))
+    assert holds(sc.run_not_before_row_time(0)(case(True)))
+
+
+def test_override_span_needs_a_set_and_a_clear():
+    assert sc.override_span(simple(lambda rec: rec.ev("timeBaseSetter.TimeBaseSet", T0 + 10, base=SC_TIME))) is None
+    assert sc.override_span(simple(lambda rec: rec.ev("timeBaseSetter.TimeBaseCleared", T0 + 30))) is None
+    assert sc.override_span(span()) == (T0 + 10, T0 + 30)
+
+
+def test_row1_after_its_set_row_needs_the_run_and_the_command():
+    def sets(rec):
+        rec.cmd("seqSched.SET_ROW", 0xa04)
+        rec.cmd("seqSched.SET_ROW", 0xa04)
+        rec.ev("cmdDisp.OpCodeDispatched", T0 + 2, "Opcode 0xa04 dispatched to port 0")
+        rec.ev("cmdDisp.OpCodeDispatched", T0 + 4, "Opcode 0xa04 dispatched to port 0")
+    assert not holds(sc.row1_after_its_set_row(two_windows(sets, None)))  # no run of row 1
+    assert not holds(sc.row1_after_its_set_row(  # the run, but no second SET_ROW in W1
+        two_windows(None, lambda rec: rec.ev("seqSched.SeqRun", T0 + 34, row=1))))
+
+
+def test_elapsed_of():
+    def bench(rows):
+        return SimpleNamespace(action=lambda name: rows)
+    assert sc.elapsed_of(bench([])) == 0
+    assert sc.elapsed_of(bench([None])) == 0
+    assert sc.elapsed_of(bench([{"value": "{'seconds': '1000900'}", "sec": 1000}])) == 1000000 - (1000900 - 1000)
+
+
+def test_dropped_steady_array_of_zeros_and_a_sample_at_the_opening_marker():
+    def case(inside, before=None, at=T0 + 5):
+        rec = Rec()
+        if before is not None:
+            rec.ch("comQueue.comIngressDropped", T0 - 50, before)
+        start = rec.mark(100, T0)
+        rec.ch("comQueue.comIngressDropped", at, inside)
+        return rec.ctx(rec.win(start, rec.mark(101, T0 + 60)))
+    steady = HELPERS["com_dropped_steady"]
+    assert holds(steady(case("[0, 0]")))  # the first sample of the start: zero in every element
+    assert not holds(steady(case("[0, 10]")))
+    # a sample at the time of the opening marker is of the window, not the sample before it
+    assert not holds(steady(case("[0, 1]", before="[0, 0]", at=T0)))
