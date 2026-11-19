@@ -34,6 +34,8 @@
 // IMPORTANT: a project override of this header replaces it entirely, so the
 // override must define ALL aliases and OS_*_HEADER macros below, not just the
 // service being changed.
+// Exception: an override that defines neither the Os::Cpu alias nor
+// OS_CPU_HEADER falls back to the link-time delegate (see Os/CpuInterface.hpp).
 //
 // ----------------------------------------------------------------------
 // RawTime
