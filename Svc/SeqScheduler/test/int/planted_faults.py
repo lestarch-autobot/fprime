@@ -215,7 +215,13 @@ def commands_dispatched(ctx):
     sent, seen = {}, {}
     for row in ctx.window.cmds:
         sent[row.opcode] = sent.get(row.opcode, 0) + 1
-    for row in ctx.window.events("cmdDisp.OpCodeDispatched"):
+    # A command's OpCodeDispatched precedes the event of the command itself, so the rows are those from
+    # the one before the START marker event to the END marker event
+    rows = ctx.record.events
+    first, last = rows.index(ctx.window.start_marker), rows.index(ctx.window.end_marker)
+    for row in rows[max(first - 1, 0):last]:
+        if row.short != "cmdDisp.OpCodeDispatched" or row.epoch != ctx.window.start_marker.epoch:
+            continue
         found = re.search(r"0x([0-9a-fA-F]+)", row.text)
         opcode = int(found.group(1), 16) if found else -1
         seen[opcode] = seen.get(opcode, 0) + 1
