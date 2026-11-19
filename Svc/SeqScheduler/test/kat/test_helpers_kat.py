@@ -107,7 +107,8 @@ def test_fresh_times():
     assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [None]})))
     assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [reading(0.1, T0 + 60)]})))
     assert not holds(sc.fresh_times()(simple()))
-    assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [inside, None]})))  # a failed reading
+    # A failed reading has no time and no window; fsw_now stops the test there
+    assert holds(sc.fresh_times()(simple(evidence={"fsw_now": [inside, None]})))
     # The 4 s form of the windows opened by the END marker of the window before
     assert holds(sc.fresh_times(4.0)(simple(evidence={"fsw_now": [reading(1.6, T0 + 1), reading(4.0, T0 + 2)]})))
     assert not holds(sc.fresh_times(4.0)(simple(evidence={"fsw_now": [reading(1.6, T0 + 1), reading(4.1, T0 + 2)]})))

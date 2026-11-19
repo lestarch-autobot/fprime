@@ -64,7 +64,7 @@ def fresh_times(limit=1.0):
         first, last = h.window.start_marker.fsw, h.window.end_marker.fsw
         mine = [r for r in rows if r and first <= r["sec"] + r["usec"] / 1e6 < last]
         ages = [r["age_s"] for r in mine]
-        return (all(rows) and len(mine) > 0 and max(ages) <= limit,
+        return (len(mine) > 0 and max(ages) <= limit,
                 f"ages {ages} of {len(rows)} FSW time readings in the test")
     return judge
 

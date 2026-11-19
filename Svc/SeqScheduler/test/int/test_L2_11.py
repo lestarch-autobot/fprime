@@ -34,7 +34,7 @@ def test_L2_11(window, send, bench, check, require):
         with window(291, 292):
             require("STD")
             standard_requires(require, fresh=4)
-            send(S + ".SET_ROW", [3] + abs_row(bench, 6, "short2.bin", "WAIT_FOR_RUNNING"))
+            send(S + ".SET_ROW", [3] + abs_row(bench, 8, "short2.bin", "WAIT_FOR_RUNNING"))
             bench.wait(12)
             bracket(bench)
             check("ABS")
