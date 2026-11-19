@@ -100,11 +100,16 @@
 // 2. Perform the argument and state checks that Os::DelegateFile performs
 //    (see Os/Posix/File.cpp); no wrapper performs them for an aliased class.
 // 3. Re-expose the overloads: `using FileInterface::open;` (and read, write).
+// 4. Call FileInterface::assertValidPath() at the start of open().
 //
-// The implementation module providing the aliased class must still be in the
-// link, and the Os_File module always REQUIRES_IMPLEMENTATIONS Os_File. Tests
-// that inject a different file through FileInterface::getDelegate() do not
-// apply to an aliased class.
+// A compile-time selection uses neither Os::DelegateFile nor
+// FileInterface::getDelegate(). As for Mutex above, the alias only changes the
+// C++ type: the implementation module providing the aliased class must still be
+// in the link (via CHOOSES_IMPLEMENTATIONS for an in-tree Os_File_*
+// implementation, or DEPENDS for a project module).
+//
+// Tests that inject a different file through FileInterface::getDelegate() do
+// not apply to an aliased class.
 //
 // Example compile-time selection override:
 //

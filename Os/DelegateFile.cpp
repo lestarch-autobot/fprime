@@ -45,7 +45,7 @@ DelegateFile::Status DelegateFile::open(const CHAR* filepath,
                                         DelegateFile::Mode requested_mode,
                                         DelegateFile::OverwriteType overwrite) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
-    FW_ASSERT(nullptr != filepath);
+    FileInterface::assertValidPath(filepath);
     FW_ASSERT(DelegateFile::Mode::OPEN_NO_MODE < requested_mode && DelegateFile::Mode::MAX_OPEN_MODE > requested_mode);
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     FW_ASSERT((0 <= overwrite) && (overwrite < OverwriteType::MAX_OVERWRITE_TYPE));

@@ -326,6 +326,18 @@ TEST(PosixFileDirect, ModeChecksAndDoubleOpen) {
     (void)::unlink(path);
 }
 
+TEST(PosixFileDirect, OpenAssertsOnOverlongPath) {
+    // One character more than a path may hold; the three-argument open is the one implemented by PosixFile itself
+    char path[FileNameStringSize + 2];
+    (void)::memset(path, 'a', sizeof(path) - 1);
+    path[sizeof(path) - 1] = '\0';
+    Os::Posix::File::PosixFile file;
+    ASSERT_DEATH_IF_SUPPORTED(
+        (void)file.open(path, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
+        "Assert: \".*/?Os/FileInterface\\.cpp:[0-9]+\"");
+    ASSERT_FALSE(file.isOpen());
+}
+
 TEST(PosixFileDirect, CopyDuplicatesDescriptorAndState) {
     char path[] = "/tmp/fprime_posix_direct_XXXXXX";
     const int fd = ::mkstemp(path);

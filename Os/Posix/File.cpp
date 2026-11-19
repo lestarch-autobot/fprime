@@ -122,7 +122,7 @@ mode_t PosixFile::map_open_create_mode(const U32 create_mode) {
 PosixFile::Status PosixFile::open(const char* filepath,
                                   PosixFile::Mode requested_mode,
                                   PosixFile::OverwriteType overwrite) {
-    FW_ASSERT(nullptr != filepath);
+    FileInterface::assertValidPath(filepath);
     FW_ASSERT((Mode::OPEN_NO_MODE < requested_mode) && (requested_mode < Mode::MAX_OPEN_MODE));
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     FW_ASSERT((0 <= overwrite) && (overwrite < OverwriteType::MAX_OVERWRITE_TYPE));

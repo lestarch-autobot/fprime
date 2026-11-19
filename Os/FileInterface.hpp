@@ -448,6 +448,15 @@ class FileInterface {
     //! \brief assignment operator that copies the tracked mode and CRC state
     FileInterface& operator=(const FileInterface& other) = default;
 
+    //! \brief assert that a path is valid to open
+    //!
+    //! Asserts that the path is non-null and is terminated within FileNameStringSize characters. Implementations
+    //! must call this at the start of `open`, before the path is used.
+    //!
+    //! \param path: c-string of path to check
+    //!
+    static void assertValidPath(const CHAR* path);
+
     //! \brief record a successful open
     //!
     //! Implementations of `open` MUST call this on success so that the common functions of this interface

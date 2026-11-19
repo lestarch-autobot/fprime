@@ -10,7 +10,7 @@ namespace Stub {
 namespace File {
 
 StubFile::Status StubFile::open(const char* filepath, StubFile::Mode open_mode, OverwriteType overwrite) {
-    FW_ASSERT(nullptr != filepath);
+    FileInterface::assertValidPath(filepath);
     FW_ASSERT((Mode::OPEN_NO_MODE < open_mode) && (open_mode < Mode::MAX_OPEN_MODE));
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     FW_ASSERT((0 <= overwrite) && (overwrite < OverwriteType::MAX_OVERWRITE_TYPE));

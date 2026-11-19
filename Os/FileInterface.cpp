@@ -27,6 +27,13 @@ bool FileInterface::isOpen() const {
     return this->m_mode != Mode::OPEN_NO_MODE;
 }
 
+void FileInterface::assertValidPath(const CHAR* path) {
+    FW_ASSERT(nullptr != path);
+    const FwSizeType bound = static_cast<FwSizeType>(FileNameStringSize + 1);
+    const FwSizeType string_len = static_cast<FwSizeType>(Fw::StringUtils::string_length(path, bound));
+    FW_ASSERT(string_len < bound, static_cast<FwAssertArgType>(string_len), static_cast<FwAssertArgType>(bound));
+}
+
 FileInterface::Status FileInterface::open(const CHAR* filepath, FileInterface::Mode requested_mode) {
     FW_ASSERT(nullptr != filepath);
     return this->open(filepath, static_cast<FwSizeType>(FileNameStringSize + 1), requested_mode,
