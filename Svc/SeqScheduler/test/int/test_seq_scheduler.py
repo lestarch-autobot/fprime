@@ -32,4 +32,4 @@ def test_L0_1(window, send, bench, check, require):
         bracket(bench)
         send("CdhCore.version.VERSION", ["ALL"])
         check("version payloads == manifest describe strings", version_strings_match)
-        check("event CdhCore.cmdDisp.NoOpStringReceived(id=100) count == 1")
+        check("event cmdDisp.NoOpStringReceived(id=100) count == 1")

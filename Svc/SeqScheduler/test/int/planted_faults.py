@@ -14,13 +14,13 @@ T_BASE_PATH = "seq_sched.tbl"
 LATE_S = 30
 
 L2_2_NOT_RUN = [
-    "event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1",
-    "event Ref.schedSeq.CS_SequenceLoaded(fileName=short.bin) count == 1",
-    "event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1",
-    "event Ref.seqSched.SeqCompleted(row=0, response=OK) count == 1",
-    "event Ref.seqSched.SeqRun(row=0) precedes event Ref.seqSched.SeqCompleted(row=0)",
-    "last(Ref.seqSched.RowsExecuted) == 1",
-    "t(event Ref.seqSched.SeqRun(row=0)) - t(Ref.seqSched.SET_ROW sent) <= 12 s",
+    "event seqSched.SeqRun(row=0, fileName=short.bin) count == 1",
+    "event schedSeq.CS_SequenceLoaded(fileName=short.bin) count == 1",
+    "event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1",
+    "event seqSched.SeqCompleted(row=0, response=OK) count == 1",
+    "event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)",
+    "last(seqSched.RowsExecuted) == 1",
+    "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s",
 ]
 # SET_ROW arguments: row, time, mode, fileName, busyPolicy
 ROW, TIME, MODE, FILE, POLICY = range(5)
@@ -34,12 +34,12 @@ ROW, TIME, MODE, FILE, POLICY = range(5)
     fails={
         "L2-2": L2_2_NOT_RUN,
         "L2-11": [
-            "W1: event Ref.seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
-            "W1: event Ref.schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
-            "W1: event Ref.seqSched.SeqCompleted(row=3, response=OK) count == 1",
-            "W1: event Ref.seqSched.SeqRun count == 1",
-            "W1: last(Ref.seqSched.RowsExecuted) == 1",
-            "W1: last(Ref.seqSched.RowsPending) == 15",
+            "W1: event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
+            "W1: event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
+            "W1: event seqSched.SeqCompleted(row=3, response=OK) count == 1",
+            "W1: event seqSched.SeqRun count == 1",
+            "W1: last(seqSched.RowsExecuted) == 1",
+            "W1: last(seqSched.RowsPending) == 15",
             "W1: row 3 run no later than 10 s after SET_ROW (helper)",
         ],
     },
@@ -73,8 +73,8 @@ def _seen(test_id, name):
     fails={
         "L2-2": L2_2_NOT_RUN,
         "L7-1": [
-            "event Ref.seqSched.SeqRun(row=6, fileName=short.bin) count == 1",
-            "event Ref.seqSched.RowSkippedDisabled count == 1",
+            "event seqSched.SeqRun(row=6, fileName=short.bin) count == 1",
+            "event seqSched.RowSkippedDisabled count == 1",
         ],
     },
 )
@@ -91,12 +91,12 @@ def disable_row(test_id, command_name, args):
     mechanism="every SET_ROW naming short2.bin is sent with long.bin; the row holds and runs the wrong file",
     fails={
         "L2-11": [
-            "W1: event Ref.seqSched.RowSet(row=3, mode=ABSOLUTE, fileName=short2.bin, busyPolicy=WAIT_FOR_RUNNING) count == 1",
-            "W1: event Ref.seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
-            "W1: event Ref.schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
-            "W1: event Ref.seqSched.SeqCompleted(row=3, response=OK) count == 1",
-            "W2: event Ref.seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
-            "W2: event Ref.schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
+            "W1: event seqSched.RowSet(row=3, mode=ABSOLUTE, fileName=short2.bin, busyPolicy=WAIT_FOR_RUNNING) count == 1",
+            "W1: event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
+            "W1: event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
+            "W1: event seqSched.SeqCompleted(row=3, response=OK) count == 1",
+            "W2: event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
+            "W2: event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
         ],
     },
 )
@@ -114,7 +114,7 @@ def wrong_seq(test_id, command_name, args):
     mechanism="SET_ROW_ENABLED(2, True) is sent before DUMP_TABLE; row 2 (TB_WORKSTATION_TIME, year 2100) becomes the upcoming row and the dumped table differs from the authored one in one flag",
     fails={
         "L2-1": [
-            "W: last(Ref.seqSched.NextRow) == 16",
+            "W: last(seqSched.NextRow) == 16",
             "W: data product file decodes to table T-FIELDS, every field of every row as authored (helper)",
         ]
     },
@@ -133,11 +133,11 @@ def stray_edit(test_id, command_name, args):
     mechanism="SET_TIME_BASE(TB_SC_TIME) is sent in window W1, right after row 1's SET_ROW; row 0 is judged in W1, where the plan asserts the scheduler does nothing",
     fails={
         "L2-3": [
-            "W1: event Ref.seqSched.SeqRun count == 0",
-            "W1: last(Ref.seqSched.RowsPending) == 16",
-            "W1: last(Ref.seqSched.NextRow) == 16",
-            "W2: event Ref.seqSched.RowLate(row=0) count == 1",
-            "W2: last(Ref.seqSched.RowsSkipped) == 1",
+            "W1: event seqSched.SeqRun count == 0",
+            "W1: last(seqSched.RowsPending) == 16",
+            "W1: last(seqSched.NextRow) == 16",
+            "W2: event seqSched.RowLate(row=0) count == 1",
+            "W2: last(seqSched.RowsSkipped) == 1",
         ]
     },
 )
@@ -154,16 +154,16 @@ def early_override(test_id, command_name, args):
     mechanism="seqSchedB's SET_ROW(0, ...) is sent to seqSched as SET_ROW(1, ...); seqSched runs two rows and seqSchedB none",
     fails={
         "L2-10": [
-            "event Ref.seqSchedB.SeqRun(row=0, fileName=short2.bin) count == 1",
-            "event Ref.schedSeq.CS_SequenceLoaded(fileName=short2.bin) count == 0",
-            "event Ref.schedSeqB.CS_SequenceComplete(fileName=short2.bin) count == 1",
-            "event Ref.seqSchedB.SeqCompleted(row=0, response=OK) count == 1",
-            "event Ref.seqSched.SeqRun count == 1",
-            "event Ref.seqSchedB.SeqRun count == 1",
-            "last(Ref.seqSched.RowsExecuted) == 1",
-            "last(Ref.seqSched.RowsPending) == 15",
-            "last(Ref.seqSchedB.RowsExecuted) == 1",
-            "last(Ref.seqSchedB.RowsPending) == 14",
+            "event seqSchedB.SeqRun(row=0, fileName=short2.bin) count == 1",
+            "event schedSeq.CS_SequenceLoaded(fileName=short2.bin) count == 0",
+            "event schedSeqB.CS_SequenceComplete(fileName=short2.bin) count == 1",
+            "event seqSchedB.SeqCompleted(row=0, response=OK) count == 1",
+            "event seqSched.SeqRun count == 1",
+            "event seqSchedB.SeqRun count == 1",
+            "last(seqSched.RowsExecuted) == 1",
+            "last(seqSched.RowsPending) == 15",
+            "last(seqSchedB.RowsExecuted) == 1",
+            "last(seqSchedB.RowsPending) == 14",
         ]
     },
 )
@@ -180,13 +180,13 @@ def cross_instance(test_id, command_name, args):
     mechanism="TABLE_FILE_PRM_SET(missing.tbl) is sent with the path of T-BASE; the load the plan expects to fail succeeds and replaces the table, so row 0 is not run",
     fails={
         "L5-1": [
-            "W: event CdhCore.cmdDisp.OpCodeError count == 2",
-            "W: event Ref.seqSched.TableLoadFailed(reason=OPEN) count == 1",
-            "W: event Ref.seqSched.TableLoaded count == 1",
-            "W: event Ref.seqSched.SeqRun(row=0, fileName=short.bin) count == 1",
-            "W: event Ref.schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1",
-            "W: last(Ref.seqSched.RowsPending) == 15",
-            "W: last(Ref.seqSched.RowsExecuted) == 1",
+            "W: event cmdDisp.OpCodeError count == 2",
+            "W: event seqSched.TableLoadFailed(reason=OPEN) count == 1",
+            "W: event seqSched.TableLoaded count == 1",
+            "W: event seqSched.SeqRun(row=0, fileName=short.bin) count == 1",
+            "W: event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1",
+            "W: last(seqSched.RowsPending) == 15",
+            "W: last(seqSched.RowsExecuted) == 1",
         ]
     },
 )
