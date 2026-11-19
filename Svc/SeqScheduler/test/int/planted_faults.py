@@ -24,6 +24,7 @@ L2_2_NOT_RUN = [
     "event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)",
     "last(seqSched.RowsExecuted) == 1",
     "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s",
+    "row 0 run no earlier than the time set in the row",
 ]
 # SET_ROW arguments: row, time, mode, fileName, busyPolicy
 ROW, TIME, MODE, FILE, POLICY = range(5)
@@ -44,6 +45,7 @@ ROW, TIME, MODE, FILE, POLICY = range(5)
             "last(seqSched.RowsExecuted) == 1",
             "last(seqSched.RowsPending) == 15",
             "row 3 run no later than 10 s after SET_ROW",
+            "row 3 run no earlier than the time set in the row",
         ],
     },
 )
@@ -98,8 +100,7 @@ def disable_row(test_id, command_name, args):
             "event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
             "event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
             "event seqSched.SeqCompleted(row=3, response=OK) count == 1",
-            "event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
-            "event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
+            "last(seqSched.RowsExecuted) == 1",
         ],
     },
 )
@@ -141,6 +142,7 @@ def stray_edit(test_id, command_name, args):
             "last(seqSched.NextRow) == 16",
             "event seqSched.RowLate(row=0) count == 1",
             "last(seqSched.RowsSkipped) == 1",
+            "event seqSched.RowLate count == 0",
         ]
     },
 )
@@ -154,6 +156,7 @@ def early_override(test_id, command_name, args):
     "cross_instance",
     applies_to=["L2-10"],
     cls="stimulus",
+    kind="insert",
     mechanism="seqSchedB's SET_ROW(0, ...) is sent to seqSched as SET_ROW(1, ...); seqSched runs two rows and seqSchedB none",
     fails={
         "L2-10": [

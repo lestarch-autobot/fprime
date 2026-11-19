@@ -22,7 +22,7 @@
         ]
       },
       "mechanism": "seqSchedB's SET_ROW(0, ...) is sent to seqSched as SET_ROW(1, ...); seqSched runs two rows and seqSchedB none",
-      "kind": "rewrite",
+      "kind": "insert",
       "ripples_to": {}
     },
     {
@@ -40,7 +40,8 @@
           "event seqSched.SeqCompleted(row=0, response=OK) count == 1",
           "event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)",
           "last(seqSched.RowsExecuted) == 1",
-          "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s"
+          "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s",
+          "row 0 run no earlier than the time set in the row"
         ],
         "L7-1": [
           "event seqSched.SeqRun(row=6, fileName=short.bin) count == 1",
@@ -63,7 +64,8 @@
           "last(seqSched.RowsPending) == 16",
           "last(seqSched.NextRow) == 16",
           "event seqSched.RowLate(row=0) count == 1",
-          "last(seqSched.RowsSkipped) == 1"
+          "last(seqSched.RowsSkipped) == 1",
+          "event seqSched.RowLate count == 0"
         ]
       },
       "mechanism": "SET_TIME_BASE(TB_SC_TIME) is sent in window W1, right after row 1's SET_ROW; row 0 is judged in W1, where the plan asserts the scheduler does nothing",
@@ -106,7 +108,8 @@
           "event seqSched.SeqCompleted(row=0, response=OK) count == 1",
           "event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)",
           "last(seqSched.RowsExecuted) == 1",
-          "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s"
+          "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s",
+          "row 0 run no earlier than the time set in the row"
         ],
         "L2-11": [
           "event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
@@ -115,7 +118,8 @@
           "event seqSched.SeqRun count == 1",
           "last(seqSched.RowsExecuted) == 1",
           "last(seqSched.RowsPending) == 15",
-          "row 3 run no later than 10 s after SET_ROW"
+          "row 3 run no later than 10 s after SET_ROW",
+          "row 3 run no earlier than the time set in the row"
         ]
       },
       "mechanism": "the first SET_ROW of the test is sent with the row time 30 s later than planned; the row is not run inside its window",
@@ -150,8 +154,7 @@
           "event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
           "event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
           "event seqSched.SeqCompleted(row=3, response=OK) count == 1",
-          "event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
-          "event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1"
+          "last(seqSched.RowsExecuted) == 1"
         ]
       },
       "mechanism": "every SET_ROW naming short2.bin is sent with long.bin; the row holds and runs the wrong file",

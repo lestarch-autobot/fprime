@@ -110,6 +110,20 @@ def run_not_before_row_time(row):
     return judge
 
 
+def run_not_before_delay(row):
+    """Row run no earlier than the delay of its last RowSet in the window after the bench-recorded start of the
+    Ref process (the first tick, from which the delay counts, is not before that start)."""
+    def judge(h):
+        run, start = run_time(h, row), [r for r in h.evidence("ref_start") if r]
+        sets = [e for e in h.window.events("seqSched.RowSet") if e.args.get("row") == row]
+        found = re.search(r"'seconds': (\d+)", sets[-1].text) if sets else None
+        if run is None or found is None or not start:
+            return (False, f"run {run}, RowSet {sets[-1].text if sets else None}, {len(start)} recorded starts")
+        early = run - start[0]["start"] - int(found.group(1))
+        return (early >= 0, f"{early:.3f} s after the start plus {found.group(1)} s")
+    return judge
+
+
 def command_time(h, name, nth=0, window=None):
     """FSW time at which the n-th sending of a command in the window was dispatched."""
     w = h.windows[window] if window else h.window
@@ -406,7 +420,7 @@ def test_L2_4(window, send, bench, check, require):
         bracket(bench)
         check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
         check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
-        check("row 0 run no earlier than 9 s after the second SET_ROW", run_after(0, "seqSched.SET_ROW", 9, None))
+        check("row 0 run no earlier than its delay after the start of the Ref process", run_not_before_delay(0))
         check("row 0 run no later than 15 s after the second SET_ROW", run_after(0, "seqSched.SET_ROW", None, 15))
 
 
