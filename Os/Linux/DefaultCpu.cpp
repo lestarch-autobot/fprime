@@ -2,7 +2,7 @@
 // \title Os/Linux/DefaultCpu.cpp
 // \brief sets default Os::Cpu to Linux implementation via linker
 // ======================================================================
-#include "Os/Cpu.hpp"
+#include "Os/CpuInterface.hpp"
 #include "Os/Delegate.hpp"
 #include "Os/Linux/Cpu.hpp"
 

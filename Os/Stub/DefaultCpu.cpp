@@ -2,7 +2,7 @@
 // \title Os/Stub/DefaultCpu.cpp
 // \brief sets default Os::Cpu to stub implementation via linker
 // ======================================================================
-#include "Os/Cpu.hpp"
+#include "Os/CpuInterface.hpp"
 #include "Os/Delegate.hpp"
 #include "Os/Stub/Cpu.hpp"
 
