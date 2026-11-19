@@ -30,6 +30,11 @@ PARAMS = "TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB ho
 FRESH = "each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent"
 
 
+def reqs(numbers):
+    """Requirement ids of the component from their numbers."""
+    return ["REQ-SeqScheduler-" + n for n in numbers.split()]
+
+
 def time_value(base, seconds):
     """A Fw.TimeValue command argument, in the JSON text a command takes on this bench."""
     return json.dumps({"timeBase": base, "timeContext": 0, "seconds": int(seconds), "useconds": 0})
@@ -135,6 +140,7 @@ def test_L0_1(window, send, bench, check, require):
         check("event cmdDisp.NoOpStringReceived(id=100) count == 1")
 
 
+@pytest.mark.req(*reqs("006 012 020 040"))
 def test_L2_2(window, send, bench, check, require):
     with window(210, 211):
         require("STD")
@@ -248,6 +254,7 @@ def test_L0_2(window, send, bench, check, require):
         check("event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1")
 
 
+@pytest.mark.req(*reqs("007 021 006"))
 def test_L2_3(window, send, bench, check, require):
     with window(220, 221):
         require("STD")
@@ -351,6 +358,7 @@ def due_steady(h):
     return (bool(seconds) and None not in seconds and max(seconds) - min(seconds) <= 1, f"seconds {seconds}")
 
 
+@pytest.mark.req(*reqs("008 041 047"))
 def test_L2_4(window, send, bench, check, require):
     with window(230, 231):
         require("STD")
@@ -429,6 +437,7 @@ def run_after_w1_sample(low, high):
     return judge
 
 
+@pytest.mark.req(*reqs("009 011 061"))
 def test_L2_5(window, send, bench, check, require):
     with window(240, 241):
         require("STD")
@@ -506,6 +515,7 @@ def sample_while_running(row, waiting):
     return judge
 
 
+@pytest.mark.req(*reqs("013 014 017 045 012 040 041"))
 def test_L2_6(window, send, bench, check, require):
     with window(250, 251):
         require("STD")
@@ -551,6 +561,7 @@ def abs_row(bench, offset, file_name, policy):
     return [time_value("TB_WORKSTATION_TIME", fsw_now(bench) + offset), "ABSOLUTE", file_name, policy]
 
 
+@pytest.mark.req(*reqs("015 013 060"))
 def test_L2_7(window, send, bench, check, require):
     with window(260, 261):
         require("STD")
@@ -589,6 +600,7 @@ def test_L2_7(window, send, bench, check, require):
 YEAR_2100 = 4102444800
 
 
+@pytest.mark.req(*reqs("016 013 012"))
 def test_L2_8(window, send, bench, check, require):
     with window(262, 263):
         require("STD")
@@ -619,6 +631,7 @@ def test_L2_8(window, send, bench, check, require):
         check("last(seqSched.RowsExecuted) == 2")
 
 
+@pytest.mark.req(*reqs("025 026 027 022 029 012"))
 def test_L2_9(window, send, bench, check, require):
     with window(270, 271):
         require("STD")
@@ -668,6 +681,7 @@ def samples_b(h):
     return (all(n >= 2 for n in counts.values()), f"SeqSchedB samples per window: {counts}")
 
 
+@pytest.mark.req(*reqs("042 012 040 007 022 026 034"))
 def test_L2_10(window, send, bench, check, require):
     try:
         with window(280, 281):
@@ -704,7 +718,7 @@ def test_L2_10(window, send, bench, check, require):
             check("event seqSched.SeqRun count == 1")
             check("event seqSchedB.SeqRun count == 1")
             check("event seqSchedB.CmdRejected(reason=ROW_INDEX) count == 1")
-            check("event seqSched.CmdRejected count == 0")
+            # "event seqSched.CmdRejected count == 0" of the plan is one of the ABS checks above
             check("event seqSchedB.RowLate count == 0")
             check("event seqSchedB.RowSkippedDisabled(row=2) count == 1")
             check("event seqSchedB.RowSkippedDisabled count == 1")
@@ -719,6 +733,7 @@ def test_L2_10(window, send, bench, check, require):
         raise
 
 
+@pytest.mark.req(*reqs("006 012 020 040 027 028 029"))
 def test_L2_11(window, send, bench, check, require):
     try:
         with window(290, 291):
@@ -768,6 +783,7 @@ def first_set_before_test(base):
     return judge
 
 
+@pytest.mark.req(*reqs("009 011 047 061"))
 def test_L2_12(window, send, bench, check, require):
     with window(293, 294):
         require("STD")
@@ -804,6 +820,7 @@ def bracket_both(bench):
     bench.wait_samples(SAMPLE_B, 2)
 
 
+@pytest.mark.req(*reqs("015 042 060 045"))
 def test_L2_13(window, send, bench, check, require):
     with window(295, 296):
         require("STD")
@@ -849,6 +866,7 @@ def test_L2_13(window, send, bench, check, require):
         require("SeqSchedB samples >= 2 in every window", samples_b)
 
 
+@pytest.mark.req(*reqs("016 045 014 013 017 042"))
 def test_L2_14(window, send, bench, check, require):
     with window(297, 298):
         require("STD")
@@ -906,6 +924,7 @@ def run_after_restart(row, low, high):
     return judge
 
 
+@pytest.mark.req(*reqs("023 032 031 056 021 008 005"))
 def test_L3_1(window, send, bench, check, require):
     with window(300, 301):
         require("STD")
@@ -1009,10 +1028,12 @@ def disable_and_report(window, send, bench, check, require, start, inst, name, s
         raise
 
 
+@pytest.mark.req(*reqs("057 058"))
 def test_L2_15(window, send, bench, check, require):
     disable_and_report(window, send, bench, check, require, 310, S, "seqSched", "schedSeq", False)
 
 
+@pytest.mark.req(*reqs("057 058 042"))
 def test_L2_16(window, send, bench, check, require):
     disable_and_report(window, send, bench, check, require, 320, B, "seqSchedB", "schedSeqB", True)
 
@@ -1032,6 +1053,7 @@ def restore_table(window, send, bench, check, require, start):
         check("event seqSched.TableLoaded count == 1")
 
 
+@pytest.mark.req(*reqs("003 005"))
 def test_L5_1(window, send, bench, check, require):
     try:
         with window(500, 501):
@@ -1072,6 +1094,7 @@ def loads_around_run(h):
     return (loads[1] < done[0] and loads[1] > run, f"loads {loads}, run {run}, complete {done[0]}")
 
 
+@pytest.mark.req(*reqs("030 040"))
 def test_L5_2(window, send, bench, check, require):
     with window(510, 511):
         require("STD")
@@ -1096,7 +1119,7 @@ def test_L5_2(window, send, bench, check, require):
         check("event seqSched.SeqCancelled count == 0")
         check("event schedSeq.CS_SequenceComplete(fileName=long.bin) count == 1")
         check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
-        check("event seqSched.SeqDoneUnexpected count == 0")
+        # "event seqSched.SeqDoneUnexpected count == 0" of the plan is one of the ABS checks above
         check("event seqSched.SeqRun(row=0) precedes event seqSched.RowSet(row=0, fileName=short.bin)")
         check("both TableLoaded events precede CS_SequenceComplete(fileName=long.bin), the second after SeqRun(row=0)",
               loads_around_run)
@@ -1113,6 +1136,7 @@ def file_unchanged(action):
     return judge
 
 
+@pytest.mark.req(*reqs("003 005"))
 def test_L5_3(window, send, bench, check, require):
     try:
         with window(520, 521):
@@ -1143,6 +1167,7 @@ def test_L5_3(window, send, bench, check, require):
         restore_table(window, send, bench, check, require, 521)
 
 
+@pytest.mark.req(*reqs("030 018 042 028"))
 def test_L5_4(window, send, bench, check, require):
     with window(530, 531):
         require("STD")
@@ -1175,3 +1200,229 @@ def test_L5_4(window, send, bench, check, require):
         check("event seqSched.SeqDoneUnexpected count == 0")
         check("event seqSched.SeqRun count == 0")
         require("SeqSchedB samples >= 2 in every window", samples_b)
+
+
+FIELDS = ("timeBase", "seconds", "useconds", "mode", "fileName", "busyPolicy", "enabled")
+
+
+def t_base():
+    """Table T-BASE as the plan authors it: 16 rows, all disabled, ABSOLUTE, year 2100, short.bin."""
+    return [{"timeBase": "TB_WORKSTATION_TIME", "seconds": YEAR_2100, "useconds": 0, "mode": "ABSOLUTE",
+             "fileName": "short.bin", "busyPolicy": "WAIT_FOR_RUNNING", "enabled": False} for _ in range(16)]
+
+
+def t_fields():
+    """Table T-FIELDS: T-BASE with rows 14 and 15 holding the other value of every field."""
+    rows = t_base()
+    rows[14] = {"timeBase": "TB_SC_TIME", "seconds": YEAR_2100, "useconds": 0, "mode": "ABSOLUTE",
+                "fileName": "short2.bin", "busyPolicy": "CANCEL_RUNNING", "enabled": True}
+    rows[15] = {"timeBase": "TB_NONE", "seconds": 1000000, "useconds": 0, "mode": "START_RELATIVE",
+                "fileName": "short.bin", "busyPolicy": "SKIP_WHEN_RUNNING", "enabled": False}
+    return rows
+
+
+def differing(got, want, fields, skip=()):
+    """Rows and fields in which the rows read differ from the rows wanted."""
+    if got is None or len(got) != len(want):
+        return [f"{None if got is None else len(got)} rows, {len(want)} wanted"]
+    return [f"row {i} {f}: {got[i].get(f)!r} != {want[i][f]!r}" for i in range(len(want)) for f in fields
+            if (i, f) not in skip and got[i].get(f) != want[i][f]]
+
+
+def product_is(want, states=None, skip=()):
+    """The test's last decoded data product holds the wanted rows (and row states) in index order."""
+    def judge(h):
+        rows = [r for r in h.evidence("read_dp") if r]
+        if not rows or rows[-1]["rows"] is None:
+            return (False, f"no decoded product: {rows[-1]['error'] if rows else 'no evidence'}")
+        got = rows[-1]["rows"]
+        wrong = differing(got, want, FIELDS, skip)
+        if states is not None and not wrong:
+            wrong = [f"row {i} state: {got[i].get('state')!r} != {states[i]!r}" for i in range(len(want))
+                     if got[i].get("state") != states[i]]
+        return (not wrong, f"{rows[-1]['file']}: {wrong[:4] if wrong else 'as wanted'}")
+    return judge
+
+
+def new_product(h):
+    """The product decoded was written in this test: more product files after the dump than before it."""
+    before = [r for r in h.evidence("count_dp") if r]
+    after = [r for r in h.evidence("read_dp") if r]
+    return (bool(before) and bool(after) and after[-1]["files"] > before[0]["files"],
+            f"files before {[r['files'] for r in before]}, after {[r['files'] for r in after]}")
+
+
+@pytest.mark.req(*reqs("019 035 041 002 004"))
+def test_L2_1(window, send, bench, check, require):
+    try:
+        with window(200, 201):
+            require("STD")
+            standard_requires(require)
+            bracket(bench)
+            bench.action("count_dp")
+            bench.action("write_T_FIELDS")
+            send(S + ".LOAD_TABLE")
+            send(S + ".DUMP_TABLE")
+            bench.wait_event("dpWriter.FileWritten")
+            bracket(bench)
+            bench.action("read_dp")
+            check("ABS")
+            check("event seqSched.TableLoaded count == 1")
+            check("event seqSched.TableDumped count == 1")
+            check("last(seqSched.TableLoaded) == True")
+            check("last(seqSched.RowsPending) == 16")
+            check("last(seqSched.RowsExecuted) == 0")
+            check("last(seqSched.RowsSkipped) == 0")
+            check("last(seqSched.RowsWaiting) == 0")
+            check("last(seqSched.NextRow) == 16")
+            check("last(seqSched.RunningRow) == 16")
+            require("the data product file decoded was written in this test", new_product)
+            check("data product file decodes to table T-FIELDS, every field of every row as authored",
+                  product_is(t_fields()))
+    finally:
+        with window(201, 202):
+            require("both markers present")
+            bench.action("write_T_BASE")
+            send(S + ".LOAD_TABLE")
+            bracket(bench)
+            check("event seqSched.TableLoaded count == 1")
+
+
+@pytest.mark.req(*reqs("034 004 035"))
+def test_L6_1(window, send, bench, check, require):
+    with window(600, 601):
+        require("STD-ERR")
+        standard_requires(require, fresh=True)
+        bench.action("write_T_BASE")
+        send(S + ".LOAD_TABLE")
+        bracket(bench)
+        bench.action("count_dp")
+        send(S + ".SET_ROW_ENABLED", [16, True])
+        send(S + ".SET_ROW", [16] + abs_row(bench, 5, "short.bin", "WAIT_FOR_RUNNING"))
+        send(S + ".SET_ROW", [0] + abs_row(bench, 5, "", "WAIT_FOR_RUNNING"))
+        late = json.loads(time_value("TB_WORKSTATION_TIME", fsw_now(bench) + 5))
+        late["useconds"] = 1000000
+        send(S + ".SET_ROW", [0, json.dumps(late), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
+        send(S + ".SET_SEQ_ENABLED", ["nosuch.bin", True])
+        send(S + ".SET_SEQ_ENABLED", ["", True])
+        send(S + ".DUMP_TABLE")
+        bench.wait(8)
+        bracket(bench)
+        bench.action("read_dp")
+        check("event cmdDisp.OpCodeError count == 6")
+        check("event seqSched.CmdRejected(reason=ROW_INDEX) count == 2")
+        check("event seqSched.CmdRejected(reason=FILE_NAME) count == 2")
+        check("event seqSched.CmdRejected(reason=TIME) count == 1")
+        check("event seqSched.CmdRejected(reason=NO_MATCH) count == 1")
+        check("event seqSched.RowEnabledSet count == 0")
+        check("event seqSched.RowSet count == 0")
+        check("event seqSched.SeqEnabledSet count == 0")
+        check("event seqSched.SeqRun count == 0")
+        check("last(seqSched.RowsPending) == 16")
+        require("the data product file decoded was written in this test", new_product)
+        check("data product file decodes to table T-BASE, all rows PENDING", product_is(t_base(), ["PENDING"] * 16))
+
+
+@pytest.mark.req(*reqs("018 040"))
+def test_L6_2(window, send, bench, check, require):
+    with window(610, 611):
+        require("STD")
+        standard_requires(require, fresh=True)
+        bench.action("write_T_BASE")
+        send(S + ".LOAD_TABLE")
+        bracket(bench)
+        send(Q + ".CS_RUN", ["short.bin", "NO_BLOCK"])
+        bench.wait(4)
+        send(S + ".SET_ROW_ENABLED", [0, True])
+        send(S + ".SET_ROW", [0] + abs_row(bench, 6, "short.bin", "WAIT_FOR_RUNNING"))
+        bench.wait(12)
+        bracket(bench)
+        check("ABS")
+        check("event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 2")
+        check("event seqSched.SeqDoneUnexpected count == 1")
+        check("event seqSched.SeqCompleted count == 1")
+        check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
+        check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
+        check("event seqSched.SeqDoneUnexpected precedes event seqSched.SeqRun(row=0)")
+        check("event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)")
+        check("last(seqSched.RunningRow) == 16")
+        check("last(seqSched.RowsExecuted) == 1")
+
+
+# Fields of T-FINAL the test sets from the FSW clock: judged for being in the past, not for a value
+PAST_TIMES = ((6, "seconds"), (8, "seconds"))
+
+
+def t_final():
+    """Table T-FINAL: T-BASE with row 5 short2.bin SKIP_WHEN_RUNNING enabled, rows 6 and 7 enabled."""
+    rows = t_base()
+    rows[5].update({"fileName": "short2.bin", "busyPolicy": "SKIP_WHEN_RUNNING", "enabled": True})
+    rows[6]["enabled"] = True
+    rows[7]["enabled"] = True
+    return rows
+
+
+def table_is_final(h):
+    rows = [r for r in h.evidence("read_table") if r]
+    if not rows or not rows[-1]["valid"]:
+        return (False, f"table file not valid: {rows[-1]['error'] if rows else 'no evidence'}")
+    got = rows[-1]["rows"]
+    wrong = differing(got, t_final(), FIELDS, PAST_TIMES)
+    if not wrong:
+        wrong = [f"row {i} carries a state" for i in range(16) if "state" in got[i]]
+    if not wrong:
+        wrong = [f"row {i} time {got[i]['seconds']} is not a past FSW time" for i, _ in PAST_TIMES
+                 if not 0 < got[i]["seconds"] < h.window.end_marker.fsw]
+    return (not wrong, f"{wrong[:4] if wrong else 'as wanted'}")
+
+
+@pytest.mark.req(*reqs("032 035 019 027 025 056 023 031 028 029 005 002"))
+def test_L7_1(window, send, bench, check, require):
+    with window(700, 701):
+        require("STD")
+        standard_requires(require, fresh=True)
+        bench.action("write_T_BASE")
+        send(S + ".LOAD_TABLE")
+        bench.action("count_dp")
+        send(S + ".SET_ROW_ENABLED", [5, True])
+        send(S + ".SET_ROW", [5, time_value("TB_WORKSTATION_TIME", YEAR_2100), "ABSOLUTE", "short2.bin",
+                              "SKIP_WHEN_RUNNING"])
+        send(S + ".SET_ROW_ENABLED", [6, True])
+        send(S + ".SET_ROW_ENABLED", [7, True])
+        send(S + ".SET_ROW", [8] + abs_row(bench, 6, "short.bin", "WAIT_FOR_RUNNING"))
+        send(S + ".SET_ROW", [6] + abs_row(bench, 6, "short.bin", "WAIT_FOR_RUNNING"))
+        send(S + ".SET_ROW", [7] + abs_row(bench, 9, "short.bin", "WAIT_FOR_RUNNING"))
+        bench.wait(14)
+        send(S + ".SET_ROW_ENABLED", [6, False])
+        send(S + ".SET_ROW_ENABLED", [6, True])
+        send(S + ".SET_ROW", [7, time_value("TB_WORKSTATION_TIME", YEAR_2100), "ABSOLUTE", "short.bin",
+                              "WAIT_FOR_RUNNING"])
+        send(S + ".SAVE_TABLE")
+        send(S + ".SET_ROW_ENABLED", [4, True])
+        send(S + ".LOAD_TABLE")
+        bench.wait(3)
+        send(S + ".DUMP_TABLE")
+        bench.wait_event("dpWriter.FileWritten")
+        bracket(bench)
+        bench.action("read_table")
+        bench.action("read_dp")
+        check("ABS")
+        check("event seqSched.SeqRun(row=6, fileName=short.bin) count == 1")
+        check("event seqSched.SeqRun(row=7, fileName=short.bin) count == 1")
+        check("event seqSched.TableSaved count == 1")
+        check("event seqSched.TableDumped count == 1")
+        check("event seqSched.TableLoaded count == 2")
+        check("event seqSched.RowLate count == 0")
+        check("event seqSched.RowSkippedDisabled(row=8) count == 1")
+        check("event seqSched.RowSkippedDisabled count == 1")
+        check("last(seqSched.RowsExecuted) == 0")
+        check("last(seqSched.RowsSkipped) == 2")
+        check("last(seqSched.RowsPending) == 14")
+        check("table file on the bench file system == T-FINAL: valid checksum; row 5 short2.bin SKIP_WHEN_RUNNING "
+              "enabled, rows 6 and 7 enabled, row 8 disabled, every other row and field as T-BASE, no row state",
+              table_is_final)
+        require("the data product file decoded was written in this test", new_product)
+        states = ["PENDING"] * 16
+        states[6] = states[8] = "SKIPPED"
+        check("data product file decodes to T-FINAL with row states: rows 6 and 8 SKIPPED, every other row PENDING",
+              product_is(t_final(), states, PAST_TIMES))

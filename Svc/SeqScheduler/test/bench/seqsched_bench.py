@@ -178,6 +178,47 @@ def write_table(args):
     print(f"bench: wrote {args.table} to {name}")
 
 
+def read_table(args):
+    """Rows of a table file of the bench file system as the table script reads it (checksum verified)."""
+    done = subprocess.run([sys.executable, str(TABLE_SCRIPT), "--read", str(WORK / args.name)],
+                          capture_output=True, text=True, check=False)
+    rows = json.loads(done.stdout) if done.returncode == 0 else None
+    evidence({"name": args.name, "valid": done.returncode == 0, "rows": rows, "error": done.stderr.strip()})
+
+
+def read_dp(args):
+    """The newest data product file written by Ref, decoded with the dictionary by fprime-dp."""
+    files = sorted((WORK / "DpCat").glob("*.fdp"), key=lambda f: f.stat().st_mtime)
+    if not files:
+        evidence(None)
+        return
+    out = WORK / "dp-decoded.json"
+    done = subprocess.run(["fprime-dp", "decode", "-b", str(files[-1]), "-d", args.dictionary, "-o", str(out)],
+                          capture_output=True, text=True, check=False)
+    decoded = json.loads(out.read_text()) if done.returncode == 0 and out.is_file() else None
+    rows = None
+    if decoded is not None:
+        rows = []
+        for record in decoded["Records"]:
+            row = {key: plain(value) for key, value in record["Data"].items() if key != "time"}
+            for key in ("timeBase", "seconds", "useconds"):
+                row[key] = plain(record["Data"]["time"][key])
+            row["record"] = record["Record"]["record_name"]
+            rows.append(row)
+    evidence({"file": files[-1].name, "files": len(files), "container": plain(decoded["Header"]["Id"]) if decoded else None,
+              "rows": rows, "error": done.stderr.strip()[-300:]})
+
+
+def plain(field):
+    """Value of a decoded data-product field."""
+    return field["value"] if isinstance(field, dict) else field
+
+
+def count_dp(args):
+    """Number of data product files Ref has written so far."""
+    evidence({"files": len(list((WORK / "DpCat").glob("*.fdp")))})
+
+
 def hash_file(args):
     """Size and digest of a file of the bench file system."""
     data = (WORK / args.name).read_bytes() if (WORK / args.name).is_file() else b""
@@ -214,6 +255,14 @@ def main():
     p.set_defaults(fn=next_due)
     p = sub.add_parser("ref-start")
     p.set_defaults(fn=ref_start)
+    p = sub.add_parser("read-table")
+    p.add_argument("name")
+    p.set_defaults(fn=read_table)
+    p = sub.add_parser("read-dp")
+    p.add_argument("dictionary")
+    p.set_defaults(fn=read_dp)
+    p = sub.add_parser("count-dp")
+    p.set_defaults(fn=count_dp)
     p = sub.add_parser("hash-file")
     p.add_argument("name")
     p.set_defaults(fn=hash_file)

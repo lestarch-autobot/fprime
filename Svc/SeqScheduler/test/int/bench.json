@@ -22,7 +22,10 @@
     "ref_start": "python3 {bench} ref-start",
     "write_T_TRUNC": "python3 {bench} write-table T-TRUNC",
     "write_T_BADCRC": "python3 {bench} write-table T-BADCRC",
-    "hash_T_BADCRC": "python3 {bench} hash-file t_badcrc.tbl"
+    "hash_T_BADCRC": "python3 {bench} hash-file t_badcrc.tbl",
+    "read_table": "python3 {bench} read-table seq_sched.tbl",
+    "read_dp": "python3 {bench} read-dp {dictionary}",
+    "count_dp": "python3 {bench} count-dp"
   },
   "timeouts": {
     "flash_s": 60,
