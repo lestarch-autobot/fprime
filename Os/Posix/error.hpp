@@ -7,7 +7,7 @@
 #include "Os/Condition.hpp"
 #include "Os/CountingSemaphore.hpp"
 #include "Os/Directory.hpp"
-#include "Os/File.hpp"
+#include "Os/FileInterface.hpp"
 #include "Os/FileSystem.hpp"
 #include "Os/RawTime.hpp"
 #include "Os/Task.hpp"
@@ -19,7 +19,7 @@ namespace Posix {
 //! \param errno_input: errno representation of the error
 //! \return: Os::File::Status representation of the error
 //!
-Os::File::Status errno_to_file_status(int errno_input);
+Os::FileInterface::Status errno_to_file_status(int errno_input);
 
 //! Convert an errno representation of an error to the Os::FileSystem::Status representation.
 //! \param errno_input: errno representation of the error

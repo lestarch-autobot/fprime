@@ -98,7 +98,7 @@ class MyOsMutex : public MutexInterface {
 ```
 
 > [!TIP]
-> Look at each interface header in `Os/` (e.g., `Os/MutexInterface.hpp`, `Os/File.hpp`, `Os/Task.hpp`) to see the exact set of pure virtual methods that need to be implemented for each. Each interface also defines a `Status` enum — your implementation must return the appropriate [status values](../../../Os/docs/sdd.md#24-error-handling). Note: for services that support compile-time selection, the pure-virtual contract lives in the `*Interface.hpp` header (e.g. `Os/MutexInterface.hpp`, `Os/RawTimeInterface.hpp`), while `Os/Mutex.hpp` / `Os/RawTime.hpp` are thin alias/aggregation headers.
+> Look at each interface header in `Os/` (e.g., `Os/MutexInterface.hpp`, `Os/FileInterface.hpp`, `Os/Task.hpp`) to see the exact set of pure virtual methods that need to be implemented for each. Each interface also defines a `Status` enum — your implementation must return the appropriate [status values](../../../Os/docs/sdd.md#24-error-handling). Note: for services that support compile-time selection, the pure-virtual contract lives in the `*Interface.hpp` header (e.g. `Os/MutexInterface.hpp`, `Os/RawTimeInterface.hpp`, `Os/FileInterface.hpp`), while `Os/Mutex.hpp` / `Os/RawTime.hpp` / `Os/File.hpp` are thin alias/aggregation headers.
 
 ### 2.2 — Implement the Methods
 

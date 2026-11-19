@@ -2,7 +2,7 @@
 // \title Os/Stub/File.hpp
 // \brief stub file definitions for Os::File
 // ======================================================================
-#include "Os/File.hpp"
+#include <Os/FileInterface.hpp>
 
 #ifndef OS_STUB_FILE_HPP
 #define OS_STUB_FILE_HPP
@@ -14,7 +14,8 @@ struct StubFileHandle : public FileHandle {};
 
 //! \brief stub implementation of Os::File
 //!
-//! Stub implementation of `FileInterface` for use as a delegate class handling error-only file operations.
+//! Stub implementation of `FileInterface` handling error-only file operations, usable as the Os::File alias or behind
+//! Os::DelegateFile.
 //!
 class StubFile : public FileInterface {
   public:
@@ -25,6 +26,11 @@ class StubFile : public FileInterface {
     //! \brief destructor
     //!
     ~StubFile() override = default;
+
+    // The overrides below would otherwise hide the common overloads defined on FileInterface
+    using FileInterface::open;
+    using FileInterface::read;
+    using FileInterface::write;
 
     // ------------------------------------
     // Functions overrides
@@ -44,6 +50,22 @@ class StubFile : public FileInterface {
     //! \return: NOT_SUPPORTED
     //!
     Os::FileInterface::Status open(const char* path, Mode mode, OverwriteType overwrite) override;
+
+    //! \brief open file whose path length the caller has already bounded
+    //!
+    //! Performs every check of `open` except the FileNameStringSize path bound. The stub cannot open a file.
+    //!
+    //! \param path: c-string of path to open
+    //! \param mode: file operation mode
+    //! \param overwrite: overwrite existing file on create
+    //! \return: NOT_SUPPORTED
+    //!
+    Os::FileInterface::Status openImpl(const char* path, Mode mode, OverwriteType overwrite) override;
+
+    //! \brief report the open state
+    //! \return false: the stub cannot open a file
+    //!
+    bool isOpenImpl() const override;
 
     //! \brief close the file, if not opened then do nothing
     //!

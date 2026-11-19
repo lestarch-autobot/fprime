@@ -2,6 +2,7 @@
 // \title Os/Posix/test/ut/PosixFileTests.cpp
 // \brief tests for posix implementation for Os::File
 // ======================================================================
+#include <fcntl.h>
 #include <gtest/gtest.h>
 #include <unistd.h>
 #include <config/FppConstantsAc.hpp>
@@ -10,6 +11,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <list>
+#include "Fw/Types/ExternalString.hpp"
+#include "Fw/Types/String.hpp"
 #include "Os/File.hpp"
 #include "Os/Posix/File.hpp"
 #include "Os/test/ut/file/CommonTests.hpp"
@@ -245,6 +248,272 @@ TEST(PosixFileErrorHandling, ReadBadDescriptorSurfacesError) {
     handle->m_file_descriptor = Os::Posix::File::PosixFileHandle::INVALID_FILE_DESCRIPTOR;
     file.close();
     ::unlink(path_template);
+}
+
+namespace {
+//! Descriptor held by a PosixFile
+int descriptorOf(Os::Posix::File::PosixFile& file) {
+    return static_cast<Os::Posix::File::PosixFileHandle*>(file.getHandle())->m_file_descriptor;
+}
+//! Whether the descriptor is open in this process
+bool descriptorIsOpen(int descriptor) {
+    return ::fcntl(descriptor, F_GETFD) != -1;
+}
+}  // namespace
+
+// The checks below are also performed by Os::DelegateFile. These tests use the implementation class directly, as when
+// Os::File is aliased to it in config/OsSelection.hpp, so the implementation's own checks are the ones exercised.
+TEST(PosixFileDirect, OperationsOnClosedFile) {
+    Os::Posix::File::PosixFile file;
+    U8 buffer[4] = {0};
+    FwSizeType size = sizeof(buffer);
+    FwSizeType result = 0;
+    ASSERT_FALSE(file.isOpen());
+    ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(size, 0U);
+    size = sizeof(buffer);
+    ASSERT_EQ(file.write(buffer, size), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(size, 0U);
+    ASSERT_EQ(file.size(result), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(file.position(result), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(file.preallocate(0, 1), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(file.seek(0, Os::FileInterface::SeekType::ABSOLUTE), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(file.seek_absolute(0), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(file.flush(), Os::FileInterface::Status::NOT_OPENED);
+    file.close();
+    ASSERT_FALSE(file.isOpen());
+}
+
+TEST(PosixFileDirect, ModeChecksAndDoubleOpen) {
+    char path[] = "/tmp/fprime_posix_direct_XXXXXX";
+    const int fd = ::mkstemp(path);
+    ASSERT_NE(fd, -1);
+    (void)::close(fd);
+    U8 buffer[4] = {1, 2, 3, 4};
+    FwSizeType size = sizeof(buffer);
+    int descriptor = -1;
+    {
+        Os::Posix::File::PosixFile file;
+        ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_WRITE), Os::FileInterface::Status::OP_OK);
+        ASSERT_TRUE(file.isOpen());
+        descriptor = descriptorOf(file);
+        // A second open must not replace (and leak) the descriptor already held
+        ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::INVALID_MODE);
+        ASSERT_EQ(descriptorOf(file), descriptor);
+        ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::INVALID_MODE);
+        ASSERT_EQ(size, 0U);
+        size = sizeof(buffer);
+        ASSERT_EQ(file.write(buffer, size), Os::FileInterface::Status::OP_OK);
+        ASSERT_EQ(size, sizeof(buffer));
+        ASSERT_TRUE(descriptorIsOpen(descriptor));
+        // No explicit close: the destructor must close the file
+    }
+    ASSERT_FALSE(descriptorIsOpen(descriptor));
+    Os::Posix::File::PosixFile file;
+    ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    ASSERT_EQ(file.write(buffer, size), Os::FileInterface::Status::INVALID_MODE);
+    ASSERT_EQ(size, 0U);
+    ASSERT_EQ(file.preallocate(0, 1), Os::FileInterface::Status::INVALID_MODE);
+    ASSERT_EQ(file.flush(), Os::FileInterface::Status::INVALID_MODE);
+    U32 crc = 0;
+    ASSERT_EQ(file.calculateCrc(crc), Os::FileInterface::Status::OP_OK);
+    U8 line[8] = {0};
+    size = sizeof(line);
+    ASSERT_EQ(file.seek_absolute(0), Os::FileInterface::Status::OP_OK);
+    ASSERT_EQ(file.readline(line, size, Os::FileInterface::WaitType::NO_WAIT), Os::FileInterface::Status::OP_OK);
+    ASSERT_EQ(size, sizeof(buffer));
+    file.close();
+    ASSERT_FALSE(file.isOpen());
+    ASSERT_EQ(file.size(size), Os::FileInterface::Status::NOT_OPENED);
+    (void)::unlink(path);
+}
+
+namespace {
+//! Assert raised by FileInterface::assertValidPath
+const char* const PATH_ASSERT = "Assert: \".*/?Os/FileInterface\\.cpp:[0-9]+\"";
+
+//! Fill a buffer with an absolute path under /tmp of exactly `length` characters
+void makePath(char* buffer, FwSizeType buffer_size, FwSizeType length) {
+    ASSERT_LT(length, buffer_size);
+    (void)::memset(buffer, 'a', static_cast<size_t>(length));
+    (void)::memcpy(buffer, "/tmp/", 5);
+    buffer[length] = '\0';
+}
+}  // namespace
+
+// The FileNameStringSize bound applies to the opens that take a bare path; the opens that take a length or a string
+// bound the path by that length instead and accept a longer path
+template <typename FileType>
+void checkPathLengthRules() {
+    char path[FileNameStringSize + 2];
+    makePath(path, sizeof(path), FileNameStringSize + 1);
+    FileType file;
+    ASSERT_DEATH_IF_SUPPORTED(
+        (void)file.open(path, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
+        PATH_ASSERT);
+    ASSERT_DEATH_IF_SUPPORTED((void)file.open(path, Os::FileInterface::Mode::OPEN_READ), PATH_ASSERT);
+
+    ASSERT_EQ(file.open(path, static_cast<FwSizeType>(sizeof(path)), Os::FileInterface::Mode::OPEN_CREATE,
+                        Os::FileInterface::OverwriteType::OVERWRITE),
+              Os::FileInterface::Status::OP_OK);
+    ASSERT_TRUE(file.isOpen());
+    file.close();
+    ASSERT_FALSE(file.isOpen());
+
+    char storage[FileNameStringSize + 2];
+    Fw::ExternalString string(storage, static_cast<Fw::StringBase::SizeType>(sizeof(storage)));
+    string = path;
+    ASSERT_EQ(string.length(), static_cast<Fw::StringBase::SizeType>(FileNameStringSize + 1));
+    ASSERT_EQ(file.open(string, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    ASSERT_TRUE(file.isOpen());
+    file.close();
+    (void)::unlink(path);
+
+    // A path that is not terminated within the caller's length still asserts
+    ASSERT_DEATH_IF_SUPPORTED(
+        (void)file.open(path, static_cast<FwSizeType>(FileNameStringSize + 1), Os::FileInterface::Mode::OPEN_READ),
+        PATH_ASSERT);
+}
+
+TEST(PosixFileDirect, PathLengthRules) {
+    checkPathLengthRules<Os::Posix::File::PosixFile>();
+}
+
+// Os::File as configured (the link-time delegate by default) follows the same rules
+TEST(PosixFileDirect, ConfiguredFilePathLengthRules) {
+    checkPathLengthRules<Os::File>();
+}
+
+TEST(PosixFileDirect, OpenAcceptsLongestPath) {
+    char path[FileNameStringSize + 2];
+    makePath(path, sizeof(path), FileNameStringSize);
+    Os::Posix::File::PosixFile file;
+    ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_CREATE, Os::FileInterface::OverwriteType::OVERWRITE),
+              Os::FileInterface::Status::OP_OK);
+    ASSERT_TRUE(file.isOpen());
+    file.close();
+    (void)::unlink(path);
+}
+
+// The open state is read from the descriptor, so it cannot disagree with the handle
+TEST(PosixFileDirect, OpenStateFollowsDescriptor) {
+    char path[] = "/tmp/fprime_posix_direct_XXXXXX";
+    const int fd = ::mkstemp(path);
+    ASSERT_NE(fd, -1);
+    (void)::close(fd);
+    Os::Posix::File::PosixFile file;
+    ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    Os::Posix::File::PosixFileHandle* handle = static_cast<Os::Posix::File::PosixFileHandle*>(file.getHandle());
+    const int descriptor = handle->m_file_descriptor;
+    // Handle emptied underneath the file: every operation reports the file as not open
+    handle->m_file_descriptor = -1;
+    U8 buffer[4] = {0};
+    FwSizeType size = sizeof(buffer);
+    ASSERT_FALSE(file.isOpen());
+    ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(size, 0U);
+    size = sizeof(buffer);
+    ASSERT_EQ(file.readline(buffer, size, Os::FileInterface::WaitType::NO_WAIT), Os::FileInterface::Status::NOT_OPENED);
+    U32 crc = 0;
+    ASSERT_EQ(file.calculateCrc(crc), Os::FileInterface::Status::NOT_OPENED);
+    // Handle restored: the file is open again
+    handle->m_file_descriptor = descriptor;
+    ASSERT_TRUE(file.isOpen());
+    size = sizeof(buffer);
+    ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::OP_OK);
+    // Descriptor placed in a file that recorded no mode: open, but neither readable nor writable
+    handle->m_file_descriptor = -1;
+    file.close();
+    handle->m_file_descriptor = descriptor;
+    ASSERT_TRUE(file.isOpen());
+    size = sizeof(buffer);
+    ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::INVALID_MODE);
+    ASSERT_EQ(size, 0U);
+    size = sizeof(buffer);
+    ASSERT_EQ(file.write(buffer, size), Os::FileInterface::Status::INVALID_MODE);
+    ASSERT_EQ(size, 0U);
+    ASSERT_EQ(file.flush(), Os::FileInterface::Status::INVALID_MODE);
+    ASSERT_EQ(file.preallocate(0, 1), Os::FileInterface::Status::INVALID_MODE);
+    // close() releases whatever descriptor is held
+    file.close();
+    ASSERT_FALSE(file.isOpen());
+    ASSERT_FALSE(descriptorIsOpen(descriptor));
+    (void)::unlink(path);
+}
+
+namespace {
+//! PosixFile subclass that counts the opens it sees, as a test double injecting open errors would
+class CountingPosixFile : public Os::Posix::File::PosixFile {
+  public:
+    Os::FileInterface::Status openImpl(const char* path, Mode mode, OverwriteType overwrite) override {
+        this->m_opens++;
+        return this->Os::Posix::File::PosixFile::openImpl(path, mode, overwrite);
+    }
+    U32 m_opens = 0;
+};
+}  // namespace
+
+// Every open overload reaches openImpl(), so a subclass overriding it sees every open
+TEST(PosixFileDirect, EveryOpenOverloadReachesOpenImpl) {
+    char path[] = "/tmp/fprime_posix_direct_XXXXXX";
+    const int fd = ::mkstemp(path);
+    ASSERT_NE(fd, -1);
+    (void)::close(fd);
+    const Fw::String string(path);
+    const FwSizeType length = static_cast<FwSizeType>(sizeof(path));
+    CountingPosixFile file;
+    ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
+              Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(file.open(path, length, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(
+        file.open(path, length, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
+        Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(file.open(string, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(file.open(string, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
+              Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_EQ(file.m_opens, 6U);
+    (void)::unlink(path);
+}
+
+TEST(PosixFileDirect, CopyDuplicatesDescriptorAndState) {
+    char path[] = "/tmp/fprime_posix_direct_XXXXXX";
+    const int fd = ::mkstemp(path);
+    ASSERT_NE(fd, -1);
+    (void)::close(fd);
+    Os::Posix::File::PosixFile original;
+    ASSERT_EQ(original.open(path, Os::FileInterface::Mode::OPEN_WRITE), Os::FileInterface::Status::OP_OK);
+    Os::Posix::File::PosixFile copy(original);
+    Os::Posix::File::PosixFile assigned;
+    assigned = original;
+    Os::Posix::File::PosixFile closed;
+    Os::Posix::File::PosixFile closed_copy(closed);
+    ASSERT_FALSE(closed_copy.isOpen());
+    ASSERT_EQ(descriptorOf(closed_copy), -1);
+    ASSERT_NE(descriptorOf(copy), descriptorOf(original));
+    ASSERT_NE(descriptorOf(assigned), descriptorOf(original));
+    ASSERT_NE(descriptorOf(assigned), descriptorOf(copy));
+    original.close();
+    // Copies own their descriptors: closing the original must not close them
+    U8 buffer[2] = {5, 6};
+    FwSizeType size = sizeof(buffer);
+    ASSERT_TRUE(copy.isOpen());
+    ASSERT_EQ(copy.write(buffer, size), Os::FileInterface::Status::OP_OK);
+    size = sizeof(buffer);
+    ASSERT_TRUE(assigned.isOpen());
+    ASSERT_EQ(assigned.write(buffer, size), Os::FileInterface::Status::OP_OK);
+    const int assigned_descriptor = descriptorOf(assigned);
+    assigned = closed;
+    // Assignment releases the descriptor previously held
+    ASSERT_FALSE(assigned.isOpen());
+    ASSERT_FALSE(descriptorIsOpen(assigned_descriptor));
+    (void)::unlink(path);
 }
 
 int main(int argc, char** argv) {

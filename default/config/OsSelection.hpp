@@ -2,8 +2,8 @@
 // \title config/OsSelection.hpp
 // \brief configured selection of Os OSAL implementations
 //
-// This header configures how the Os services below (RawTime, Mutex, and
-// ConditionVariable) resolve to concrete implementations. Two mechanisms are
+// This header configures how the Os services below (RawTime, Mutex,
+// ConditionVariable, and File) resolve to concrete implementations. Two mechanisms are
 // available:
 //
 // 1. Link-time selection (default): each service aliases to an Os::Delegate*
@@ -87,6 +87,42 @@
 //     }  // namespace Os
 //     #define OS_MUTEX_HEADER "Va416x0/Os/AtomicMutex/AtomicMutex.hpp"
 //     #define OS_CONDITION_VARIABLE_HEADER "Os/Stub/ConditionVariable.hpp"
+//
+// ----------------------------------------------------------------------
+// File
+//
+// WARNING: compile-time selections MUST derive from Os::FileInterface (the
+// open/read/write convenience overloads, seek_absolute(), readline(), isOpen()
+// and the CRC functions are defined there) and MUST:
+//
+// 1. Override isOpenImpl() to report the open state from their own handle.
+// 2. Override openImpl() with every check of open() except the
+//    FileNameStringSize path bound, and implement open() as
+//    FileInterface::assertValidPath() followed by openImpl().
+//    The FileInterface default of openImpl() calls open() back, so open() must
+//    not call openImpl() unless the class overrides it.
+// 3. Call markOpen() when openImpl() succeeds and markClosed() in close(); the
+//    read/write mode checks rely on that mode.
+// 4. Perform the argument and state checks that Os::DelegateFile performs
+//    (see Os/Posix/File.cpp); no wrapper performs them for an aliased class.
+// 5. Re-expose the overloads: `using FileInterface::open;` (and read, write).
+//
+// Items 1 and 2 are enforced at compile time in Os/FileInterface.cpp.
+//
+// A compile-time selection uses neither Os::DelegateFile nor
+// FileInterface::getDelegate(). As for Mutex above, the alias only changes the
+// C++ type: the implementation module providing the aliased class must still be
+// in the link (via CHOOSES_IMPLEMENTATIONS for an in-tree Os_File_*
+// implementation, or DEPENDS for a project module).
+//
+// Tests that inject a different file through FileInterface::getDelegate() do
+// not apply to an aliased class.
+//
+// Example compile-time selection override:
+//
+//     namespace Os { namespace Posix { namespace File { class PosixFile; } } }
+//     namespace Os { using File = Os::Posix::File::PosixFile; }
+//     #define OS_FILE_HEADER <Os/Posix/File.hpp>
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
@@ -104,10 +140,14 @@ using Mutex = DelegateMutex;
 class DelegateConditionVariable;
 using ConditionVariable = DelegateConditionVariable;
 
+class DelegateFile;
+using File = DelegateFile;
+
 }  // namespace Os
 
 #define OS_RAW_TIME_HEADER <Os/DelegateRawTime.hpp>
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_FILE_HEADER <Os/DelegateFile.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP
