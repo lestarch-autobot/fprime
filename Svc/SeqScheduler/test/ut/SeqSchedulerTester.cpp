@@ -722,6 +722,9 @@ void SeqSchedulerTester::PingOnFullQueue() {
 
 void SeqSchedulerTester::SaveWriteFailureKeepsFile() {
     // REQ-SeqScheduler-033: a save that cannot write leaves the old file as it was
+    if (::access("/dev/full", W_OK) != 0) {
+        GTEST_SKIP() << "/dev/full, the source of the write failure, is not available on this platform";
+    }
     this->startEmpty();
     this->absRow(0, 50, "a.bin");
     this->cmdSave();
