@@ -3,8 +3,14 @@
 // \brief common function implementation for Os::DirectoryInterface
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
-#include <Os/DirectoryInterface.hpp>
+#include <Os/Directory.hpp>
 #include <limits>
+#include <type_traits>
+
+// The implementation selected as Os::Directory owns the open state: the DirectoryInterface::isOpen() default
+// is only for implementations used through the link-time delegate. Checked here, where Os::Directory is complete.
+static_assert(not std::is_same<decltype(&Os::Directory::isOpen), bool (Os::DirectoryInterface::*)() const>::value,
+              "The implementation selected as Os::Directory must override DirectoryInterface::isOpen()");
 
 namespace Os {
 

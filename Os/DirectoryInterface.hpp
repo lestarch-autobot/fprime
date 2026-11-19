@@ -56,7 +56,7 @@ class DirectoryInterface {
     //!
     //! The open state is owned by the implementation. The link-time delegate tracks it itself, so an
     //! implementation used only through the delegate may keep this default; an implementation selected
-    //! directly as Os::Directory must override it (enforced in Os/Directory.hpp).
+    //! directly as Os::Directory must override it (enforced in Os/DirectoryInterface.cpp).
     //!
     //! \return true if Directory is open, false otherwise
     virtual bool isOpen() const;
