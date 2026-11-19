@@ -11,7 +11,7 @@
   "dump": "python3 {bench} dump {readback}",
   "reset": "python3 {bench} reset --port {port}",
   "gds": "python3 {bench} gds {dictionary} {logs} --port {port} --delay 30",
-  "recorder": "fprime-cli events --dictionary {dictionary} --logs {logs}",
+  "recorder": "python3 {bench} recorder {dictionary} {logs}",
   "send": "fprime-cli command-send --dictionary {dictionary} --logs {logs} {command} --arguments {args}",
   "actions": {
     "write_T_BASE": "python3 {bench} write-table T-BASE",

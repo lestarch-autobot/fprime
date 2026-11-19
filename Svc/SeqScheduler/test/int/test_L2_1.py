@@ -13,8 +13,8 @@ def test_L2_1(window, send, bench, check, require):
             bracket(bench)
             bench.action("count_dp")
             bench.action("write_T_FIELDS")
-            send(S + ".LOAD_TABLE")
-            send(S + ".DUMP_TABLE")
+            send("Ref.seqSched.LOAD_TABLE")
+            send("Ref.seqSched.DUMP_TABLE")
             bench.wait_event("dpWriter.FileWritten")
             bracket(bench)
             bench.action("read_dp")
@@ -35,6 +35,6 @@ def test_L2_1(window, send, bench, check, require):
         with window(201, 202):
             require("both markers present")
             bench.action("write_T_BASE")
-            send(S + ".LOAD_TABLE")
+            send("Ref.seqSched.LOAD_TABLE")
             bracket(bench)
             check("event seqSched.TableLoaded count == 1")

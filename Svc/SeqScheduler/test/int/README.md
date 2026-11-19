@@ -1,6 +1,6 @@
 # SeqScheduler system tests
 
-The 26 tests of [`plan.md`](plan.md) (rendered from `plan.json`), run on the `Ref` deployment
+The 27 tests of [`plan.md`](plan.md) (rendered from `plan.json`), run on the `Ref` deployment
 as a native Linux process with `fprime-gds`. They are written for the `fth` test tool
 (`fprime-testing-harness`): each `test_<ID>` function sends the plan's procedure between two
 record markers and declares the plan's named checks over the recorded window.
@@ -11,7 +11,7 @@ record markers and declares the plan's named checks over the recorded window.
 | `test_<ID>.py` | One file and function per plan test; stimulus and named checks (`fth verify-stimulus` compares each with the plan's procedure) |
 | `seqsched_common.py` | Names, helpers and check functions shared by the tests |
 | `../kat/test_helpers_kat.py` | Known-answer tests of the helper checks, one holding and one failing case each (`pytest Svc/SeqScheduler/test/kat`) |
-| `planted_faults.py` | The seven planted faults and the completeness helpers |
+| `planted_faults.py` | The eight planted faults and the completeness helpers |
 | `faults-menu.json` | The fault menu (`fth planted-faults-menu plan.json`) |
 | `bench.json` | The bench: how `Ref`, the GDS and the recorder are started and commanded |
 | `files/` | Sequences and the parameter file the plan names |
@@ -44,5 +44,6 @@ live run needs a new run directory.
   for 1 to 3.5 s of command latency through `fprime-cli`.
 - `Ref` stamps `TB_WORKSTATION_TIME`; the test tool must keep each row's time base
   (`fprime-testing-harness` later than v0.1.2).
-- The record has no ground receive time per row; L0-2 judges FSW time in the override span
-  against the records before and after it.
+- The bench recorder (`seqsched_bench.py recorder`) stamps each event with the host time at which
+  it was received; L0-2 judges the FSW seconds of the override span's events against it, and those
+  of its telemetry against the records before and after the span.

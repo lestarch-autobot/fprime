@@ -10,12 +10,12 @@ def test_L2_5(window, send, bench, check, require):
         require("STD")
         standard_requires(require)
         bench.action("write_T_BASE")
-        send(S + ".LOAD_TABLE")
-        send(T + ".SET_TIME_BASE", ["TB_PROC_TIME"])
+        send("Ref.seqSched.LOAD_TABLE")
+        send("Ref.timeBaseSetter.SET_TIME_BASE", ["TB_PROC_TIME"])
         bench.wait(3)
-        send(T + ".CLEAR_TIME_BASE")
-        send(S + ".SET_ROW_ENABLED", [0, True])
-        send(S + ".SET_ROW", [0, time_value("TB_PROC_TIME", 1000000), "TIME_BASE_RELATIVE", "short.bin",
+        send("Ref.timeBaseSetter.CLEAR_TIME_BASE")
+        send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
+        send("Ref.seqSched.SET_ROW", [0, time_value("TB_PROC_TIME", 1000000), "TIME_BASE_RELATIVE", "short.bin",
                               "WAIT_FOR_RUNNING"])
         bracket(bench)
         elapsed = elapsed_of(bench)
@@ -27,15 +27,15 @@ def test_L2_5(window, send, bench, check, require):
                 first_set_recorded("TB_PROC_TIME"))
     with window(241, 242):
         require("STD")
-        send(T + ".SET_TIME_BASE", ["TB_PROC_TIME"])
+        send("Ref.timeBaseSetter.SET_TIME_BASE", ["TB_PROC_TIME"])
         bench.wait(3)
-        send(T + ".CLEAR_TIME_BASE")
+        send("Ref.timeBaseSetter.CLEAR_TIME_BASE")
         bracket(bench)
         check("seconds of NextTimeDue are equal within 1 s across the second TB_PROC_TIME report",
               due_steady_across_report)
     with window(242, 243):
         require("STD")
-        send(S + ".SET_ROW", [0, time_value("TB_PROC_TIME", elapsed + 20), "TIME_BASE_RELATIVE", "short.bin",
+        send("Ref.seqSched.SET_ROW", [0, time_value("TB_PROC_TIME", elapsed + 20), "TIME_BASE_RELATIVE", "short.bin",
                               "WAIT_FOR_RUNNING"])
         bench.wait(20)
         bracket(bench)

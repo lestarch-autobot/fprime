@@ -557,9 +557,10 @@
   "REQ-SeqScheduler-058": {
    "tests": [
     "L2-15",
-    "L2-16"
+    "L2-16",
+    "L2-17"
    ],
-   "verification": "Unit Test, L2-15, L2-16",
+   "verification": "Unit Test, L2-15, L2-16, L2-17",
    "note": "Unit Test, system test"
   },
   "REQ-SeqScheduler-059": {
@@ -664,7 +665,9 @@
   "2026-11-19 developer — planted-fault dry runs: L2-4's lower bound (9 s after the second SET_ROW, elapsed + 12 commanded) failed once on a correct run (8.467 s): reading `elapsed` and sending the command take 1 to 3.5 s. The bound is now judged against the row's own delay counted from the bench-recorded start of the Ref process (11 runs: 1.005 to 1.013 s after it). Planted faults: cross_instance declared kind insert (it returns a command for the other instance); checks that also fail under a fault added to its `fails` (lower time bound of L2-2 and L2-11 when the row does not run; RowLate count == 0 in L2-3; RowsExecuted in L2-11 under wrong_seq). Not yet reviewed.",
   "2026-11-19 developer — move to fprime-testing-harness v0.1.26 + native-bench (contract pin v0.1.2 lacks 25 releases found on lestarch-autobot/fprime-testing-harness): `boot_event` moved from the plan to bench.json (the tool's key since v0.1.8); L5-1 and L5-3 clean-up step `finally: Ref.seqSched.TABLE_FILE_PRM_SET(T-BASE path)` split into a text line and the command step so `fth verify-stimulus` reads it as a command. No check, pass rule, window or sent command changed. Test code: one file per plan test (test_<ID>.py) over seqsched_common.py; loops and shared procedure helpers written out so each send is visible to the static check.",
   "2026-11-19 developer — harness review round 1, F-2: the L0-2 rule on FSW seconds named the ground receive time in the plan while the test judged the records around the override span (the recorder keeps no ground receive time). The plan now carries the rule the test judges; awaiting the human's ruling. Correction to the previous entry: `boot_event` was added to the plan after gate 1 and then moved to bench.json; the gate-1 plan never had it.",
-  "22. 2026-11-19 builder (harness review rounds 3 and 4: R3-1, R3-2, R4-1, R4-2; needs the human's ruling) — entry 9 is judged per window: each `FSW time + N s` reading is judged by the window in which it is taken, by the time of the event it names, so that a live run and a replay judge the same readings; every window that reads an FSW time states the rule. L2-11 W2 is opened by the END marker of W1, so no event need precede its reading by under 1 s: it states the rule with 4 s, and its row is set 8 s ahead instead of 6 s (4 s age + 3.2 s sending < 8 s). L3-1 W2 states the 1 s rule. A reading that fails stops the test."
+  "22. 2026-11-19 builder (harness review rounds 3 and 4: R3-1, R3-2, R4-1, R4-2; needs the human's ruling) — entry 9 is judged per window: each `FSW time + N s` reading is judged by the window in which it is taken, by the time of the event it names, so that a live run and a replay judge the same readings; every window that reads an FSW time states the rule. L2-11 W2 is opened by the END marker of W1, so no event need precede its reading by under 1 s: it states the rule with 4 s, and its row is set 8 s ahead instead of 6 s (4 s age + 3.2 s sending < 8 s). L3-1 W2 states the 1 s rule. A reading that fails stops the test.",
+  "23. 2026-11-19 builder (harness review round 2 weakness; the human's ruling of 10:53 PST: fix it) — L2-17 added: a row waiting for a running sequence at a component disable is skipped and not run after an enable, the path of code-review defect F-03, until now shown by a unit test only. Planted fault `no_disable` (the disable is sent as an enable) is caught by it.",
+  "24. 2026-11-19 builder (the human's ruling of 10:53 PST on the L0-2 rule being weaker than approved) — the approved rule is restored for events: the bench recorder (`seqsched_bench.py recorder`) writes the host time at which each event was received, `fth export` attaches it as `recv` when the log agrees line for line with event.log, and L0-2 judges FSW seconds within 2 s of it. The rule on the neighbouring records stays as a second check and is the only one that covers telemetry. 2 s is the approved bound; on this bench the scheduler and the ground share one clock."
  ],
  "tests": [
   {
@@ -736,15 +739,19 @@
     },
     {
      "pred": "FSW seconds of every record in the override span lie between those of the last record before the span and the first record after it",
-     "text": "an override that altered seconds would put the span's records outside the seconds of the records just before and after it; the recorder keeps no ground receive time, so the approved comparison with it cannot be made"
+     "text": "an override that altered seconds would put the span's records outside the seconds of the records just before and after it; this rule also covers telemetry, for which the recorder keeps no ground receive time"
     },
     {
      "pred": "event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1",
      "text": "a sequence loaded and run under the override completes and the image does not restart: entry gate 6"
+    },
+    {
+     "pred": "FSW seconds of every event in the override span are within 2 s of its ground receive time",
+     "text": "the rule as approved: the override changes the time base of a time tag and leaves its seconds; the bench recorder stamps each event with the host time at which the ground received it (event-recv.log), so an offset of the seconds, also one under 1 s that the rule on the neighbouring records cannot see beyond its bracket, shows as a difference. Events only: the recorder prints no telemetry"
     }
    ],
    "knobs": [],
-   "evidence": "TimeBaseSet then TimeBaseCleared; the raw time tags of the five instances' records between and around them; short.bin completing under the override. Named checks the test declares: STD (require) ; no image start-up event in the window (require) ; event timeBaseSetter.TimeBaseSet(timeBase=TB_SC_TIME) count == 2 ; event timeBaseSetter.TimeBaseCleared count == 1 ; at least one record from each of CdhCore.cmdDisp, CdhCore.health, Ref.seqSched, Ref.schedSeq and Ref.systemResources lies inside the override span, 1 s clear of both ends (require) ; every event and channel record of CdhCore.cmdDisp, CdhCore.health, Ref.seqSched, Ref.schedSeq and Ref.systemResources time-tagged more than 1 s after the first TimeBaseSet and more than 1 s before TimeBaseCleared carries TB_SC_TIME, and no record of the window more than 1 s outside that span does (helper) ; FSW seconds of every record in the override span lie between those of the last record before the span and the first record after it ; the time tag of the second timeBaseSetter.TimeBaseSet event carries TB_SC_TIME (helper) ; event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require)"
+   "evidence": "TimeBaseSet then TimeBaseCleared; the raw time tags of the five instances' records between and around them; short.bin completing under the override. Named checks the test declares: STD (require) ; no image start-up event in the window (require) ; event timeBaseSetter.TimeBaseSet(timeBase=TB_SC_TIME) count == 2 ; event timeBaseSetter.TimeBaseCleared count == 1 ; at least one record from each of CdhCore.cmdDisp, CdhCore.health, Ref.seqSched, Ref.schedSeq and Ref.systemResources lies inside the override span, 1 s clear of both ends (require) ; every event and channel record of CdhCore.cmdDisp, CdhCore.health, Ref.seqSched, Ref.schedSeq and Ref.systemResources time-tagged more than 1 s after the first TimeBaseSet and more than 1 s before TimeBaseCleared carries TB_SC_TIME, and no record of the window more than 1 s outside that span does (helper) ; FSW seconds of every record in the override span lie between those of the last record before the span and the first record after it ; FSW seconds of every event in the override span are within 2 s of its ground receive time ; the time tag of the second timeBaseSetter.TimeBaseSet event carries TB_SC_TIME (helper) ; event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1 ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require)"
   },
   {
    "id": "L2-1",
@@ -1748,6 +1755,59 @@
    ],
    "knobs": [],
    "evidence": "EnabledSet twice, NoActiveRow, RowSkippedDisabled(row 0), ActiveRow(row 1), one SeqRun (row 1). Named checks the test declares: STD (require) ; event seqSchedB.EnabledSet(enabled=False) count == 1 ; event seqSchedB.EnabledSet(enabled=True) count == 1 ; event seqSchedB.NoActiveRow count == 1 ; event seqSchedB.ActiveRow(row=1) count == 1 ; event seqSchedB.ActiveRow count == 1 ; event seqSchedB.RowSkippedDisabled(row=0) count == 1 ; event seqSchedB.SeqRun(row=0) count == 0 ; event seqSchedB.SeqRun(row=1) count == 1 ; event seqSchedB.SeqRun count == 1 ; event schedSeqB.CS_SequenceComplete count == 1 ; event seqSchedB.RowLate count == 0 ; event seqSchedB.NoActiveRow precedes event seqSchedB.RowSkippedDisabled(row=0) ; last(seqSchedB.Enabled) == True ; first(seqSchedB.Enabled) == True (require) ; last(seqSchedB.RowsSkipped) == 1 ; last(seqSchedB.RowsExecuted) == 1 ; last(seqSchedB.LastExecutedRow) == 1 ; event seqSched.SeqRun count == 0 ; event seqSched.EnabledSet count == 0 ; last(seqSched.Enabled) == True ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require) ; SeqSchedB samples >= 2 in every window (require)"
+  },
+  {
+   "id": "L2-17",
+   "title": "Waiting row at a component disable",
+   "purpose": "A row waiting for a running sequence when the component is disabled is skipped and does not run, also when the component is enabled again before the sequence completes.",
+   "covers": [
+    "REQ-SeqScheduler-058"
+   ],
+   "covers_note": "",
+   "setup": "Ref running >= 10 s, GDS attached, no sequence running; table file T-BASE (16 rows, all disabled, ABSOLUTE, year-2100 times in TB_WORKSTATION_TIME, short.bin, WAIT_FOR_RUNNING) written to the path in TABLE_FILE; no override set.",
+   "procedure": [
+    "CMD_NO_OP_STRING(330)",
+    "action: write table file T-BASE",
+    "Ref.seqSched.LOAD_TABLE()",
+    "Ref.seqSched.SET_ROW_ENABLED(0, True)",
+    "Ref.seqSched.SET_ROW_ENABLED(1, True)",
+    "Ref.seqSched.SET_ROW(1, FSW time + 12 s in TB_WORKSTATION_TIME, ABSOLUTE, short.bin, WAIT_FOR_RUNNING)",
+    "Ref.seqSched.SET_ROW(0, same time, ABSOLUTE, long.bin, WAIT_FOR_RUNNING)",
+    "wait 17 s",
+    "Ref.seqSched.SET_ENABLED(False)",
+    "Ref.seqSched.SET_ENABLED(True)",
+    "wait 28 s",
+    "bracket (2 SeqSched samples)",
+    "CMD_NO_OP_STRING(331)",
+    "finally: Ref.seqSched.SET_ENABLED(True)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 330,
+     "end_id": 331,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "event seqSched.SeqRun(row=1) count == 0",
+     "text": "row 1 came due with row 0 and waited for long.bin; the disable command skips it for good, so the completion of long.bin, which arrives with the component enabled again, runs nothing (REQ-058)"
+    },
+    {
+     "pred": "event seqSched.EnabledSet(enabled=True) precedes event seqSched.SeqCompleted(row=0)",
+     "text": "shows the component was enabled again while long.bin still ran: a waiting row that was only held back, not skipped, would run at this completion"
+    },
+    {
+     "pred": "event seqSched.RowSkippedDisabled(row=1) count == 1",
+     "text": "the skip is reported once, by the disable command"
+    }
+   ],
+   "knobs": [
+    "no_disable"
+   ],
+   "evidence": "One SeqRun (row 0), RowSkippedDisabled(row 1), EnabledSet twice before SeqCompleted(row 0). Named checks the test declares: STD (require) ; event seqSched.SeqRun(row=0, fileName=long.bin) count == 1 ; event seqSched.SeqCompleted(row=0, response=OK) count == 1 ; event seqSched.EnabledSet(enabled=False) count == 1 ; event seqSched.EnabledSet(enabled=True) count == 1 ; event seqSched.SeqRun(row=0) precedes event seqSched.EnabledSet(enabled=False) ; event seqSched.EnabledSet(enabled=True) precedes event seqSched.SeqCompleted(row=0) ; event seqSched.RowSkippedDisabled(row=1) count == 1 ; event seqSched.RowSkippedDisabled count == 1 ; event seqSched.SeqRun(row=1) count == 0 ; event seqSched.SeqRun count == 1 ; event seqSched.RowLate count == 0 ; event seqSched.SeqCancelled count == 0 ; last(seqSched.Enabled) == True ; last(seqSched.RowsSkipped) == 1 ; last(seqSched.RowsExecuted) == 1 ; last(seqSched.RowsWaiting) == 0 ; first(seqSched.Enabled) == True (require) ; Ref.schedSeq and Ref.schedSeqB idle at the opening marker (require) ; TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker (require) ; each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent (require)"
   },
   {
    "id": "L5-1",

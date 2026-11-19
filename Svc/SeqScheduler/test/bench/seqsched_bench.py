@@ -95,6 +95,27 @@ def gds(args):
     stop_ref()
 
 
+def recorder(args):
+    """The event recorder, with the ground receive time of each event.
+
+    Runs `fprime-cli events`, which logs every event under `logs` and prints it as it is received; each
+    printed line is written to `logs`/event-recv.log with the host time at which it was read."""
+    cmd = ["fprime-cli", "events", "--dictionary", args.dictionary, "--logs", args.logs]
+    cli = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True, bufsize=1,
+                           env=dict(os.environ, PYTHONUNBUFFERED="1"))
+
+    def stop(*_):
+        cli.terminate()
+
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+    with open(Path(args.logs) / "event-recv.log", "w", buffering=1) as out:
+        for line in cli.stdout:
+            if line.strip():
+                out.write(f"{time.time():.6f} {line.rstrip()}\n")
+    cli.wait()
+
+
 def reset(args):
     stop_ref()
     time.sleep(1.0)
@@ -251,6 +272,10 @@ def main():
     p.add_argument("--port", type=int, default=50000)
     p.add_argument("--delay", type=float, default=6.0)
     p.set_defaults(fn=gds)
+    p = sub.add_parser("recorder")
+    p.add_argument("dictionary")
+    p.add_argument("logs")
+    p.set_defaults(fn=recorder)
     p = sub.add_parser("reset")
     p.add_argument("--port", type=int, default=50000)
     p.set_defaults(fn=reset)

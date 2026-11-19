@@ -195,6 +195,7 @@ SPAN_RECORDS = ("at least one record from each of CdhCore.cmdDisp, CdhCore.healt
 SPAN_BASE = ("every event and channel record of CdhCore.cmdDisp, CdhCore.health, Ref.seqSched, Ref.schedSeq and "
              "Ref.systemResources time-tagged more than 1 s after the first TimeBaseSet and more than 1 s before "
              "TimeBaseCleared carries TB_SC_TIME, and no record of the window more than 1 s outside that span does")
+SPAN_RECEIVE = "FSW seconds of every event in the override span are within 2 s of its ground receive time"
 SPAN_SECONDS = ("FSW seconds of every record in the override span lie between those of the last record before "
                 "the span and the first record after it")
 
@@ -234,6 +235,16 @@ def span_base(h):
     wrong_out = [r.line for r in outside if r.base == TB["TB_SC_TIME"]]
     return (bool(inside) and not wrong_in and not wrong_out,
             f"{len(inside)} inside, {len(wrong_in)} not TB_SC_TIME; {len(outside)} outside, {len(wrong_out)} TB_SC_TIME")
+
+
+def span_receive(h):
+    """The approved L0-2 rule: the override changes the time base of a time tag, not its seconds."""
+    inside = [e for e in h.window.ev if e.base == TB["TB_SC_TIME"]]
+    unstamped = [e.line for e in inside if e.recv is None]
+    off = [e.line for e in inside if e.recv is not None and abs(e.fsw - e.recv) > 2.0]
+    worst = max((abs(e.fsw - e.recv) for e in inside if e.recv is not None), default=0.0)
+    return (bool(inside) and not unstamped and not off,
+            f"{len(inside)} events, {len(unstamped)} without a receive time, {len(off)} over 2 s, largest {worst:.3f} s")
 
 
 def span_seconds(h):
@@ -412,7 +423,9 @@ def sample_while_running(row, waiting):
             return (False, f"run {start}, completed {end}")
         wait = {c.fsw: c.value for c in h.window.channel("seqSched.RowsWaiting") if start < c.fsw < end}
         running = {c.fsw: c.value for c in h.window.channel("seqSched.RunningRow") if start < c.fsw < end}
-        hits = [t for t in wait if wait[t] == waiting and running.get(t) == row]
+        # The two channels of one tick are written one after the other: their times differ by microseconds
+        hits = [t for t in wait
+                if wait[t] == waiting and any(abs(u - t) < 0.5 and running[u] == row for u in running)]
         return (bool(hits), f"{len(wait)} samples in the span, {len(hits)} matching")
     return judge
 

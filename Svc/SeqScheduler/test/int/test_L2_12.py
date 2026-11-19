@@ -10,17 +10,17 @@ def test_L2_12(window, send, bench, check, require):
         require("STD")
         standard_requires(require)
         bench.action("write_T_BASE")
-        send(S + ".LOAD_TABLE")
-        send(S + ".SET_ROW_ENABLED", [0, True])
-        send(S + ".SET_ROW", [0, time_value("TB_SC_TIME", 1000000), "TIME_BASE_RELATIVE", "short.bin",
+        send("Ref.seqSched.LOAD_TABLE")
+        send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
+        send("Ref.seqSched.SET_ROW", [0, time_value("TB_SC_TIME", 1000000), "TIME_BASE_RELATIVE", "short.bin",
                               "WAIT_FOR_RUNNING"])
         bracket(bench)
         elapsed = elapsed_of(bench)
-        send(S + ".SET_ROW", [0, time_value("TB_SC_TIME", elapsed + 20), "TIME_BASE_RELATIVE", "short.bin",
+        send("Ref.seqSched.SET_ROW", [0, time_value("TB_SC_TIME", elapsed + 20), "TIME_BASE_RELATIVE", "short.bin",
                               "WAIT_FOR_RUNNING"])
-        send(T + ".SET_TIME_BASE", ["TB_SC_TIME"])
+        send("Ref.timeBaseSetter.SET_TIME_BASE", ["TB_SC_TIME"])
         bench.wait(3)
-        send(T + ".CLEAR_TIME_BASE")
+        send("Ref.timeBaseSetter.CLEAR_TIME_BASE")
         bench.wait(20)
         bracket(bench)
         check("ABS")

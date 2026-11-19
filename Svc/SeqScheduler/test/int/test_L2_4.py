@@ -11,9 +11,9 @@ def test_L2_4(window, send, bench, check, require):
         standard_requires(require)
         bench.action("ref_start")
         bench.action("write_T_BASE")
-        send(S + ".LOAD_TABLE")
-        send(S + ".SET_ROW_ENABLED", [0, True])
-        send(S + ".SET_ROW", [0, time_value("TB_NONE", 1000000), "START_RELATIVE", "short.bin", "WAIT_FOR_RUNNING"])
+        send("Ref.seqSched.LOAD_TABLE")
+        send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
+        send("Ref.seqSched.SET_ROW", [0, time_value("TB_NONE", 1000000), "START_RELATIVE", "short.bin", "WAIT_FOR_RUNNING"])
         bench.wait(4)
         bracket(bench)
         elapsed = elapsed_of(bench)
@@ -28,7 +28,7 @@ def test_L2_4(window, send, bench, check, require):
         require("STD")
         # read again: the markers between the windows take longer than the 3 s the pass rule allows for
         elapsed = elapsed_of(bench)
-        send(S + ".SET_ROW", [0, time_value("TB_NONE", elapsed + 12), "START_RELATIVE", "short.bin",
+        send("Ref.seqSched.SET_ROW", [0, time_value("TB_NONE", elapsed + 12), "START_RELATIVE", "short.bin",
                               "WAIT_FOR_RUNNING"])
         bench.wait(18)
         bracket(bench)

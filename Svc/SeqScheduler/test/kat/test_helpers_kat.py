@@ -227,6 +227,20 @@ def span(inside_base=SC_TIME, outside_base=WS, missing=None, inside_fsw=T0 + 20)
     return simple(build)
 
 
+def test_span_receive():
+    def case(offsets):
+        def build(rec):
+            rec.ev("seqSched.RowSet", T0 + 5).recv = T0 + 9.0  # outside the span: not judged
+            for i, offset in enumerate(offsets):
+                rec.ev("seqSched.RowSet", T0 + 20 + i, base=SC_TIME).recv = None if offset is None else T0 + 20 + i + offset
+        return simple(build)
+    assert holds(sc.span_receive(case([0.01, 1.9, -1.9])))
+    assert not holds(sc.span_receive(case([0.01, 2.1])))  # seconds 2.1 s behind the receive time
+    assert not holds(sc.span_receive(case([0.01, -2.1])))
+    assert not holds(sc.span_receive(case([0.01, None])))  # an event the recorder did not stamp
+    assert not holds(sc.span_receive(case([])))  # no event in the span
+
+
 def test_override_span_helpers():
     assert holds(sc.span_has_records(span()))
     assert not holds(sc.span_has_records(span(missing="health")))
@@ -379,17 +393,20 @@ def test_run_gap():
 
 
 def test_sample_while_running():
-    def case(waiting, running, at=T0 + 15):
+    def case(waiting, running, at=T0 + 15, apart=0.0):
         def build(rec):
             rec.ev("seqSched.SeqRun", T0 + 10, row=2)
             rec.ch("seqSched.RowsWaiting", at, waiting)
-            rec.ch("seqSched.RunningRow", at, running)
+            rec.ch("seqSched.RunningRow", at + apart, running)
             rec.ev("seqSched.SeqCompleted", T0 + 20, row=2)
         return simple(build)
     assert holds(sc.sample_while_running(2, 1)(case(1, 2)))
     assert not holds(sc.sample_while_running(2, 1)(case(0, 2)))
     assert not holds(sc.sample_while_running(2, 1)(case(1, 3)))
     assert not holds(sc.sample_while_running(2, 1)(case(1, 2, at=T0 + 25)))
+    # The two channels of one tick are microseconds apart; those of two ticks are not paired
+    assert holds(sc.sample_while_running(2, 1)(case(1, 2, apart=0.000004)))
+    assert not holds(sc.sample_while_running(2, 1)(case(1, 2, apart=1.0)))
 
 
 def test_samples_b():

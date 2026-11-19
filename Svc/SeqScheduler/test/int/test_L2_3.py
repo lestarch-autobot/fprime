@@ -10,12 +10,12 @@ def test_L2_3(window, send, bench, check, require):
         require("STD")
         standard_requires(require, fresh=True)
         bench.action("write_T_BASE")
-        send(S + ".LOAD_TABLE")
-        send(S + ".SET_ROW_ENABLED", [0, True])
-        send(S + ".SET_ROW_ENABLED", [1, True])
-        send(S + ".SET_ROW", [0, time_value("TB_SC_TIME", fsw_now(bench) + 5), "ABSOLUTE", "short.bin",
+        send("Ref.seqSched.LOAD_TABLE")
+        send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
+        send("Ref.seqSched.SET_ROW_ENABLED", [1, True])
+        send("Ref.seqSched.SET_ROW", [0, time_value("TB_SC_TIME", fsw_now(bench) + 5), "ABSOLUTE", "short.bin",
                               "WAIT_FOR_RUNNING"])
-        send(S + ".SET_ROW", [1, time_value("TB_SC_TIME", fsw_now(bench) + 30), "ABSOLUTE", "short.bin",
+        send("Ref.seqSched.SET_ROW", [1, time_value("TB_SC_TIME", fsw_now(bench) + 30), "ABSOLUTE", "short.bin",
                               "WAIT_FOR_RUNNING"])
         bench.wait(12)
         bracket(bench)
@@ -25,10 +25,10 @@ def test_L2_3(window, send, bench, check, require):
         check("last(seqSched.NextRow) == 16")
     with window(221, 222):
         require("STD")
-        send(T + ".SET_TIME_BASE", ["TB_SC_TIME"])
+        send("Ref.timeBaseSetter.SET_TIME_BASE", ["TB_SC_TIME"])
         bench.wait(24)
         bracket(bench)
-        send(T + ".CLEAR_TIME_BASE")
+        send("Ref.timeBaseSetter.CLEAR_TIME_BASE")
         check("event seqSched.RowLate(row=0) count == 1")
         check("event seqSched.SeqRun(row=0) count == 0")
         check("event seqSched.SeqRun(row=1, fileName=short.bin) count == 1")

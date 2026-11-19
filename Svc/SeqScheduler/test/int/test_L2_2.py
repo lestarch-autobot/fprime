@@ -10,9 +10,9 @@ def test_L2_2(window, send, bench, check, require):
         require("STD")
         standard_requires(require, fresh=True)
         bench.action("write_T_BASE")
-        send(S + ".LOAD_TABLE")
-        send(S + ".SET_ROW_ENABLED", [0, True])
-        send(S + ".SET_ROW", [0, time_value("TB_WORKSTATION_TIME", fsw_now(bench) + 10), "ABSOLUTE", "short.bin",
+        send("Ref.seqSched.LOAD_TABLE")
+        send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
+        send("Ref.seqSched.SET_ROW", [0, time_value("TB_WORKSTATION_TIME", fsw_now(bench) + 10), "ABSOLUTE", "short.bin",
                               "WAIT_FOR_RUNNING"])
         bench.wait(16)
         bracket(bench)

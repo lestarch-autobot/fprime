@@ -94,6 +94,29 @@
       "ripples_to": {}
     },
     {
+      "name": "no_disable",
+      "class": "stimulus",
+      "applies_to": [
+        "L2-17"
+      ],
+      "fails": {
+        "L2-17": [
+          "event seqSched.EnabledSet(enabled=False) count == 1",
+          "event seqSched.EnabledSet(enabled=True) count == 1",
+          "event seqSched.SeqRun(row=0) precedes event seqSched.EnabledSet(enabled=False)",
+          "event seqSched.RowSkippedDisabled(row=1) count == 1",
+          "event seqSched.RowSkippedDisabled count == 1",
+          "event seqSched.SeqRun(row=1) count == 0",
+          "event seqSched.SeqRun count == 1",
+          "last(seqSched.RowsSkipped) == 1",
+          "last(seqSched.RowsExecuted) == 1"
+        ]
+      },
+      "mechanism": "SET_ENABLED(False) is sent as SET_ENABLED(True); the waiting row is not skipped and runs when long.bin completes",
+      "kind": "rewrite",
+      "ripples_to": {}
+    },
+    {
       "name": "row_time_late",
       "class": "stimulus",
       "applies_to": [
@@ -166,6 +189,7 @@
     "L2-1",
     "L2-10",
     "L2-11",
+    "L2-17",
     "L2-2",
     "L2-3",
     "L5-1",

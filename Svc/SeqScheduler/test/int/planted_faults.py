@@ -209,6 +209,31 @@ def missing_file_present(test_id, command_name, args):
 NO_OP_OPCODE = 0x1000000  # CdhCore.cmdDisp.CMD_NO_OP: the only command the sequence files hold
 
 
+@planted_fault(
+    "no_disable",
+    applies_to=["L2-17"],
+    cls="stimulus",
+    mechanism="SET_ENABLED(False) is sent as SET_ENABLED(True); the waiting row is not skipped and runs when long.bin completes",
+    fails={
+        "L2-17": [
+            "event seqSched.EnabledSet(enabled=False) count == 1",
+            "event seqSched.EnabledSet(enabled=True) count == 1",
+            "event seqSched.SeqRun(row=0) precedes event seqSched.EnabledSet(enabled=False)",
+            "event seqSched.RowSkippedDisabled(row=1) count == 1",
+            "event seqSched.RowSkippedDisabled count == 1",
+            "event seqSched.SeqRun(row=1) count == 0",
+            "event seqSched.SeqRun count == 1",
+            "last(seqSched.RowsSkipped) == 1",
+            "last(seqSched.RowsExecuted) == 1",
+        ],
+    },
+)
+def no_disable(test_id, command_name, args):
+    if command_name == S + ".SET_ENABLED" and args[0] is False:
+        return [True]
+    return None
+
+
 @helper("commands_dispatched")
 def commands_dispatched(ctx):
     """Per opcode, the dispatcher logged one OpCodeDispatched for each command sent in the window.
