@@ -31,6 +31,8 @@ struct StaticData {
 
     //! Last function called
     LastFn lastCalled = NONE_FN;
+    //! Number of calls to close
+    U32 closeCount = 0;
 
     // Singleton data
     static StaticData data;

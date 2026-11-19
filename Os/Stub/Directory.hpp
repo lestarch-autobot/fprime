@@ -14,9 +14,10 @@ struct StubDirectoryHandle : public DirectoryHandle {};
 
 //! \brief stub implementation of Os::Directory
 //!
-//! Stub implementation of `DirectoryInterface` for use as a delegate class handling error-only file operations.
+//! Stub implementation of `DirectoryInterface` usable through the link-time delegate or directly as
+//! `Os::Directory`. Every operation fails: `open` returns NOT_SUPPORTED, so the directory is never open.
 //!
-class StubDirectory : public DirectoryInterface {
+class StubDirectory final : public DirectoryInterface {
   public:
     //! \brief constructor
     StubDirectory() = default;
@@ -24,9 +25,17 @@ class StubDirectory : public DirectoryInterface {
     //! \brief destructor
     ~StubDirectory() override = default;
 
+    //! \brief report the open state
+    //! \return false: the stub directory is never open
+    bool isOpenImpl() const override;
+
     //! \brief return the underlying Directory handle (implementation specific)
     //! \return internal Directory handle representation
     DirectoryHandle* getHandle() override;
+
+    // Bring the base class's read(Fw::StringBase&) overload back into scope; it would
+    // otherwise be hidden by the read(char*, FwSizeType) override declared below.
+    using DirectoryInterface::read;
 
     // ------------------------------------------------------------
     // Implementation-specific Directory member functions
@@ -47,10 +56,6 @@ class StubDirectory : public DirectoryInterface {
     //! \return status of the operation
     Status open(const char* path, OpenMode mode) override;
 
-    //! \brief Check if Directory is open or not
-    //! \return true if Directory is open, false otherwise
-    bool isOpen();
-
     //! \brief Rewind directory stream
     //!
     //! Each read operation moves the seek position forward. This function resets the seek position to the beginning.
@@ -60,9 +65,7 @@ class StubDirectory : public DirectoryInterface {
 
     //! \brief Get next filename from directory stream
     //!
-    //! Writes at most buffSize characters of the file name to fileNameBuffer.
-    //! This function skips the current directory (.) and parent directory (..) entries.
-    //! Returns NO_MORE_FILES if there are no more files to read from the buffer.
+    //! The stub directory is never open, so this returns NOT_OPENED without writing to fileNameBuffer.
     //!
     //! It is invalid to pass `nullptr` as fileNameBuffer.
     //!

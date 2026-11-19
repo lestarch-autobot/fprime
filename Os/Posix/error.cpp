@@ -103,26 +103,27 @@ FileSystem::Status errno_to_filesystem_status(int errno_input) {
     return status;
 }
 
-Directory::Status errno_to_directory_status(int errno_input) {
-    Directory::Status status = Directory::Status::OP_OK;
+// Os:: is required: inside Os::Posix, Directory names the namespace Os::Posix::Directory
+Os::Directory::Status errno_to_directory_status(int errno_input) {
+    Os::Directory::Status status = Os::Directory::Status::OP_OK;
     switch (errno_input) {
         case 0:
-            status = Directory::Status::OP_OK;
+            status = Os::Directory::Status::OP_OK;
             break;
         case ENOENT:
-            status = Directory::Status::DOESNT_EXIST;
+            status = Os::Directory::Status::DOESNT_EXIST;
             break;
         case EACCES:
-            status = Directory::Status::NO_PERMISSION;
+            status = Os::Directory::Status::NO_PERMISSION;
             break;
         case ENOTDIR:
-            status = Directory::Status::NOT_DIR;
+            status = Os::Directory::Status::NOT_DIR;
             break;
         case EEXIST:
-            status = Directory::Status::ALREADY_EXISTS;
+            status = Os::Directory::Status::ALREADY_EXISTS;
             break;
         default:
-            status = Directory::Status::OTHER_ERROR;
+            status = Os::Directory::Status::OTHER_ERROR;
             break;
     }
     return status;

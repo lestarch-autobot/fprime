@@ -17,12 +17,28 @@ namespace Directory {
 
 PosixDirectory::PosixDirectory() : Os::DirectoryInterface(), m_handle() {}
 
+PosixDirectory::~PosixDirectory() {
+    // Not dispatched virtually: the directory stream is owned by this class
+    PosixDirectory::close();
+}
+
+bool PosixDirectory::isOpenImpl() const {
+    return this->m_handle.m_dir_descriptor != nullptr;
+}
+
 DirectoryHandle* PosixDirectory::getHandle() {
     return &this->m_handle;
 }
 
 PosixDirectory::Status PosixDirectory::open(const char* path, OpenMode mode) {
+    FW_ASSERT(path != nullptr);
+    FW_ASSERT(mode >= 0 and mode < OpenMode::MAX_OPEN_MODE);
     Status status = Status::OP_OK;
+
+    // Re-opening releases the previous directory stream
+    if (this->isOpen()) {
+        this->close();
+    }
 
     // If one of the CREATE mode, attempt to create the directory
     if (mode == OpenMode::CREATE_EXCLUSIVE || mode == OpenMode::CREATE_IF_MISSING) {
@@ -50,6 +66,9 @@ PosixDirectory::Status PosixDirectory::open(const char* path, OpenMode mode) {
 }
 
 PosixDirectory::Status PosixDirectory::rewind() {
+    if (not this->isOpen()) {
+        return Status::NOT_OPENED;
+    }
     Status status = Status::OP_OK;
     // no errors defined in man page for rewinddir
     ::rewinddir(this->m_handle.m_dir_descriptor);
@@ -57,7 +76,11 @@ PosixDirectory::Status PosixDirectory::rewind() {
 }
 
 PosixDirectory::Status PosixDirectory::read(char* fileNameBuffer, FwSizeType bufSize) {
+    if (not this->isOpen()) {
+        return Status::NOT_OPENED;
+    }
     FW_ASSERT(fileNameBuffer != nullptr);
+    FW_ASSERT(bufSize > 0);
 
     Status status = Status::OP_OK;
 
@@ -85,6 +108,8 @@ PosixDirectory::Status PosixDirectory::read(char* fileNameBuffer, FwSizeType buf
             status = Status::NO_MORE_FILES;
         }
     }
+    // Guarantee null-termination regardless of the outcome
+    fileNameBuffer[bufSize - 1] = '\0';
     return status;
 }
 

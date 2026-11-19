@@ -9,6 +9,7 @@
 #include <Os/Mutex.hpp>
 #include <Os/Queue.hpp>
 #include <Os/RawTime.hpp>
+#include <Os/Stub/Directory.hpp>
 #include <Os/Task.hpp>
 
 TEST(Stub, File) {
@@ -41,6 +42,38 @@ TEST(Stub, FileSystem) {
 
 TEST(Stub, Directory) {
     Os::Directory _;
+}
+
+// StubDirectory used directly (no link-time delegate), as when Os::Directory is aliased to it
+TEST(Stub, DirectoryDirect) {
+    Os::Stub::Directory::StubDirectory directory;
+    char buffer[8] = "abcdefg";
+    Fw::String name("unchanged");
+    FwSizeType count = 7;
+    ASSERT_FALSE(directory.isOpen());
+    ASSERT_EQ(directory.open("/does/not/matter", Os::Directory::OpenMode::READ), Os::Directory::Status::NOT_SUPPORTED);
+    ASSERT_FALSE(directory.isOpen());
+    ASSERT_EQ(directory.rewind(), Os::Directory::Status::NOT_OPENED);
+    ASSERT_EQ(directory.read(buffer, sizeof(buffer)), Os::Directory::Status::NOT_OPENED);
+    ASSERT_STREQ(buffer, "abcdefg");
+    ASSERT_EQ(directory.read(name), Os::Directory::Status::NOT_OPENED);
+    ASSERT_STREQ(name.toChar(), "unchanged");
+    ASSERT_EQ(directory.getFileCount(count), Os::Directory::Status::NOT_OPENED);
+    ASSERT_EQ(count, 7);
+    Fw::String names[2];
+    Fw::ExternalArray<Fw::String> nameArray(names, 2);
+    ASSERT_EQ(directory.readDirectory(nameArray, count), Os::Directory::Status::NOT_OPENED);
+    ASSERT_EQ(count, 7);
+    directory.close();
+    ASSERT_FALSE(directory.isOpen());
+}
+
+// Invalid open() arguments assert in the implementation
+TEST(Stub, DirectoryDirectInvalidArguments) {
+    Os::Stub::Directory::StubDirectory directory;
+    ASSERT_DEATH_IF_SUPPORTED(directory.open(nullptr, Os::Directory::OpenMode::READ), "Assert: .*Directory\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(directory.open("/does/not/matter", Os::Directory::OpenMode::MAX_OPEN_MODE),
+                              "Assert: .*Directory\\.cpp");
 }
 
 TEST(Stub, Cpu) {

@@ -38,6 +38,7 @@ TestDirectory::Status TestDirectory::read(char* fileNameBuffer, FwSizeType bufSi
 
 void TestDirectory::close() {
     StaticData::data.lastCalled = StaticData::LastFn::CLOSE_FN;
+    StaticData::data.closeCount++;
 }
 
 Os::DirectoryHandle* TestDirectory::getHandle() {

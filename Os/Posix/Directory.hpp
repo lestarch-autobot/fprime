@@ -17,17 +17,24 @@ struct PosixDirectoryHandle : public DirectoryHandle {
 
 //! \brief Posix implementation of Os::Directory
 //!
-//! Posix implementation of `DirectoryInterface` for use as a delegate class handling error-only file operations.
-class PosixDirectory : public DirectoryInterface {
+//! Posix implementation of `DirectoryInterface` usable through the link-time delegate or directly as
+//! `Os::Directory`. It performs the argument and open-state checks itself.
+class PosixDirectory final : public DirectoryInterface {
   public:
     //! \brief constructor
     PosixDirectory();
 
     //! \brief destructor
-    ~PosixDirectory() = default;
+    //!
+    //! Closes the directory if it is open.
+    ~PosixDirectory() override;
 
-    //! \brief return the underlying mutex handle (implementation specific)
-    //! \return internal mutex handle representation
+    //! \brief report the open state
+    //! \return true if the directory stream is open, false otherwise
+    bool isOpenImpl() const override;
+
+    //! \brief return the underlying Directory handle (implementation specific)
+    //! \return internal Directory handle representation
     DirectoryHandle* getHandle() override;
 
     // ------------------------------------------------------------
@@ -41,6 +48,8 @@ class PosixDirectory : public DirectoryInterface {
     //! Use OpenMode::CREATE_IF_MISSING to open a directory, creating the directory if it doesn't exist
     //! Use OpenMode::CREATE_EXCLUSIVE to open a directory, creating the directory and erroring if it already exists
     //!
+    //! Opening an already open directory closes it first; if the open fails the directory is left closed.
+    //!
     //! It is invalid to pass `nullptr` as the path.
     //! It is invalid to supply `mode` as a non-enumerated value.
     //!
@@ -49,10 +58,6 @@ class PosixDirectory : public DirectoryInterface {
     //! \return status of the operation
     Status open(const char* path, OpenMode mode) override;
 
-    //! \brief Check if Directory is open or not
-    //! \return true if Directory is open, false otherwise
-    bool isOpen();
-
     //! \brief Rewind directory stream
     //!
     //! Each read operation moves the seek position forward. This function resets the seek position to the beginning.
@@ -60,11 +65,17 @@ class PosixDirectory : public DirectoryInterface {
     //! \return status of the operation
     Status rewind() override;
 
+    // Bring the base class's read(Fw::StringBase&) overload back into scope; it would
+    // otherwise be hidden by the read(char*, FwSizeType) override declared below.
+    using DirectoryInterface::read;
+
     //! \brief Get next filename from directory stream
     //!
-    //! Writes at most buffSize characters of the file name to fileNameBuffer.
+    //! Writes at most buffSize characters of the file name to fileNameBuffer; the buffer is always null-terminated,
+    //! truncating the name if needed.
     //! This function skips the current directory (.) and parent directory (..) entries.
     //! Returns NO_MORE_FILES if there are no more files to read from the buffer.
+    //! Returns NOT_OPENED if the directory is not open.
     //!
     //! It is invalid to pass `nullptr` as fileNameBuffer.
     //!
