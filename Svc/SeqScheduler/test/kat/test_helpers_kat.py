@@ -93,10 +93,21 @@ def row_set(rec, row, seconds, fsw):
 
 
 def test_fresh_times():
-    assert holds(sc.fresh_times(simple(evidence={"fsw_now": [{"age_s": 0.4}, {"age_s": 1.0}]})))
-    assert not holds(sc.fresh_times(simple(evidence={"fsw_now": [{"age_s": 0.4}, {"age_s": 1.5}]})))
-    assert not holds(sc.fresh_times(simple(evidence={"fsw_now": [{"age_s": 0.4}, None]})))
+    def reading(age, at):
+        return {"age_s": age, "sec": int(at), "usec": int(round((at - int(at)) * 1e6))}
+
+    inside, inside2 = reading(0.4, T0 + 5), reading(1.0, T0 + 20.5)
+    assert holds(sc.fresh_times(simple(evidence={"fsw_now": [inside, inside2]})))
+    assert not holds(sc.fresh_times(simple(evidence={"fsw_now": [inside, reading(1.5, T0 + 20)]})))
+    # A stale reading of another window of the test is not this window's: before START, at or after END
+    assert holds(sc.fresh_times(simple(evidence={"fsw_now": [reading(1.5, T0 - 1), inside, reading(1.5, T0 + 60)]})))
+    assert holds(sc.fresh_times(simple(evidence={"fsw_now": [reading(0.2, T0)]})))  # at START: this window's
+    assert not holds(sc.fresh_times(simple(evidence={"fsw_now": [reading(1.5, T0)]})))
+    # No reading of its own: a failed reading, readings of other windows only, none at all
+    assert not holds(sc.fresh_times(simple(evidence={"fsw_now": [None]})))
+    assert not holds(sc.fresh_times(simple(evidence={"fsw_now": [reading(0.1, T0 + 60)]})))
     assert not holds(sc.fresh_times(simple()))
+    assert holds(sc.fresh_times(simple(evidence={"fsw_now": [inside, None]})))  # the failed one has no window
 
 
 def test_sequencers_idle():

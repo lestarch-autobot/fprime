@@ -47,9 +47,17 @@ def fsw_now(bench):
 
 
 def fresh_times(h):
+    """The FSW times read in this window (newest event at or after its START marker, before its END marker) are fresh.
+
+    Evidence is kept per test, not per window: the rows are assigned to the window by the time of the event they
+    name, so that a live run and a replay judge the same rows. A reading that failed carries no time and belongs to
+    no window; a window with no reading of its own fails.
+    """
     rows = h.evidence("fsw_now")
-    ages = [r["age_s"] for r in rows if r]
-    return (len(ages) == len(rows) and len(rows) > 0 and max(ages) <= 1.0, f"ages {ages}")
+    first, last = h.window.start_marker.fsw, h.window.end_marker.fsw
+    mine = [r for r in rows if r and first <= r["sec"] + r["usec"] / 1e6 < last]
+    ages = [r["age_s"] for r in mine]
+    return (len(mine) > 0 and max(ages) <= 1.0, f"ages {ages} of {len(rows)} FSW time readings in the test")
 
 
 def this_start(h):
