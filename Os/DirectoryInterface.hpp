@@ -54,7 +54,7 @@ class DirectoryInterface {
 
     //! \brief Check if Directory is open or not
     //! \return true if Directory is open, false otherwise
-    bool isOpen() const;
+    bool isOpen() const { return this->isOpenImpl(); }
 
     //! \brief report the open state (implementation specific)
     //!

@@ -64,6 +64,34 @@ TEST_F(Interface, ReopenClosesFirst) {
     ASSERT_TRUE(directory.isOpen());
 }
 
+// The delegate rejects operations on a closed directory without calling the implementation
+TEST_F(Interface, ClosedDirectoryIsNotForwarded) {
+    Os::Directory directory;
+    char buffer[4] = "abc";
+    ASSERT_EQ(directory.rewind(), Os::Directory::Status::NOT_OPENED);
+    ASSERT_EQ(directory.read(buffer, sizeof(buffer)), Os::Directory::Status::NOT_OPENED);
+    ASSERT_STREQ(buffer, "abc");
+    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CONSTRUCT_FN);
+}
+
+// The delegate null-terminates the buffer even when the implementation does not
+TEST_F(Interface, ReadTerminatesBuffer) {
+    Os::Directory directory;
+    char buffer[4] = {'x', 'x', 'x', 'x'};
+    ASSERT_EQ(directory.open("/does/not/matter", Os::Directory::OpenMode::READ), Os::Directory::Status::OP_OK);
+    ASSERT_EQ(directory.read(buffer, sizeof(buffer)), Os::Directory::Status::OP_OK);
+    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::READ_FN);
+    ASSERT_EQ(buffer[3], '\0');
+    ASSERT_EQ(buffer[2], 'x');
+}
+
+// An implementation that does not override isOpenImpl() is only usable through the delegate: asking it
+// for its open state directly asserts
+TEST_F(Interface, DefaultIsOpenImplAsserts) {
+    TestDirectory directory;
+    ASSERT_DEATH_IF_SUPPORTED(directory.isOpen(), "Assert: .*DirectoryInterface\\.cpp");
+}
+
 // Ensure that Os::Directory properly calls the implementation rewind()
 TEST_F(Interface, Rewind) {
     Os::Directory directory;

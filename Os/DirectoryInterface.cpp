@@ -12,14 +12,10 @@
 // here, where Os::Directory (pulled in through Os/Directory.hpp) is complete.
 static_assert(std::is_base_of<Os::DirectoryInterface, Os::Directory>::value,
               "The implementation selected as Os::Directory must derive from Os::DirectoryInterface");
-static_assert(not std::is_same<decltype(&Os::Directory::isOpenImpl), bool (Os::DirectoryInterface::*)() const>::value,
+static_assert(std::is_same<decltype(&Os::Directory::isOpenImpl), bool (Os::Directory::*)() const>::value,
               "The implementation selected as Os::Directory must override DirectoryInterface::isOpenImpl()");
 
 namespace Os {
-
-bool DirectoryInterface::isOpen() const {
-    return this->isOpenImpl();
-}
 
 bool DirectoryInterface::isOpenImpl() const {
     // Only reachable on an implementation used directly without overriding isOpenImpl(): the link-time delegate

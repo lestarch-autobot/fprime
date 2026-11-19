@@ -21,6 +21,7 @@ DelegateDirectory::~DelegateDirectory() {
 }
 
 bool DelegateDirectory::isOpenImpl() const {
+    FW_ASSERT(&this->m_delegate == reinterpret_cast<const DirectoryInterface*>(&this->m_handle_storage[0]));
     return this->m_is_open;
 }
 

@@ -103,14 +103,17 @@
 // Os::Posix::Directory::PosixDirectory and Os::Stub::Directory::StubDirectory
 // do so.
 //
-// The alias only changes the C++ type; the implementation module providing the
-// aliased class must still be in the link (e.g. CHOOSES_IMPLEMENTATIONS
-// Os_File_Posix). Directory shares the Os_File module with File and
-// FileSystem.
+// The alias only changes the C++ type; the library providing the aliased class
+// must still be linked after its users (e.g. Os_File_Posix_Implementation,
+// today pulled in by CHOOSES_IMPLEMENTATIONS Os_File_Posix). An aliased
+// Directory needs neither Os::DelegateDirectory nor
+// DirectoryInterface::getDelegate. Directory shares the Os_File module with
+// File and FileSystem.
 //
 // A project override of this header that defines neither the Os::Directory
 // alias nor OS_DIRECTORY_HEADER keeps the link-time delegate (see
-// Os/Directory.hpp); defining only one of the two is a compile error.
+// Os/Directory.hpp). Defining OS_DIRECTORY_HEADER without the alias, or an
+// implementation alias without OS_DIRECTORY_HEADER, is a compile error.
 //
 // Example compile-time selection override:
 //
