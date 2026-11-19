@@ -116,14 +116,18 @@ def test_fresh_times():
 
 def test_fsw_now_raises_on_a_failed_reading():
     class Bench:
-        def __init__(self, rows, dry_run=False):
-            self.rows, self.dry_run = rows, dry_run
+        def __init__(self, rows, dry_run=False, replay_record=None):
+            self.rows, self.dry_run, self.replay_record = rows, dry_run, replay_record
 
         def action(self, name):
             return self.rows
 
     assert sc.fsw_now(Bench([{"sec": 7, "usec": 0, "age_s": 0.1}])) == 7
     assert sc.fsw_now(Bench([], dry_run=True)) == 0
+    # A replay is a dry run of the bench that has the recorded readings: they are used, and a failed one raises
+    assert sc.fsw_now(Bench([{"sec": 7, "usec": 0, "age_s": 0.1}], dry_run=True, replay_record="record")) == 7
+    with pytest.raises(RuntimeError):
+        sc.fsw_now(Bench([None], dry_run=True, replay_record="record"))
     for rows in ([], [None], [{"sec": 7}, None]):
         with pytest.raises(RuntimeError):
             sc.fsw_now(Bench(rows))
