@@ -35,9 +35,7 @@ void FileInterface::assertValidPath(const CHAR* path) {
 }
 
 FileInterface::Status FileInterface::open(const CHAR* filepath, FileInterface::Mode requested_mode) {
-    FW_ASSERT(nullptr != filepath);
-    return this->open(filepath, static_cast<FwSizeType>(FileNameStringSize + 1), requested_mode,
-                      OverwriteType::NO_OVERWRITE);
+    return this->open(filepath, requested_mode, OverwriteType::NO_OVERWRITE);
 }
 
 FileInterface::Status FileInterface::open(const CHAR* filepath, FwSizeType length, FileInterface::Mode requested_mode) {

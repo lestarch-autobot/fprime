@@ -11,6 +11,7 @@
 #include <Os/RawTime.hpp>
 #include <Os/Stub/File.hpp>
 #include <Os/Task.hpp>
+#include <cstring>
 
 TEST(Stub, File) {
     Os::File _;
@@ -77,6 +78,12 @@ TEST(Stub, FileDirect) {
     ASSERT_EQ(file.flush(), Os::FileInterface::Status::NOT_OPENED);
     file.close();
     ASSERT_FALSE(file.isOpen());
+    // The path-length check is made by the implementation's open
+    char path[FileNameStringSize + 2];
+    (void)::memset(path, 'a', sizeof(path) - 1);
+    path[sizeof(path) - 1] = '\0';
+    ASSERT_DEATH_IF_SUPPORTED((void)file.open(path, Os::FileInterface::Mode::OPEN_READ),
+                              "Assert: \".*/?Os/FileInterface\\.cpp:[0-9]+\"");
 }
 
 int main(int argc, char** argv) {

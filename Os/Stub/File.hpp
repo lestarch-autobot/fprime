@@ -14,7 +14,8 @@ struct StubFileHandle : public FileHandle {};
 
 //! \brief stub implementation of Os::File
 //!
-//! Stub implementation of `FileInterface` for use as a delegate class handling error-only file operations.
+//! Stub implementation of `FileInterface` handling error-only file operations, usable as the Os::File alias or behind
+//! Os::DelegateFile.
 //!
 class StubFile : public FileInterface {
   public:

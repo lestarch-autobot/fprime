@@ -450,8 +450,8 @@ class FileInterface {
 
     //! \brief assert that a path is valid to open
     //!
-    //! Asserts that the path is non-null and is terminated within FileNameStringSize characters. Implementations
-    //! must call this at the start of `open`, before the path is used.
+    //! Asserts that the path is non-null and is terminated within FileNameStringSize characters. An implementation
+    //! named by the Os::File alias must call this at the start of `open`, before the path is used.
     //!
     //! \param path: c-string of path to check
     //!
@@ -459,16 +459,18 @@ class FileInterface {
 
     //! \brief record a successful open
     //!
-    //! Implementations of `open` MUST call this on success so that the common functions of this interface
+    //! An implementation named by the Os::File alias MUST call this in `open` on success so that the common functions
+    //! of this interface
     //! (`isOpen`, `readline`, CRC functions) and the implementation's own open/mode checks see the file as open.
-    //! Resets any in-progress CRC calculation.
+    //! Resets any in-progress CRC calculation. An implementation only ever used behind Os::DelegateFile need not call
+    //! it: the delegate tracks this state itself.
     //!
     //! \param mode: mode the file was opened with
     void markOpen(Mode mode);
 
     //! \brief record that the file was closed
     //!
-    //! Implementations of `close` MUST call this so that the file is seen as closed.
+    //! An implementation named by the Os::File alias MUST call this in `close` so that the file is seen as closed.
     void markClosed();
 
     Mode m_mode = Mode::OPEN_NO_MODE;  //!< Stores mode for error checking

@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <list>
+#include "Fw/Types/ExternalString.hpp"
 #include "Os/File.hpp"
 #include "Os/Posix/File.hpp"
 #include "Os/test/ut/file/CommonTests.hpp"
@@ -326,16 +327,62 @@ TEST(PosixFileDirect, ModeChecksAndDoubleOpen) {
     (void)::unlink(path);
 }
 
+namespace {
+//! Assert raised by FileInterface::assertValidPath
+const char* const PATH_ASSERT = "Assert: \".*/?Os/FileInterface\\.cpp:[0-9]+\"";
+
+//! Fill a buffer with an absolute path under /tmp of exactly `length` characters
+void makePath(char* buffer, FwSizeType buffer_size, FwSizeType length) {
+    ASSERT_LT(length, buffer_size);
+    (void)::memset(buffer, 'a', static_cast<size_t>(length));
+    (void)::memcpy(buffer, "/tmp/", 5);
+    buffer[length] = '\0';
+}
+}  // namespace
+
+// The path-length check is made by each implementation's open, so it applies to every overload
 TEST(PosixFileDirect, OpenAssertsOnOverlongPath) {
-    // One character more than a path may hold; the three-argument open is the one implemented by PosixFile itself
     char path[FileNameStringSize + 2];
-    (void)::memset(path, 'a', sizeof(path) - 1);
-    path[sizeof(path) - 1] = '\0';
+    makePath(path, sizeof(path), FileNameStringSize + 1);
     Os::Posix::File::PosixFile file;
     ASSERT_DEATH_IF_SUPPORTED(
         (void)file.open(path, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
-        "Assert: \".*/?Os/FileInterface\\.cpp:[0-9]+\"");
-    ASSERT_FALSE(file.isOpen());
+        PATH_ASSERT);
+    ASSERT_DEATH_IF_SUPPORTED((void)file.open(path, Os::FileInterface::Mode::OPEN_READ), PATH_ASSERT);
+    // A longer buffer does not lift the limit: the length and string overloads end in the same open
+    ASSERT_DEATH_IF_SUPPORTED(
+        (void)file.open(path, static_cast<FwSizeType>(sizeof(path)), Os::FileInterface::Mode::OPEN_READ), PATH_ASSERT);
+    char storage[FileNameStringSize + 2];
+    Fw::ExternalString string(storage, static_cast<Fw::StringBase::SizeType>(sizeof(storage)));
+    string = path;
+    ASSERT_EQ(string.length(), static_cast<Fw::StringBase::SizeType>(FileNameStringSize + 1));
+    ASSERT_DEATH_IF_SUPPORTED((void)file.open(string, Os::FileInterface::Mode::OPEN_READ), PATH_ASSERT);
+}
+
+TEST(PosixFileDirect, OpenAcceptsLongestPath) {
+    char path[FileNameStringSize + 2];
+    makePath(path, sizeof(path), FileNameStringSize);
+    Os::Posix::File::PosixFile file;
+    ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_CREATE, Os::FileInterface::OverwriteType::OVERWRITE),
+              Os::FileInterface::Status::OP_OK);
+    ASSERT_TRUE(file.isOpen());
+    file.close();
+    (void)::unlink(path);
+}
+
+// Os::File as configured (the link-time delegate by default) makes the same check
+TEST(PosixFileDirect, ConfiguredFileAssertsOnOverlongPath) {
+    char path[FileNameStringSize + 2];
+    makePath(path, sizeof(path), FileNameStringSize + 1);
+    Os::File file;
+    ASSERT_DEATH_IF_SUPPORTED(
+        (void)file.open(path, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
+        PATH_ASSERT);
+    char storage[FileNameStringSize + 2];
+    Fw::ExternalString string(storage, static_cast<Fw::StringBase::SizeType>(sizeof(storage)));
+    string = path;
+    ASSERT_EQ(string.length(), static_cast<Fw::StringBase::SizeType>(FileNameStringSize + 1));
+    ASSERT_DEATH_IF_SUPPORTED((void)file.open(string, Os::FileInterface::Mode::OPEN_READ), PATH_ASSERT);
 }
 
 TEST(PosixFileDirect, CopyDuplicatesDescriptorAndState) {

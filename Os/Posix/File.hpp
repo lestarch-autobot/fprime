@@ -24,7 +24,8 @@ struct PosixFileHandle : public FileHandle {
 
 //! \brief posix implementation of Os::File
 //!
-//! Posix implementation of `FileInterface` for use as a delegate class handling posix file operations. Posix files use
+//! Posix implementation of `FileInterface` handling posix file operations, usable as the Os::File alias or behind
+//! Os::DelegateFile. Posix files use
 //! standard `open`, `read`, and `write` posix calls. The handle is represented as a `PosixFileHandle` which wraps a
 //! single `int` type file descriptor used in those API calls.
 //!
@@ -57,8 +58,7 @@ class PosixFile : public FileInterface {
     //!
     //! Open the file passed in with the given mode. If overwrite is set to OVERWRITE, then opening files in
     //! OPEN_CREATE mode will clobber existing files. Set overwrite to NO_OVERWRITE to preserve existing files.
-    //! The status of the open request is returned from the function call. Delegates to the chosen
-    //! implementation's `open` function.
+    //! The status of the open request is returned from the function call.
     //!
     //! It is invalid to send `nullptr` as the path.
     //! It is invalid to supply `mode` as a non-enumerated value.
@@ -73,8 +73,7 @@ class PosixFile : public FileInterface {
 
     //! \brief close the file, if not opened then do nothing
     //!
-    //! Closes the file, if open. Otherwise this function does nothing. Delegates to the chosen implementation's
-    //! `closeInternal` function. `mode` is set to `OPEN_NO_MODE`.
+    //! Closes the file, if open. Otherwise this function does nothing. `mode` is set to `OPEN_NO_MODE`.
     //!
     void close() override;
 
