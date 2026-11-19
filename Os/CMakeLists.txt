@@ -135,7 +135,26 @@ register_fprime_module(
       Fw_Types
 )
 
-add_named_os_module(Console Fw_Logger)
+# Console: Console.hpp is a thin public alias header (no Console.cpp); the interface and
+# link-time delegate live in ConsoleInterface.{hpp,cpp} / DelegateConsole.{hpp,cpp}.
+# Registered explicitly because add_named_os_module assumes a matching <name>.cpp per header.
+register_fprime_module(
+      "Os_Console"
+    REQUIRES_IMPLEMENTATIONS
+      "Os_Console"
+    SOURCES
+      "${CMAKE_CURRENT_LIST_DIR}/ConsoleInterface.cpp"
+      "${CMAKE_CURRENT_LIST_DIR}/DelegateConsole.cpp"
+    HEADERS
+      "${CMAKE_CURRENT_LIST_DIR}/Console.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/ConsoleInterface.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/DelegateConsole.hpp"
+    DEPENDS
+      Fw_Time
+      Fw_Types
+      Fw_Logger
+)
+fprime_target_dependencies(Os PUBLIC "Os_Console")
 add_named_os_module("File;FileSystem;Directory" Utils_Hash Fw_DataStructures)
 add_named_os_module(Task ${CMAKE_THREAD_LIBS_INIT})
 # Mutex: Mutex.hpp is a thin public alias header (no Mutex.cpp); the interface and

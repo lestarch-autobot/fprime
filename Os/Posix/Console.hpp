@@ -2,10 +2,11 @@
 // \title Os/Posix/Console.hpp
 // \brief posix implementation for Os::Console, header and test definitions
 // ======================================================================
-#include <Os/Console.hpp>
-#include <cstdio>
 #ifndef OS_POSIX_Console_HPP
 #define OS_POSIX_Console_HPP
+
+#include <Os/Console.hpp>
+#include <cstdio>
 
 namespace Os {
 namespace Posix {
@@ -20,7 +21,8 @@ struct PosixConsoleHandle : public ConsoleHandle {
 
 //! \brief posix implementation of Os::ConsoleInterface
 //!
-//! Posix implementation of `ConsoleInterface` for use as a delegate class handling posix console operations. Posix
+//! Posix implementation of `ConsoleInterface` handling posix console operations, usable as the link-time delegate or
+//! directly as `Os::Console`. Posix
 //! consoles write to either standard out or standard error. The default file descriptor used is standard out. This may
 //! be changed by calling `setOutputStream`.
 //!
@@ -49,6 +51,9 @@ class PosixConsole : public ConsoleInterface {
     // Functions overrides
     // ------------------------------------
 
+    // Keep the common ConstStringBase overload visible alongside the override below
+    using ConsoleInterface::writeMessage;
+
     //! \brief write message to console
     //!
     //! Write a message to the console with a bounded size. This will use the active file descriptor as the output
@@ -74,7 +79,7 @@ class PosixConsole : public ConsoleInterface {
     void setOutputStream(Stream stream);
 
   private:
-    //! File handle for PosixFile
+    //! Handle for PosixConsole
     PosixConsoleHandle m_handle;
 };
 }  // namespace Console

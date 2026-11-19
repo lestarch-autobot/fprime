@@ -192,21 +192,24 @@ namespace MyPlatform {
 
 namespace Os {
     class DelegateMutex;             // Forward-declare the link-time delegates
-    class DelegateConditionVariable; // kept for Mutex and ConditionVariable
+    class DelegateConditionVariable; // kept for Mutex, ConditionVariable,
+    class DelegateConsole;           // and Console
 
     // Alias Os::RawTime directly to your implementation (no delegate wrapper)
     using RawTime = MyPlatform::MyRawTime;
 
     // The override file replaces the whole default, so every selection must be
-    // present: keep Mutex and ConditionVariable on the link-time delegates
+    // present: keep Mutex, ConditionVariable and Console on the link-time delegates
     using Mutex = DelegateMutex;
     using ConditionVariable = DelegateConditionVariable;
+    using Console = DelegateConsole;
 }
 
 // Point to your implementation header (will be included after RawTimeInterface.hpp)
 #define OS_RAW_TIME_HEADER "MyPlatform/Os/RawTime.hpp"
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_CONSOLE_HEADER <Os/DelegateConsole.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP
 ```
@@ -357,7 +360,7 @@ The full set of [OSAL modules](../../../Os/docs/sdd.md#2-core-services) that can
 | **File** | `FileInterface` | `open()`, `read()`, `write()`, `close()`, `seek()` |
 | **FileSystem** | `FileSystemInterface` | `rename()`, `remove()`, `stat()` |
 | **Directory** | `DirectoryInterface` | `open()`, `read()`, `close()` |
-| **Console** | `ConsoleInterface` | `write()` |
+| **Console** | `ConsoleInterface` | `writeMessage()`, `getHandle()`; re-expose the string overload with `using ConsoleInterface::writeMessage;` |
 | **RawTime** | `RawTimeInterface` | `now()`, `getTimeInterval()` (getDelegate takes `RawTimeSource`) |
 | **Cpu** | `CpuInterface` | `getCount()`, `getTicks()` |
 | **Memory** | `MemoryInterface` | `getUsage()` |

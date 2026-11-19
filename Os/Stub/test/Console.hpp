@@ -2,10 +2,11 @@
 // \title Os/Stub/test/Console.hpp
 // \brief test stub implementation for Os::Console, header and test definitions
 // ======================================================================
-#include <Os/Console.hpp>
-#include <cstdio>
 #ifndef OS_Stub_Test_Console_HPP
 #define OS_Stub_Test_Console_HPP
+
+#include <Os/Console.hpp>
+#include <cstdio>
 
 namespace Os {
 namespace Stub {
@@ -45,7 +46,8 @@ struct TestConsoleHandle : public ConsoleHandle {};
 
 //! \brief stub implementation of Os::ConsoleInterface
 //!
-//! Stub implementation of `ConsoleInterface` for use as a delegate class handling stub console operations.
+//! Stub implementation of `ConsoleInterface` handling stub console operations, usable as the link-time delegate
+//! or directly.
 //!
 class TestConsole : public ConsoleInterface {
   public:
@@ -66,6 +68,9 @@ class TestConsole : public ConsoleInterface {
     // ------------------------------------
     // Functions overrides
     // ------------------------------------
+
+    // Keep the common ConstStringBase overload visible alongside the override below
+    using ConsoleInterface::writeMessage;
 
     //! \brief write message to console
     //!

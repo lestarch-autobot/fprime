@@ -2,10 +2,11 @@
 // \title Os/Stub/Console.hpp
 // \brief stub implementation for Os::Console, header and test definitions
 // ======================================================================
-#include <Os/Console.hpp>
-#include <cstdio>
 #ifndef OS_Stub_Console_HPP
 #define OS_Stub_Console_HPP
+
+#include <Os/Console.hpp>
+#include <cstdio>
 
 namespace Os {
 namespace Stub {
@@ -17,7 +18,8 @@ struct StubConsoleHandle : public ConsoleHandle {};
 
 //! \brief stub implementation of Os::ConsoleInterface
 //!
-//! Stub implementation of `ConsoleInterface` for use as a delegate class handling stub console operations.
+//! Stub implementation of `ConsoleInterface` handling stub console operations, usable as the link-time delegate
+//! or directly as `Os::Console`.
 //!
 class StubConsole : public ConsoleInterface {
   public:
@@ -39,10 +41,12 @@ class StubConsole : public ConsoleInterface {
     // Functions overrides
     // ------------------------------------
 
+    // Keep the common ConstStringBase overload visible alongside the override below
+    using ConsoleInterface::writeMessage;
+
     //! \brief write message to console
     //!
-    //! Write a message to the console with a bounded size. This will use the active file descriptor as the output
-    //! destination.
+    //! Discards the message: the stub console has no output destination.
     //!
     //! \param message: raw message to write
     //! \param size: size of the message to write to the console
@@ -58,7 +62,7 @@ class StubConsole : public ConsoleInterface {
     ConsoleHandle* getHandle() override;
 
   private:
-    //! File handle for PosixFile
+    //! Handle for StubConsole
     StubConsoleHandle m_handle;
 };
 }  // namespace Console
