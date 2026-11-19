@@ -138,6 +138,7 @@ class SeqSchedulerTester final : public SeqSchedulerGTestBase {
     void PingOnFullQueue();
     void SaveWriteFailureKeepsFile();
     void ConfigureAllocation();
+    void TimeBaseWarningThrottle();
     void UnsolicitedDone();
     void RunRefused();
     void ExecutingReplaced();

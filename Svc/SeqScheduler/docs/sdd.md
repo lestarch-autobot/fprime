@@ -599,7 +599,8 @@ base is first reported.
 | `FirstTickStandsForSeveral` | A first handled tick that stands for several is recorded as tick 1 with its time moved back, and a `START_RELATIVE` row comes due from that tick. | REQ-SeqScheduler-010 |
 | `DisableThenEnableSkipsWaiting` | A waiting row is `SKIPPED` by the disable command itself and is not run when the component is enabled again before the next tick. | REQ-SeqScheduler-021 |
 | `LoadBeforeFirstTick` | A load command handled before the first tick leaves the first tick as tick 1 and relative rows due on the same ticks. | REQ-SeqScheduler-008, REQ-SeqScheduler-010 |
-| `TimeBaseRecordFull` | A base beyond `SeqSchedulerTimeBases` warns once while it stays the base that found the record full, and its rows stay `PENDING`. The event throttle of 8 and its clearing by a load are verified by inspection: the default `TimeBase` enumeration leaves one base unrecorded, so a second warning cannot be produced. | REQ-SeqScheduler-009 |
+| `TimeBaseRecordFull` | A base beyond `SeqSchedulerTimeBases` warns once while it stays the base that found the record full, and its rows stay `PENDING`. | REQ-SeqScheduler-009 |
+| `TimeBaseWarningThrottle` | `TimeBaseNotRecorded` is emitted at most 8 times until a successful load clears the throttle. White box: the test overwrites recorded bases, because the default `TimeBase` enumeration leaves only one base unrecorded. | REQ-SeqScheduler-009 |
 | `WaitForRunning` | A `WAIT_FOR_RUNNING` row waits for the running sequence and runs after either completion status. | REQ-SeqScheduler-013, REQ-SeqScheduler-014 |
 | `CancelRunning` | A `CANCEL_RUNNING` row sends one cancel, none while one is pending, and runs once the cancelled sequence is reported complete. | REQ-SeqScheduler-013, REQ-SeqScheduler-015 |
 | `SkipWhenRunning` | A `SKIP_WHEN_RUNNING` row due while a sequence runs is `SKIPPED` with `WARNING_LO`; with none running it is run. | REQ-SeqScheduler-013, REQ-SeqScheduler-016, REQ-SeqScheduler-012 |
@@ -633,7 +634,7 @@ base is first reported.
 | `EditsDuringSequence` | No edit or load changes the running sequence or its completion handling. | REQ-SeqScheduler-030 |
 | `SaveTable` | Edits reach the file only on save; the file holds no row state and ends at the last non-empty row; the component enable is not saved. | REQ-SeqScheduler-031, REQ-SeqScheduler-032 |
 | `SaveFailures` | A save that cannot open or rename its file fails and warns with the reason. | REQ-SeqScheduler-033 |
-| `SaveWriteFailureKeepsFile` | A save whose write fails warns with `WRITE`, leaves the old file byte for byte and removes its temporary file. | REQ-SeqScheduler-033 |
+| `SaveWriteFailureKeepsFile` | A save whose write fails warns with `WRITE`, leaves the old file byte for byte and removes its temporary file. Runs only where `/dev/full` exists (skipped on macOS). | REQ-SeqScheduler-033 |
 | `ArgumentErrors` | Each argument error of §5.1, enabling an empty-named row included, fails with `WARNING_HI`, table unchanged. | REQ-SeqScheduler-034 |
 | `DumpTable` | The data product holds one record per row, in index order, with each row's state. | REQ-SeqScheduler-019, REQ-SeqScheduler-035, REQ-SeqScheduler-059 |
 | `DumpTruncated` | A container that fills before the last row is sent with the rows that fit and `WARNING_LO`. | REQ-SeqScheduler-059 |

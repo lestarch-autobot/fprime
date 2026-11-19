@@ -136,6 +136,11 @@ TEST(SeqScheduler, ConfigureAllocation) {
     tester.ConfigureAllocation();
 }
 
+TEST(SeqScheduler, TimeBaseWarningThrottle) {
+    Svc::SeqSchedulerTester tester;
+    tester.TimeBaseWarningThrottle();
+}
+
 TEST(SeqScheduler, UnsolicitedDone) {
     Svc::SeqSchedulerTester tester;
     tester.UnsolicitedDone();

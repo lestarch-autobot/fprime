@@ -1456,6 +1456,36 @@ void SeqSchedulerTester::TimeBaseRecordFull() {
     ASSERT_FALSE(this->query(0, timeDue, name));
 }
 
+void SeqSchedulerTester::TimeBaseWarningThrottle() {
+    // REQ-SeqScheduler-009: TimeBaseNotRecorded is throttled at 8 until a successful load clears the throttle
+    this->startEmpty();  // records TB_WORKSTATION_TIME
+    const TimeBase::T bases[] = {TimeBase::TB_PROC_TIME, TimeBase::TB_SC_TIME, TimeBase::TB_NONE};
+    for (FwSizeType i = 0; i < FW_NUM_ARRAY_ELEMENTS(bases); i++) {
+        this->setTime(this->m_seconds, 0, bases[i]);
+        this->tick();
+    }
+    ASSERT_EQ(this->component.m_baseCount, static_cast<FwSizeType>(SeqSchedulerTimeBases));
+    // White box: the default TimeBase enumeration leaves one base unrecorded, so three entries are overwritten
+    for (FwSizeType i = 1; i < this->component.m_baseCount; i++) {
+        this->component.m_bases[i].base = TimeBase::TB_WORKSTATION_TIME;
+    }
+    this->clearHistory();
+    for (U32 i = 0; i < 12; i++) {
+        this->setTime(this->m_seconds, 0, bases[i % FW_NUM_ARRAY_ELEMENTS(bases)]);
+        this->tick();
+    }
+    ASSERT_EVENTS_TimeBaseNotRecorded_SIZE(8);
+    const FileRow rows[] = {{TimeBase::TB_SC_TIME, 123, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 0, "one.bin"}};
+    this->writeFile(this->defaultFile(), rows, 1);
+    this->cmdLoad();
+    ASSERT_EVENTS_TableLoaded_SIZE(1);
+    for (U32 i = 0; i < 3; i++) {
+        this->setTime(this->m_seconds, 0, bases[i % FW_NUM_ARRAY_ELEMENTS(bases)]);
+        this->tick();
+    }
+    ASSERT_EVENTS_TimeBaseNotRecorded_SIZE(11);
+}
+
 void SeqSchedulerTester::WaitEndedRejudged() {
     // REQ-SeqScheduler-021, 013: a waiting row returned to PENDING by a load is judged again
     this->startEmpty();
