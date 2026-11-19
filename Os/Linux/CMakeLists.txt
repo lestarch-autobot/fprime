@@ -38,7 +38,6 @@ register_fprime_ut(
   CHOOSES_IMPLEMENTATIONS
     Os_Memory_Linux
   DEPENDS
-    Os_Memory
     Fw_Types
     Fw_Time
     STest
