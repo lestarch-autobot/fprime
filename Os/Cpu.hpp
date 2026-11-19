@@ -49,6 +49,8 @@
 // ------------------------------------------------------------
 namespace Os {
 
+// An implementation header (OS_CPU_HEADER) must include Os/CpuInterface.hpp, never Os/Cpu.hpp: otherwise Os::Cpu is
+// still incomplete here when that header is included first, and the assertions below fail.
 static_assert(std::is_convertible<Os::Cpu*, CpuInterface*>::value,
               "Os::Cpu must publicly derive from Os::CpuInterface");
 static_assert(std::is_default_constructible<Os::Cpu>::value, "Os::Cpu must be default constructible");

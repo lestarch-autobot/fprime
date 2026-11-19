@@ -11,6 +11,7 @@
 
 // A project config/OsSelection.hpp that predates the Cpu selection defines neither the Os::Cpu alias nor
 // OS_CPU_HEADER: select the link-time delegate so that such projects keep building.
+// A config/OsSelection.hpp must define both the Os::Cpu alias and OS_CPU_HEADER, or neither of them.
 #ifndef OS_CPU_HEADER
 namespace Os {
 class DelegateCpu;
@@ -72,15 +73,16 @@ class CpuInterface {
     //
     // Implemented once in terms of the configured Os::Cpu alias and the
     // functions above, so that link-time delegates and compile-time
-    // selected implementations behave identically.
+    // selected implementations behave identically. Defined inline in
+    // Os/Cpu.hpp, which callers must include.
     // ------------------------------------------------------------------
 
     //! \brief initialize the singleton
-    static void init();
+    static inline void init();
 
     //! \brief return the singleton of the configured Os::Cpu
     //! \return reference to the singleton
-    static Os::Cpu& getSingleton();
+    static inline Os::Cpu& getSingleton();
 
     //! \brief Request the count of the CPUs detected by the system
     //!
@@ -89,7 +91,7 @@ class CpuInterface {
     //! \param cpu_count: (output) filled with CPU count on system
     //! \return: OP_OK with valid CPU count, ERROR when error occurs
     //!
-    static Status getCount(FwSizeType& cpu_count);
+    static inline Status getCount(FwSizeType& cpu_count);
 
     //! \brief Get the CPU tick information for a given CPU
     //!
@@ -102,7 +104,7 @@ class CpuInterface {
     //! \param cpu_index: index for CPU to read. Default: 0
     //! \return:  ERROR when error occurs, OK otherwise.
     //!
-    static Status getTicks(Ticks& ticks, FwSizeType cpu_index);
+    static inline Status getTicks(Ticks& ticks, FwSizeType cpu_index);
 };
 }  // namespace Os
 #endif  // OS_CPUINTERFACE_HPP_
