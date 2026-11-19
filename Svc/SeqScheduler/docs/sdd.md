@@ -292,7 +292,7 @@ The table is loaded, if no load has been attempted, by the first tick before any
 
 1. takes the count from `m_ticksPending` with a single atomic exchange with zero, and adds it to `m_tick`; reads system time into `m_tickTime`, and records the reported time base, its tick and its time if it is new and a slot is free; if none is free and the base differs from the last one reported this way, emits `TimeBaseNotRecorded`;
 2. in `NOT_TRIED`, loads the table;
-3. with the component disabled, sets every due row `SKIPPED` with `RowSkippedDisabled` and clears the due rows;
+3. with the component disabled, sets every due row `SKIPPED` with `RowSkippedDisabled` and clears the due rows (the disable command has already done so for the rows due at that time);
 4. takes each `PENDING`, not empty row that has come due and is not among the due rows, in index order: a disabled row becomes `SKIPPED` with `RowSkippedDisabled`; a row over the late tolerance becomes `SKIPPED` with `RowLate`; any other row is inserted among the due rows with its `dueUsec`. In `LOADED_NEW` neither event is emitted;
 5. walks the due rows forward to find the last `CANCEL_RUNNING` row; if there is one, removes the first due row, setting it `SKIPPED` with `RowSkippedByCancel`, until that row is the first, and, if the state is `Running`, sends the cancel, emits `SeqCancelled` and enters `Cancelling`;
 6. in `Idle`, runs the first due row, if there is one, and removes it;
@@ -438,7 +438,7 @@ written. It is not a table file.
 | `SET_SEQ_ENABLED` | `fileName`, `enabled` | Enable or disable every row holding that sequence file name |
 | `DUMP_TABLE` | — | Send the table data product |
 | `REPORT_ACTIVE_ROW` | — | Emit `ActiveRow` for the next-due row, the row `queryIn` returns for i = 0, or `NoActiveRow` when no row is upcoming |
-| `SET_ENABLED` | `enabled` | Disable or enable the whole component. While disabled, every row is treated as a disabled row: none is run, none is upcoming, every due row becomes `SKIPPED` on the next tick, and a row whose time passes becomes `SKIPPED` for good. The running sequence is not cancelled. Not saved: the component starts enabled |
+| `SET_ENABLED` | `enabled` | Disable or enable the whole component. While disabled, every row is treated as a disabled row: none is run, none is upcoming, every due row becomes `SKIPPED` with `RowSkippedDisabled` when the disable command is handled (an enable before the next tick does not bring it back), and a row whose time passes becomes `SKIPPED` for good. The running sequence is not cancelled. Not saved: the component starts enabled |
 
 Edits change the table in memory only, until `SAVE_TABLE`. No command affects a sequence that is
 already running; `SET_ROW` on an `EXECUTING` row returns it to `PENDING` while its sequence runs on. Disabling a waiting row removes it from the due rows; the row becomes `SKIPPED` on the next tick.
@@ -580,7 +580,8 @@ base is first reported.
 |---|---|---|
 | `StartupLoad` | The table file named by `TABLE_FILE` is loaded by the first tick before a row is evaluated, or by the first command before it is handled; the file is read once, also when that command is `LOAD_TABLE`. | REQ-SeqScheduler-001 |
 | `RowFields` | Every row field survives a load, save and reload unchanged, for each configured row count tried. | REQ-SeqScheduler-002, REQ-SeqScheduler-004 |
-| `Configure` | The table has the row count given to `configure`, takes one allocation from the given allocator, and returns it on `cleanup`; `configure` asserts on each argument out of range, on a short allocation and on a second call. | REQ-SeqScheduler-004 |
+| `Configure` | The table has the row count given to `configure`, and returns its memory on `cleanup`; `configure` asserts on each argument out of range and on a second call. | REQ-SeqScheduler-004 |
+| `ConfigureAllocation` | `configure` takes one allocation from the given allocator, `cleanup` returns it once, and a short allocation asserts. | REQ-SeqScheduler-004 |
 | `DefaultTableFile` | The default name is used when `TABLE_FILE` is not set or empty, and `TABLE_FILE` when it is set, for load and save. | REQ-SeqScheduler-001, REQ-SeqScheduler-032 |
 | `ShortTableFile` | A file of zero rows, some rows and every row loads; the rows it does not hold are empty and never come due. | REQ-SeqScheduler-051, REQ-SeqScheduler-054 |
 | `LongTableFile` | A file with more rows than the table loads the rows that fit with `WARNING_LO`. | REQ-SeqScheduler-052 |
@@ -595,8 +596,10 @@ base is first reported.
 | `TimeBaseRelativeDue` | A `TIME_BASE_RELATIVE` row is due its delay after its base's first tick, also when the base goes and returns. | REQ-SeqScheduler-009, REQ-SeqScheduler-010, REQ-SeqScheduler-011 |
 | `TickRounding` | Relative delays round up to whole ticks and ignore system-time jumps. | REQ-SeqScheduler-010 |
 | `TicksWhileBusy` | Ticks arriving while one is queued or being handled queue no second message and are all counted by the next handled tick. | REQ-SeqScheduler-010 |
+| `FirstTickStandsForSeveral` | A first handled tick that stands for several is recorded as tick 1 with its time moved back, and a `START_RELATIVE` row comes due from that tick. | REQ-SeqScheduler-010 |
+| `DisableThenEnableSkipsWaiting` | A waiting row is `SKIPPED` by the disable command itself and is not run when the component is enabled again before the next tick. | REQ-SeqScheduler-021 |
 | `LoadBeforeFirstTick` | A load command handled before the first tick leaves the first tick as tick 1 and relative rows due on the same ticks. | REQ-SeqScheduler-008, REQ-SeqScheduler-010 |
-| `TimeBaseRecordFull` | A base beyond `SeqSchedulerTimeBases` warns when it changes, at most 8 times until a successful load clears the throttle, and its rows stay `PENDING`. | REQ-SeqScheduler-009 |
+| `TimeBaseRecordFull` | A base beyond `SeqSchedulerTimeBases` warns once while it stays the base that found the record full, and its rows stay `PENDING`. The event throttle of 8 and its clearing by a load are verified by inspection: the default `TimeBase` enumeration leaves one base unrecorded, so a second warning cannot be produced. | REQ-SeqScheduler-009 |
 | `WaitForRunning` | A `WAIT_FOR_RUNNING` row waits for the running sequence and runs after either completion status. | REQ-SeqScheduler-013, REQ-SeqScheduler-014 |
 | `CancelRunning` | A `CANCEL_RUNNING` row sends one cancel, none while one is pending, and runs once the cancelled sequence is reported complete. | REQ-SeqScheduler-013, REQ-SeqScheduler-015 |
 | `SkipWhenRunning` | A `SKIP_WHEN_RUNNING` row due while a sequence runs is `SKIPPED` with `WARNING_LO`; with none running it is run. | REQ-SeqScheduler-013, REQ-SeqScheduler-016, REQ-SeqScheduler-012 |
@@ -629,7 +632,8 @@ base is first reported.
 | `SetWaitingRow` | Setting or disabling a waiting row removes it from the due rows. | REQ-SeqScheduler-028, REQ-SeqScheduler-022 |
 | `EditsDuringSequence` | No edit or load changes the running sequence or its completion handling. | REQ-SeqScheduler-030 |
 | `SaveTable` | Edits reach the file only on save; the file holds no row state and ends at the last non-empty row; the component enable is not saved. | REQ-SeqScheduler-031, REQ-SeqScheduler-032 |
-| `SaveFailures` | Each file error fails the save, warns, and leaves the old file. | REQ-SeqScheduler-033 |
+| `SaveFailures` | A save that cannot open or rename its file fails and warns with the reason. | REQ-SeqScheduler-033 |
+| `SaveWriteFailureKeepsFile` | A save whose write fails warns with `WRITE`, leaves the old file byte for byte and removes its temporary file. | REQ-SeqScheduler-033 |
 | `ArgumentErrors` | Each argument error of §5.1, enabling an empty-named row included, fails with `WARNING_HI`, table unchanged. | REQ-SeqScheduler-034 |
 | `DumpTable` | The data product holds one record per row, in index order, with each row's state. | REQ-SeqScheduler-019, REQ-SeqScheduler-035, REQ-SeqScheduler-059 |
 | `DumpTruncated` | A container that fills before the last row is sent with the rows that fit and `WARNING_LO`. | REQ-SeqScheduler-059 |
@@ -641,7 +645,8 @@ base is first reported.
 | `Telemetry` | Every channel of §5.3 reports the value the table implies; `NextTimeDue` is zero in `TB_NONE` with no upcoming row. | REQ-SeqScheduler-041 |
 | `TwoInstances` | Two instances in one test hold separate tables and run separate sequences. | REQ-SeqScheduler-042 |
 | `ParamReread` | The table file name is resolved at each load and save; `LATE_TOLERANCE_SEC` is read each tick. | REQ-SeqScheduler-001, REQ-SeqScheduler-005, REQ-SeqScheduler-032 |
-| `Ping` | A ping is echoed with its key; a ping arriving on a full queue is dropped. | — |
+| `Ping` | A ping is echoed with its key. | — |
+| `PingOnFullQueue` | Pings arriving on a full queue are dropped without an assertion; the queued ones are echoed. | — |
 | `RandomOperations` | Random commands, ticks and completions keep the table equal to a reference model. | REQ-SeqScheduler-004, REQ-SeqScheduler-013, REQ-SeqScheduler-020, REQ-SeqScheduler-029 |
 
 ### 8.2 System tests

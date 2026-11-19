@@ -131,6 +131,11 @@ TEST(SeqScheduler, SaveWriteFailureKeepsFile) {
     tester.SaveWriteFailureKeepsFile();
 }
 
+TEST(SeqScheduler, ConfigureAllocation) {
+    Svc::SeqSchedulerTester tester;
+    tester.ConfigureAllocation();
+}
+
 TEST(SeqScheduler, UnsolicitedDone) {
     Svc::SeqSchedulerTester tester;
     tester.UnsolicitedDone();

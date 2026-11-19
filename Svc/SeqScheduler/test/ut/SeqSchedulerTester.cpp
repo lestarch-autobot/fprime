@@ -745,6 +745,50 @@ void SeqSchedulerTester::SaveWriteFailureKeepsFile() {
     ASSERT_NE(::access(tmp.toChar(), F_OK), 0);  // the temporary file is not left behind
 }
 
+namespace {
+//! Allocator double: counts the calls and can grant fewer bytes than asked for
+class CountingAllocator final : public Fw::MemAllocator {
+  public:
+    void* allocate(const FwEnumStoreType identifier,
+                   FwSizeType& size,
+                   bool& recoverable,
+                   FwSizeType alignment) override {
+        this->allocations++;
+        if (this->grantShort) {
+            size = size / 2;
+        }
+        return this->m_source.allocate(identifier, size, recoverable, alignment);
+    }
+    void deallocate(const FwEnumStoreType identifier, void* ptr) override {
+        this->deallocations++;
+        this->m_source.deallocate(identifier, ptr);
+    }
+    U32 allocations = 0;
+    U32 deallocations = 0;
+    bool grantShort = false;
+
+  private:
+    Fw::MallocAllocator m_source;
+};
+}  // namespace
+
+void SeqSchedulerTester::ConfigureAllocation() {
+    // REQ-SeqScheduler-004: one allocation, returned once by cleanup; a short allocation asserts
+    this->component.cleanup();
+    CountingAllocator allocator;
+    this->component.configure(this->m_defaultFile, 8, TICK_USEC, allocator, 0);
+    ASSERT_EQ(allocator.allocations, 1U);
+    ASSERT_EQ(allocator.deallocations, 0U);
+    this->component.cleanup();
+    this->component.cleanup();
+    ASSERT_EQ(allocator.allocations, 1U);
+    ASSERT_EQ(allocator.deallocations, 1U);
+    CountingAllocator shortAllocator;
+    shortAllocator.grantShort = true;
+    ASSERT_DEATH(this->component.configure(this->m_defaultFile, 8, TICK_USEC, shortAllocator, 0), "Assert");
+    this->component.configure(this->m_defaultFile, this->m_rows, TICK_USEC, this->m_allocator, 0);
+}
+
 void SeqSchedulerTester::UnsolicitedDone() {
     // REQ-SeqScheduler-018
     this->startEmpty();
