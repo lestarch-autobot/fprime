@@ -95,12 +95,17 @@
 // open/read/write convenience overloads, seek_absolute(), readline(), isOpen()
 // and the CRC functions are defined there) and MUST:
 //
-// 1. Call markOpen() when open() succeeds and markClosed() in close(); the
-//    functions defined in Os::FileInterface rely on that tracked mode.
-// 2. Perform the argument and state checks that Os::DelegateFile performs
+// 1. Override isOpenImpl() to report the open state from their own handle.
+// 2. Override openImpl() with every check of open() except the
+//    FileNameStringSize path bound, and implement open() as
+//    FileInterface::assertValidPath() followed by openImpl().
+// 3. Call markOpen() when openImpl() succeeds and markClosed() in close(); the
+//    read/write mode checks rely on that mode.
+// 4. Perform the argument and state checks that Os::DelegateFile performs
 //    (see Os/Posix/File.cpp); no wrapper performs them for an aliased class.
-// 3. Re-expose the overloads: `using FileInterface::open;` (and read, write).
-// 4. Call FileInterface::assertValidPath() at the start of open().
+// 5. Re-expose the overloads: `using FileInterface::open;` (and read, write).
+//
+// Items 1 and 2 are enforced at compile time in Os/FileInterface.cpp.
 //
 // A compile-time selection uses neither Os::DelegateFile nor
 // FileInterface::getDelegate(). As for Mutex above, the alias only changes the

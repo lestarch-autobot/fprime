@@ -4,10 +4,25 @@
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
 #include <Fw/Types/StringUtils.hpp>
-#include <Os/FileInterface.hpp>
+#include <Os/File.hpp>
 #include <algorithm>
 #include <config/FppConstantsAc.hpp>
 #include <limits>
+#include <type_traits>
+
+// The implementation selected as Os::File must derive from FileInterface, owns the open state, and performs its own
+// checks: the FileInterface defaults of isOpenImpl() and openImpl() are only for implementations used through the
+// link-time delegate. Checked here, where Os::File (pulled in through Os/File.hpp) is complete. The aliased class must
+// declare the overrides itself.
+static_assert(std::is_base_of<Os::FileInterface, Os::File>::value,
+              "The implementation selected as Os::File must derive from Os::FileInterface");
+static_assert(std::is_same<decltype(&Os::File::isOpenImpl), bool (Os::File::*)() const>::value,
+              "The class selected as Os::File must itself override FileInterface::isOpenImpl()");
+static_assert(
+    std::is_same<decltype(&Os::File::openImpl),
+                 Os::FileInterface::Status (
+                     Os::File::*)(const CHAR*, Os::FileInterface::Mode, Os::FileInterface::OverwriteType)>::value,
+    "The class selected as Os::File must itself override FileInterface::openImpl()");
 
 namespace Os {
 
@@ -22,9 +37,17 @@ void FileInterface::markClosed() {
     this->m_mode = Mode::OPEN_NO_MODE;
 }
 
-bool FileInterface::isOpen() const {
-    FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
-    return this->m_mode != Mode::OPEN_NO_MODE;
+bool FileInterface::isOpenImpl() const {
+    // Only reachable on an implementation used directly without overriding isOpenImpl(): the link-time delegate
+    // tracks the open state itself and never asks the implementation
+    FW_ASSERT(0);
+    return false;
+}
+
+FileInterface::Status FileInterface::openImpl(const CHAR* path,
+                                              FileInterface::Mode mode,
+                                              FileInterface::OverwriteType overwrite) {
+    return this->open(path, mode, overwrite);
 }
 
 void FileInterface::assertValidPath(const CHAR* path) {
@@ -49,7 +72,8 @@ FileInterface::Status FileInterface::open(const CHAR* filepath,
     FW_ASSERT(nullptr != filepath);
     const FwSizeType string_len = static_cast<FwSizeType>(Fw::StringUtils::string_length(filepath, length));
     FW_ASSERT(string_len < length, static_cast<FwAssertArgType>(string_len), static_cast<FwAssertArgType>(length));
-    return this->open(filepath, requested_mode, overwrite);
+    // The path is bounded by the caller's length, not by FileNameStringSize
+    return this->openImpl(filepath, requested_mode, overwrite);
 }
 
 FileInterface::Status FileInterface::open(const Fw::ConstStringBase& path, FileInterface::Mode requested_mode) {
@@ -121,7 +145,7 @@ FileInterface::Status FileInterface::incrementalCrc(FwSizeType& size) {
     // Scratch buffer is local so that implementations selected by direct alias do not carry it per-object
     U8 crc_buffer[FW_FILE_CHUNK_SIZE] = {};
     FW_ASSERT(size <= FW_FILE_CHUNK_SIZE, FwAssertArgType(size));
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         status = FileInterface::Status::NOT_OPENED;
     } else if (OPEN_READ != this->m_mode) {
         status = FileInterface::Status::INVALID_MODE;
@@ -151,7 +175,7 @@ FileInterface::Status FileInterface::readline(U8* buffer, FwSizeType& size, File
     FW_ASSERT(buffer != nullptr);
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         size = 0;
         return FileInterface::Status::NOT_OPENED;
     } else if (OPEN_READ != this->m_mode) {

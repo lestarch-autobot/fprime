@@ -205,7 +205,34 @@ class FileInterface {
     //! \brief determine if the file is open
     //! \return true if file is open, false otherwise
     //!
-    bool isOpen() const;
+    bool isOpen() const { return this->isOpenImpl(); }
+
+    //! \brief report the open state (implementation specific)
+    //!
+    //! The open state is owned by the implementation and read from its handle; `isOpen` returns what this function
+    //! reports. The link-time delegate tracks the state itself and never asks the implementation it wraps, so an
+    //! implementation used only through the delegate may keep this default, which asserts. An implementation
+    //! selected directly as Os::File must override it (enforced in Os/FileInterface.cpp).
+    //!
+    //! \return true if file is open, false otherwise
+    //!
+    virtual bool isOpenImpl() const;
+
+    //! \brief open a file whose path length the caller has already bounded (implementation specific)
+    //!
+    //! `open(path, mode, overwrite)` requires the path to be terminated within FileNameStringSize characters. The
+    //! `open` overloads that take a length or a string bound the path by that length instead and then call this
+    //! function, which performs every check of `open` except the FileNameStringSize bound. The default forwards to
+    //! `open(path, mode, overwrite)`, which is correct for an implementation used only through the link-time
+    //! delegate. An implementation selected directly as Os::File must override it (enforced in
+    //! Os/FileInterface.cpp) and must not call it from `open` without overriding it.
+    //!
+    //! \param path: c-string of path to open, terminated within a bound checked by the caller
+    //! \param mode: file operation mode
+    //! \param overwrite: overwrite existing file on create
+    //! \return: status of the open
+    //!
+    virtual Status openImpl(const CHAR* path, Mode mode, OverwriteType overwrite);
 
     // ------------------------------------
     // Functions supplying default values
@@ -451,29 +478,29 @@ class FileInterface {
     //! \brief assert that a path is valid to open
     //!
     //! Asserts that the path is non-null and is terminated within FileNameStringSize characters. An implementation
-    //! named by the Os::File alias must call this at the start of `open`, before the path is used.
+    //! named by the Os::File alias must call this at the start of `open(path, mode, overwrite)`, before the path is
+    //! used, and not in `openImpl`.
     //!
     //! \param path: c-string of path to check
     //!
     static void assertValidPath(const CHAR* path);
 
-    //! \brief record a successful open
+    //! \brief record the mode of a successful open
     //!
-    //! An implementation named by the Os::File alias MUST call this in `open` on success so that the common functions
-    //! of this interface
-    //! (`isOpen`, `readline`, CRC functions) and the implementation's own open/mode checks see the file as open.
-    //! Resets any in-progress CRC calculation. An implementation only ever used behind Os::DelegateFile need not call
-    //! it: the delegate tracks this state itself.
+    //! An implementation named by the Os::File alias MUST call this in `openImpl` on success: the mode is used by the
+    //! read/write mode checks of the implementation and of the common functions (`readline`, CRC functions). Resets
+    //! any in-progress CRC calculation. Whether the file is open is not taken from this mode but from `isOpenImpl`.
+    //! An implementation only ever used behind Os::DelegateFile need not call it: the delegate tracks the mode.
     //!
     //! \param mode: mode the file was opened with
     void markOpen(Mode mode);
 
-    //! \brief record that the file was closed
+    //! \brief clear the mode when the file is closed
     //!
-    //! An implementation named by the Os::File alias MUST call this in `close` so that the file is seen as closed.
+    //! An implementation named by the Os::File alias MUST call this in `close`.
     void markClosed();
 
-    Mode m_mode = Mode::OPEN_NO_MODE;  //!< Stores mode for error checking
+    Mode m_mode = Mode::OPEN_NO_MODE;  //!< Mode of the open file, for read/write mode checks
 
   private:
     static const U32 INITIAL_CRC = 0xFFFFFFFF;  //!< Initial value for CRC calculation

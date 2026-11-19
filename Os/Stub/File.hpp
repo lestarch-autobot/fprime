@@ -51,6 +51,22 @@ class StubFile : public FileInterface {
     //!
     Os::FileInterface::Status open(const char* path, Mode mode, OverwriteType overwrite) override;
 
+    //! \brief open file whose path length the caller has already bounded
+    //!
+    //! Performs every check of `open` except the FileNameStringSize path bound. The stub cannot open a file.
+    //!
+    //! \param path: c-string of path to open
+    //! \param mode: file operation mode
+    //! \param overwrite: overwrite existing file on create
+    //! \return: NOT_SUPPORTED
+    //!
+    Os::FileInterface::Status openImpl(const char* path, Mode mode, OverwriteType overwrite) override;
+
+    //! \brief report the open state
+    //! \return false: the stub cannot open a file
+    //!
+    bool isOpenImpl() const override;
+
     //! \brief close the file, if not opened then do nothing
     //!
     //! This implementation does nothing.

@@ -71,6 +71,22 @@ class PosixFile : public FileInterface {
     //!
     Os::FileInterface::Status open(const char* path, Mode mode, OverwriteType overwrite) override;
 
+    //! \brief open file whose path length the caller has already bounded
+    //!
+    //! Performs every check of `open` except the FileNameStringSize path bound, then opens the file.
+    //!
+    //! \param path: c-string of path to open
+    //! \param mode: file operation mode
+    //! \param overwrite: overwrite existing file on create
+    //! \return: status of the open
+    //!
+    Os::FileInterface::Status openImpl(const char* path, Mode mode, OverwriteType overwrite) override;
+
+    //! \brief report the open state from the file descriptor
+    //! \return true if a file descriptor is held, false otherwise
+    //!
+    bool isOpenImpl() const override;
+
     //! \brief close the file, if not opened then do nothing
     //!
     //! Closes the file, if open. Otherwise this function does nothing. `mode` is set to `OPEN_NO_MODE`.

@@ -41,11 +41,32 @@ DelegateFile& DelegateFile::operator=(const DelegateFile& other) {
     return *this;
 }
 
+bool DelegateFile::isOpenImpl() const {
+    FW_ASSERT(&this->m_delegate == reinterpret_cast<const FileInterface*>(&this->m_handle_storage[0]));
+    FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
+    // The delegate tracks the state itself: the wrapped implementation is not required to report it
+    return this->m_mode != Mode::OPEN_NO_MODE;
+}
+
 DelegateFile::Status DelegateFile::open(const CHAR* filepath,
                                         DelegateFile::Mode requested_mode,
                                         DelegateFile::OverwriteType overwrite) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
     FileInterface::assertValidPath(filepath);
+    return this->openDelegate(filepath, requested_mode, overwrite, true);
+}
+
+DelegateFile::Status DelegateFile::openImpl(const CHAR* filepath,
+                                            DelegateFile::Mode requested_mode,
+                                            DelegateFile::OverwriteType overwrite) {
+    return this->openDelegate(filepath, requested_mode, overwrite, false);
+}
+
+DelegateFile::Status DelegateFile::openDelegate(const CHAR* filepath,
+                                                DelegateFile::Mode requested_mode,
+                                                DelegateFile::OverwriteType overwrite,
+                                                bool path_bounded) {
+    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+    FW_ASSERT(nullptr != filepath);
     FW_ASSERT(DelegateFile::Mode::OPEN_NO_MODE < requested_mode && DelegateFile::Mode::MAX_OPEN_MODE > requested_mode);
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     FW_ASSERT((0 <= overwrite) && (overwrite < OverwriteType::MAX_OVERWRITE_TYPE));
@@ -53,7 +74,10 @@ DelegateFile::Status DelegateFile::open(const CHAR* filepath,
     if (this->isOpen()) {
         return DelegateFile::Status::INVALID_MODE;
     }
-    DelegateFile::Status status = this->m_delegate.open(filepath, requested_mode, overwrite);
+    // A path bounded by FileNameStringSize goes through the implementation's `open`; one bounded by the caller's
+    // length must not meet that bound again in the implementation
+    DelegateFile::Status status = path_bounded ? this->m_delegate.open(filepath, requested_mode, overwrite)
+                                               : this->m_delegate.openImpl(filepath, requested_mode, overwrite);
     if (status == DelegateFile::Status::OP_OK) {
         // Tracks the mode and resets any open CRC calculations
         this->markOpen(requested_mode);

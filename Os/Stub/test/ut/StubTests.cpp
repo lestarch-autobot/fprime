@@ -78,12 +78,15 @@ TEST(Stub, FileDirect) {
     ASSERT_EQ(file.flush(), Os::FileInterface::Status::NOT_OPENED);
     file.close();
     ASSERT_FALSE(file.isOpen());
-    // The path-length check is made by the implementation's open
+    // The FileNameStringSize bound applies to the opens that take a bare path
     char path[FileNameStringSize + 2];
     (void)::memset(path, 'a', sizeof(path) - 1);
     path[sizeof(path) - 1] = '\0';
     ASSERT_DEATH_IF_SUPPORTED((void)file.open(path, Os::FileInterface::Mode::OPEN_READ),
                               "Assert: \".*/?Os/FileInterface\\.cpp:[0-9]+\"");
+    // The opens that take a length bound the path by that length instead
+    ASSERT_EQ(file.open(path, static_cast<FwSizeType>(sizeof(path)), Os::FileInterface::Mode::OPEN_READ),
+              Os::FileInterface::Status::NOT_SUPPORTED);
 }
 
 int main(int argc, char** argv) {

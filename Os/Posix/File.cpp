@@ -60,18 +60,18 @@ PosixFile::PosixFile(const PosixFile& other) : FileInterface(other) {
 
 PosixFile::~PosixFile() {
     // Matches the behavior of the delegating Os::File: an open file is closed on destruction
-    // Qualified call: overrides in derived classes are not reachable from a destructor
-    if (this->m_mode != OPEN_NO_MODE) {
+    // Qualified calls: overrides in derived classes are not reachable from a destructor
+    if (this->PosixFile::isOpenImpl()) {
         this->PosixFile::close();
     }
 }
 
 void PosixFile::duplicateDescriptor(const PosixFile& other) {
     this->m_handle.m_file_descriptor = PosixFileHandle::INVALID_FILE_DESCRIPTOR;
-    if (other.m_mode != OPEN_NO_MODE) {
+    if (other.PosixFile::isOpenImpl()) {
         this->m_handle.m_file_descriptor = fcntl(other.m_handle.m_file_descriptor, F_DUPFD, 0);
     }
-    // A failed duplication must not leave this object reporting an open file
+    // Without a descriptor this object is closed: do not keep the mode copied from the other file
     if (this->m_handle.m_file_descriptor == PosixFileHandle::INVALID_FILE_DESCRIPTOR) {
         this->markClosed();
     }
@@ -119,10 +119,22 @@ mode_t PosixFile::map_open_create_mode(const U32 create_mode) {
     return out_mode;
 }
 
+bool PosixFile::isOpenImpl() const {
+    return this->m_handle.m_file_descriptor != PosixFileHandle::INVALID_FILE_DESCRIPTOR;
+}
+
 PosixFile::Status PosixFile::open(const char* filepath,
                                   PosixFile::Mode requested_mode,
                                   PosixFile::OverwriteType overwrite) {
     FileInterface::assertValidPath(filepath);
+    // Not dispatched virtually: the checks and the descriptor belong to this class
+    return this->PosixFile::openImpl(filepath, requested_mode, overwrite);
+}
+
+PosixFile::Status PosixFile::openImpl(const char* filepath,
+                                      PosixFile::Mode requested_mode,
+                                      PosixFile::OverwriteType overwrite) {
+    FW_ASSERT(nullptr != filepath);
     FW_ASSERT((Mode::OPEN_NO_MODE < requested_mode) && (requested_mode < Mode::MAX_OPEN_MODE));
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     FW_ASSERT((0 <= overwrite) && (overwrite < OverwriteType::MAX_OVERWRITE_TYPE));
@@ -178,7 +190,7 @@ void PosixFile::close() {
 PosixFile::Status PosixFile::size(FwSizeType& size_result) {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         return Status::NOT_OPENED;
     }
     FwSizeType current_position = 0;
@@ -203,7 +215,7 @@ PosixFile::Status PosixFile::size(FwSizeType& size_result) {
 PosixFile::Status PosixFile::position(FwSizeType& position_result) {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         return Status::NOT_OPENED;
     }
     Status status = OP_OK;
@@ -221,7 +233,7 @@ PosixFile::Status PosixFile::position(FwSizeType& position_result) {
 PosixFile::Status PosixFile::preallocate(FwSizeType offset, FwSizeType length) {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open for writing before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         return Status::NOT_OPENED;
     } else if (OPEN_READ == this->m_mode) {
         return Status::INVALID_MODE;
@@ -289,7 +301,7 @@ PosixFile::Status PosixFile::seek(FwSignedSizeType offset, PosixFile::SeekType s
     FW_ASSERT((seekType == SeekType::RELATIVE) || (offset >= 0));
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         return Status::NOT_OPENED;
     }
     Status status = OP_OK;
@@ -311,7 +323,7 @@ PosixFile::Status PosixFile::seek(FwSignedSizeType offset, PosixFile::SeekType s
 PosixFile::Status PosixFile::flush() {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open for writing before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         return Status::NOT_OPENED;
     } else if (OPEN_READ == this->m_mode) {
         return Status::INVALID_MODE;
@@ -328,7 +340,7 @@ PosixFile::Status PosixFile::read(U8* buffer, FwSizeType& size, PosixFile::WaitT
     FW_ASSERT(buffer != nullptr);
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open for reading before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         size = 0;
         return Status::NOT_OPENED;
     } else if (OPEN_READ != this->m_mode) {
@@ -378,7 +390,7 @@ PosixFile::Status PosixFile::write(const U8* buffer, FwSizeType& size, PosixFile
     FW_ASSERT(buffer != nullptr);
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open for writing before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         size = 0;
         return Status::NOT_OPENED;
     } else if (OPEN_READ == this->m_mode) {

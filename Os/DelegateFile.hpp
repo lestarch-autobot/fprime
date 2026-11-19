@@ -60,6 +60,23 @@ class DelegateFile final : public FileInterface {
     //!
     Os::FileInterface::Status open(const char* path, Mode mode, OverwriteType overwrite) override;
 
+    //! \brief open file whose path length the caller has already bounded
+    //!
+    //! Performs every check of `open` except the FileNameStringSize path bound, then opens the file through the
+    //! implementation's `openImpl`.
+    //!
+    //! \param path: c-string of path to open
+    //! \param mode: file operation mode
+    //! \param overwrite: overwrite existing file on create
+    //! \return: status of the open
+    //!
+    Status openImpl(const CHAR* path, Mode mode, OverwriteType overwrite) override;
+
+    //! \brief report the open state tracked by this delegate
+    //! \return true if file is open, false otherwise
+    //!
+    bool isOpenImpl() const override;
+
     //! \brief close the file, if not opened then do nothing
     //!
     //! Closes the file, if open. Otherwise this function does nothing. Delegates to the chosen implementation's
@@ -165,6 +182,17 @@ class DelegateFile final : public FileInterface {
     //! \return raw file handle
     //!
     FileHandle* getHandle() override;
+
+  private:
+    //! \brief checks common to `open` and `openImpl`, then open through the implementation
+    //!
+    //! \param path: c-string of path to open
+    //! \param mode: file operation mode
+    //! \param overwrite: overwrite existing file on create
+    //! \param path_bounded: true when the path was checked against FileNameStringSize
+    //! \return: status of the open
+    //!
+    Status openDelegate(const CHAR* path, Mode mode, OverwriteType overwrite, bool path_bounded);
 
   private:
     // This section is used to store the implementation-defined file handle. To Os::File and fprime, this type is

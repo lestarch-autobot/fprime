@@ -340,23 +340,47 @@ void makePath(char* buffer, FwSizeType buffer_size, FwSizeType length) {
 }
 }  // namespace
 
-// The path-length check is made by each implementation's open, so it applies to every overload
-TEST(PosixFileDirect, OpenAssertsOnOverlongPath) {
+// The FileNameStringSize bound applies to the opens that take a bare path; the opens that take a length or a string
+// bound the path by that length instead and accept a longer path
+template <typename FileType>
+void checkPathLengthRules() {
     char path[FileNameStringSize + 2];
     makePath(path, sizeof(path), FileNameStringSize + 1);
-    Os::Posix::File::PosixFile file;
+    FileType file;
     ASSERT_DEATH_IF_SUPPORTED(
         (void)file.open(path, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
         PATH_ASSERT);
     ASSERT_DEATH_IF_SUPPORTED((void)file.open(path, Os::FileInterface::Mode::OPEN_READ), PATH_ASSERT);
-    // A longer buffer does not lift the limit: the length and string overloads end in the same open
-    ASSERT_DEATH_IF_SUPPORTED(
-        (void)file.open(path, static_cast<FwSizeType>(sizeof(path)), Os::FileInterface::Mode::OPEN_READ), PATH_ASSERT);
+
+    ASSERT_EQ(file.open(path, static_cast<FwSizeType>(sizeof(path)), Os::FileInterface::Mode::OPEN_CREATE,
+                        Os::FileInterface::OverwriteType::OVERWRITE),
+              Os::FileInterface::Status::OP_OK);
+    ASSERT_TRUE(file.isOpen());
+    file.close();
+    ASSERT_FALSE(file.isOpen());
+
     char storage[FileNameStringSize + 2];
     Fw::ExternalString string(storage, static_cast<Fw::StringBase::SizeType>(sizeof(storage)));
     string = path;
     ASSERT_EQ(string.length(), static_cast<Fw::StringBase::SizeType>(FileNameStringSize + 1));
-    ASSERT_DEATH_IF_SUPPORTED((void)file.open(string, Os::FileInterface::Mode::OPEN_READ), PATH_ASSERT);
+    ASSERT_EQ(file.open(string, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    ASSERT_TRUE(file.isOpen());
+    file.close();
+    (void)::unlink(path);
+
+    // A path that is not terminated within the caller's length still asserts
+    ASSERT_DEATH_IF_SUPPORTED(
+        (void)file.open(path, static_cast<FwSizeType>(FileNameStringSize + 1), Os::FileInterface::Mode::OPEN_READ),
+        PATH_ASSERT);
+}
+
+TEST(PosixFileDirect, PathLengthRules) {
+    checkPathLengthRules<Os::Posix::File::PosixFile>();
+}
+
+// Os::File as configured (the link-time delegate by default) follows the same rules
+TEST(PosixFileDirect, ConfiguredFilePathLengthRules) {
+    checkPathLengthRules<Os::File>();
 }
 
 TEST(PosixFileDirect, OpenAcceptsLongestPath) {
@@ -370,19 +394,36 @@ TEST(PosixFileDirect, OpenAcceptsLongestPath) {
     (void)::unlink(path);
 }
 
-// Os::File as configured (the link-time delegate by default) makes the same check
-TEST(PosixFileDirect, ConfiguredFileAssertsOnOverlongPath) {
-    char path[FileNameStringSize + 2];
-    makePath(path, sizeof(path), FileNameStringSize + 1);
-    Os::File file;
-    ASSERT_DEATH_IF_SUPPORTED(
-        (void)file.open(path, Os::FileInterface::Mode::OPEN_READ, Os::FileInterface::OverwriteType::NO_OVERWRITE),
-        PATH_ASSERT);
-    char storage[FileNameStringSize + 2];
-    Fw::ExternalString string(storage, static_cast<Fw::StringBase::SizeType>(sizeof(storage)));
-    string = path;
-    ASSERT_EQ(string.length(), static_cast<Fw::StringBase::SizeType>(FileNameStringSize + 1));
-    ASSERT_DEATH_IF_SUPPORTED((void)file.open(string, Os::FileInterface::Mode::OPEN_READ), PATH_ASSERT);
+// The open state is read from the descriptor, so it cannot disagree with the handle
+TEST(PosixFileDirect, OpenStateFollowsDescriptor) {
+    char path[] = "/tmp/fprime_posix_direct_XXXXXX";
+    const int fd = ::mkstemp(path);
+    ASSERT_NE(fd, -1);
+    (void)::close(fd);
+    Os::Posix::File::PosixFile file;
+    ASSERT_EQ(file.open(path, Os::FileInterface::Mode::OPEN_READ), Os::FileInterface::Status::OP_OK);
+    Os::Posix::File::PosixFileHandle* handle = static_cast<Os::Posix::File::PosixFileHandle*>(file.getHandle());
+    const int descriptor = handle->m_file_descriptor;
+    // Handle emptied underneath the file: every operation reports the file as not open
+    handle->m_file_descriptor = -1;
+    U8 buffer[4] = {0};
+    FwSizeType size = sizeof(buffer);
+    ASSERT_FALSE(file.isOpen());
+    ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::NOT_OPENED);
+    ASSERT_EQ(size, 0U);
+    size = sizeof(buffer);
+    ASSERT_EQ(file.readline(buffer, size, Os::FileInterface::WaitType::NO_WAIT), Os::FileInterface::Status::NOT_OPENED);
+    U32 crc = 0;
+    ASSERT_EQ(file.calculateCrc(crc), Os::FileInterface::Status::NOT_OPENED);
+    // Handle restored: the file is open again and is closed normally
+    handle->m_file_descriptor = descriptor;
+    ASSERT_TRUE(file.isOpen());
+    size = sizeof(buffer);
+    ASSERT_EQ(file.read(buffer, size), Os::FileInterface::Status::OP_OK);
+    file.close();
+    ASSERT_FALSE(file.isOpen());
+    ASSERT_FALSE(descriptorIsOpen(descriptor));
+    (void)::unlink(path);
 }
 
 TEST(PosixFileDirect, CopyDuplicatesDescriptorAndState) {

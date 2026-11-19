@@ -9,8 +9,18 @@ namespace Os {
 namespace Stub {
 namespace File {
 
+bool StubFile::isOpenImpl() const {
+    // The stub cannot open a file
+    return false;
+}
+
 StubFile::Status StubFile::open(const char* filepath, StubFile::Mode open_mode, OverwriteType overwrite) {
     FileInterface::assertValidPath(filepath);
+    return this->StubFile::openImpl(filepath, open_mode, overwrite);
+}
+
+StubFile::Status StubFile::openImpl(const char* filepath, StubFile::Mode open_mode, OverwriteType overwrite) {
+    FW_ASSERT(nullptr != filepath);
     FW_ASSERT((Mode::OPEN_NO_MODE < open_mode) && (open_mode < Mode::MAX_OPEN_MODE));
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     FW_ASSERT((0 <= overwrite) && (overwrite < OverwriteType::MAX_OVERWRITE_TYPE));
@@ -30,7 +40,7 @@ void StubFile::close() {
 StubFile::Status StubFile::size(FwSizeType& size_result) {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         return Status::NOT_OPENED;
     }
     Status status = Status::NOT_SUPPORTED;
@@ -40,7 +50,7 @@ StubFile::Status StubFile::size(FwSizeType& size_result) {
 StubFile::Status StubFile::position(FwSizeType& position_result) {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         return Status::NOT_OPENED;
     }
     Status status = Status::NOT_SUPPORTED;
@@ -50,7 +60,7 @@ StubFile::Status StubFile::position(FwSizeType& position_result) {
 StubFile::Status StubFile::preallocate(FwSizeType offset, FwSizeType length) {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open for writing before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         return Status::NOT_OPENED;
     } else if (OPEN_READ == this->m_mode) {
         return Status::INVALID_MODE;
@@ -65,7 +75,7 @@ StubFile::Status StubFile::seek(FwSignedSizeType offset, SeekType seekType) {
     FW_ASSERT((seekType == SeekType::RELATIVE) || (offset >= 0));
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         return Status::NOT_OPENED;
     }
     Status status = Status::NOT_SUPPORTED;
@@ -75,7 +85,7 @@ StubFile::Status StubFile::seek(FwSignedSizeType offset, SeekType seekType) {
 StubFile::Status StubFile::flush() {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open for writing before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         return Status::NOT_OPENED;
     } else if (OPEN_READ == this->m_mode) {
         return Status::INVALID_MODE;
@@ -88,7 +98,7 @@ StubFile::Status StubFile::read(U8* buffer, FwSizeType& size, StubFile::WaitType
     FW_ASSERT(buffer != nullptr);
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open for reading before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         size = 0;
         return Status::NOT_OPENED;
     } else if (OPEN_READ != this->m_mode) {
@@ -104,7 +114,7 @@ StubFile::Status StubFile::write(const U8* buffer, FwSizeType& size, StubFile::W
     FW_ASSERT(buffer != nullptr);
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open for writing before attempting operation
-    if (OPEN_NO_MODE == this->m_mode) {
+    if (not this->isOpen()) {
         size = 0;
         return Status::NOT_OPENED;
     } else if (OPEN_READ == this->m_mode) {
