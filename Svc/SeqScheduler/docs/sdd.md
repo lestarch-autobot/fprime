@@ -50,7 +50,7 @@ deployment.
 | REQ-SeqScheduler-036 | The data product command shall fail with `WARNING_HI` when no product buffer is granted. | Unit Test |
 | REQ-SeqScheduler-037 | In response to a query port call with argument i, the component shall return the time due and sequence file name of the i-th upcoming row, 0 being the soonest. | Unit Test |
 | REQ-SeqScheduler-038 | A query shall return an invalid reply when fewer than i+1 rows are upcoming. | Unit Test |
-| REQ-SeqScheduler-039 | An upcoming row shall be an enabled `PENDING` row whose time due is known; an `ABSOLUTE` row whose time base differs from the current system time base is not upcoming. Upcoming rows are ordered by when they will come due, then by row index. | Unit Test |
+| REQ-SeqScheduler-039 | An upcoming row shall be an enabled `PENDING` row whose time due is known; an `ABSOLUTE` row whose time base differs from the current system time base is not upcoming, unless it has come due and waits for a running sequence. Upcoming rows are ordered by when they will come due, then by row index. | Unit Test |
 | REQ-SeqScheduler-040 | The component shall emit `ACTIVITY_HI` when a row's sequence is run and when it completes. | Unit Test |
 | REQ-SeqScheduler-041 | The component shall report the telemetry channels of Section 5.3. | Unit Test |
 | REQ-SeqScheduler-042 | Each instance shall run its own table independently of other instances in the deployment. | Integration Test |
@@ -171,9 +171,11 @@ default assertion.
 |---|---|---|---|
 | `m_table`, `m_rows` | `Row[m_rows]` | The rows (§4.1), with their run-time `enabled` and `state`; what is dumped, and what is saved less `state`. `m_rows` is the row count given to `configure` | yes |
 | `m_due` | `Fw::ExternalRedBlackTreeSet<DueRow>`, capacity `m_rows` | The due rows: rows that have come due and are not yet run or skipped. A `DueRow` is `{dueUsec, row}` and compares by `dueUsec`, then `row`, so the set is iterated in the order rows came due, then row index. Not saved | no |
+| `m_upcoming[2]`, `m_upcomingActive` | two `Fw::ExternalRedBlackTreeSet<DueRow>`, capacity `m_rows`, and the index of the one queries read | The upcoming order (§3.6.3): built by the component thread in the set not being read, then exchanged | yes: the index, and the set it selects |
+| `m_skipEvents`, `m_skipsWithoutEvent` | `FwSizeType` | Skipped rows of the current tick or disable command with and without an event of their own (§7) | no |
 | `m_rowDue` | `{due, dueUsec}[m_rows]` | Per row: the row is among the due rows, and the `dueUsec` it was inserted with. The set finds and removes an element by its value, so each row keeps the value it was inserted with, and `queryIn` orders a waiting row by it. Every `due` flag is cleared when the due rows are cleared (successful load, component disable) | yes |
 | `m_loadRows` | `Row[m_rows]` | Rows of the file being loaded, copied into `m_table` when the whole file has been checked | no |
-| `m_allocator`, `m_memId` | allocator and its identifier | Given to `configure`; used once to obtain the three arrays above and the storage of `m_due` in one allocation, and by `cleanup` to return it | no |
+| `m_allocator`, `m_memId` | allocator and its identifier | Given to `configure`; used once to obtain the three arrays above and the storage of `m_due` and of the two `m_upcoming` sets in one allocation, and by `cleanup` to return it | no |
 | `m_defaultTableFile` | string size `FileNameStringSize` | Table file name given to `configure` | no |
 | `m_tickPeriodUsec` | U32 | Tick period in microseconds given to `configure` | yes |
 | `m_enabled` | bool | The component is enabled; true at start | yes |
@@ -209,9 +211,11 @@ rows. Ties are broken by row index. `queryIn` orders upcoming rows on the same s
 time still to go added for an `ABSOLUTE` row that is not yet due; a row among the due rows keeps
 the `dueUsec` it was inserted with, so the query order is the order in which the rows are run.
 
-The due rows are held in the existing `Fw::ExternalRedBlackTreeSet` of `Fw/DataStructures`, so
-this component has no sort code of its own. Its storage is part of the single `configure`
-allocation, sized by the set's `getByteArraySize(rows)` and aligned by `getByteArrayAlignment()`.
+The due rows are held in the existing `Fw::ExternalRedBlackTreeSet` of `Fw/DataStructures`, and so
+is the upcoming order that `queryIn` reads (`m_upcoming`, §3.6.3), so this component has no sort
+code of its own. The storage of the three sets (the due rows and two upcoming orders) is part of
+the single `configure` allocation, each sized by the set's `getByteArraySize(rows)` and aligned by
+`getByteArrayAlignment()`.
 The set's iterator only goes forward. The cancel rule is therefore two forward steps: one walk
 to find the last `CANCEL_RUNNING` row, then removal of the first element until that row is the
 first.
@@ -256,7 +260,7 @@ void configure(const Fw::StringBase& defaultTableFile,  // table file used when 
 void cleanup();                                         // returns the memory at teardown
 ```
 
-`configure` makes one allocation, for `rows` rows, the load copy, the per-row due records and the storage of the due-row set (§3.4),
+`configure` makes one allocation, for `rows` rows, the load copy, the per-row due records and the storage of the due-row set and of the two upcoming orders (§3.4),
 and asserts unless `rows` is 1 to 65535, `tickPeriodUsec` is above zero, `defaultTableFile` is
 not empty, and the allocation is the size asked. It asserts if called twice. The
 table has that many rows from then on. There is no compile-time table size. `rows` is at most
@@ -297,7 +301,7 @@ The table is loaded, if no load has been attempted, by the first tick before any
 5. walks the due rows forward to find the last `CANCEL_RUNNING` row; if there is one, removes the first due row, setting it `SKIPPED` with `RowSkippedByCancel`, until that row is the first, and, if the state is `Running`, sends the cancel, emits `SeqCancelled` and enters `Cancelling`;
 6. in `Idle`, runs the first due row, if there is one, and removes it;
 7. walks the rows by index and, for each `SKIP_WHEN_RUNNING` row marked due in `m_rowDue`, removes it from the due rows by value and sets it `SKIPPED` with `RowSkippedBusy`: a row is left among the due rows only while a sequence is running. The set is not iterated while it is changed;
-8. in `LOADED_NEW`, enters `LOADED`;
+8. emits `RowSkipsNotReported` when steps 3 to 7 skipped more than four rows: the first four skipped rows of a tick get their own event, the rest are counted (§5.4, §7); in `LOADED_NEW`, enters `LOADED`; rebuilds the upcoming order (§3.6.3);
 9. writes telemetry.
 
 Running a row is: call `seqRunOut` with the row's file name, set the row `EXECUTING`, emit `SeqRun`,
@@ -314,8 +318,20 @@ sets that row `EXECUTED` and writes `LastExecutedRow` if the row is still `EXECU
 
 Called by another component with argument i; runs on the caller's thread under the component
 lock. The upcoming rows are the enabled, not empty `PENDING` rows whose time due is known, none while the component is disabled, ordered by time
-due on the tick count, the order in which they will come due (§3.4), then by row index. A waiting row is upcoming, with a time due that has passed. The handler returns `true` with the time due and file name of the i-th of
+due on the tick count, the order in which they will come due (§3.4), then by row index. A waiting row is upcoming, with a time due that has passed; a waiting `ABSOLUTE` row stays upcoming, with the time of its row, when system time has since changed to another time base, because it still runs. The handler returns `true` with the time due and file name of the i-th of
 them, 0 being the soonest, or `false` when fewer than i+1 rows are upcoming.
+
+The order is kept in `m_upcoming`, two `Fw::ExternalRedBlackTreeSet<DueRow>` sets of capacity
+`m_rows`: one is read by queries, the other is built. The component thread rebuilds the order at
+the end of every tick and of every command that changes the table or the enable flags (`SET_ROW`,
+`SET_ROW_ENABLED`, `SET_SEQ_ENABLED`, `SET_ENABLED`, a successful load): it clears the set not
+being read, inserts every upcoming row without holding the lock, and then makes that set the one
+read, holding the lock for that exchange only. A query walks the set being read from its first
+entry to the i-th entry that is still upcoming, at most `m_rows` steps and i + 1 when no row has
+changed since the order was built, each step a constant-time check of one row. A row changed by a
+command since the order was built is passed over when it is no longer upcoming, and is reported
+with its current time and file name when it is; it takes its new place in the order when the
+command's handler ends. `NextRow`, `NextTimeDue` and `REPORT_ACTIVE_ROW` read position 0.
 
 A relative row's time due is fixed once its origin is recorded, so it does not move when system
 time is changed. The row itself is run by tick count: after a change of system time, or under
@@ -492,7 +508,8 @@ A command fails with `CmdRejected` (`WARNING_HI`), the table unchanged, on these
 | `RowLate` | warning low | Row found over `LATE_TOLERANCE_SEC` past due and skipped; not emitted on the first tick handled after a table load |
 | `RowSkippedBusy` | warning low | `SKIP_WHEN_RUNNING` row came due while a sequence was running and was skipped |
 | `RowSkippedByCancel` | warning low | Due row skipped because a `CANCEL_RUNNING` row came due after it; names both rows |
-| `RowSkippedDisabled` | activity low | Time of a disabled row passed, the row or the component being disabled; not emitted on the first tick handled after a table load |
+| `RowSkippedDisabled` | activity low | Time of a disabled row passed, the row or the component being disabled, or a waiting row was skipped at a component disable; argument `cause` tells which (`ROW_DISABLED`, `SCHEDULER_DISABLED`, `WAITING_AT_DISABLE`); not emitted on the first tick handled after a table load |
+| `RowSkipsNotReported` | warning low | One tick, or one `SET_ENABLED` command, skipped more than four rows: the first four got their own event (`RowSkippedDisabled`, `RowLate`, `RowSkippedByCancel` or `RowSkippedBusy`), `count` gives the rest. The row states and `RowsSkipped` show them all |
 | `ActiveRow` | activity high | Answer to `REPORT_ACTIVE_ROW`: index, time due and file name of the next-due row |
 | `NoActiveRow` | activity high | Answer to `REPORT_ACTIVE_ROW`: no row is upcoming |
 | `EnabledSet` | activity high | Component enabled or disabled |
@@ -562,6 +579,10 @@ base is first reported.
 | A waiting row returned to `PENDING` by `LOAD_TABLE` is evaluated again as a row that has just come due: past `LATE_TOLERANCE_SEC` it is skipped, otherwise its busy policy applies again. A waiting row at a component disable is `SKIPPED` for good | Operator |
 | An `ABSOLUTE` row coming due during a load, save or data product that takes longer than `LATE_TOLERANCE_SEC` is skipped with `RowLate` | Operator (`LATE_TOLERANCE_SEC`) |
 | Commands or a completion report that fill the queue while the component thread is held up, for example by a long load, save or data product, raise the framework's queue-full assertion; they are not answered `BUSY` | Operator (command pacing), Integrator (queue size) |
+| A load reads and hashes every row of the file, also the rows beyond the table of an over-long file: up to 65535 rows of `TABLE_FILE_ROW_SIZE` bytes, about 16.7 MB. The component thread handles nothing else for that time; the queue must hold the ticks, commands and completion reports that arrive in it, or the file be kept to the table size | Integrator (queue size, table file size) |
+| The lock is held by a load only to exchange the table with the load copy and clear the due flags (one pass over the rows), and by a rebuild of the upcoming order only to switch sets. A query holds it for at most one step per row, i + 1 steps when no row changed since the last tick or table command | Integrator (callers of `queryIn`) |
+| One tick emits at most: one `TimeBaseNotRecorded`, the load events of a first tick, four per-row skip events, one `RowSkipsNotReported`, one `SeqCancelled` and one `SeqRun`. A `SET_ENABLED` command emits at most four `RowSkippedDisabled`, one `RowSkipsNotReported` and `EnabledSet`. The events of the sequencer and command dispatcher for the commands of a sequence that runs on the same tick are not part of this bound and share the event queue | Integrator (event queue size) |
+| Skipped rows beyond the fourth of one tick or disable command get no event of their own; `RowSkipsNotReported` gives their number, and the row states in the table data product name them | Operator |
 | `Svc.FpySequencer` does not report a run it refuses while busy; such a refusal holds waiting rows until restart | Deployment (sequencer choice) |
 | A sequence run on the attached sequencer by another source ends or blocks the wait | Deployment (dedicated sequencer) |
 | A time base first reported after `SeqSchedulerTimeBases` others is not recorded; rows relative to it stay `PENDING` (`TimeBaseNotRecorded`) | Deployment (`SeqSchedulerTimeBases`) |
@@ -616,7 +637,7 @@ base is first reported.
 | `CancelLastOfSeveralDue` | Several rows wait and a `CANCEL_RUNNING` row comes due after all of them: every waiting row is skipped, one cancel is sent, and the cancel row runs on the completion report. | REQ-SeqScheduler-060, REQ-SeqScheduler-015, REQ-SeqScheduler-017 |
 | `CancelBetweenDue` | A `CANCEL_RUNNING` row due between other due rows: the rows ahead of it are skipped, the cancel row runs first, and the rows after it run after it in order, one per completion report, whether they came due before or after the cancel was sent. | REQ-SeqScheduler-060, REQ-SeqScheduler-015, REQ-SeqScheduler-045, REQ-SeqScheduler-017 |
 | `TwoCancelsDue` | Two `CANCEL_RUNNING` rows among several due rows: every row ahead of the later one, the earlier cancel row and the rows between them included, is skipped; one cancel is sent. | REQ-SeqScheduler-060, REQ-SeqScheduler-015 |
-| `FailedLoadKeepsTable` | A failed load command leaves the rows, their states, the due rows and the row counts as they were; a row due afterwards is run. | REQ-SeqScheduler-003 |
+| `FailedLoadKeepsTable` | A failed load command leaves the rows, their states, the due rows and the row counts as they were, for a failure found before any row is read (`VERSION`) and for failures found after rows were read into the load copy (`CHECKSUM`, `ROW_CONTENT`); a row due afterwards is run. | REQ-SeqScheduler-003 |
 | `UnsolicitedDone` | A completion with no sequence running raises `WARNING_LO` and changes nothing. | REQ-SeqScheduler-018 |
 | `RunRefused` | A refused run leaves the row `EXECUTED` once its error report arrives, and that report frees later rows. | REQ-SeqScheduler-014, REQ-SeqScheduler-020 |
 | `ExecutingReplaced` | A load or a `SET_ROW` on the `EXECUTING` row leaves its sequence running; the completion report does not change the replaced row. | REQ-SeqScheduler-020, REQ-SeqScheduler-028, REQ-SeqScheduler-030 |
@@ -641,6 +662,12 @@ base is first reported.
 | `DumpNoBuffer` | A refused product buffer fails the command with `WARNING_HI`. | REQ-SeqScheduler-036 |
 | `QueryByPosition` | A query with argument i returns the i-th upcoming row's time due and file, ordered by when they will come due, then index. | REQ-SeqScheduler-037, REQ-SeqScheduler-039 |
 | `QueryRelative` | A `START_RELATIVE` row's time due is the first tick's system time plus its time, a `TIME_BASE_RELATIVE` row's the time of its base's first tick plus its time; neither moves when system time or the time base changes. | REQ-SeqScheduler-046, REQ-SeqScheduler-061 |
+| `QueryLargeTable` | On a full table of 2048 rows every position returns the row the order gives, and the position after the last is invalid. | REQ-SeqScheduler-037, REQ-SeqScheduler-038, REQ-SeqScheduler-039 |
+| `QueryAfterEdit` | Each of `SET_ROW`, `SET_ROW_ENABLED`, `SET_SEQ_ENABLED`, `SET_ENABLED` and a load changes what a query returns without a tick in between. | REQ-SeqScheduler-037, REQ-SeqScheduler-039 |
+| `QueryWaitingAfterBaseChange` | A waiting `ABSOLUTE` row stays upcoming, in the query, `NextRow` and `REPORT_ACTIVE_ROW`, after system time changes to another time base, and runs on the completion report. | REQ-SeqScheduler-039 |
+| `QueryFromSecondThread` | Queries from a second thread, while the component thread sets rows, ticks, saves and loads, return only rows the test set. | REQ-SeqScheduler-037 |
+| `SkipEventsBounded` | One tick or disable command that skips more than four rows emits four per-row events and one `RowSkipsNotReported` with the rest, for skips by a cancel row, at a disable, while disabled and as late; four skipped rows get no count. | REQ-SeqScheduler-021, REQ-SeqScheduler-022, REQ-SeqScheduler-058 |
+| `ToleranceParameterInvalid` | A `LATE_TOLERANCE_SEC` that is not valid counts as one tick period. | REQ-SeqScheduler-021 |
 | `QueryNotUpcoming` | Disabled, empty, non-`PENDING`, other-base `ABSOLUTE` and unknown-origin rows are not upcoming. | REQ-SeqScheduler-039 |
 | `QueryInvalid` | A query beyond the upcoming rows, on an empty table, or for a `START_RELATIVE` row before the first tick, is invalid. | REQ-SeqScheduler-038, REQ-SeqScheduler-039 |
 | `Telemetry` | Every channel of §5.3 reports the value the table implies; `NextTimeDue` is zero in `TB_NONE` with no upcoming row. | REQ-SeqScheduler-041 |
@@ -648,7 +675,7 @@ base is first reported.
 | `ParamReread` | The table file name is resolved at each load and save; `LATE_TOLERANCE_SEC` is read each tick. | REQ-SeqScheduler-001, REQ-SeqScheduler-005, REQ-SeqScheduler-032 |
 | `Ping` | A ping is echoed with its key. | — |
 | `PingOnFullQueue` | Pings arriving on a full queue are dropped without an assertion; the queued ones are echoed. | — |
-| `RandomOperations` | Random commands, ticks and completions keep the table equal to a reference model. | REQ-SeqScheduler-004, REQ-SeqScheduler-013, REQ-SeqScheduler-020, REQ-SeqScheduler-029 |
+| `RandomOperations` | Random commands, ticks and completions keep the invariants: the table fields equal those a reference model of the commands holds, at most one row is `EXECUTING`, and the row counts add up. The model does not predict which row runs. | REQ-SeqScheduler-004, REQ-SeqScheduler-013, REQ-SeqScheduler-020, REQ-SeqScheduler-029 |
 
 ### 8.2 System tests
 
