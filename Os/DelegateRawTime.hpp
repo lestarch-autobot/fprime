@@ -106,7 +106,7 @@ class DelegateRawTime final : public RawTimeInterface {
 
     //! \brief Get the timer source used by this RawTime instance
     //! \return The RawTimeSource value configured for this instance
-    RawTimeSource getSource() const;
+    RawTimeSource getSource() const override;
 
   private:
     // This section is used to store the implementation-defined RawTime handle. To Os::RawTime and fprime, this type is
