@@ -14,14 +14,9 @@
 #include <Os/QueueString.hpp>
 #include "config/OsSelection.hpp"  // defines Os::Queue alias and OS_QUEUE_HEADER consumed by Os/Queue.hpp; do not remove
 
-// A project config/OsSelection.hpp that predates the Queue selection defines neither the Os::Queue alias nor
-// OS_QUEUE_HEADER; fall back to the link-time delegate so such projects keep building.
+// The Os::Queue alias is used below, thus the selection is checked here rather than in Os/Queue.hpp
 #ifndef OS_QUEUE_HEADER
-namespace Os {
-class DelegateQueue;
-using Queue = DelegateQueue;
-}  // namespace Os
-#define OS_QUEUE_HEADER <Os/DelegateQueue.hpp>
+#error "OS_QUEUE_HEADER must be defined in config/OsSelection.hpp"
 #endif
 
 namespace Os {
