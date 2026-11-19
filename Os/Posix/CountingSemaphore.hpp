@@ -5,7 +5,7 @@
 #ifndef OS_POSIX_COUNTING_SEMAPHORE_HPP
 #define OS_POSIX_COUNTING_SEMAPHORE_HPP
 #include <semaphore.h>
-#include <Os/CountingSemaphore.hpp>
+#include <Os/CountingSemaphoreInterface.hpp>
 
 namespace Os {
 namespace Posix {
@@ -15,7 +15,7 @@ struct PosixCountingSemaphoreHandle : public CountingSemaphoreHandle {
     sem_t m_semaphore{};
 };
 
-class PosixCountingSemaphore : public CountingSemaphoreInterface {
+class PosixCountingSemaphore final : public CountingSemaphoreInterface {
   public:
     explicit PosixCountingSemaphore(U32 initial_count);
 
@@ -23,15 +23,15 @@ class PosixCountingSemaphore : public CountingSemaphoreInterface {
 
     PosixCountingSemaphore(const PosixCountingSemaphore& other) = delete;
 
-    CountingSemaphoreInterface& operator=(const CountingSemaphoreInterface& other) = delete;
+    PosixCountingSemaphore& operator=(const PosixCountingSemaphore& other) = delete;
 
-    PosixCountingSemaphore::Status wait() override;
+    Status wait() override;
 
-    PosixCountingSemaphore::Status waitTimeout(const Fw::TimeInterval& interval) override;
+    Status waitTimeout(const Fw::TimeInterval& interval) override;
 
-    PosixCountingSemaphore::Status tryWait() override;
+    Status tryWait() override;
 
-    PosixCountingSemaphore::Status post() override;
+    Status post() override;
 
     CountingSemaphoreHandle* getHandle() override;
 

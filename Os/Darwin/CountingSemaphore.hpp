@@ -5,7 +5,7 @@
 #ifndef OS_DARWIN_COUNTING_SEMAPHORE_HPP
 #define OS_DARWIN_COUNTING_SEMAPHORE_HPP
 #include <dispatch/dispatch.h>
-#include <Os/CountingSemaphore.hpp>
+#include <Os/CountingSemaphoreInterface.hpp>
 
 namespace Os {
 namespace Darwin {
@@ -16,7 +16,7 @@ struct DarwinCountingSemaphoreHandle : public CountingSemaphoreHandle {
     long m_initial_count = 0;
 };
 
-class DarwinCountingSemaphore : public CountingSemaphoreInterface {
+class DarwinCountingSemaphore final : public CountingSemaphoreInterface {
   public:
     explicit DarwinCountingSemaphore(U32 initial_count);
 
@@ -24,7 +24,7 @@ class DarwinCountingSemaphore : public CountingSemaphoreInterface {
 
     DarwinCountingSemaphore(const DarwinCountingSemaphore& other) = delete;
 
-    CountingSemaphoreInterface& operator=(const CountingSemaphoreInterface& other) = delete;
+    DarwinCountingSemaphore& operator=(const DarwinCountingSemaphore& other) = delete;
 
     Status wait() override;
 

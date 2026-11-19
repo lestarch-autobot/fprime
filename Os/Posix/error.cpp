@@ -201,21 +201,21 @@ ConditionVariable::Status posix_status_to_conditional_status(int posix_status) {
     return status;
 }
 
-CountingSemaphore::Status posix_status_to_semaphore_status(int posix_status) {
-    CountingSemaphore::Status status = CountingSemaphore::Status::ERROR_OTHER;
+CountingSemaphoreInterface::Status posix_status_to_semaphore_status(int posix_status) {
+    CountingSemaphoreInterface::Status status = CountingSemaphoreInterface::Status::ERROR_OTHER;
     switch (posix_status) {
         case 0:
-            status = CountingSemaphore::Status::OP_OK;
+            status = CountingSemaphoreInterface::Status::OP_OK;
             break;
         case ETIMEDOUT:
         case EAGAIN:
-            status = CountingSemaphore::Status::ERROR_TIMEOUT;
+            status = CountingSemaphoreInterface::Status::ERROR_TIMEOUT;
             break;
         case EINVAL:
-            status = CountingSemaphore::Status::ERROR_INVALID;
+            status = CountingSemaphoreInterface::Status::ERROR_INVALID;
             break;
         default:
-            status = CountingSemaphore::Status::ERROR_OTHER;
+            status = CountingSemaphoreInterface::Status::ERROR_OTHER;
             break;
     }
     return status;

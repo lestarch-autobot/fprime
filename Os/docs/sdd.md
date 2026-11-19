@@ -156,6 +156,7 @@ For performance-critical services, the OSAL supports **compile-time selection** 
 - **RawTime** (`config/OsSelection.hpp`, `OS_RAW_TIME_HEADER`)
 - **Mutex** (`config/OsSelection.hpp`, `OS_MUTEX_HEADER`)
 - **ConditionVariable** (`config/OsSelection.hpp`, `OS_CONDITION_VARIABLE_HEADER`) — configured in the same header as Mutex; the two must be overridden together (a `static_assert` in `Os/ConditionVariableInterface.hpp` rejects aliasing only one of them), and the selected ConditionVariable must accept the handle of the selected `Os::Mutex` (implementations such as Posix cast it to their own handle type; `Os::Stub::Mutex::StubConditionVariable` accepts any mutex). Note that `ERROR_DIFFERENT_MUTEX` is reported only by the link-time `DelegateConditionVariable`; a directly aliased implementation does not track which mutex it was first used with.
+- **CountingSemaphore** (`config/OsSelection.hpp`, `OS_COUNTING_SEMAPHORE_HEADER`) — the selected class must derive from `Os::CountingSemaphoreInterface`, be constructible from a `U32` initial count, and not be copyable (`Os/CountingSemaphore.hpp` checks all three with `static_assert`)
 
 The configuration header mechanism allows projects to opt into compile-time selection while maintaining link-time selection as the default for backward compatibility.
 

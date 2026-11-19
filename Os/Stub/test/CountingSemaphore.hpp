@@ -2,7 +2,7 @@
 // \title Os/Stub/test/CountingSemaphore.hpp
 // \brief definitions for TestCountingSemaphore stubs for interface testing
 // ======================================================================
-#include "Os/CountingSemaphore.hpp"
+#include "Os/CountingSemaphoreInterface.hpp"
 
 #ifndef OS_STUB_COUNTINGSEMAPHORE_TEST_HPP
 #define OS_STUB_COUNTINGSEMAPHORE_TEST_HPP

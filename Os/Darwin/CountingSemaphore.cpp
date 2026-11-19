@@ -28,14 +28,14 @@ DarwinCountingSemaphore::~DarwinCountingSemaphore() {
     this->m_handle.m_semaphore = nullptr;
 }
 
-Os::CountingSemaphore::Status DarwinCountingSemaphore::wait() {
+CountingSemaphoreInterface::Status DarwinCountingSemaphore::wait() {
     FW_ASSERT(this->m_handle.m_semaphore != nullptr);
     long result = dispatch_semaphore_wait(this->m_handle.m_semaphore, DISPATCH_TIME_FOREVER);
     FW_ASSERT(result == 0, static_cast<FwAssertArgType>(result));
     return dispatch_result_to_semaphore_status(result);
 }
 
-Os::CountingSemaphore::Status DarwinCountingSemaphore::waitTimeout(const Fw::TimeInterval& interval) {
+CountingSemaphoreInterface::Status DarwinCountingSemaphore::waitTimeout(const Fw::TimeInterval& interval) {
     FW_ASSERT(this->m_handle.m_semaphore != nullptr);
 
     int64_t nsec = static_cast<int64_t>(interval.getSeconds()) * 1000000000LL +
@@ -46,18 +46,18 @@ Os::CountingSemaphore::Status DarwinCountingSemaphore::waitTimeout(const Fw::Tim
     return dispatch_result_to_semaphore_status(result);
 }
 
-Os::CountingSemaphore::Status DarwinCountingSemaphore::tryWait() {
+CountingSemaphoreInterface::Status DarwinCountingSemaphore::tryWait() {
     FW_ASSERT(this->m_handle.m_semaphore != nullptr);
     long result = dispatch_semaphore_wait(this->m_handle.m_semaphore, DISPATCH_TIME_NOW);
     return dispatch_result_to_semaphore_status(result);
 }
 
-Os::CountingSemaphore::Status DarwinCountingSemaphore::post() {
+CountingSemaphoreInterface::Status DarwinCountingSemaphore::post() {
     FW_ASSERT(this->m_handle.m_semaphore != nullptr);
     // dispatch_semaphore_signal returns non-zero if a thread was woken, zero otherwise.
     // Both outcomes are valid — no error condition exists.
     (void)dispatch_semaphore_signal(this->m_handle.m_semaphore);
-    return Os::CountingSemaphore::Status::OP_OK;
+    return CountingSemaphoreInterface::Status::OP_OK;
 }
 
 CountingSemaphoreHandle* DarwinCountingSemaphore::getHandle() {
