@@ -137,7 +137,27 @@ register_fprime_module(
 
 add_named_os_module(Console Fw_Logger)
 add_named_os_module("File;FileSystem;Directory" Utils_Hash Fw_DataStructures)
-add_named_os_module(Task ${CMAKE_THREAD_LIBS_INIT})
+# Task: Task.hpp is a thin public alias header (no Task.cpp); the interface with its
+# common code lives in TaskInterface.{hpp,cpp} and the link-time delegate in
+# DelegateTask.{hpp,cpp}. Registered explicitly because add_named_os_module assumes
+# a matching <name>.cpp per header.
+register_fprime_module(
+      "Os_Task"
+    REQUIRES_IMPLEMENTATIONS
+      "Os_Task"
+    SOURCES
+      "${CMAKE_CURRENT_LIST_DIR}/TaskInterface.cpp"
+      "${CMAKE_CURRENT_LIST_DIR}/DelegateTask.cpp"
+    HEADERS
+      "${CMAKE_CURRENT_LIST_DIR}/Task.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/TaskInterface.hpp"
+      "${CMAKE_CURRENT_LIST_DIR}/DelegateTask.hpp"
+    DEPENDS
+      Fw_Time
+      Fw_Types
+      ${CMAKE_THREAD_LIBS_INIT}
+)
+fprime_target_dependencies(Os PUBLIC "Os_Task")
 # Mutex: Mutex.hpp is a thin public alias header (no Mutex.cpp); the interface and
 # link-time delegate live in MutexInterface.hpp / DelegateMutex.{hpp,cpp}. Registered
 # explicitly (rather than via add_named_os_module) because that helper assumes a

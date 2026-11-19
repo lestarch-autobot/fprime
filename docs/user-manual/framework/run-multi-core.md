@@ -55,7 +55,7 @@ performance characteristics.
 ## F´ Multi-Core Support
 
 F´ provides an API in the OS abstraction layer that allows a thread to be pinned to a specific core. The relevant
-interface is defined in `Os/Task.hpp` as part of the `Arguments` class used when starting a task:
+interface is defined in `Os/TaskInterface.hpp` (included by `Os/Task.hpp`) as part of the `Arguments` class used when starting a task:
 
 ```cpp
 //! \param cpuAffinity: (optional) cpu affinity of this task
@@ -372,4 +372,4 @@ separate processors rather than partitions or processes on the same processor.
 - [F´ on Baremetal Systems](run-baremetal.md) - Design pattern for baremetal F´ applications
 - [Hub Pattern](../design-patterns/hub-pattern.md) - Design pattern for connecting deployments
 - [Configuring F´](configuring-fprime.md) - General F´ configuration options
-- [`Os::Task` API (source)](https://github.com/nasa/fprime/blob/devel/Os/Task.hpp) - Task creation and CPU affinity interface
+- [`Os::Task` API (source)](https://github.com/nasa/fprime/blob/devel/Os/TaskInterface.hpp) - Task creation and CPU affinity interface

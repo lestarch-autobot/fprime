@@ -7,13 +7,24 @@ namespace Os {
 namespace Stub {
 namespace Task {
 
+StubTask::~StubTask() {
+    this->deregister(this);
+}
+
 void StubTask::onStart() {}
 
 Os::TaskInterface::Status StubTask::join() {
-    return Os::TaskInterface::Status::UNKNOWN_ERROR;
+    if (not this->prepareJoin(this)) {
+        return Os::TaskInterface::Status::INVALID_STATE;
+    }
+    const Status status = Os::TaskInterface::Status::UNKNOWN_ERROR;
+    this->completeJoin(this, status);
+    return status;
 }
 
-void StubTask::suspend(Os::TaskInterface::SuspensionType suspensionType) {}
+void StubTask::suspend(Os::TaskInterface::SuspensionType suspensionType) {
+    this->completeSuspend(this, suspensionType);
+}
 
 void StubTask::resume() {}
 
@@ -22,16 +33,20 @@ Os::TaskHandle* StubTask::getHandle() {
 }
 
 Os::TaskInterface::Status StubTask::start(const Os::TaskInterface::Arguments& arguments) {
-    return Os::TaskInterface::Status::UNKNOWN_ERROR;
+    FW_ASSERT(arguments.m_routine != nullptr);
+    const Arguments wrapped_arguments = this->prepareStart(this, arguments);
+    const Status status = Os::TaskInterface::Status::UNKNOWN_ERROR;
+    this->completeStart(this, status, wrapped_arguments);
+    return status;
 }
 
 bool StubTask::isCooperative() {
     return true;
 }
 
-Os::Task::Status StubTask::_delay(const Fw::TimeInterval& interval) {
+Os::TaskInterface::Status StubTask::_delay(const Fw::TimeInterval& interval) {
     FW_ASSERT(false);
-    return Os::Task::Status::UNKNOWN_ERROR;
+    return Os::TaskInterface::Status::UNKNOWN_ERROR;
 }
 
 }  // namespace Task

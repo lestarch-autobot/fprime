@@ -7,6 +7,7 @@
 #include <sched.h>
 #include <atomic>
 #include "Fw/Types/String.hpp"
+#include "Os/Posix/Models/FppConstantsAc.hpp"
 #include "Os/Posix/Task.hpp"
 #include "Os/Task.hpp"
 #include "STest/Scenario/Scenario.hpp"

@@ -19,12 +19,12 @@ struct StaticData {
     //! Last function called
     LastFn lastCalled = NONE_FN;
 
-    Os::Task::SuspensionType suspensionType;
+    Os::TaskInterface::SuspensionType suspensionType;
     Fw::TimeInterval delay;
 
-    Os::Task::Status delayStatus = Os::Task::Status::OP_OK;
-    Os::Task::Status joinStatus = Os::Task::Status::OP_OK;
-    Os::Task::Status startStatus = Os::Task::Status::OP_OK;
+    Os::TaskInterface::Status delayStatus = Os::TaskInterface::Status::OP_OK;
+    Os::TaskInterface::Status joinStatus = Os::TaskInterface::Status::OP_OK;
+    Os::TaskInterface::Status startStatus = Os::TaskInterface::Status::OP_OK;
 
     // Singleton data
     static StaticData data;
@@ -41,6 +41,11 @@ class TestTask : public TaskInterface {
 
     //! Destructor
     ~TestTask() override;
+
+    // Keep the common TaskInterface overloads visible alongside the overrides below
+    using TaskInterface::join;
+    using TaskInterface::start;
+    using TaskInterface::suspend;
 
     //! \brief perform required task start actions
     void onStart() override;

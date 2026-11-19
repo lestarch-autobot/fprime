@@ -2,8 +2,8 @@
 // \title config/OsSelection.hpp
 // \brief configured selection of Os OSAL implementations
 //
-// This header configures how the Os services below (RawTime, Mutex, and
-// ConditionVariable) resolve to concrete implementations. Two mechanisms are
+// This header configures how the Os services below (RawTime, Mutex,
+// ConditionVariable, and Task) resolve to concrete implementations. Two mechanisms are
 // available:
 //
 // 1. Link-time selection (default): each service aliases to an Os::Delegate*
@@ -87,6 +87,27 @@
 //     }  // namespace Os
 //     #define OS_MUTEX_HEADER "Va416x0/Os/AtomicMutex/AtomicMutex.hpp"
 //     #define OS_CONDITION_VARIABLE_HEADER "Os/Stub/ConditionVariable.hpp"
+//
+// ----------------------------------------------------------------------
+// Task
+//
+// A compile-time selection MUST derive from Os::TaskInterface, which holds the
+// common Os::Task state and functions (state tracking, task registry, task
+// count, delay(), getSingleton()). Its start(), join(), suspend() (where
+// supported), and destructor MUST call the TaskInterface helpers
+// prepareStart()/completeStart(), prepareJoin()/completeJoin(),
+// completeSuspend(), and deregister(), passing `this`, as Os/Posix/Task.cpp
+// and Os/Stub/Task.cpp do. An implementation that does not call them compiles
+// but does not track state, count, or register tasks. The source calling the
+// helpers must include Os/Task.hpp, and Os::Task must be the class that calls
+// them, not a class derived from it (rejected at compile time). The
+// implementation module must still be in the link.
+//
+// Example compile-time selection override:
+//
+//     namespace Os { namespace Posix { namespace Task { class PosixTask; } } }
+//     namespace Os { using Task = Os::Posix::Task::PosixTask; }
+//     #define OS_TASK_HEADER <Os/Posix/Task.hpp>
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
@@ -104,10 +125,14 @@ using Mutex = DelegateMutex;
 class DelegateConditionVariable;
 using ConditionVariable = DelegateConditionVariable;
 
+class DelegateTask;
+using Task = DelegateTask;
+
 }  // namespace Os
 
 #define OS_RAW_TIME_HEADER <Os/DelegateRawTime.hpp>
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+#define OS_TASK_HEADER <Os/DelegateTask.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP
