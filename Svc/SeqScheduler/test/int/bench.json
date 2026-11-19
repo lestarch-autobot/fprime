@@ -1,5 +1,6 @@
 {
   "deployment": "",
+  "boot_event": "FileHandling.prmDb.PrmFileLoadComplete",
   "dictionary": "uut/TestDeploymentsProject/build-artifacts/Linux/Ref/dict/RefTopologyDictionary.json",
   "serial": "",
   "vars": {

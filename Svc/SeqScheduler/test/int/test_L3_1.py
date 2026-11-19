@@ -1,0 +1,61 @@
+"""SeqScheduler system test L3-1 (plan.json)."""
+import pytest
+
+from seqsched_common import *  # noqa: F401,F403
+
+
+@pytest.mark.req(*reqs("023 032 031 056 021 008 005"))
+def test_L3_1(window, send, bench, check, require):
+    with window(300, 301):
+        require("STD")
+        standard_requires(require, fresh=True)
+        bench.action("ref_start")
+        bench.action("write_T_BASE")
+        send(S + ".LOAD_TABLE")
+        send(S + ".SET_ROW_ENABLED", [0, True])
+        send(S + ".SET_ROW_ENABLED", [1, True])
+        send(S + ".SET_ROW", [1, time_value("TB_NONE", 1), "START_RELATIVE", "short.bin", "WAIT_FOR_RUNNING"])
+        send(S + ".SET_ROW", [0] + abs_row(bench, 6, "short.bin", "WAIT_FOR_RUNNING"))
+        bench.wait(12)
+        send(S + ".LOAD_TABLE")
+        bracket(bench)
+        check("event seqSched.TableLoaded count == 2")
+        check("event seqSched.SeqRun(row=0) count == 1")
+        check("event seqSched.RowLate(row=1) count == 1")
+        check("last(seqSched.RowsPending) == 16")
+        check("last(seqSched.RowsExecuted) == 0")
+    with window(301, 302):
+        require("STD")
+        require("Ref process up >= 70 s at marker 301", up_at_marker(70))
+        send(S + ".SET_ROW_ENABLED", [0, True])
+        send(S + ".SET_ROW", [0] + abs_row(bench, 6, "short.bin", "WAIT_FOR_RUNNING"))
+        bench.wait(12)
+        send(S + ".SET_ROW_ENABLED", [1, True])
+        send(S + ".SET_ROW", [1, time_value("TB_NONE", 60), "START_RELATIVE", "short.bin", "WAIT_FOR_RUNNING"])
+        bench.wait(3)
+        send(S + ".SAVE_TABLE")
+        bracket(bench)
+        check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
+        check("event seqSched.TableSaved count == 1")
+        check("event seqSched.RowLate(row=1) count == 1")
+        check("last(seqSched.RowsSkipped) == 1")
+        check("last(seqSched.RowsExecuted) == 1")
+    with window(302, 303):
+        bench.reset()
+        bench.action("ref_start")
+        require("both markers present")
+        check("event seqSched.TableLoaded count == 1")
+    with window(303, 304):
+        require("STD")
+        bench.wait(70)
+        bracket(bench)
+        check("event seqSched.SeqRun(row=0) count == 0")
+        check("event seqSched.SeqRun(row=1, fileName=short.bin) count == 1")
+        check("event seqSched.RowLate count == 0")
+        check("last(seqSched.TableLoaded) == True")
+        check("last(seqSched.RowsExecuted) == 1")
+        check("last(seqSched.RowsSkipped) == 1")
+        check("last(seqSched.RowsPending) == 14")
+        check("event seqSched.RowSkippedDisabled count == 0")
+        check("row 1 run between 57 and 66 s after the bench-recorded start of the Ref process",
+              run_after_restart(1, 57, 66))

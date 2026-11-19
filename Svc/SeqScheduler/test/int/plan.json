@@ -9,7 +9,6 @@
   "arg": "id",
   "reserved_min": 4294901760
  },
- "boot_event": "prmDb.PrmFileLoadComplete",
  "event_patterns": {
   "cmdDisp.NoOpStringReceived": "Received a NO-OP string=(?P<id>\\d+)$",
   "seqSched.TableLoaded": "Loaded sequence schedule table (?P<fileName>\\S+): (?P<rows>\\d+) rows$",
@@ -662,7 +661,8 @@
   "2026-11-19 developer — dry run on the bench: (1) `seqSched.LastExecutedRow` removed from the `SeqSched` sample group: it is written only when a sequence completes (SDD telemetry table), so it has no sample in most windows; (2) the dispatch-count and drop-count members of `STD` and `STD-ERR` are registered helpers: a sequence's own commands are also logged as dispatched, so only `CMD_NO_OP` may be dispatched more often than sent. Not yet reviewed.",
   "2026-11-19 developer — dry run on the bench: L6-2 declared ABS, whose member `event seqSched.SeqDoneUnexpected count == 0` contradicts the test's own `count == 1`; L6-2 now declares the other two members of ABS. Not yet reviewed.",
   "2026-11-19 developer — dry run on the bench: the lower time bound of L2-2 and L2-11 was judged against the SET_ROW command with a 2 s allowance; reading the FSW time and sending the command take 1.2 to 3.2 s, so the check failed on a correct run (5.741 s against 6 s). The bound is now judged against the time in the row's own RowSet event. Not yet reviewed.",
-  "2026-11-19 developer — planted-fault dry runs: L2-4's lower bound (9 s after the second SET_ROW, elapsed + 12 commanded) failed once on a correct run (8.467 s): reading `elapsed` and sending the command take 1 to 3.5 s. The bound is now judged against the row's own delay counted from the bench-recorded start of the Ref process (11 runs: 1.005 to 1.013 s after it). Planted faults: cross_instance declared kind insert (it returns a command for the other instance); checks that also fail under a fault added to its `fails` (lower time bound of L2-2 and L2-11 when the row does not run; RowLate count == 0 in L2-3; RowsExecuted in L2-11 under wrong_seq). Not yet reviewed."
+  "2026-11-19 developer — planted-fault dry runs: L2-4's lower bound (9 s after the second SET_ROW, elapsed + 12 commanded) failed once on a correct run (8.467 s): reading `elapsed` and sending the command take 1 to 3.5 s. The bound is now judged against the row's own delay counted from the bench-recorded start of the Ref process (11 runs: 1.005 to 1.013 s after it). Planted faults: cross_instance declared kind insert (it returns a command for the other instance); checks that also fail under a fault added to its `fails` (lower time bound of L2-2 and L2-11 when the row does not run; RowLate count == 0 in L2-3; RowsExecuted in L2-11 under wrong_seq). Not yet reviewed.",
+  "2026-11-19 developer — move to fprime-testing-harness v0.1.26 + native-bench (contract pin v0.1.2 lacks 25 releases found on lestarch-autobot/fprime-testing-harness): `boot_event` moved from the plan to bench.json (the tool's key since v0.1.8); L5-1 and L5-3 clean-up step `finally: Ref.seqSched.TABLE_FILE_PRM_SET(T-BASE path)` split into a text line and the command step so `fth verify-stimulus` reads it as a command. No check, pass rule, window or sent command changed. Test code: one file per plan test (test_<ID>.py) over seqsched_common.py; loops and shared procedure helpers written out so each send is visible to the static check."
  ],
  "tests": [
   {
@@ -1770,7 +1770,8 @@
     "wait 20 s",
     "bracket (2 SeqSched samples)",
     "CMD_NO_OP_STRING(501)",
-    "finally: Ref.seqSched.TABLE_FILE_PRM_SET(T-BASE path)",
+    "finally (also after a failed procedure), the clean-up window:",
+    "Ref.seqSched.TABLE_FILE_PRM_SET(T-BASE path)",
     "Ref.seqSched.LOAD_TABLE()",
     "bracket (2 SeqSched samples)",
     "CMD_NO_OP_STRING(502)"
@@ -1877,7 +1878,8 @@
     "wait 20 s",
     "bracket (2 SeqSched samples)",
     "CMD_NO_OP_STRING(521)",
-    "finally: Ref.seqSched.TABLE_FILE_PRM_SET(T-BASE path)",
+    "finally (also after a failed procedure), the clean-up window:",
+    "Ref.seqSched.TABLE_FILE_PRM_SET(T-BASE path)",
     "Ref.seqSched.LOAD_TABLE()",
     "bracket (2 SeqSched samples)",
     "CMD_NO_OP_STRING(522)"
