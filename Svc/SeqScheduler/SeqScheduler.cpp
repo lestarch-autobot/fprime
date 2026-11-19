@@ -21,6 +21,14 @@ constexpr U64 USEC_PER_SEC = 1000000;
 constexpr U64 MAX_TICK_USEC = 0x1FFFFFFFFFFFFFFFULL;
 constexpr I64 MAX_SIGNED_USEC = 0x1FFFFFFFFFFFFFFFLL;
 
+//! Skipped rows that get an event each on one tick or disable command; the rest are counted in one event
+constexpr FwSizeType MAX_SKIP_EVENTS = 4;
+
+static_assert(static_cast<FwSizeType>(FileNameStringSize) <= static_cast<FwSizeType>(FW_FIXED_LENGTH_STRING_SIZE),
+              "A table file name is decoded through Fw::String and must fit it");
+static_assert(static_cast<FwSizeType>(SeqSchedulerDpMaxBytes) > Fw::DpContainer::MIN_PACKET_SIZE,
+              "The table data product must be able to hold at least its packet overhead");
+
 //! Round a size up to a multiple of an alignment
 FwSizeType alignUp(FwSizeType size, FwSizeType alignment) {
     FW_ASSERT(alignment > 0);
@@ -86,7 +94,7 @@ void SeqScheduler::configure(const Fw::StringBase& defaultTableFile,
     const FwSizeType treeSize = Fw::ExternalRedBlackTreeSet<DueRow>::getByteArraySize(rows);
     static_assert(Fw::ExternalRedBlackTreeSet<DueRow>::getByteArrayAlignment() <= alignof(std::max_align_t),
                   "The due-row tree must fit the alignment of the allocation");
-    const FwSizeType wanted = 2 * tableSize + rowDueSize + treeSize;
+    const FwSizeType wanted = 2 * tableSize + rowDueSize + 3 * treeSize;
 
     FwSizeType granted = wanted;
     bool recoverable = false;
@@ -95,10 +103,20 @@ void SeqScheduler::configure(const Fw::StringBase& defaultTableFile,
     FW_ASSERT(granted >= wanted, static_cast<FwAssertArgType>(granted), static_cast<FwAssertArgType>(wanted));
 
     U8* const bytes = static_cast<U8*>(memory);
-    this->m_table = new (bytes) SeqScheduler_Row[rows];
-    this->m_loadRows = new (bytes + tableSize) SeqScheduler_Row[rows];
-    this->m_rowDue = new (bytes + 2 * tableSize) RowDue[rows];
-    this->m_due.setStorage(Fw::ByteArray(bytes + 2 * tableSize + rowDueSize, treeSize), rows);
+    // The objects are constructed one at a time: an array placement new may add overhead of its own
+    this->m_table = reinterpret_cast<SeqScheduler_Row*>(bytes);
+    this->m_loadRows = reinterpret_cast<SeqScheduler_Row*>(bytes + tableSize);
+    this->m_rowDue = reinterpret_cast<RowDue*>(bytes + 2 * tableSize);
+    for (FwSizeType i = 0; i < rows; i++) {
+        (void)new (&this->m_table[i]) SeqScheduler_Row();
+        (void)new (&this->m_loadRows[i]) SeqScheduler_Row();
+        (void)new (&this->m_rowDue[i]) RowDue();
+    }
+    U8* const trees = bytes + 2 * tableSize + rowDueSize;
+    this->m_due.setStorage(Fw::ByteArray(trees, treeSize), rows);
+    this->m_upcoming[0].setStorage(Fw::ByteArray(trees + treeSize, treeSize), rows);
+    this->m_upcoming[1].setStorage(Fw::ByteArray(trees + 2 * treeSize, treeSize), rows);
+    this->m_upcomingActive = 0;
 
     this->m_memory = memory;
     this->m_allocator = &allocator;
@@ -116,6 +134,8 @@ void SeqScheduler::cleanup() {
             this->m_loadRows[i].~SeqScheduler_Row();
         }
         this->m_due = Fw::ExternalRedBlackTreeSet<DueRow>();
+        this->m_upcoming[0] = Fw::ExternalRedBlackTreeSet<DueRow>();
+        this->m_upcoming[1] = Fw::ExternalRedBlackTreeSet<DueRow>();
         this->m_allocator->deallocate(this->m_memId, this->m_memory);
         this->m_memory = nullptr;
         this->m_table = nullptr;
@@ -215,6 +235,7 @@ void SeqScheduler::SET_ROW_ENABLED_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, F
         this->removeDue(row);
     }
     this->unLock();
+    this->rebuildUpcoming();
     this->log_ACTIVITY_HI_RowEnabledSet(row, enabled);
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
 }
@@ -245,6 +266,7 @@ void SeqScheduler::SET_SEQ_ENABLED_cmdHandler(FwOpcodeType opCode,
         this->reject(opCode, cmdSeq, SeqScheduler_CmdRejection::NO_MATCH);
         return;
     }
+    this->rebuildUpcoming();
     this->log_ACTIVITY_HI_SeqEnabledSet(fileName, enabled, count);
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
 }
@@ -279,6 +301,7 @@ void SeqScheduler::SET_ROW_cmdHandler(FwOpcodeType opCode,
     entry.set_state(SeqScheduler_RowState::PENDING);
     this->removeDue(row);
     this->unLock();
+    this->rebuildUpcoming();
     this->log_ACTIVITY_HI_RowSet(row, time, mode, fileName, busyPolicy);
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
 }
@@ -337,7 +360,9 @@ void SeqScheduler::SET_ENABLED_cmdHandler(FwOpcodeType opCode, U32 cmdSeq, bool 
     if (!enabled) {
         // A waiting row at a disable is skipped for good: an enable before the next tick does not revive it
         this->skipDueRowsWhileDisabled();
+        this->reportSkipsWithoutEvent();
     }
+    this->rebuildUpcoming();
     this->log_ACTIVITY_HI_EnabledSet(enabled);
     this->tlmWrite_Enabled(enabled);
     this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
@@ -368,9 +393,11 @@ void SeqScheduler::runInternal_internalInterfaceHandler() {
     this->applyCancelRule();
     this->runFirstDueRow();
     this->skipBusyRows();
+    this->reportSkipsWithoutEvent();
     if (quiet) {
         this->m_loadState = LoadState::LOADED;
     }
+    this->rebuildUpcoming();
     this->writeTelemetry();
 }
 
@@ -383,7 +410,9 @@ void SeqScheduler::skipDueRowsWhileDisabled() {
     for (FwSizeType row = 0; row < this->m_rows; row++) {
         if (this->m_rowDue[row].due) {
             this->setRowState(row, SeqScheduler_RowState::SKIPPED);
-            this->log_ACTIVITY_LO_RowSkippedDisabled(row);
+            if (this->skipEventAllowed()) {
+                this->log_ACTIVITY_LO_RowSkippedDisabled(row, SeqScheduler_SkipCause::WAITING_AT_DISABLE);
+            }
         }
     }
     this->lock();
@@ -404,12 +433,14 @@ void SeqScheduler::evaluatePendingRows(bool quiet) {
         }
         if ((!this->m_enabled) || (!entry.get_enabled())) {
             this->setRowState(row, SeqScheduler_RowState::SKIPPED);
-            if (!quiet) {
-                this->log_ACTIVITY_LO_RowSkippedDisabled(row);
+            if ((!quiet) && this->skipEventAllowed()) {
+                this->log_ACTIVITY_LO_RowSkippedDisabled(row, this->m_enabled
+                                                                  ? SeqScheduler_SkipCause::ROW_DISABLED
+                                                                  : SeqScheduler_SkipCause::SCHEDULER_DISABLED);
             }
         } else if (info.lateUsec > tolerance) {
             this->setRowState(row, SeqScheduler_RowState::SKIPPED);
-            if (!quiet) {
+            if ((!quiet) && this->skipEventAllowed()) {
                 this->log_WARNING_LO_RowLate(row);
             }
         } else {
@@ -453,7 +484,9 @@ void SeqScheduler::applyCancelRule() {
         this->lock();
         this->removeDue(first.row);
         this->unLock();
-        this->log_WARNING_LO_RowSkippedByCancel(first.row, last.row);
+        if (this->skipEventAllowed()) {
+            this->log_WARNING_LO_RowSkippedByCancel(first.row, last.row);
+        }
     }
     if (this->m_seq.state == SeqState::RUNNING) {
         this->seqCancelOut_out(0);
@@ -484,7 +517,9 @@ void SeqScheduler::skipBusyRows() {
             this->lock();
             this->removeDue(row);
             this->unLock();
-            this->log_WARNING_LO_RowSkippedBusy(row, this->m_seq.row);
+            if (this->skipEventAllowed()) {
+                this->log_WARNING_LO_RowSkippedBusy(row, this->m_seq.row);
+            }
         }
     }
 }
@@ -581,17 +616,20 @@ bool SeqScheduler::loadTable(bool startUp) {
         }
         return false;
     }
-    this->lock();
+    // Complete the load copy, then make it the table: the lock is held for the exchange only
     for (FwSizeType row = 0; row < this->m_rows; row++) {
-        if (row < loadedRows) {
-            this->m_table[row] = this->m_loadRows[row];
-        } else {
-            this->m_table[row] = SeqScheduler_Row();
+        if (row >= loadedRows) {
+            this->m_loadRows[row] = SeqScheduler_Row();
         }
-        this->m_table[row].set_state(SeqScheduler_RowState::PENDING);
+        this->m_loadRows[row].set_state(SeqScheduler_RowState::PENDING);
     }
+    this->lock();
+    SeqScheduler_Row* const loaded = this->m_loadRows;
+    this->m_loadRows = this->m_table;
+    this->m_table = loaded;
     this->clearDue();
     this->unLock();
+    this->rebuildUpcoming();
     this->m_loadState = LoadState::LOADED_NEW;
     this->log_WARNING_HI_TimeBaseNotRecorded_ThrottleClear();
     if (missing) {
@@ -935,51 +973,78 @@ bool SeqScheduler::upcomingKey(FwSizeType row, DueRow& key, Fw::Time& timeDue) c
         (entry.get_state() != SeqScheduler_RowState::PENDING)) {
         return false;
     }
+    key.row = static_cast<U16>(row);
+    if (this->m_rowDue[row].due && (entry.get_mode() == SeqScheduler_TimeMode::ABSOLUTE)) {
+        // A waiting row still runs, also when system time has since changed to another time base
+        const Fw::TimeValue& time = entry.get_time();
+        key.dueUsec = this->m_rowDue[row].dueUsec;
+        timeDue = Fw::Time(time.get_timeBase(), time.get_timeContext(), time.get_seconds(), time.get_useconds());
+        return true;
+    }
     const DueInfo info = this->dueInfo(row);
     if (!info.known) {
         return false;
     }
-    key.row = static_cast<U16>(row);
     key.dueUsec = this->m_rowDue[row].due ? this->m_rowDue[row].dueUsec : info.dueUsec;
     timeDue = info.timeDue;
     return true;
 }
 
 bool SeqScheduler::findUpcoming(FwSizeType position, FwSizeType& row, Fw::Time& timeDue) const {
-    if (position >= this->m_rows) {
-        return false;
-    }
-    bool havePrevious = false;
-    DueRow previous;
-    // Select the smallest key above the previous one, position + 1 times
-    for (FwSizeType n = 0; n <= position; n++) {
-        bool found = false;
-        DueRow best;
-        Fw::Time bestTime;
-        for (FwSizeType candidate = 0; candidate < this->m_rows; candidate++) {
-            DueRow key;
-            Fw::Time candidateTime;
-            if (!this->upcomingKey(candidate, key, candidateTime)) {
-                continue;
+    FW_ASSERT(this->m_upcomingActive < FW_NUM_ARRAY_ELEMENTS(this->m_upcoming));
+    const Fw::ExternalRedBlackTreeSet<DueRow>& order = this->m_upcoming[this->m_upcomingActive];
+    FwSizeType found = 0;
+    auto it = order.begin();
+    // Forward walk of the order; it holds at most one entry per row
+    for (FwSizeType walked = 0; (walked < this->m_rows) && (it != order.end()); walked++) {
+        DueRow key;
+        // A row changed since the order was built is passed over
+        if (this->upcomingKey((*it).row, key, timeDue)) {
+            if (found == position) {
+                row = (*it).row;
+                return true;
             }
-            if (havePrevious && (!(previous < key))) {
-                continue;
-            }
-            if ((!found) || (key < best)) {
-                found = true;
-                best = key;
-                bestTime = candidateTime;
-            }
+            found++;
         }
-        if (!found) {
-            return false;
-        }
-        previous = best;
-        havePrevious = true;
-        timeDue = bestTime;
+        ++it;
     }
-    row = previous.row;
-    return true;
+    return false;
+}
+
+void SeqScheduler::rebuildUpcoming() {
+    FW_ASSERT(this->m_upcomingActive < FW_NUM_ARRAY_ELEMENTS(this->m_upcoming));
+    // Only this thread writes the table, so it is read here without the lock; queries read the other order
+    const FwSizeType building = 1 - this->m_upcomingActive;
+    Fw::ExternalRedBlackTreeSet<DueRow>& order = this->m_upcoming[building];
+    order.clear();
+    for (FwSizeType row = 0; row < this->m_rows; row++) {
+        DueRow key;
+        Fw::Time timeDue;
+        if (this->upcomingKey(row, key, timeDue)) {
+            const Fw::Success status = order.insert(key);
+            FW_ASSERT(status == Fw::Success::SUCCESS, static_cast<FwAssertArgType>(row));
+        }
+    }
+    this->lock();
+    this->m_upcomingActive = building;
+    this->unLock();
+}
+
+bool SeqScheduler::skipEventAllowed() {
+    if (this->m_skipEvents < MAX_SKIP_EVENTS) {
+        this->m_skipEvents++;
+        return true;
+    }
+    this->m_skipsWithoutEvent++;
+    return false;
+}
+
+void SeqScheduler::reportSkipsWithoutEvent() {
+    if (this->m_skipsWithoutEvent > 0) {
+        this->log_WARNING_LO_RowSkipsNotReported(this->m_skipsWithoutEvent);
+    }
+    this->m_skipEvents = 0;
+    this->m_skipsWithoutEvent = 0;
 }
 
 void SeqScheduler::runRow(FwSizeType row) {

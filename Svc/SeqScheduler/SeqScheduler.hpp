@@ -216,8 +216,18 @@ class SeqScheduler final : public SeqSchedulerComponentBase {
     //! Late tolerance in microseconds, not below the tick period
     U64 lateToleranceUsec();
 
-    //! Find the position-th upcoming row; \return true when there is one
+    //! Find the position-th upcoming row in the upcoming order; called with the component lock held
+    //! \return true when there is one
     bool findUpcoming(FwSizeType position, FwSizeType& row, Fw::Time& timeDue) const;
+
+    //! Rebuild the upcoming order from the table and make it the one queries read
+    void rebuildUpcoming();
+
+    //! Count one skipped row of this tick or command; \return true when the row gets an event of its own
+    bool skipEventAllowed();
+
+    //! Emit RowSkipsNotReported for the skipped rows that got no event, and start a new count
+    void reportSkipsWithoutEvent();
 
     //! Whether a row is upcoming, and its place in the order
     bool upcomingKey(FwSizeType row, DueRow& key, Fw::Time& timeDue) const;
@@ -245,6 +255,10 @@ class SeqScheduler final : public SeqSchedulerComponentBase {
     RowDue* m_rowDue = nullptr;                         //!< Per-row due records
     FwSizeType m_rows = 0;                              //!< Row count given to configure
     Fw::ExternalRedBlackTreeSet<DueRow> m_due;          //!< The due rows
+    Fw::ExternalRedBlackTreeSet<DueRow> m_upcoming[2];  //!< The upcoming order: one read by queries, one being built
+    FwSizeType m_upcomingActive = 0;                    //!< Index of the upcoming order read by queries
+    FwSizeType m_skipEvents = 0;                        //!< Skipped rows of this tick or command with an event each
+    FwSizeType m_skipsWithoutEvent = 0;                 //!< Skipped rows of this tick or command without an event
     Fw::MemAllocator* m_allocator = nullptr;            //!< Allocator given to configure
     FwEnumStoreType m_memId = 0;                        //!< Allocator identifier
     void* m_memory = nullptr;                           //!< The allocation

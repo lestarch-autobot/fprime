@@ -336,6 +336,36 @@ TEST(SeqScheduler, QueryNotUpcoming) {
     tester.QueryNotUpcoming();
 }
 
+TEST(SeqScheduler, QueryLargeTable) {
+    Svc::SeqSchedulerTester tester(2048);
+    tester.QueryLargeTable();
+}
+
+TEST(SeqScheduler, QueryAfterEdit) {
+    Svc::SeqSchedulerTester tester;
+    tester.QueryAfterEdit();
+}
+
+TEST(SeqScheduler, QueryWaitingAfterBaseChange) {
+    Svc::SeqSchedulerTester tester;
+    tester.QueryWaitingAfterBaseChange();
+}
+
+TEST(SeqScheduler, QueryFromSecondThread) {
+    Svc::SeqSchedulerTester tester;
+    tester.QueryFromSecondThread();
+}
+
+TEST(SeqScheduler, SkipEventsBounded) {
+    Svc::SeqSchedulerTester tester(300);
+    tester.SkipEventsBounded();
+}
+
+TEST(SeqScheduler, ToleranceParameterInvalid) {
+    Svc::SeqSchedulerTester tester;
+    tester.ToleranceParameterInvalid();
+}
+
 TEST(SeqScheduler, QueryInvalid) {
     Svc::SeqSchedulerTester tester;
     tester.QueryInvalid();

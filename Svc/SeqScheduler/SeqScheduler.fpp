@@ -56,6 +56,13 @@ module Svc {
       RENAME = 2 @< Written file cannot be renamed onto the table file
     }
 
+    @ Why a row whose time passed was skipped as disabled
+    enum SkipCause : U8 {
+      ROW_DISABLED = 0 @< The row was disabled when its time passed
+      SCHEDULER_DISABLED = 1 @< The component was disabled when the row's time passed
+      WAITING_AT_DISABLE = 2 @< The row was waiting for a running sequence when the component was disabled
+    }
+
     @ Reason a command was rejected
     enum CmdRejection : U8 {
       ROW_INDEX = 0 @< Row index out of range
@@ -203,8 +210,12 @@ module Svc {
       severity warning low format "Row {} skipped: found past its due time"
 
     @ Time of a disabled row passed; not emitted on the first tick handled after a table load
-    event RowSkippedDisabled(row: FwSizeType) \
-      severity activity low format "Row {} skipped: disabled"
+    event RowSkippedDisabled(row: FwSizeType, cause: SkipCause) \
+      severity activity low format "Row {} skipped: {}"
+
+    @ Rows were skipped on one tick or by one disable command beyond the rows that each got an event
+    event RowSkipsNotReported(count: FwSizeType) \
+      severity warning low format "{} more rows skipped without an event each"
 
     @ A reported time base was not recorded: SeqSchedulerTimeBases bases are already recorded
     @ Throttle is cleared at each successful load

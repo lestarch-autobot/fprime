@@ -4,6 +4,8 @@
 // ======================================================================
 
 #include "SeqSchedulerTester.hpp"
+#include <atomic>
+#include <thread>
 
 #include <unistd.h>
 #include <cstdio>
@@ -604,7 +606,7 @@ void SeqSchedulerTester::DueOrderEarlyTicks() {
     this->paramSend_LATE_TOLERANCE_SEC(0, 0);
     this->tick();
     this->assertRun(0, 1, "abs.bin");
-    ASSERT_LT(this->component.m_rowDue[0].dueUsec, static_cast<I64>(2 * TICK_USEC));
+    ASSERT_LT(this->component.m_rowDue[1].dueUsec, 0);  // the ABSOLUTE row came due before the first tick
     this->done();
     this->tick();
     this->assertRun(1, 0, "rel.bin");
@@ -682,7 +684,7 @@ void SeqSchedulerTester::DisableThenEnableSkipsWaiting() {
     ASSERT_EQ(this->state(1), State::SKIPPED);
     ASSERT_EQ(this->component.m_due.getSize(), 0U);
     ASSERT_EVENTS_RowSkippedDisabled_SIZE(1);
-    ASSERT_EVENTS_RowSkippedDisabled(0, 1);
+    ASSERT_EVENTS_RowSkippedDisabled(0, 1, Svc::SeqScheduler_SkipCause::WAITING_AT_DISABLE);
     this->cmdEnabled(true);
     this->done();
     this->tick(2);
@@ -922,7 +924,7 @@ void SeqSchedulerTester::DisabledRowSkipped() {
     this->clearHistory();
     this->tick();
     ASSERT_EVENTS_RowSkippedDisabled_SIZE(1);
-    ASSERT_EVENTS_RowSkippedDisabled(0, 0);
+    ASSERT_EVENTS_RowSkippedDisabled(0, 0, Svc::SeqScheduler_SkipCause::ROW_DISABLED);
     ASSERT_EQ(this->state(0), State::SKIPPED);
     ASSERT_from_seqRunOut_SIZE(0);
     this->cmdSave();
@@ -1127,6 +1129,35 @@ void SeqSchedulerTester::FailedLoadKeepsTable() {
     ASSERT_EQ(this->state(0), State::EXECUTING);
     ASSERT_EQ(this->component.m_due.getSize(), 1U);
     ASSERT_STREQ(this->component.m_table[2].get_fileName().toChar(), "c.bin");
+    // Failures found after rows were decoded into the load copy: a bad checksum, then an invalid mode in row 1
+    const FileRow rows[] = {
+        {TimeBase::TB_WORKSTATION_TIME, T0 + 50, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 1, "x.bin"},
+        {TimeBase::TB_WORKSTATION_TIME, T0 + 60, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 1, "y.bin"}};
+    U8 bytes[SeqScheduler::TABLE_FILE_HEADER_SIZE + 2 * SeqScheduler::TABLE_FILE_ROW_SIZE + HASH_DIGEST_LENGTH];
+    const FwSizeType size = this->buildFile(bytes, sizeof(bytes), rows, 2);
+    const FwSizeType modeAt = SeqScheduler::TABLE_FILE_HEADER_SIZE + SeqScheduler::TABLE_FILE_ROW_SIZE + 11;
+    const SeqScheduler_LoadFailure::T reasons[] = {SeqScheduler_LoadFailure::CHECKSUM,
+                                                   SeqScheduler_LoadFailure::ROW_CONTENT};
+    for (U32 i = 0; i < 2; i++) {
+        bytes[modeAt] = (i == 0) ? static_cast<U8>(bytes[modeAt] ^ 0xFF) : 3;
+        if (i == 1) {
+            Utils::HashBuffer digest;
+            Utils::Hash::hash(bytes, size - HASH_DIGEST_LENGTH, digest);
+            (void)memcpy(&bytes[size - HASH_DIGEST_LENGTH], digest.getBuffAddr(), HASH_DIGEST_LENGTH);
+        }
+        this->writeBytes(this->defaultFile(), bytes, size);
+        this->clearHistory();
+        this->cmdLoad();
+        this->assertLastCmd(SeqScheduler::OPCODE_LOAD_TABLE, Fw::CmdResponse::EXECUTION_ERROR);
+        ASSERT_EVENTS_TableLoadFailed_SIZE(1);
+        ASSERT_EVENTS_TableLoadFailed(0, this->defaultFile(), reasons[i]);
+        ASSERT_EQ(this->component.m_loadState, loadState);
+        ASSERT_EQ(this->state(0), State::EXECUTING);
+        ASSERT_EQ(this->component.m_due.getSize(), 1U);
+        ASSERT_STREQ(this->component.m_table[0].get_fileName().toChar(), "a.bin");
+        ASSERT_STREQ(this->component.m_table[1].get_fileName().toChar(), "b.bin");
+        ASSERT_STREQ(this->component.m_table[2].get_fileName().toChar(), "c.bin");
+    }
     this->done();
     this->tick();
     this->assertRun(0, 1, "b.bin");
@@ -1664,6 +1695,217 @@ void SeqSchedulerTester::QueryByPosition() {
     Fw::Time timeDue;
     Fw::String name;
     ASSERT_FALSE(this->query(4, timeDue, name));
+}
+
+void SeqSchedulerTester::QueryLargeTable() {
+    // REQ-SeqScheduler-037, 039; SDD 3.6.3: every position of a full table of 2048 rows, in the upcoming order
+    this->startEmpty();
+    const FwSizeType rows = this->component.m_rows;
+    ASSERT_EQ(rows, 2048U);
+    for (FwSizeType row = 0; row < rows; row++) {
+        // Later rows come due earlier, two rows per second: the order is the reverse of the index, in pairs
+        SeqScheduler_Row& entry = this->component.m_table[row];
+        entry.set_time(
+            Fw::TimeValue(TimeBase::TB_WORKSTATION_TIME, 0, T0 + 10 + static_cast<U32>((rows - 1 - row) / 2), 0));
+        entry.set_mode(Mode::ABSOLUTE);
+        entry.set_fileName(Fw::String("q.bin"));
+        entry.set_enabled(true);
+    }
+    this->tick();
+    for (FwSizeType i = 0; i < rows; i++) {
+        Fw::Time timeDue;
+        Fw::String name;
+        ASSERT_TRUE(this->query(i, timeDue, name)) << i;
+        ASSERT_EQ(timeDue.getSeconds(), T0 + 10 + static_cast<U32>(i / 2)) << i;
+    }
+    Fw::Time timeDue;
+    Fw::String name;
+    ASSERT_FALSE(this->query(rows, timeDue, name));
+    ASSERT_TLM_NextRow(this->tlmHistory_NextRow->size() - 1, rows - 2);
+}
+
+void SeqSchedulerTester::QueryAfterEdit() {
+    // SDD 3.6.3: the upcoming order follows each table command without waiting for a tick
+    this->startEmpty();
+    Fw::Time timeDue;
+    Fw::String name;
+    ASSERT_FALSE(this->query(0, timeDue, name));
+    this->absRow(0, 9, "r0.bin");
+    this->absRow(1, 5, "r1.bin");
+    ASSERT_TRUE(this->query(0, timeDue, name));
+    ASSERT_STREQ(name.toChar(), "r1.bin");
+    this->cmdSetRow(0, Mode::ABSOLUTE, T0 + 3, "new.bin");
+    ASSERT_TRUE(this->query(0, timeDue, name));
+    ASSERT_STREQ(name.toChar(), "new.bin");
+    ASSERT_EQ(timeDue.getSeconds(), T0 + 3);
+    this->cmdRowEnabled(0, false);
+    ASSERT_TRUE(this->query(0, timeDue, name));
+    ASSERT_STREQ(name.toChar(), "r1.bin");
+    ASSERT_FALSE(this->query(1, timeDue, name));
+    this->cmdSeqEnabled("new.bin", true);
+    ASSERT_TRUE(this->query(1, timeDue, name));
+    ASSERT_STREQ(name.toChar(), "r1.bin");
+    this->cmdEnabled(false);
+    ASSERT_FALSE(this->query(0, timeDue, name));
+    this->cmdEnabled(true);
+    ASSERT_TRUE(this->query(0, timeDue, name));
+    ASSERT_STREQ(name.toChar(), "new.bin");
+    const FileRow rows[] = {
+        {TimeBase::TB_WORKSTATION_TIME, T0 + 70, 0, Mode::ABSOLUTE, Policy::WAIT_FOR_RUNNING, 1, "file.bin"}};
+    this->writeFile(this->defaultFile(), rows, 1);
+    this->cmdLoad();
+    ASSERT_TRUE(this->query(0, timeDue, name));
+    ASSERT_STREQ(name.toChar(), "file.bin");
+    ASSERT_FALSE(this->query(1, timeDue, name));
+}
+
+void SeqSchedulerTester::QueryWaitingAfterBaseChange() {
+    // SDD 3.6.3: a waiting ABSOLUTE row is upcoming until it runs, also after system time changes its time base
+    this->startEmpty();
+    this->absRow(0, 1, "a.bin");
+    this->absRow(1, 2, "wait.bin");
+    this->tick(2);  // row 0 runs, row 1 waits
+    Fw::Time timeDue;
+    Fw::String name;
+    ASSERT_TRUE(this->query(0, timeDue, name));
+    this->setTime(this->m_seconds, 0, TimeBase::TB_SC_TIME);
+    this->tick();
+    ASSERT_TRUE(this->query(0, timeDue, name));
+    ASSERT_STREQ(name.toChar(), "wait.bin");
+    ASSERT_EQ(timeDue, Fw::Time(TimeBase::TB_WORKSTATION_TIME, 0, T0 + 2, 0));
+    ASSERT_TLM_NextRow(this->tlmHistory_NextRow->size() - 1, 1);
+    ASSERT_TLM_RowsWaiting(this->tlmHistory_RowsWaiting->size() - 1, 1);
+    this->clearHistory();
+    this->cmdReport();
+    ASSERT_EVENTS_ActiveRow_SIZE(1);
+    this->done();
+    this->tick();
+    this->assertRun(0, 1, "wait.bin");
+    ASSERT_FALSE(this->query(0, timeDue, name));
+}
+
+void SeqSchedulerTester::QueryFromSecondThread() {
+    // SDD 3.4: queries from another thread while the component thread edits, ticks and loads
+    this->startEmpty();
+    std::atomic<bool> stop{false};
+    std::atomic<U32> answers{0};
+    std::atomic<U32> wrong{0};
+    std::thread caller([this, &stop, &answers, &wrong]() {
+        while (!stop.load()) {
+            for (FwSizeType i = 0; i < 4; i++) {
+                Fw::Time timeDue;
+                Fw::String name;
+                if (this->component.queryIn_handler(0, i, timeDue, name)) {
+                    answers++;
+                    // Every row the test sets is due after T0 and named
+                    if ((name.length() == 0) || (timeDue.getSeconds() <= T0)) {
+                        wrong++;
+                    }
+                }
+            }
+        }
+    });
+    for (U32 round = 0; round < 200; round++) {
+        this->absRow(round % 8, 1000 + round, "t.bin");
+        this->cmdRowEnabled((round + 3) % 8, (round % 2) == 0 ? false : true);
+        this->tick();
+        if ((round % 50) == 49) {
+            this->cmdSave();
+            this->cmdLoad();
+        }
+        this->clearHistory();
+    }
+    stop.store(true);
+    caller.join();
+    ASSERT_GT(answers.load(), 0U);
+    ASSERT_EQ(wrong.load(), 0U);
+}
+
+void SeqSchedulerTester::SkipEventsBounded() {
+    // SDD 7: at most four per-row skip events on one tick or disable command; the rest in RowSkipsNotReported
+    this->startEmpty();
+    const FwSizeType rows = this->component.m_rows;
+    ASSERT_EQ(rows, 300U);
+    // By a cancel: row 0 runs, 99 rows wait, then a CANCEL_RUNNING row comes due after them
+    this->absRow(0, 1, "run.bin");
+    for (FwSizeType row = 1; row < 100; row++) {
+        this->absRow(row, 2, "wait.bin");
+        this->clearHistory();  // the tester histories are bounded
+    }
+    this->absRow(100, 3, "cancel.bin", Policy::CANCEL_RUNNING);
+    this->tick(2);
+    ASSERT_EQ(this->component.m_due.getSize(), 99U);
+    this->clearHistory();
+    this->tick();
+    ASSERT_EVENTS_RowSkippedByCancel_SIZE(4);
+    ASSERT_EVENTS_RowSkippedByCancel(0, 1, 100);
+    ASSERT_EVENTS_RowSkippedByCancel(3, 4, 100);
+    ASSERT_EVENTS_RowSkipsNotReported_SIZE(1);
+    ASSERT_EVENTS_RowSkipsNotReported(0, 95);
+    ASSERT_EVENTS_SeqCancelled_SIZE(1);
+    ASSERT_EVENTS_SIZE(6);
+    for (FwSizeType row = 1; row < 100; row++) {
+        ASSERT_EQ(this->state(row), State::SKIPPED) << row;
+    }
+    this->done();
+    this->tick();  // the cancel row runs
+    // By a disable command: ten rows wait
+    for (FwSizeType row = 101; row < 111; row++) {
+        this->absRow(row, 6, "wait2.bin");
+    }
+    this->tick(2);
+    ASSERT_EQ(this->component.m_due.getSize(), 10U);
+    this->clearHistory();
+    this->cmdEnabled(false);
+    ASSERT_EVENTS_RowSkippedDisabled_SIZE(4);
+    ASSERT_EVENTS_RowSkippedDisabled(0, 101, SeqScheduler_SkipCause::WAITING_AT_DISABLE);
+    ASSERT_EVENTS_RowSkipsNotReported_SIZE(1);
+    ASSERT_EVENTS_RowSkipsNotReported(0, 6);
+    // While disabled: seven rows pass their time on one tick; the count starts again with each tick
+    for (FwSizeType row = 111; row < 118; row++) {
+        this->absRow(row, 8, "off.bin");
+    }
+    this->clearHistory();
+    this->tick(2);
+    ASSERT_EVENTS_RowSkippedDisabled_SIZE(4);
+    ASSERT_EVENTS_RowSkippedDisabled(0, 111, SeqScheduler_SkipCause::SCHEDULER_DISABLED);
+    ASSERT_EVENTS_RowSkipsNotReported_SIZE(1);
+    ASSERT_EVENTS_RowSkipsNotReported(0, 3);
+    // Four skipped rows get an event each and no count
+    this->cmdEnabled(true);
+    this->done();
+    this->absRow(120, 11, "long.bin");
+    for (FwSizeType row = 121; row < 125; row++) {
+        this->absRow(row, 12, "busy.bin", Policy::SKIP_WHEN_RUNNING);
+    }
+    this->tick(3);
+    this->clearHistory();
+    this->tick();
+    ASSERT_EVENTS_RowSkippedBusy_SIZE(4);
+    ASSERT_EVENTS_RowSkipsNotReported_SIZE(0);
+    // Late rows: six found late on one tick
+    for (FwSizeType row = 130; row < 136; row++) {
+        this->absRow(row, 13, "late.bin");
+    }
+    this->clearHistory();
+    this->tickBatch(5);
+    ASSERT_EVENTS_RowLate_SIZE(4);
+    ASSERT_EVENTS_RowSkipsNotReported_SIZE(1);
+    ASSERT_EVENTS_RowSkipsNotReported(0, 2);
+}
+
+void SeqSchedulerTester::ToleranceParameterInvalid() {
+    // SDD 5.2: a LATE_TOLERANCE_SEC that is not valid counts as the tick period
+    this->startEmpty();
+    this->absRow(0, 3, "a.bin");
+    this->paramSet_LATE_TOLERANCE_SEC(10, Fw::ParamValid::VALID);
+    this->paramSend_LATE_TOLERANCE_SEC(0, 0);
+    this->component.m_param_LATE_TOLERANCE_SEC_valid = Fw::ParamValid::INVALID;
+    this->clearHistory();
+    this->tickBatch(5);  // found 2 s late: within 10 s, beyond one tick period
+    ASSERT_EVENTS_RowLate_SIZE(1);
+    ASSERT_EVENTS_RowLate(0, 0);
+    ASSERT_from_seqRunOut_SIZE(0);
 }
 
 void SeqSchedulerTester::QueryRelative() {

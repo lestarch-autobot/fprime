@@ -161,6 +161,12 @@ class SeqSchedulerTester final : public SeqSchedulerGTestBase {
     void DumpTruncated();
     void DumpNoBuffer();
     void QueryByPosition();
+    void QueryLargeTable();
+    void QueryAfterEdit();
+    void QueryWaitingAfterBaseChange();
+    void QueryFromSecondThread();
+    void SkipEventsBounded();
+    void ToleranceParameterInvalid();
     void QueryRelative();
     void QueryNotUpcoming();
     void QueryInvalid();
