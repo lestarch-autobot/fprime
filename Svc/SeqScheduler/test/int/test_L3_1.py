@@ -26,6 +26,7 @@ def test_L3_1(window, send, bench, check, require):
         check("last(seqSched.RowsExecuted) == 0")
     with window(301, 302):
         require("STD")
+        standard_requires(require, fresh=4)
         require("Ref process up >= 70 s at marker 301", up_at_marker(70))
         send(S + ".SET_ROW_ENABLED", [0, True])
         send(S + ".SET_ROW", [0] + abs_row(bench, 6, "short.bin", "WAIT_FOR_RUNNING"))

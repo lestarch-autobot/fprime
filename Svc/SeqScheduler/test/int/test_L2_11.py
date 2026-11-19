@@ -33,6 +33,7 @@ def test_L2_11(window, send, bench, check, require):
             check("row 3 run no later than 10 s after SET_ROW", run_after(3, "seqSched.SET_ROW", None, 10))
         with window(291, 292):
             require("STD")
+            standard_requires(require, fresh=4)
             send(S + ".SET_ROW", [3] + abs_row(bench, 6, "short2.bin", "WAIT_FOR_RUNNING"))
             bench.wait(12)
             bracket(bench)

@@ -28,6 +28,7 @@ PLAN_PARAMS = {
 IDLE = "Ref.schedSeq and Ref.schedSeqB idle at the opening marker"
 PARAMS = "TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker"
 FRESH = "each 'FSW time + N s' is taken from an event received <= 1 s before the command is sent"
+FRESH4 = "each 'FSW time + N s' is taken from an event received <= 4 s before the command is sent"
 
 
 def reqs(numbers):
@@ -43,21 +44,29 @@ def time_value(base, seconds):
 def fsw_now(bench):
     """Seconds of the newest recorded event (0 in a dry run, where nothing is recorded)."""
     rows = bench.action("fsw_now")
-    return int(rows[-1]["sec"]) if rows and rows[-1] else 0
+    if bench.dry_run:
+        return 0
+    if not rows or not rows[-1]:
+        raise RuntimeError("bench: no FSW time reading (fsw_now printed no event)")
+    return int(rows[-1]["sec"])
 
 
-def fresh_times(h):
-    """The FSW times read in this window (newest event at or after its START marker, before its END marker) are fresh.
+def fresh_times(limit=1.0):
+    """The FSW times read in this window are at most `limit` seconds old.
 
-    Evidence is kept per test, not per window: the rows are assigned to the window by the time of the event they
-    name, so that a live run and a replay judge the same rows. A reading that failed carries no time and belongs to
-    no window; a window with no reading of its own fails.
+    A reading is of this window when the event it names lies at or after the START marker and before the END
+    marker. Evidence is kept per test, not per window: assigning the rows by event time makes a live run and a
+    replay judge the same rows. Every window that reads an FSW time states this rule, so each reading is judged
+    once. A window with no reading of its own fails; `fsw_now` raises on a reading that failed.
     """
-    rows = h.evidence("fsw_now")
-    first, last = h.window.start_marker.fsw, h.window.end_marker.fsw
-    mine = [r for r in rows if r and first <= r["sec"] + r["usec"] / 1e6 < last]
-    ages = [r["age_s"] for r in mine]
-    return (len(mine) > 0 and max(ages) <= 1.0, f"ages {ages} of {len(rows)} FSW time readings in the test")
+    def judge(h):
+        rows = h.evidence("fsw_now")
+        first, last = h.window.start_marker.fsw, h.window.end_marker.fsw
+        mine = [r for r in rows if r and first <= r["sec"] + r["usec"] / 1e6 < last]
+        ages = [r["age_s"] for r in mine]
+        return (all(rows) and len(mine) > 0 and max(ages) <= limit,
+                f"ages {ages} of {len(rows)} FSW time readings in the test")
+    return judge
 
 
 def this_start(h):
@@ -96,8 +105,11 @@ def plan_params(h):
 def standard_requires(require, fresh=False):
     require(IDLE, sequencers_idle)
     require(PARAMS, plan_params)
-    if fresh:
-        require(FRESH, fresh_times)
+    if fresh == 4:
+        # A window opened by the END marker of the one before: no event precedes its reading by under 1 s
+        require(FRESH4, fresh_times(4.0))
+    elif fresh:
+        require(FRESH, fresh_times())
 
 
 def run_time(h, row, window=None):

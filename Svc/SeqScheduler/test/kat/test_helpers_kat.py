@@ -97,17 +97,35 @@ def test_fresh_times():
         return {"age_s": age, "sec": int(at), "usec": int(round((at - int(at)) * 1e6))}
 
     inside, inside2 = reading(0.4, T0 + 5), reading(1.0, T0 + 20.5)
-    assert holds(sc.fresh_times(simple(evidence={"fsw_now": [inside, inside2]})))
-    assert not holds(sc.fresh_times(simple(evidence={"fsw_now": [inside, reading(1.5, T0 + 20)]})))
+    assert holds(sc.fresh_times()(simple(evidence={"fsw_now": [inside, inside2]})))
+    assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [inside, reading(1.5, T0 + 20)]})))
     # A stale reading of another window of the test is not this window's: before START, at or after END
-    assert holds(sc.fresh_times(simple(evidence={"fsw_now": [reading(1.5, T0 - 1), inside, reading(1.5, T0 + 60)]})))
-    assert holds(sc.fresh_times(simple(evidence={"fsw_now": [reading(0.2, T0)]})))  # at START: this window's
-    assert not holds(sc.fresh_times(simple(evidence={"fsw_now": [reading(1.5, T0)]})))
+    assert holds(sc.fresh_times()(simple(evidence={"fsw_now": [reading(1.5, T0 - 1), inside, reading(1.5, T0 + 60)]})))
+    assert holds(sc.fresh_times()(simple(evidence={"fsw_now": [reading(0.2, T0)]})))  # at START: this window's
+    assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [reading(1.5, T0)]})))
     # No reading of its own: a failed reading, readings of other windows only, none at all
-    assert not holds(sc.fresh_times(simple(evidence={"fsw_now": [None]})))
-    assert not holds(sc.fresh_times(simple(evidence={"fsw_now": [reading(0.1, T0 + 60)]})))
-    assert not holds(sc.fresh_times(simple()))
-    assert holds(sc.fresh_times(simple(evidence={"fsw_now": [inside, None]})))  # the failed one has no window
+    assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [None]})))
+    assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [reading(0.1, T0 + 60)]})))
+    assert not holds(sc.fresh_times()(simple()))
+    assert not holds(sc.fresh_times()(simple(evidence={"fsw_now": [inside, None]})))  # a failed reading
+    # The 4 s form of the windows opened by the END marker of the window before
+    assert holds(sc.fresh_times(4.0)(simple(evidence={"fsw_now": [reading(1.6, T0 + 1), reading(4.0, T0 + 2)]})))
+    assert not holds(sc.fresh_times(4.0)(simple(evidence={"fsw_now": [reading(1.6, T0 + 1), reading(4.1, T0 + 2)]})))
+
+
+def test_fsw_now_raises_on_a_failed_reading():
+    class Bench:
+        def __init__(self, rows, dry_run=False):
+            self.rows, self.dry_run = rows, dry_run
+
+        def action(self, name):
+            return self.rows
+
+    assert sc.fsw_now(Bench([{"sec": 7, "usec": 0, "age_s": 0.1}])) == 7
+    assert sc.fsw_now(Bench([], dry_run=True)) == 0
+    for rows in ([], [None], [{"sec": 7}, None]):
+        with pytest.raises(RuntimeError):
+            sc.fsw_now(Bench(rows))
 
 
 def test_sequencers_idle():
