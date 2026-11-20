@@ -13,7 +13,7 @@ def test_L2_3(window, send, bench, check, require):
         send("Ref.seqSched.LOAD_TABLE")
         send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
         send("Ref.seqSched.SET_ROW_ENABLED", [1, True])
-        send("Ref.seqSched.SET_ROW", [0, time_value("TB_SC_TIME", fsw_now(bench) + 5), "ABSOLUTE", "short.bin",
+        send("Ref.seqSched.SET_ROW", [0, time_value("TB_SC_TIME", fsw_now(bench) + 11), "ABSOLUTE", "short.bin",
                               "WAIT_FOR_RUNNING"])
         send("Ref.seqSched.SET_ROW", [1, time_value("TB_SC_TIME", fsw_now(bench) + 30), "ABSOLUTE", "short.bin",
                               "WAIT_FOR_RUNNING"])
