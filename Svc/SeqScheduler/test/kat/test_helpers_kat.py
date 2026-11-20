@@ -901,10 +901,15 @@ def test_events_received_in_time():
         end.recv = T0 + 60.5
         rec.ev("seqSched.RowSet", T0 + 70).recv = T0 + 99.0  # after the window: not judged
         return rec.ctx(rec.win(start, end))
-    assert holds(HELPERS["events_received_in_time"](case([0.2, 10.0])))  # the bound itself holds
-    assert holds(HELPERS["events_received_in_time"](case([])))
-    assert holds(HELPERS["events_received_in_time"](case([-0.3])))  # received "before" its tag: clock jitter
-    assert not holds(HELPERS["events_received_in_time"](case([0.2, 10.01])))
-    assert not holds(HELPERS["events_received_in_time"](case([0.2, None])))  # an event without a receive time
-    assert not holds(HELPERS["events_received_in_time"](case([0.2], marker_lag=11.0)))  # the markers are judged
-    assert not holds(HELPERS["events_received_in_time"](case([0.2], marker_lag=None)))
+    for rule in (HELPERS["events_received_in_time"], lambda h: sc.received_in_time(h)):  # one rule, in two files
+        check_received_in_time(rule, case)
+
+
+def check_received_in_time(rule, case):
+    assert holds(rule(case([0.2, 10.0])))  # the bound itself holds
+    assert holds(rule(case([])))
+    assert holds(rule(case([-0.3])))  # received "before" its tag: clock jitter
+    assert not holds(rule(case([0.2, 10.01])))
+    assert not holds(rule(case([0.2, None])))  # an event without a receive time
+    assert not holds(rule(case([0.2], marker_lag=11.0)))  # the markers are judged
+    assert not holds(rule(case([0.2], marker_lag=None)))

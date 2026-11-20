@@ -286,7 +286,8 @@ RECEIVE_LAG_S = 10.0
 @helper("events_received_in_time")
 def events_received_in_time(ctx):
     """A bench condition: the bench waits on the event log, so events logged long after they were emitted make
-    its waits time out and its commands late by the recorder's doing. An event without a receive time fails."""
+    its waits time out and its commands late by the recorder's doing. An event without a receive time fails.
+    seqsched_common.received_in_time is the same rule for the windows without STD: this file cannot import it."""
     rows = [ctx.window.start_marker, ctx.window.end_marker] + list(ctx.window.ev)
     unstamped = [e.line for e in rows if e.recv is None]
     late = [e.line for e in rows if e.recv is not None and e.recv - e.fsw > RECEIVE_LAG_S]

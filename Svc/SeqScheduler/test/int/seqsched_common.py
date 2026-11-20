@@ -289,6 +289,23 @@ SPAN_SECONDS = ("FSW seconds of every record in the override span lie between th
                 "the span and the first record after it")
 
 
+RECEIVED = "every event of the window was received within 10 s of its FSW time tag"
+RECEIVE_LAG_S = 10.0
+
+
+def received_in_time(h):
+    """A bench condition: the bench waits on the event log, so events logged long after they were emitted make
+    its waits time out and its commands late by the recorder's doing. An event without a receive time fails.
+    Member of STD and STD-ERR as the helper `events_received_in_time`; required by name in windows without them."""
+    rows = [h.window.start_marker, h.window.end_marker] + list(h.window.ev)
+    unstamped = [e.line for e in rows if e.recv is None]
+    late = [e.line for e in rows if e.recv is not None and e.recv - e.fsw > RECEIVE_LAG_S]
+    worst = max((e.recv - e.fsw for e in rows if e.recv is not None), default=0.0)
+    return (not unstamped and not late,
+            f"{len(rows)} events, {len(unstamped)} without a receive time, {len(late)} over {RECEIVE_LAG_S:g} s, "
+            f"largest {worst:.3f} s")
+
+
 def one_clock(h):
     """A bench condition: several helpers compare a bench wall-clock time with an FSW time directly."""
     marks = [h.window.start_marker, h.window.end_marker]

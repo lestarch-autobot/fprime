@@ -56,6 +56,7 @@ def test_L2_10(window, send, bench, check, require):
         # clean-up window: a sequence left running by a failed procedure ends before the next test
         with window(281, 282):
             require("both markers present")
+            require(RECEIVED, received_in_time)
             bench.wait(25)
             bracket(bench)
             check("SeqSched samples >= 2")

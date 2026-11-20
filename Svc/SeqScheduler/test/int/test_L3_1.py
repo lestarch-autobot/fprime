@@ -47,6 +47,7 @@ def test_L3_1(window, send, bench, check, require):
         bench.reset()
         bench.action("ref_start")
         require("both markers present")
+        require(RECEIVED, received_in_time)
         check("event seqSched.TableLoaded count == 1")
     with window(303, 304):
         require("STD")

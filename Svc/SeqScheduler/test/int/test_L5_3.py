@@ -36,6 +36,7 @@ def test_L5_3(window, send, bench, check, require):
         # clean-up window: TABLE_FILE back to the plan value and T-BASE loaded
         with window(521, 522):
             require("both markers present")
+            require(RECEIVED, received_in_time)
             send("Ref.seqSched.TABLE_FILE_PRM_SET", ["seq_sched.tbl"])
             send("Ref.seqSched.LOAD_TABLE")
             bracket(bench)

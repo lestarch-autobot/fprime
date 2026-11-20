@@ -50,6 +50,7 @@ def test_L2_16(window, send, bench, check, require):
         # clean-up window: a failed procedure must not leave the scheduler disabled for the next test
         with window(321, 322):
             require("both markers present")
+            require(RECEIVED, received_in_time)
             send("Ref.seqSchedB.SET_ENABLED", [True])
             bracket_both(bench)
             require("SeqSchedB samples >= 2", samples_b)
