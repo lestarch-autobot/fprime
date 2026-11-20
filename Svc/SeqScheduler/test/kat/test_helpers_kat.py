@@ -979,7 +979,7 @@ def test_telemetry_not_stalled():
     for rule in (HELPERS["telemetry_not_stalled"], lambda h: sc.not_stalled(h)):  # one rule, in two files
         assert holds(rule(case(every_second)))
         assert holds(rule(case([T0 + 4.0 * i for i in range(1, 15)])))  # 4 s apart: the limit
-        assert not holds(rule(case([T0 + 4.0 * i for i in range(1, 15) if i != 7] + [T0 + 28.01])))  # 4.01 s
+        assert not holds(rule(case([T0 + 4.0 * i + (0.01 if i >= 7 else 0.0) for i in range(1, 15)])))  # 4.01 s
         assert not holds(rule(case([t for t in every_second if not T0 + 20 < t < T0 + 25])))  # 5 s without a sample
         assert not holds(rule(case(every_second[:-5])))  # the last sample 5 s and more before the END marker
         assert not holds(rule(case(every_second[5:])))  # the first sample 6 s after the START marker
