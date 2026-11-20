@@ -114,7 +114,7 @@ def test_fresh_times():
                 pass
         for age in before:
             take(age)
-        judge = sc.fresh_times(limit)
+        judge = sc.fresh_times() if limit is None else sc.fresh_times(limit)
         for age in ages:
             take(age)
         return judge(simple(evidence={"fsw_now": list(bench.rows)}))
@@ -124,6 +124,8 @@ def test_fresh_times():
     assert not holds(window(Bench("T-3"), []))  # no reading of its own
     assert not holds(window(Bench("T-4"), [0.4, None]))  # a failed reading
     assert holds(window(Bench("T-5"), [1.6, 4.0], limit=4.0))
+    assert holds(window(Bench("T-5c"), [0.4, 2.0], limit=None))  # the limit of the plan's windows: 2 s
+    assert not holds(window(Bench("T-5d"), [0.4, 2.01], limit=None))
     assert not holds(window(Bench("T-5b"), [1.6, 4.1], limit=4.0))
     # two windows of one test: each judges its own readings, by position, whatever their times
     two = Bench("T-6")
@@ -961,3 +963,24 @@ def test_run_after_sample_takes_the_named_reading():
     assert not holds(sc.run_after_sample(10, 15, reading=1)(case(1059.999, [1000, 1050])))
     assert not holds(sc.run_after_sample(10, 15, reading=1)(case(1065.001, [1000, 1050])))
     assert not holds(sc.run_after_sample(10, 15, reading=1)(case(1062.0, [1000])))  # no second reading
+
+
+def test_telemetry_not_stalled():
+    def case(times, start=T0, end=T0 + 60):
+        rec = Rec()
+        first = rec.mark(100, start)
+        rec.ch("seqSched.RowsPending", start - 20.0, 16)  # before the window: not judged
+        for t in times:
+            rec.ch("seqSched.RowsPending", t, 16)
+            rec.ch("seqSchedB.RowsPending", t + 30.0, 16)  # another channel plays no part
+        last = rec.mark(101, end)
+        return rec.ctx(rec.win(first, last))
+    rule = HELPERS["telemetry_not_stalled"]
+    every_second = [T0 + 1 + i for i in range(59)]
+    assert holds(rule(case(every_second)))
+    assert holds(rule(case([T0 + 5.0 * i for i in range(1, 12)])))  # 5 s apart: the limit
+    assert not holds(rule(case([t for t in every_second if not T0 + 20 < t < T0 + 26])))  # 6 s without a sample
+    assert not holds(rule(case(every_second[:-6])))  # the last sample 6 s and more before the END marker
+    assert not holds(rule(case(every_second[6:])))  # the first sample 7 s after the START marker
+    assert not holds(rule(case([])))  # no sample in a window of 60 s
+    assert holds(rule(case([], end=T0 + 5.0)))  # a window no longer than the limit

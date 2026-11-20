@@ -281,6 +281,20 @@ def events_dropped_steady(ctx):
     return _steady(ctx, ["events.EventsDropped"])
 
 
+STALL_S = 5.0
+
+
+@helper("telemetry_not_stalled")
+def telemetry_not_stalled(ctx):
+    """A bench condition: Ref and the bench share one machine, and a machine that stops for some seconds (it has
+    stopped for 34 s) makes rows late by its doing. seqSched.RowsPending is written every second (2.0 s apart at
+    most on the records kept); the window's markers are the ends of the series."""
+    times = ([ctx.window.start_marker.fsw] + [c.fsw for c in ctx.window.channel("seqSched.RowsPending")] +
+             [ctx.window.end_marker.fsw])
+    worst = max(b - a for a, b in zip(times, times[1:]))
+    return (worst <= STALL_S, f"{len(times) - 2} samples, largest gap {worst:.3f} s")
+
+
 RECEIVE_LAG_S = 10.0
 
 

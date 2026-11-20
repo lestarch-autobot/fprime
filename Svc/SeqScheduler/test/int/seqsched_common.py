@@ -179,7 +179,8 @@ def row_commands(w, row):
 
 
 def run_within_row_time(row, high):
-    """Row run no later than `high` seconds after the time its (first) SET_ROW command of the window carries."""
+    """Row run no later than `high` seconds after the time its (first) SET_ROW command of the window carries.
+    An upper bound only: `run_not_before_row_time` is the lower bound, in the same window."""
     def judge(h):
         run, sent = run_time(h, row), row_commands(h.window, row)
         seconds = commanded_seconds(sent[0]) if sent else None
