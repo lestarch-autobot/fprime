@@ -137,7 +137,7 @@ def stray_edit(test_id, command_name, args):
     applies_to=["L2-3"],
     cls="uut-state",
     kind="insert",
-    mechanism="SET_TIME_BASE(TB_SC_TIME) is sent in window W1, right after row 1's SET_ROW; row 0 is judged in W1, where the plan asserts the scheduler does nothing",
+    mechanism="SET_TIME_BASE(TB_SC_TIME) is sent in window W1, right after row 0's SET_ROW and so before row 0's time; row 0 is run in W1, where the plan asserts the scheduler does nothing",
     fails={
         "L2-3": [
             "event seqSched.SeqRun count == 0",
@@ -145,12 +145,11 @@ def stray_edit(test_id, command_name, args):
             "last(seqSched.NextRow) == 16",
             "event seqSched.RowLate(row=0) count == 1",
             "last(seqSched.RowsSkipped) == 1",
-            "event seqSched.RowLate count == 0",
         ]
     },
 )
 def early_override(test_id, command_name, args):
-    if command_name == S + ".SET_ROW" and int(args[ROW]) == 1:
+    if command_name == S + ".SET_ROW" and int(args[ROW]) == 0:
         return [(command_name, args), (T + ".SET_TIME_BASE", ["TB_SC_TIME"])]
     return None
 
