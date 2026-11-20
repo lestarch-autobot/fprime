@@ -96,45 +96,41 @@ def gds(args):
 
 
 def recorder(args):
-    """The event recorder, with the ground receive time of each event.
+    """The event and telemetry recorder, with the ground receive time of each event.
 
-    Runs `fprime-cli events`, which logs every event, as it is received, as one line of event.log under `logs`.
-    Each line of that log is copied to `logs`/event-recv.log behind the host time at which it appeared there
-    (polled every 20 ms). What `fprime-cli events` prints is not used: it is not one line per event.
+    Connects a ground data system pipeline to the running ground system. The pipeline logs every event and every
+    telemetry sample as it arrives, one line each, to event.log and channel.log under `logs`/fprime-cli-<time>.
+    Each line of that event.log is copied to `logs`/event-recv.log behind the host time at which it appeared
+    there (polled every 20 ms). A last line without its line end is written when the recorder stops.
 
-    The log followed is the first event.log that appears after this recorder starts, chosen once: one recorder
-    writes one event.log. A last line without its line end is written when the recorder stops."""
-    before = set(Path(args.logs).glob("fprime-cli-*/event.log"))
-    cmd = ["fprime-cli", "events", "--dictionary", args.dictionary, "--logs", args.logs]
-    cli = subprocess.Popen(cmd, stdout=subprocess.DEVNULL)
+    `fprime-cli events` is not used: it searches its whole event history for each event it prints, takes a full
+    processor late in a run, and then writes event.log minutes after the events arrive."""
+    from fprime_gds.executables.cli import ParserBase, StandardPipelineParser
+
+    parsed = ParserBase.parse_args([StandardPipelineParser], "recorder", ["--dictionary", args.dictionary, "--logs",
+                                   args.logs, "--log-prefix", "fprime-cli"], client=True)
+    pipeline = StandardPipelineParser.pipeline_factory(parsed[0])
     stopping = []
-
-    def stop(*_):
-        stopping.append(True)
-        cli.terminate()
-
-    signal.signal(signal.SIGTERM, stop)
-    signal.signal(signal.SIGINT, stop)
-    log, held = None, ""
-    with open(Path(args.logs) / "event-recv.log", "w", buffering=1) as out:
-        while True:
-            ending = bool(stopping) or cli.poll() is not None  # read once more after the recorder has ended
-            if log is None:
-                new = sorted(set(Path(args.logs).glob("fprime-cli-*/event.log")) - before)
-                log = open(new[-1], encoding="utf-8", errors="replace") if new else None
-            if log is not None:
+    signal.signal(signal.SIGTERM, lambda *_: stopping.append(True))
+    signal.signal(signal.SIGINT, lambda *_: stopping.append(True))
+    try:
+        log, held = open(Path(parsed[0].logs) / "event.log", encoding="utf-8", errors="replace"), ""
+        with open(Path(args.logs) / "event-recv.log", "w", buffering=1) as out:
+            while True:
+                ending = bool(stopping)
                 held += log.read()
                 now = time.time()
                 *whole, held = held.split("\n")
                 for line in whole:
                     if line.strip():
                         out.write(f"{now:.6f} {line}\n")
-            if ending:
-                if held.strip():  # a last line the recorder did not end
-                    out.write(f"{time.time():.6f} {held}\n")
-                break
-            time.sleep(0.02)
-    cli.wait()
+                if ending:
+                    if held.strip():
+                        out.write(f"{time.time():.6f} {held}\n")
+                    break
+                time.sleep(0.02)
+    finally:
+        pipeline.disconnect()
 
 
 def reset(args):
