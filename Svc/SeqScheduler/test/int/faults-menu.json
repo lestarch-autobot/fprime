@@ -180,7 +180,7 @@
           "last(seqSched.RowsExecuted) == 1"
         ]
       },
-      "mechanism": "every SET_ROW naming short2.bin is sent with long.bin; the row holds and runs the wrong file",
+      "mechanism": "every SET_ROW naming short2.bin is sent with long.bin; the row holds and runs the wrong file. long.bin is still running when window W2 of L2-11 opens, so W2 is not judged under this fault (its sequencers-idle requirement does not hold)",
       "kind": "rewrite",
       "ripples_to": {}
     }

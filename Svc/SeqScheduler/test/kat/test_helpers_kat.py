@@ -888,3 +888,23 @@ def test_rows_set_ahead_judges_each_absolute_workstation_set_row_by_its_dispatch
     assert holds(ahead(mixed)) and "1 of 1" in ahead(mixed)[1]
     assert not holds(ahead(case(("seqSched", T0 + 30, ws, sc.YEAR_2100, "ABSOLUTE"),
                                 ("seqSched", T0 + 31, ws, int(T0) + 20, "ABSOLUTE"))))
+
+
+def test_events_received_in_time():
+    def case(lags, marker_lag=0.5):
+        rec = Rec()
+        start = rec.mark(100, T0)
+        start.recv = None if marker_lag is None else T0 + marker_lag
+        for i, lag in enumerate(lags):
+            rec.ev("seqSched.RowSet", T0 + 5 + i).recv = None if lag is None else T0 + 5 + i + lag
+        end = rec.mark(101, T0 + 60)
+        end.recv = T0 + 60.5
+        rec.ev("seqSched.RowSet", T0 + 70).recv = T0 + 99.0  # after the window: not judged
+        return rec.ctx(rec.win(start, end))
+    assert holds(HELPERS["events_received_in_time"](case([0.2, 10.0])))  # the bound itself holds
+    assert holds(HELPERS["events_received_in_time"](case([])))
+    assert holds(HELPERS["events_received_in_time"](case([-0.3])))  # received "before" its tag: clock jitter
+    assert not holds(HELPERS["events_received_in_time"](case([0.2, 10.01])))
+    assert not holds(HELPERS["events_received_in_time"](case([0.2, None])))  # an event without a receive time
+    assert not holds(HELPERS["events_received_in_time"](case([0.2], marker_lag=11.0)))  # the markers are judged
+    assert not holds(HELPERS["events_received_in_time"](case([0.2], marker_lag=None)))

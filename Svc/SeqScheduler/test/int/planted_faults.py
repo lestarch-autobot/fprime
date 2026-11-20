@@ -96,7 +96,7 @@ def disable_row(test_id, command_name, args):
     "wrong_seq",
     applies_to=["L2-11"],
     cls="stimulus",
-    mechanism="every SET_ROW naming short2.bin is sent with long.bin; the row holds and runs the wrong file",
+    mechanism="every SET_ROW naming short2.bin is sent with long.bin; the row holds and runs the wrong file. long.bin is still running when window W2 of L2-11 opens, so W2 is not judged under this fault (its sequencers-idle requirement does not hold)",
     fails={
         "L2-11": [
             "event seqSched.RowSet(row=3, mode=ABSOLUTE, fileName=short2.bin, busyPolicy=WAIT_FOR_RUNNING) count == 1",
@@ -278,6 +278,22 @@ def _steady(ctx, names):
 @helper("events_dropped_steady")
 def events_dropped_steady(ctx):
     return _steady(ctx, ["events.EventsDropped"])
+
+
+RECEIVE_LAG_S = 10.0
+
+
+@helper("events_received_in_time")
+def events_received_in_time(ctx):
+    """A bench condition: the bench waits on the event log, so events logged long after they were emitted make
+    its waits time out and its commands late by the recorder's doing. An event without a receive time fails."""
+    rows = [ctx.window.start_marker, ctx.window.end_marker] + list(ctx.window.ev)
+    unstamped = [e.line for e in rows if e.recv is None]
+    late = [e.line for e in rows if e.recv is not None and e.recv - e.fsw > RECEIVE_LAG_S]
+    worst = max((e.recv - e.fsw for e in rows if e.recv is not None), default=0.0)
+    return (not unstamped and not late,
+            f"{len(rows)} events, {len(unstamped)} without a receive time, {len(late)} over {RECEIVE_LAG_S:g} s, "
+            f"largest {worst:.3f} s")
 
 
 @helper("com_dropped_steady")
