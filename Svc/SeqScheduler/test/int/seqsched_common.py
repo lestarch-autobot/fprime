@@ -44,6 +44,8 @@ def time_value(base, seconds):
     return json.dumps({"timeBase": base, "timeContext": 0, "seconds": int(seconds), "useconds": 0})
 
 
+# Both hold for the life of the process, which is one run (`fth run` starts one pytest process); a second run of
+# a test in the same process would find the readings of the first.
 _READINGS = []  # the test of each FSW time reading of this process, in the order taken
 _JUDGED = {}  # per test, the number of its readings that a window has judged
 
@@ -407,12 +409,14 @@ def second_set_base(h):
 
 
 def row1_after_its_set_row(h):
-    """Row 1 is set in W1 and run in W2: both times are FSW times of the same start."""
+    """Row 1 is set in W1 and run in W2, judged against the row time the command of W1 carries: the time at
+    which the command was handled plays no part (the FSW time reading it is built from is seconds older)."""
     run = run_time(h, 1, "W2")
-    sent = command_time(h, "seqSched.SET_ROW", 1, "W1")
-    if run is None or sent is None:
-        return (False, f"run {run}, command {sent}")
-    return (27 <= run - sent <= 33, f"{run - sent:.3f} s")
+    sent = [c for c in h.windows["W1"].cmds if c.short == "seqSched.SET_ROW" and c.args[:1] == [1]]
+    if run is None or not sent or len(sent[0].args) < 3:
+        return (False, f"run {run}, SET_ROW commands of row 1: {len(sent)}")
+    late = run - sent[0].args[2]
+    return (0 <= late <= 3, f"{late:.3f} s after row time {sent[0].args[2]}")
 
 
 def due_seconds(row):

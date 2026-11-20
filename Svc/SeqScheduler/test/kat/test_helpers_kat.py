@@ -380,19 +380,18 @@ def two_windows(build1=None, build2=None, evidence=None, names=("W1", "W2")):
 
 
 def test_row1_after_its_set_row():
-    def case(run):
+    def case(run, rows=((0, T0 + 11), (1, T0 + 30))):
         def build1(rec):
-            rec.cmd("seqSched.SET_ROW", 0xa04)
-            rec.cmd("seqSched.SET_ROW", 0xa04)
-            rec.ev("cmdDisp.OpCodeDispatched", T0 + 2, "Opcode 0xa04 dispatched to port 0")
-            rec.ev("cmdDisp.OpCodeDispatched", T0 + 4, "Opcode 0xa04 dispatched to port 0")
+            for row, seconds in rows:
+                rec.cmd("seqSched.SET_ROW", 0xa04, [row, True, seconds])
         return two_windows(build1, lambda rec: rec.ev("seqSched.SeqRun", run, row=1))
-    assert holds(sc.row1_after_its_set_row(case(T0 + 34)))
-    assert not holds(sc.row1_after_its_set_row(case(T0 + 42)))
-    assert holds(sc.row1_after_its_set_row(case(T0 + 31)))  # 27 s after the second SET_ROW: the lower limit
-    assert holds(sc.row1_after_its_set_row(case(T0 + 37)))  # 33 s: the upper limit
-    assert not holds(sc.row1_after_its_set_row(case(T0 + 30.999)))
-    assert not holds(sc.row1_after_its_set_row(case(T0 + 37.001)))
+    assert holds(sc.row1_after_its_set_row(case(T0 + 30.3)))
+    assert holds(sc.row1_after_its_set_row(case(T0 + 30)))  # at the row time: the lower limit
+    assert holds(sc.row1_after_its_set_row(case(T0 + 33)))  # 3 s after: the upper limit
+    assert not holds(sc.row1_after_its_set_row(case(T0 + 29.999)))
+    assert not holds(sc.row1_after_its_set_row(case(T0 + 33.001)))
+    assert not holds(sc.row1_after_its_set_row(case(T0 + 11.3)))  # judged on row 1's command, not row 0's
+    assert not holds(sc.row1_after_its_set_row(case(T0 + 30.3, rows=((0, T0 + 11),))))  # no SET_ROW of row 1
     assert not holds(sc.row1_after_its_set_row(two_windows()))
 
 
@@ -810,13 +809,13 @@ def test_override_span_needs_a_set_and_a_clear():
 
 def test_row1_after_its_set_row_needs_the_run_and_the_command():
     def sets(rec):
-        rec.cmd("seqSched.SET_ROW", 0xa04)
-        rec.cmd("seqSched.SET_ROW", 0xa04)
-        rec.ev("cmdDisp.OpCodeDispatched", T0 + 2, "Opcode 0xa04 dispatched to port 0")
-        rec.ev("cmdDisp.OpCodeDispatched", T0 + 4, "Opcode 0xa04 dispatched to port 0")
+        rec.cmd("seqSched.SET_ROW", 0xa04, [1, True, T0 + 30])
     assert not holds(sc.row1_after_its_set_row(two_windows(sets, None)))  # no run of row 1
-    assert not holds(sc.row1_after_its_set_row(  # the run, but no second SET_ROW in W1
-        two_windows(None, lambda rec: rec.ev("seqSched.SeqRun", T0 + 34, row=1))))
+    assert not holds(sc.row1_after_its_set_row(  # the run, but no SET_ROW of row 1 in W1
+        two_windows(None, lambda rec: rec.ev("seqSched.SeqRun", T0 + 30.3, row=1))))
+    assert not holds(sc.row1_after_its_set_row(  # a command that carries no time
+        two_windows(lambda rec: rec.cmd("seqSched.SET_ROW", 0xa04, [1]),
+                    lambda rec: rec.ev("seqSched.SeqRun", T0 + 30.3, row=1))))
 
 
 def test_elapsed_of():

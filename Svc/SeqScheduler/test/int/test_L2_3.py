@@ -38,4 +38,4 @@ def test_L2_3(window, send, bench, check, require):
         check("last(seqSched.RowsSkipped) == 1")
         check("event timeBaseSetter.TimeBaseSet(timeBase=TB_SC_TIME) count == 1")
         check("event timeBaseSetter.TimeBaseCleared count == 1")
-        check("row 1 run between 27 and 33 s after its SET_ROW", row1_after_its_set_row)
+        check("row 1 run within 3 s after the time its SET_ROW carries", row1_after_its_set_row)
