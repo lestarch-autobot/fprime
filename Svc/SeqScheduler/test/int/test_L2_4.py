@@ -35,4 +35,4 @@ def test_L2_4(window, send, bench, check, require):
         check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
         check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
         check("row 0 run no earlier than its delay after the start of the Ref process", run_not_before_delay(0))
-        check("row 0 run no later than 15 s after the second SET_ROW", run_after(0, "seqSched.SET_ROW", None, 15))
+        check("row 0 run between 10 and 15 s after the W2 NextTimeDue sample", run_after_sample(10, 15, reading=1))

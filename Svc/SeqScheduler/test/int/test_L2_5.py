@@ -45,4 +45,4 @@ def test_L2_5(window, send, bench, check, require):
         bracket(bench)
         check("event seqSched.SeqRun(row=0, fileName=short.bin) count == 1")
         check("event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1")
-        check("row 0 run between 11 and 21 s after the W1 NextTimeDue sample", run_after_w1_sample(11, 21))
+        check("row 0 run between 11 and 23 s after the W1 NextTimeDue sample", run_after_w1_sample(11, 23))

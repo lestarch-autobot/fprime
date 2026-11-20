@@ -18,13 +18,13 @@ def test_L2_10(window, send, bench, check, require):
             send("Ref.seqSchedB.SET_ROW_ENABLED", [0, True])
             send("Ref.seqSchedB.SET_ROW_ENABLED", [1, True])
             send("Ref.seqSchedB.SET_ROW_ENABLED", [16, True])
-            send("Ref.seqSchedB.SET_ROW", [1, time_value("TB_SC_TIME", fsw_now(bench) + 6), "ABSOLUTE", "short.bin",
+            send("Ref.seqSchedB.SET_ROW", [1, time_value("TB_SC_TIME", fsw_now(bench) + 10), "ABSOLUTE", "short.bin",
                                   "WAIT_FOR_RUNNING"])
-            due = time_value("TB_WORKSTATION_TIME", fsw_now(bench) + 12)
+            due = time_value("TB_WORKSTATION_TIME", fsw_now(bench) + 16)
             send("Ref.seqSchedB.SET_ROW", [2, due, "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
             send("Ref.seqSchedB.SET_ROW", [0, due, "ABSOLUTE", "short2.bin", "WAIT_FOR_RUNNING"])
             send("Ref.seqSched.SET_ROW", [0, due, "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
-            bench.wait(22)
+            bench.wait(26)
             bracket(bench)
             bench.wait_samples(SAMPLE_B, 2)
             require(SET_AHEAD, rows_set_ahead)

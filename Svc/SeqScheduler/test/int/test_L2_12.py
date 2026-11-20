@@ -31,7 +31,7 @@ def test_L2_12(window, send, bench, check, require):
         check("event seqSched.SeqCompleted(row=0, response=OK) count == 1")
         check("event seqSched.RowLate count == 0")
         check("last(seqSched.RowsExecuted) == 1")
-        check("row 0 run between 14 and 22 s after the second SET_ROW", run_after(0, "seqSched.SET_ROW", 14, 22, 1))
+        check("row 0 run between 18 and 23 s after the NextTimeDue sample", run_after_sample(18, 23))
         check("elapsed is within 3 s of FSW time at the sample less the time of this start's first "
               "timeBaseSetter.TimeBaseSet(TB_SC_TIME) event", elapsed_since_first_set("TB_SC_TIME"))
         require("the first TimeBaseSet(TB_SC_TIME) of this start is in the record, in an earlier test",

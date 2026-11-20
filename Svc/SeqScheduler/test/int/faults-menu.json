@@ -41,7 +41,8 @@
           "event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)",
           "last(seqSched.RowsExecuted) == 1",
           "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s",
-          "row 0 run no earlier than the time set in the row"
+          "row 0 run no earlier than the time set in the row",
+          "row 0 run no later than 3 s after the time set in the row"
         ],
         "L7-1": [
           "event seqSched.SeqRun(row=6, fileName=short.bin) count == 1",
@@ -132,7 +133,8 @@
           "event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)",
           "last(seqSched.RowsExecuted) == 1",
           "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s",
-          "row 0 run no earlier than the time set in the row"
+          "row 0 run no earlier than the time set in the row",
+          "row 0 run no later than 3 s after the time set in the row"
         ],
         "L2-11": [
           "event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
@@ -141,7 +143,7 @@
           "event seqSched.SeqRun count == 1",
           "last(seqSched.RowsExecuted) == 1",
           "last(seqSched.RowsPending) == 15",
-          "row 3 run no later than 10 s after SET_ROW",
+          "row 3 run no later than 3 s after the time set in the row",
           "row 3 run no earlier than the time set in the row"
         ]
       },

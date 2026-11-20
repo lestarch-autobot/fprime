@@ -25,3 +25,4 @@ def test_L2_2(window, send, bench, check, require):
         check("event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)")
         check("last(seqSched.RowsExecuted) == 1")
         check("row 0 run no earlier than the time set in the row", run_not_before_row_time(0))
+        check("row 0 run no later than 3 s after the time set in the row", run_within_row_time(0, 3))

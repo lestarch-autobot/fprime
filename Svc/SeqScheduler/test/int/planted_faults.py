@@ -25,6 +25,7 @@ L2_2_NOT_RUN = [
     "last(seqSched.RowsExecuted) == 1",
     "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s",
     "row 0 run no earlier than the time set in the row",
+    "row 0 run no later than 3 s after the time set in the row",
 ]
 # SET_ROW arguments: row, time, mode, fileName, busyPolicy
 ROW, TIME, MODE, FILE, POLICY = range(5)
@@ -44,7 +45,7 @@ ROW, TIME, MODE, FILE, POLICY = range(5)
             "event seqSched.SeqRun count == 1",
             "last(seqSched.RowsExecuted) == 1",
             "last(seqSched.RowsPending) == 15",
-            "row 3 run no later than 10 s after SET_ROW",
+            "row 3 run no later than 3 s after the time set in the row",
             "row 3 run no earlier than the time set in the row",
         ],
     },

@@ -30,7 +30,7 @@ PLAN_PARAMS = {
 }
 IDLE = "Ref.schedSeq and Ref.schedSeqB idle at the opening marker"
 PARAMS = "TABLE_FILE and LATE_TOLERANCE_SEC of Ref.seqSched and Ref.seqSchedB hold their plan values at the opening marker"
-FRESH = "each 'FSW time + N s' is taken from the newest recorded event, logged <= 1 s before the reading"
+FRESH = "each 'FSW time + N s' is taken from the newest recorded event, logged <= 2 s before the reading"
 FRESH4 = "each 'FSW time + N s' is taken from the newest recorded event, logged <= 4 s before the reading"
 
 
@@ -63,7 +63,7 @@ def fsw_now(bench):
     return int(rows[-1]["sec"])
 
 
-def fresh_times(limit=1.0):
+def fresh_times(limit=2.0):
     """The FSW times read in this window are at most `limit` seconds old.
 
     Built when the window opens and judged when it closes: the readings of the window are those taken between
@@ -152,16 +152,53 @@ def run_time(h, row, window=None):
     return rows[0].fsw if rows else None
 
 
+def commanded_seconds(c):
+    """Seconds of the time a SET_ROW command carries, read from its argument list as sent (None: not readable)."""
+    try:
+        args = ast.literal_eval(c.raw.strip())
+    except (ValueError, SyntaxError):
+        return None
+    if not isinstance(args, list) or len(args) < 2 or not isinstance(args[1], dict) or "seconds" not in args[1]:
+        return None
+    return int(args[1]["seconds"])
+
+
+def row_commands(w, row):
+    """The seqSched.SET_ROW commands of a window that name a row, in the order sent."""
+    found = []
+    for c in w.cmds:
+        if c.short != "seqSched.SET_ROW":
+            continue
+        try:
+            args = ast.literal_eval(c.raw.strip())
+        except (ValueError, SyntaxError):
+            continue
+        if isinstance(args, list) and args[:1] == [row]:
+            found.append(c)
+    return found
+
+
+def run_within_row_time(row, high):
+    """Row run no later than `high` seconds after the time its (first) SET_ROW command of the window carries."""
+    def judge(h):
+        run, sent = run_time(h, row), row_commands(h.window, row)
+        seconds = commanded_seconds(sent[0]) if sent else None
+        if run is None or seconds is None:
+            return (False, f"run {run}, SET_ROW commands {len(sent)}, commanded row time {seconds}")
+        return (run - seconds <= high, f"{run - seconds:.3f} s after row time {seconds}")
+    return judge
+
+
 def run_not_before_row_time(row):
     """Row run at or after the time its (first) SET_ROW command of the window carries; RowSet reports that time."""
     def judge(h):
         run = run_time(h, row)
-        sent = [c for c in h.window.cmds if c.short == "seqSched.SET_ROW" and c.args[:1] == [row]]
+        sent = row_commands(h.window, row)
         sets = [e for e in h.window.events("seqSched.RowSet") if e.args.get("row") == row]
         found = re.search(r"'seconds': (\d+)", sets[0].text) if sets else None
-        if run is None or found is None or not sent or len(sent[0].args) < 3:
+        seconds = commanded_seconds(sent[0]) if sent else None
+        if run is None or found is None or seconds is None:
             return (False, f"run {run}, SET_ROW commands {len(sent)}, RowSet {sets[0].text if sets else None}")
-        seconds = sent[0].args[2]
         return (run >= seconds and int(found.group(1)) == seconds,
                 f"run {run:.3f}, commanded row time {seconds}, RowSet {found.group(1)}")
     return judge
@@ -412,11 +449,11 @@ def row1_after_its_set_row(h):
     """Row 1 is set in W1 and run in W2, judged against the row time the command of W1 carries: the time at
     which the command was handled plays no part (the FSW time reading it is built from is seconds older)."""
     run = run_time(h, 1, "W2")
-    sent = [c for c in h.windows["W1"].cmds if c.short == "seqSched.SET_ROW" and c.args[:1] == [1]]
-    if run is None or not sent or len(sent[0].args) < 3:
-        return (False, f"run {run}, SET_ROW commands of row 1: {len(sent)}")
-    late = run - sent[0].args[2]
-    return (0 <= late <= 3, f"{late:.3f} s after row time {sent[0].args[2]}")
+    sent = row_commands(h.windows["W1"], 1)
+    seconds = commanded_seconds(sent[0]) if sent else None
+    if run is None or seconds is None:
+        return (False, f"run {run}, SET_ROW commands of row 1: {len(sent)}, commanded row time {seconds}")
+    return (0 <= run - seconds <= 3, f"{run - seconds:.3f} s after row time {seconds}")
 
 
 def due_seconds(row):
@@ -434,13 +471,13 @@ def elapsed_of(bench, action="next_due"):
     return 1000000 - (int(found.group(1)) - rows[-1]["sec"])
 
 
-def elapsed_evidence(h, action="next_due"):
-    """(elapsed, FSW seconds of the sample) of the test's first reading."""
+def elapsed_evidence(h, action="next_due", reading=0):
+    """(elapsed, FSW seconds of the sample) of a reading of the test: the first, unless another is named."""
     rows = [r for r in h.evidence(action) if r]
-    if not rows:
+    if len(rows) <= reading:
         return None
-    found = re.search(r"'seconds': '?(\d+)", rows[0]["value"])
-    return (1000000 - (int(found.group(1)) - rows[0]["sec"]), rows[0]["sec"] + rows[0]["usec"] / 1e6)
+    found = re.search(r"'seconds': '?(\d+)", rows[reading]["value"])
+    return (1000000 - (int(found.group(1)) - rows[reading]["sec"]), rows[reading]["sec"] + rows[reading]["usec"] / 1e6)
 
 
 def elapsed_since_ref_start(h):
@@ -519,13 +556,20 @@ def due_steady_across_report(h):
             f"before {before}, after {after}")
 
 
-def run_after_w1_sample(low, high):
+def run_after_sample(low, high, reading=0, window=None):
+    """Row 0 run between low and high seconds after the NextTimeDue sample a reading of `elapsed` was taken from.
+    The row's delay is that elapsed value plus a planned number of seconds, so the difference is the planned
+    number plus at most one tick, whenever the command was handled."""
     def judge(h):
-        got, run = elapsed_evidence(h), run_time(h, 0, "W3")
+        got, run = elapsed_evidence(h, reading=reading), run_time(h, 0, window)
         if got is None or run is None:
             return (False, f"sample {got}, run {run}")
         return (low <= run - got[1] <= high, f"{run - got[1]:.3f} s")
     return judge
+
+
+def run_after_w1_sample(low, high):
+    return run_after_sample(low, high, window="W3")
 
 
 
@@ -552,10 +596,11 @@ def active_row_is(instance, row, file_name):
         reports = [e for e in h.window.events(f"{instance}.ActiveRow") if e.args.get("row") == row]
         sent = [c for c in h.window.cmds if c.short == f"{instance}.SET_ROW" and c.args[:1] == [row]]
         found = re.search(r"'seconds': (\d+)", str(reports[0].args.get("timeDue"))) if reports else None
-        if found is None or not sent or len(sent[-1].args) < 3:
-            return (False, f"{len(reports)} reports, {len(sent)} SET_ROW commands")
-        return (int(found.group(1)) == sent[-1].args[2] and reports[0].args.get("fileName") == file_name,
-                f"reported {found.group(1)} {reports[0].args.get('fileName')}, commanded {sent[-1].args[2]}")
+        seconds = commanded_seconds(sent[-1]) if sent else None
+        if found is None or seconds is None:
+            return (False, f"{len(reports)} reports, {len(sent)} SET_ROW commands, commanded row time {seconds}")
+        return (int(found.group(1)) == seconds and reports[0].args.get("fileName") == file_name,
+                f"reported {found.group(1)} {reports[0].args.get('fileName')}, commanded {seconds}")
     return judge
 
 

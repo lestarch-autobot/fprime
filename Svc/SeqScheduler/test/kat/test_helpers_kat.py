@@ -45,6 +45,9 @@ class Rec:
         return row
 
     def cmd(self, short, opcode, args=(), raw=""):
+        if short.endswith(".SET_ROW") and len(args) == 4 and not raw:  # the text of a real command row
+            raw = str([args[0], {"timeBase": "TB_WORKSTATION_TIME", "timeContext": args[1], "seconds": args[2],
+                                 "useconds": args[3]}, "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
         row = CommandRow(len(self.commands) + 1, "", "Ref." + short, short, opcode, list(args), raw, "OpCodeCompleted")
         self.commands.append(row)
         return row
@@ -383,7 +386,7 @@ def test_row1_after_its_set_row():
     def case(run, rows=((0, T0 + 11), (1, T0 + 30))):
         def build1(rec):
             for row, seconds in rows:
-                rec.cmd("seqSched.SET_ROW", 0xa04, [row, True, seconds])
+                rec.cmd("seqSched.SET_ROW", 0xa04, [row, 0, seconds, 0])
         return two_windows(build1, lambda rec: rec.ev("seqSched.SeqRun", run, row=1))
     assert holds(sc.row1_after_its_set_row(case(T0 + 30.3)))
     assert holds(sc.row1_after_its_set_row(case(T0 + 30)))  # at the row time: the lower limit
@@ -809,7 +812,7 @@ def test_override_span_needs_a_set_and_a_clear():
 
 def test_row1_after_its_set_row_needs_the_run_and_the_command():
     def sets(rec):
-        rec.cmd("seqSched.SET_ROW", 0xa04, [1, True, T0 + 30])
+        rec.cmd("seqSched.SET_ROW", 0xa04, [1, 0, T0 + 30, 0])
     assert not holds(sc.row1_after_its_set_row(two_windows(sets, None)))  # no run of row 1
     assert not holds(sc.row1_after_its_set_row(  # the run, but no SET_ROW of row 1 in W1
         two_windows(None, lambda rec: rec.ev("seqSched.SeqRun", T0 + 30.3, row=1))))
@@ -912,3 +915,49 @@ def check_received_in_time(rule, case):
     assert not holds(rule(case([0.2, None])))  # an event without a receive time
     assert not holds(rule(case([0.2], marker_lag=11.0)))  # the markers are judged
     assert not holds(rule(case([0.2], marker_lag=None)))
+
+
+def test_commanded_seconds_and_row_commands():
+    rec = Rec()
+    real = rec.cmd("seqSched.SET_ROW", 7, [2, 0, 1010, 0])
+    assert "'seconds': 1010" in real.raw and sc.commanded_seconds(real) == 1010
+    assert sc.commanded_seconds(rec.cmd("seqSched.SET_ROW", 7, [2], raw="[2, 1010, 'ABSOLUTE']")) is None  # no time
+    assert sc.commanded_seconds(rec.cmd("seqSched.SET_ROW", 7, [2], raw="not a list")) is None
+    assert sc.commanded_seconds(rec.cmd("seqSched.SET_ROW", 7, [2], raw="[2, {'timeBase': 'TB_NONE'}]")) is None
+    rec.cmd("seqSchedB.SET_ROW", 7, [2, 0, 1020, 0])  # the other instance
+    rec.cmd("seqSched.SET_ROW_ENABLED", 3, [2], raw="[2, True]")
+    w = SimpleNamespace(cmds=rec.commands)
+    assert [sc.commanded_seconds(c) for c in sc.row_commands(w, 2)] == [1010, None, None]
+    assert sc.row_commands(w, 3) == []
+
+
+def test_run_within_row_time():
+    def case(run, rows=((1, 1030), (0, 1010))):
+        def build(rec):
+            for row, seconds in rows:
+                rec.cmd("seqSched.SET_ROW", 7, [row, 0, seconds, 0])
+            if run is not None:
+                rec.ev("seqSched.SeqRun", run, row=0)
+        return simple(build)
+    assert holds(sc.run_within_row_time(0, 3)(case(1010.2)))
+    assert holds(sc.run_within_row_time(0, 3)(case(1013.0)))  # the limit
+    assert not holds(sc.run_within_row_time(0, 3)(case(1013.001)))
+    assert not holds(sc.run_within_row_time(0, 3)(case(1031.0)))  # judged on row 0's command, not row 1's
+    assert not holds(sc.run_within_row_time(0, 3)(case(None)))  # no run
+    assert not holds(sc.run_within_row_time(0, 3)(case(1010.2, rows=((1, 1030),))))  # no command of the row
+
+
+def test_run_after_sample_takes_the_named_reading():
+    def case(run, readings):
+        def build(rec):
+            rec.ev("seqSched.SeqRun", run, row=0)
+        rows = [{"value": due(1000000 - 30 + sec), "sec": sec, "usec": 0} for sec in readings]
+        return simple(build, evidence={"next_due": rows})
+    assert holds(sc.run_after_sample(10, 15, reading=1)(case(1062.0, [1000, 1050])))
+    assert not holds(sc.run_after_sample(10, 15, reading=1)(case(1012.0, [1000, 1050])))  # not the first reading
+    assert holds(sc.run_after_sample(10, 15)(case(1012.0, [1000, 1050])))
+    assert holds(sc.run_after_sample(10, 15, reading=1)(case(1060.0, [1000, 1050])))  # the limits
+    assert holds(sc.run_after_sample(10, 15, reading=1)(case(1065.0, [1000, 1050])))
+    assert not holds(sc.run_after_sample(10, 15, reading=1)(case(1059.999, [1000, 1050])))
+    assert not holds(sc.run_after_sample(10, 15, reading=1)(case(1065.001, [1000, 1050])))
+    assert not holds(sc.run_after_sample(10, 15, reading=1)(case(1062.0, [1000])))  # no second reading
