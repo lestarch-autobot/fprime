@@ -165,23 +165,41 @@ def run_not_before_row_time(row):
     return judge
 
 
-SET_AHEAD = "every ABSOLUTE row set for a coming time was set before that time"
+SET_AHEAD = "every ABSOLUTE row set for a coming time was dispatched before that time"
 
 
 def rows_set_ahead(h):
-    """Every RowSet of the window that carries an ABSOLUTE time in TB_WORKSTATION_TIME before the year 2100 was
-    logged before that time: a row command handled only after its row time (a slow command) makes the row late by
-    the bench's doing, not the unit's. A window without such a RowSet holds."""
-    late, seen = [], 0
-    for inst in ("seqSched", "seqSchedB"):
-        for e in h.window.events(inst + ".RowSet"):
-            found = re.search(r"'timeBase': '(?:[\w.]*\.)?TB_WORKSTATION_TIME'.*?'seconds': (\d+)", e.text)
-            if found is None or e.args.get("mode") != "ABSOLUTE" or int(found.group(1)) >= YEAR_2100:
+    """Every SET_ROW of the window that carries an ABSOLUTE time in TB_WORKSTATION_TIME before the year 2100 was
+    dispatched before that time: a row command dispatched only at or after its row time (a slow command) makes
+    the row late by the bench's doing, not the unit's. Judged on the command sent and the dispatcher's event, not
+    on what the unit reports; a command of that kind without its dispatch event fails the rule."""
+    late, judged, wanted = [], 0, 0
+    for short in ("seqSched.SET_ROW", "seqSchedB.SET_ROW"):
+        rows = [c for c in h.window.cmds if c.short == short]
+        if not rows:
+            continue
+        sent = [e for e in h.window.events("cmdDisp.OpCodeDispatched")
+                if [int(code, 16) for code in re.findall(r"0x([0-9a-f]+)", e.text.lower())][:1] == [rows[0].opcode]]
+        for nth, c in enumerate(rows):
+            try:
+                args = ast.literal_eval(c.raw.strip())
+            except (ValueError, SyntaxError):
+                args = None
+            if not isinstance(args, list) or len(args) < 3 or not isinstance(args[1], dict):
+                wanted += 1  # not readable: cannot be shown to be set ahead
                 continue
-            seen += 1
-            if e.fsw >= int(found.group(1)):
-                late.append(f"{inst} row {e.args.get('row')} set at {e.fsw:.3f} for {found.group(1)}")
-    return (not late, f"{seen} rows set for a coming time; set late: {late or 'none'}")
+            time = args[1]
+            if (str(args[2]).split(".")[-1] != "ABSOLUTE" or str(time.get("timeBase")).split(".")[-1] !=
+                    "TB_WORKSTATION_TIME" or int(time.get("seconds", YEAR_2100)) >= YEAR_2100):
+                continue
+            wanted += 1
+            if nth >= len(sent):
+                continue
+            judged += 1
+            if sent[nth].fsw >= int(time["seconds"]):
+                late.append(f"{short} row {args[0]} dispatched at {sent[nth].fsw:.3f} for {time['seconds']}")
+    return (not late and judged == wanted,
+            f"{judged} of {wanted} rows for a coming time judged; dispatched late: {late or 'none'}")
 
 
 def run_not_before_delay(row):

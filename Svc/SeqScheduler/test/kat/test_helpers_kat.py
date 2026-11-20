@@ -849,26 +849,42 @@ def test_row_time_is_the_reading_plus_the_offset_in_workstation_time():
     assert json.loads(sc.row_time(5000, 26))["seconds"] - json.loads(sc.row_time(5000, 23))["seconds"] == 3
 
 
-def test_rows_set_ahead_judges_absolute_workstation_rows_logged_at_or_after_their_time():
-    def case(*rows):
-        """rows: (instance, fsw of the RowSet, time base, seconds, mode)"""
+def test_rows_set_ahead_judges_each_absolute_workstation_set_row_by_its_dispatch_time():
+    ws = "TB_WORKSTATION_TIME"
+    opcode = {"seqSched": 0x10005004, "seqSchedB": 0x10006004}
+
+    def case(*rows, raw=None):
+        """rows: (instance, FSW time of the dispatch or None for no dispatch event, time base, seconds, mode)"""
         rec = Rec()
         start = rec.mark(100, T0)
         for inst, fsw, base, seconds, mode in rows:
-            rec.ev(inst + ".RowSet", fsw, f"Row 0 set: time {{'timeBase': '{base}', 'timeContext': 0, "
-                   f"'seconds': {seconds}, 'useconds': 0}} mode {mode}", row=0, mode=mode)
+            time = {"timeBase": base, "timeContext": 0, "seconds": seconds, "useconds": 0}
+            rec.cmd(inst + ".SET_ROW", opcode[inst], [0, 0, seconds, 0],
+                    raw if raw is not None else str([0, time, mode, "short.bin", "WAIT_FOR_RUNNING"]))
+            if fsw is not None:
+                rec.ev("cmdDisp.OpCodeDispatched", fsw, f"Opcode 0x{opcode[inst]:x} dispatched to port 3")
         return rec.ctx(rec.win(start, rec.mark(101, T0 + 60)))
-    ws = "TB_WORKSTATION_TIME"
+
     def ahead(h):
         return sc.rows_set_ahead(h)
-    assert holds(ahead(case()))  # no row set: nothing was set late
-    assert holds(ahead(case(("seqSched", T0 + 5.9, ws, int(T0) + 6, "ABSOLUTE"))))
-    assert not holds(ahead(case(("seqSched", T0 + 6.0, ws, int(T0) + 6, "ABSOLUTE"))))  # logged at its time
-    assert not holds(ahead(case(("seqSched", T0 + 8.4, ws, int(T0) + 6, "ABSOLUTE"))))  # the L6-2 case
-    late_b = case(("seqSched", T0 + 2, ws, int(T0) + 6, "ABSOLUTE"), ("seqSchedB", T0 + 9, ws, int(T0) + 6, "ABSOLUTE"))
-    assert not holds(ahead(late_b)) and "seqSchedB row 0" in ahead(late_b)[1]
-    # not judged: another time base, a relative row, a year-2100 row
-    assert holds(ahead(case(("seqSched", T0 + 9, "TB_SC_TIME", int(T0) + 6, "ABSOLUTE"))))
+    due = int(T0) + 6
+    assert holds(ahead(case()))  # no row command: nothing was set late
+    assert holds(ahead(case(("seqSched", T0 + 5.9, ws, due, "ABSOLUTE"))))
+    assert not holds(ahead(case(("seqSched", T0 + 6.0, ws, due, "ABSOLUTE"))))  # dispatched at its time
+    assert not holds(ahead(case(("seqSched", T0 + 8.4, ws, due, "ABSOLUTE"))))  # the L6-2 case
+    assert not holds(ahead(case(("seqSched", None, ws, due, "ABSOLUTE"))))  # no dispatch event: not shown
+    assert not holds(ahead(case(("seqSched", T0 + 1, ws, due, "ABSOLUTE"), raw="not a list")))
+    # each command is judged by its own dispatch, per instance
+    second_late = case(("seqSched", T0 + 2, ws, due, "ABSOLUTE"), ("seqSched", T0 + 9, ws, due, "ABSOLUTE"))
+    assert not holds(ahead(second_late)) and "1 of 2" not in ahead(second_late)[1]
+    late_b = case(("seqSched", T0 + 2, ws, due, "ABSOLUTE"), ("seqSchedB", T0 + 9, ws, due, "ABSOLUTE"))
+    assert not holds(ahead(late_b)) and "seqSchedB.SET_ROW row 0" in ahead(late_b)[1]
+    assert holds(ahead(case(("seqSched", T0 + 2, ws, due, "ABSOLUTE"), ("seqSchedB", T0 + 3, ws, due, "ABSOLUTE"))))
+    # not judged: another time base, a relative row, a year-2100 row; they still take their place among the dispatches
+    assert holds(ahead(case(("seqSched", T0 + 9, "TB_SC_TIME", due, "ABSOLUTE"))))
     assert holds(ahead(case(("seqSched", T0 + 9, ws, 5, "START_RELATIVE"))))
     assert holds(ahead(case(("seqSched", T0 + 9, ws, sc.YEAR_2100, "ABSOLUTE"))))
-    assert "1 rows set" in ahead(case(("seqSched", T0 + 1, ws, int(T0) + 6, "ABSOLUTE")))[1]
+    mixed = case(("seqSched", T0 + 9, ws, sc.YEAR_2100, "ABSOLUTE"), ("seqSched", T0 + 10, ws, int(T0) + 20, "ABSOLUTE"))
+    assert holds(ahead(mixed)) and "1 of 1" in ahead(mixed)[1]
+    assert not holds(ahead(case(("seqSched", T0 + 30, ws, sc.YEAR_2100, "ABSOLUTE"),
+                                ("seqSched", T0 + 31, ws, int(T0) + 20, "ABSOLUTE"))))

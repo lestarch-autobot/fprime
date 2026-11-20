@@ -18,7 +18,7 @@ def test_L2_8(window, send, bench, check, require):
         send("Ref.seqSched.SET_ROW", [2, row_time(base, 42), "ABSOLUTE", "short2.bin", "SKIP_WHEN_RUNNING"])
         send("Ref.seqSched.SET_ROW", [1, row_time(base, 20), "ABSOLUTE", "short.bin", "SKIP_WHEN_RUNNING"])
         send("Ref.seqSched.SET_ROW", [0, row_time(base, 14), "ABSOLUTE", "long.bin", "WAIT_FOR_RUNNING"])
-        bench.wait(42)
+        bench.wait(50)
         bracket(bench)
         require(SET_AHEAD, rows_set_ahead)
         check("ABS")

@@ -12,8 +12,8 @@ def test_L5_2(window, send, bench, check, require):
         bench.action("write_T_BASE")
         send("Ref.seqSched.LOAD_TABLE")
         send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
-        send("Ref.seqSched.SET_ROW", [0, abs_time(bench, 6), "ABSOLUTE", "long.bin", "WAIT_FOR_RUNNING"])
-        bench.wait(10)
+        send("Ref.seqSched.SET_ROW", [0, abs_time(bench, 12), "ABSOLUTE", "long.bin", "WAIT_FOR_RUNNING"])
+        bench.wait(16)
         send("Ref.seqSched.SET_ROW", [0, time_value("TB_WORKSTATION_TIME", YEAR_2100), "ABSOLUTE", "short.bin",
                               "WAIT_FOR_RUNNING"])
         send("Ref.seqSched.SET_ROW_ENABLED", [0, False])

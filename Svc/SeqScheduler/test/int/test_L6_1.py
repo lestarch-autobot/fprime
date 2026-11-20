@@ -14,9 +14,9 @@ def test_L6_1(window, send, bench, check, require):
         bracket(bench)
         bench.action("count_dp")
         send("Ref.seqSched.SET_ROW_ENABLED", [16, True])
-        send("Ref.seqSched.SET_ROW", [16, abs_time(bench, 5), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
-        send("Ref.seqSched.SET_ROW", [0, abs_time(bench, 5), "ABSOLUTE", "", "WAIT_FOR_RUNNING"])
-        late = json.loads(time_value("TB_WORKSTATION_TIME", fsw_now(bench) + 5))
+        send("Ref.seqSched.SET_ROW", [16, abs_time(bench, 11), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
+        send("Ref.seqSched.SET_ROW", [0, abs_time(bench, 11), "ABSOLUTE", "", "WAIT_FOR_RUNNING"])
+        late = json.loads(time_value("TB_WORKSTATION_TIME", fsw_now(bench) + 11))
         late["useconds"] = 1000000
         send("Ref.seqSched.SET_ROW", [0, json.dumps(late), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
         send("Ref.seqSched.SET_SEQ_ENABLED", ["nosuch.bin", True])

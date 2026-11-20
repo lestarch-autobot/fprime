@@ -21,7 +21,7 @@ def test_L7_1(window, send, bench, check, require):
         send("Ref.seqSched.SET_ROW", [8, row_time(base, 14), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
         send("Ref.seqSched.SET_ROW", [6, row_time(base, 14), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
         send("Ref.seqSched.SET_ROW", [7, row_time(base, 17), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
-        bench.wait(14)
+        bench.wait(22)
         send("Ref.seqSched.SET_ROW_ENABLED", [6, False])
         send("Ref.seqSched.SET_ROW_ENABLED", [6, True])
         send("Ref.seqSched.SET_ROW", [7, time_value("TB_WORKSTATION_TIME", YEAR_2100), "ABSOLUTE", "short.bin",

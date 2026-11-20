@@ -15,8 +15,8 @@ def test_L6_2(window, send, bench, check, require):
         send("Ref.schedSeq.CS_RUN", ["short.bin", "NO_BLOCK"])
         bench.wait(4)
         send("Ref.seqSched.SET_ROW_ENABLED", [0, True])
-        send("Ref.seqSched.SET_ROW", [0, abs_time(bench, 6), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
-        bench.wait(12)
+        send("Ref.seqSched.SET_ROW", [0, abs_time(bench, 12), "ABSOLUTE", "short.bin", "WAIT_FOR_RUNNING"])
+        bench.wait(18)
         bracket(bench)
         # not ABS: the ground's own CS_RUN makes one SeqDoneUnexpected, judged below
         require(SET_AHEAD, rows_set_ahead)

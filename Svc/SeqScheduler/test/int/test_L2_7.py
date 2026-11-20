@@ -18,7 +18,7 @@ def test_L2_7(window, send, bench, check, require):
         send("Ref.seqSched.SET_ROW", [1, row_time(base, 24), "ABSOLUTE", "short.bin", "CANCEL_RUNNING"])
         send("Ref.seqSched.SET_ROW", [2, row_time(base, 19), "ABSOLUTE", "short2.bin", "WAIT_FOR_RUNNING"])
         send("Ref.seqSched.SET_ROW", [0, row_time(base, 14), "ABSOLUTE", "long.bin", "WAIT_FOR_RUNNING"])
-        bench.wait(24)
+        bench.wait(32)
         bracket(bench)
         require(SET_AHEAD, rows_set_ahead)
         check("event seqSched.SeqRun(row=0, fileName=long.bin) count == 1")
