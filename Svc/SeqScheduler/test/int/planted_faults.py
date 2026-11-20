@@ -281,14 +281,16 @@ def events_dropped_steady(ctx):
     return _steady(ctx, ["events.EventsDropped"])
 
 
-STALL_S = 5.0
+STALL_S = 4.0
 
 
 @helper("telemetry_not_stalled")
 def telemetry_not_stalled(ctx):
     """A bench condition: Ref and the bench share one machine, and a machine that stops for some seconds (it has
     stopped for 34 s) makes rows late by its doing. seqSched.RowsPending is written every second (2.0 s apart at
-    most on the records kept); the window's markers are the ends of the series."""
+    most on the records kept); the window's markers are the ends of the series. A shorter stop is not seen here:
+    `rows_set_ahead` covers a row that such a stop made late.
+    seqsched_common.not_stalled is the same rule for the windows without STD: this file cannot import it."""
     times = ([ctx.window.start_marker.fsw] + [c.fsw for c in ctx.window.channel("seqSched.RowsPending")] +
              [ctx.window.end_marker.fsw])
     worst = max(b - a for a, b in zip(times, times[1:]))

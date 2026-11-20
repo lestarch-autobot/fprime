@@ -57,6 +57,7 @@ def test_L2_10(window, send, bench, check, require):
         with window(281, 282):
             require("both markers present")
             require(RECEIVED, received_in_time)
+            require(NOT_STALLED, not_stalled)
             bench.wait(25)
             bracket(bench)
             check("SeqSched samples >= 2")

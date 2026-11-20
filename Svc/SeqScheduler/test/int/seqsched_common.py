@@ -346,6 +346,20 @@ def received_in_time(h):
             f"largest {worst:.3f} s")
 
 
+NOT_STALLED = "no two consecutive samples of seqSched.RowsPending in the window are more than 4 s apart"
+STALL_S = 4.0
+
+
+def not_stalled(h):
+    """A bench condition: Ref and the bench share one machine, and a machine that stops for some seconds makes
+    rows late by its doing. The window's markers are the ends of the series. Member of STD and STD-ERR as the
+    helper `telemetry_not_stalled`; required by name in the windows without them through which Ref runs."""
+    times = ([h.window.start_marker.fsw] + [c.fsw for c in h.window.channel("seqSched.RowsPending")] +
+             [h.window.end_marker.fsw])
+    worst = max(b - a for a, b in zip(times, times[1:]))
+    return (worst <= STALL_S, f"{len(times) - 2} samples, largest gap {worst:.3f} s")
+
+
 def one_clock(h):
     """A bench condition: several helpers compare a bench wall-clock time with an FSW time directly."""
     marks = [h.window.start_marker, h.window.end_marker]

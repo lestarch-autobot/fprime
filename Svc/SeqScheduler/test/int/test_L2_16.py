@@ -51,6 +51,7 @@ def test_L2_16(window, send, bench, check, require):
         with window(321, 322):
             require("both markers present")
             require(RECEIVED, received_in_time)
+            require(NOT_STALLED, not_stalled)
             send("Ref.seqSchedB.SET_ENABLED", [True])
             bracket_both(bench)
             require("SeqSchedB samples >= 2", samples_b)

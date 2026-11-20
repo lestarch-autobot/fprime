@@ -35,6 +35,7 @@ def test_L2_1(window, send, bench, check, require):
         with window(201, 202):
             require("both markers present")
             require(RECEIVED, received_in_time)
+            require(NOT_STALLED, not_stalled)
             bench.action("write_T_BASE")
             send("Ref.seqSched.LOAD_TABLE")
             bracket(bench)

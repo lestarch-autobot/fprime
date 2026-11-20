@@ -975,12 +975,13 @@ def test_telemetry_not_stalled():
             rec.ch("seqSchedB.RowsPending", t + 30.0, 16)  # another channel plays no part
         last = rec.mark(101, end)
         return rec.ctx(rec.win(first, last))
-    rule = HELPERS["telemetry_not_stalled"]
     every_second = [T0 + 1 + i for i in range(59)]
-    assert holds(rule(case(every_second)))
-    assert holds(rule(case([T0 + 5.0 * i for i in range(1, 12)])))  # 5 s apart: the limit
-    assert not holds(rule(case([t for t in every_second if not T0 + 20 < t < T0 + 26])))  # 6 s without a sample
-    assert not holds(rule(case(every_second[:-6])))  # the last sample 6 s and more before the END marker
-    assert not holds(rule(case(every_second[6:])))  # the first sample 7 s after the START marker
-    assert not holds(rule(case([])))  # no sample in a window of 60 s
-    assert holds(rule(case([], end=T0 + 5.0)))  # a window no longer than the limit
+    for rule in (HELPERS["telemetry_not_stalled"], lambda h: sc.not_stalled(h)):  # one rule, in two files
+        assert holds(rule(case(every_second)))
+        assert holds(rule(case([T0 + 4.0 * i for i in range(1, 15)])))  # 4 s apart: the limit
+        assert not holds(rule(case([T0 + 4.0 * i for i in range(1, 15) if i != 7] + [T0 + 28.01])))  # 4.01 s
+        assert not holds(rule(case([t for t in every_second if not T0 + 20 < t < T0 + 25])))  # 5 s without a sample
+        assert not holds(rule(case(every_second[:-5])))  # the last sample 5 s and more before the END marker
+        assert not holds(rule(case(every_second[5:])))  # the first sample 6 s after the START marker
+        assert not holds(rule(case([])))  # no sample in a window of 60 s
+        assert holds(rule(case([], end=T0 + 4.0)))  # a window no longer than the limit

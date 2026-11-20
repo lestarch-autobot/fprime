@@ -47,6 +47,7 @@ def test_L2_17(window, send, bench, check, require):
         with window(331, 332):
             require("both markers present")
             require(RECEIVED, received_in_time)
+            require(NOT_STALLED, not_stalled)
             send("Ref.seqSched.SET_ENABLED", [True])
             bracket(bench)
             check("last(seqSched.Enabled) == True")

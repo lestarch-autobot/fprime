@@ -38,6 +38,7 @@ def test_L5_1(window, send, bench, check, require):
         with window(501, 502):
             require("both markers present")
             require(RECEIVED, received_in_time)
+            require(NOT_STALLED, not_stalled)
             send("Ref.seqSched.TABLE_FILE_PRM_SET", ["seq_sched.tbl"])
             send("Ref.seqSched.LOAD_TABLE")
             bracket(bench)
