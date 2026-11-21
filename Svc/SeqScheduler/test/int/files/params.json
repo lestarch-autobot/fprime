@@ -1,0 +1,4 @@
+{
+  "Ref.seqSched": {"TABLE_FILE": "seq_sched.tbl", "LATE_TOLERANCE_SEC": 1},
+  "Ref.seqSchedB": {"TABLE_FILE": "seq_sched_b.tbl", "LATE_TOLERANCE_SEC": 1}
+}

@@ -1,0 +1,167 @@
+{
+ "cmdDisp.NoOpStringReceived": [
+  "Received a NO-OP string=4294901761"
+ ],
+ "seqSched.TableLoaded": [
+  "Loaded sequence schedule table seq_sched.tbl: 16 rows"
+ ],
+ "seqSched.TableFileMissing": [
+  "Sequence schedule table seq_sched.tbl not found: table is empty"
+ ],
+ "seqSched.RowSkippedDisabled": [
+  "Row 1 skipped: WAITING_AT_DISABLE",
+  "Row 0 skipped: ROW_DISABLED",
+  "Row 12 skipped: SCHEDULER_DISABLED",
+  "Row 3 skipped: SeqScheduler_SkipCause.ROW_DISABLED"
+ ],
+ "seqSched.ActiveRow": [
+  "Row 1 is next, due at {'timeBase': 'TB_WORKSTATION_TIME', 'timeContext': 0, 'seconds': 1795114012, 'useconds': 0}: sequence short.bin"
+ ],
+ "seqSched.NoActiveRow": [
+  "No row is upcoming"
+ ],
+ "seqSched.EnabledSet": [
+  "Sequence scheduler enabled flag set to False"
+ ],
+ "seqSched.TableLoadFailed": [
+  "Failed to load sequence schedule table missing.tbl: OPEN"
+ ],
+ "seqSched.TableSaved": [
+  "Saved sequence schedule table seq_sched.tbl"
+ ],
+ "seqSched.SeqRun": [
+  "Row 0 ran sequence short.bin"
+ ],
+ "seqSched.SeqCompleted": [
+  "Row 0 sequence completed: OK"
+ ],
+ "seqSched.SeqCancelled": [
+  "Row 0 sequence cancelled for row 1"
+ ],
+ "seqSched.SeqDoneUnexpected": [
+  "Completion report with no sequence running: OK"
+ ],
+ "seqSched.RowSkippedBusy": [
+  "Row 1 skipped: row 0 sequence running"
+ ],
+ "seqSched.RowSkippedByCancel": [
+  "Row 2 skipped: row 1 due after it cancels"
+ ],
+ "seqSched.RowLate": [
+  "Row 0 skipped: found past its due time"
+ ],
+ "seqSched.RowEnabledSet": [
+  "Row 0 enabled flag set to True"
+ ],
+ "seqSched.SeqEnabledSet": [
+  "Sequence long.bin enabled flag set to False in 2 rows"
+ ],
+ "seqSched.RowSet": [
+  "Row 0 set: time {'timeBase': 'TB_WORKSTATION_TIME', 'timeContext': 0, 'seconds': 1795113160, 'useconds': 0} mode ABSOLUTE sequence short.bin busy policy WAIT_FOR_RUNNING"
+ ],
+ "seqSched.CmdRejected": [
+  "Command 268476418 rejected: ROW_INDEX"
+ ],
+ "seqSched.TableDumped": [
+  "Table data product sent"
+ ],
+ "schedSeq.CS_SequenceLoaded": [
+  "Loaded sequence short.bin"
+ ],
+ "schedSeq.CS_SequenceComplete": [
+  "Sequence file short.bin complete"
+ ],
+ "schedSeq.CS_SequenceCanceled": [
+  "Sequence file long.bin canceled"
+ ],
+ "schedSeq.CS_FileNotFound": [
+  "Sequence file missing.bin not found."
+ ],
+ "schedSeqB.CS_SequenceLoaded": [
+  "Loaded sequence short2.bin"
+ ],
+ "schedSeqB.CS_SequenceComplete": [
+  "Sequence file short2.bin complete"
+ ],
+ "timeBaseSetter.TimeBaseSet": [
+  "Time base override set to TB_SC_TIME"
+ ],
+ "timeBaseSetter.TimeBaseCleared": [
+  "Time base override cleared"
+ ],
+ "seqSchedB.TableLoaded": [
+  "Loaded sequence schedule table seq_sched_b.tbl: 16 rows"
+ ],
+ "seqSchedB.TableFileMissing": [
+  "Sequence schedule table seq_sched.tbl not found: table is empty"
+ ],
+ "seqSchedB.RowSkippedDisabled": [
+  "Row 1 skipped: WAITING_AT_DISABLE",
+  "Row 0 skipped: ROW_DISABLED",
+  "Row 12 skipped: SCHEDULER_DISABLED",
+  "Row 3 skipped: SeqScheduler_SkipCause.ROW_DISABLED"
+ ],
+ "seqSchedB.ActiveRow": [
+  "Row 1 is next, due at {'timeBase': 'TB_WORKSTATION_TIME', 'timeContext': 0, 'seconds': 1795114068, 'useconds': 0}: sequence short.bin"
+ ],
+ "seqSchedB.NoActiveRow": [
+  "No row is upcoming"
+ ],
+ "seqSchedB.EnabledSet": [
+  "Sequence scheduler enabled flag set to False"
+ ],
+ "seqSchedB.TableLoadFailed": [
+  "Failed to load sequence schedule table missing.tbl: OPEN"
+ ],
+ "seqSchedB.TableSaved": [
+  "Saved sequence schedule table seq_sched.tbl"
+ ],
+ "seqSchedB.SeqRun": [
+  "Row 0 ran sequence short2.bin"
+ ],
+ "seqSchedB.SeqCompleted": [
+  "Row 0 sequence completed: OK"
+ ],
+ "seqSchedB.SeqCancelled": [
+  "Row 0 sequence cancelled for row 2"
+ ],
+ "seqSchedB.SeqDoneUnexpected": [
+  "Completion report with no sequence running: OK"
+ ],
+ "seqSchedB.RowSkippedBusy": [
+  "Row 3 skipped: row 0 sequence running"
+ ],
+ "seqSchedB.RowSkippedByCancel": [
+  "Row 1 skipped: row 2 due after it cancels"
+ ],
+ "seqSchedB.RowLate": [
+  "Row 1 skipped: found past its due time"
+ ],
+ "seqSchedB.RowEnabledSet": [
+  "Row 0 enabled flag set to True"
+ ],
+ "seqSchedB.SeqEnabledSet": [
+  "Sequence long.bin enabled flag set to False in 2 rows"
+ ],
+ "seqSchedB.RowSet": [
+  "Row 1 set: time {'timeBase': 'TB_SC_TIME', 'timeContext': 0, 'seconds': 1795113555, 'useconds': 0} mode ABSOLUTE sequence short.bin busy policy WAIT_FOR_RUNNING"
+ ],
+ "seqSchedB.CmdRejected": [
+  "Command 268480514 rejected: ROW_INDEX"
+ ],
+ "seqSchedB.TableDumped": [
+  "Table data product sent"
+ ],
+ "schedSeqB.CS_SequenceCanceled": [
+  "Sequence file long.bin canceled"
+ ],
+ "schedSeqB.CS_FileNotFound": [
+  "Sequence file missing.bin not found."
+ ],
+ "cmdDisp.OpCodeDispatched": [
+  "Opcode 0x1000001 dispatched to port 0"
+ ],
+ "cmdDisp.OpCodeCompleted": [
+  "Opcode 0x1000001 completed"
+ ]
+}

@@ -1,0 +1,200 @@
+{
+  "max_count": 2,
+  "knobs": [
+    {
+      "name": "cross_instance",
+      "class": "stimulus",
+      "applies_to": [
+        "L2-10"
+      ],
+      "fails": {
+        "L2-10": [
+          "event seqSchedB.SeqRun(row=0, fileName=short2.bin) count == 1",
+          "event schedSeq.CS_SequenceLoaded(fileName=short2.bin) count == 0",
+          "event schedSeqB.CS_SequenceComplete(fileName=short2.bin) count == 1",
+          "event seqSchedB.SeqCompleted(row=0, response=OK) count == 1",
+          "event seqSched.SeqRun count == 1",
+          "event seqSchedB.SeqRun count == 1",
+          "last(seqSched.RowsExecuted) == 1",
+          "last(seqSched.RowsPending) == 15",
+          "last(seqSchedB.RowsExecuted) == 1",
+          "last(seqSchedB.RowsPending) == 14"
+        ]
+      },
+      "mechanism": "seqSchedB's SET_ROW(0, ...) is sent to seqSched as SET_ROW(1, ...); seqSched runs two rows and seqSchedB none",
+      "kind": "insert",
+      "ripples_to": {}
+    },
+    {
+      "name": "disable_row",
+      "class": "uut-state",
+      "applies_to": [
+        "L2-2",
+        "L7-1"
+      ],
+      "fails": {
+        "L2-2": [
+          "event seqSched.SeqRun(row=0, fileName=short.bin) count == 1",
+          "event schedSeq.CS_SequenceLoaded(fileName=short.bin) count == 1",
+          "event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1",
+          "event seqSched.SeqCompleted(row=0, response=OK) count == 1",
+          "event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)",
+          "last(seqSched.RowsExecuted) == 1",
+          "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s",
+          "row 0 run no earlier than the time set in the row",
+          "row 0 run no later than 3 s after the time set in the row"
+        ],
+        "L7-1": [
+          "event seqSched.SeqRun(row=6, fileName=short.bin) count == 1",
+          "event seqSched.RowSkippedDisabled count == 1"
+        ]
+      },
+      "mechanism": "SET_ROW_ENABLED(row, False) is sent after the SET_ROW of row 0 (L2-2) or row 6 (L7-1); the row reaches its time disabled and is skipped",
+      "kind": "insert",
+      "ripples_to": {}
+    },
+    {
+      "name": "early_override",
+      "class": "uut-state",
+      "applies_to": [
+        "L2-3"
+      ],
+      "fails": {
+        "L2-3": [
+          "event seqSched.SeqRun count == 0",
+          "last(seqSched.RowsPending) == 16",
+          "last(seqSched.NextRow) == 16",
+          "event seqSched.RowLate(row=0) count == 1",
+          "last(seqSched.RowsSkipped) == 1"
+        ]
+      },
+      "mechanism": "SET_TIME_BASE(TB_SC_TIME) is sent in window W1, right after row 0's SET_ROW and so before row 0's time; row 0 is run in W1, where the plan asserts the scheduler does nothing",
+      "kind": "insert",
+      "ripples_to": {}
+    },
+    {
+      "name": "missing_file_present",
+      "class": "stimulus",
+      "applies_to": [
+        "L5-1"
+      ],
+      "fails": {
+        "L5-1": [
+          "event cmdDisp.OpCodeError count == 2",
+          "event seqSched.TableLoadFailed(reason=OPEN) count == 1",
+          "event seqSched.TableLoaded count == 1",
+          "event seqSched.SeqRun(row=0, fileName=short.bin) count == 1",
+          "event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1",
+          "last(seqSched.RowsPending) == 15",
+          "last(seqSched.RowsExecuted) == 1"
+        ]
+      },
+      "mechanism": "TABLE_FILE_PRM_SET(missing.tbl) is sent with the path of T-BASE; the load the plan expects to fail succeeds and replaces the table, so row 0 is not run",
+      "kind": "rewrite",
+      "ripples_to": {}
+    },
+    {
+      "name": "no_disable",
+      "class": "stimulus",
+      "applies_to": [
+        "L2-17"
+      ],
+      "fails": {
+        "L2-17": [
+          "event seqSched.EnabledSet(enabled=False) count == 1",
+          "event seqSched.EnabledSet(enabled=True) count == 1",
+          "event seqSched.RowSkippedDisabled(row=1) count == 1",
+          "event seqSched.RowSkippedDisabled(row=1, cause=WAITING_AT_DISABLE) count == 1",
+          "event seqSched.RowSkippedDisabled(row=1) precedes event seqSched.EnabledSet(enabled=False)",
+          "event seqSched.RowSkippedDisabled count == 1",
+          "event seqSched.SeqRun(row=1) count == 0",
+          "event seqSched.SeqRun count == 1",
+          "last(seqSched.RowsSkipped) == 1",
+          "last(seqSched.RowsExecuted) == 1"
+        ]
+      },
+      "mechanism": "SET_ENABLED(False) is sent as SET_ENABLED(True); the waiting row is not skipped and runs when long.bin completes",
+      "kind": "rewrite",
+      "ripples_to": {}
+    },
+    {
+      "name": "row_time_late",
+      "class": "stimulus",
+      "applies_to": [
+        "L2-2",
+        "L2-11"
+      ],
+      "fails": {
+        "L2-2": [
+          "event seqSched.SeqRun(row=0, fileName=short.bin) count == 1",
+          "event schedSeq.CS_SequenceLoaded(fileName=short.bin) count == 1",
+          "event schedSeq.CS_SequenceComplete(fileName=short.bin) count == 1",
+          "event seqSched.SeqCompleted(row=0, response=OK) count == 1",
+          "event seqSched.SeqRun(row=0) precedes event seqSched.SeqCompleted(row=0)",
+          "last(seqSched.RowsExecuted) == 1",
+          "t(event seqSched.SeqRun(row=0)) - t(seqSched.SET_ROW sent) <= 12 s",
+          "row 0 run no earlier than the time set in the row",
+          "row 0 run no later than 3 s after the time set in the row"
+        ],
+        "L2-11": [
+          "event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
+          "event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
+          "event seqSched.SeqCompleted(row=3, response=OK) count == 1",
+          "event seqSched.SeqRun count == 1",
+          "last(seqSched.RowsExecuted) == 1",
+          "last(seqSched.RowsPending) == 15",
+          "row 3 run no later than 3 s after the time set in the row",
+          "row 3 run no earlier than the time set in the row"
+        ]
+      },
+      "mechanism": "the first SET_ROW of the test is sent with the row time 30 s later than planned; the row is not run inside its window",
+      "kind": "rewrite",
+      "ripples_to": {}
+    },
+    {
+      "name": "stray_edit",
+      "class": "uut-state",
+      "applies_to": [
+        "L2-1"
+      ],
+      "fails": {
+        "L2-1": [
+          "last(seqSched.NextRow) == 16",
+          "data product file decodes to table T-FIELDS, every field of every row as authored"
+        ]
+      },
+      "mechanism": "SET_ROW_ENABLED(2, True) is sent before DUMP_TABLE; row 2 (TB_WORKSTATION_TIME, year 2100) becomes the upcoming row and the dumped table differs from the authored one in one flag",
+      "kind": "insert",
+      "ripples_to": {}
+    },
+    {
+      "name": "wrong_seq",
+      "class": "stimulus",
+      "applies_to": [
+        "L2-11"
+      ],
+      "fails": {
+        "L2-11": [
+          "event seqSched.RowSet(row=3, mode=ABSOLUTE, fileName=short2.bin, busyPolicy=WAIT_FOR_RUNNING) count == 1",
+          "event seqSched.SeqRun(row=3, fileName=short2.bin) count == 1",
+          "event schedSeq.CS_SequenceComplete(fileName=short2.bin) count == 1",
+          "event seqSched.SeqCompleted(row=3, response=OK) count == 1",
+          "last(seqSched.RowsExecuted) == 1"
+        ]
+      },
+      "mechanism": "every SET_ROW naming short2.bin is sent with long.bin; the row holds and runs the wrong file. long.bin is still running when window W2 of L2-11 opens, so W2 is not judged under this fault (its sequencers-idle requirement does not hold)",
+      "kind": "rewrite",
+      "ripples_to": {}
+    }
+  ],
+  "tests_covered": [
+    "L2-1",
+    "L2-10",
+    "L2-11",
+    "L2-17",
+    "L2-2",
+    "L2-3",
+    "L5-1",
+    "L7-1"
+  ]
+}

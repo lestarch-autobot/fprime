@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="489" height="166" viewBox="-8 -8 489 166">
+<style>
+    text { font-family: Helvetica, Arial, sans-serif; font-size: 11px; font-weight: normal; }
+    .sprotty-node { fill: #dbe9f9; stroke: #1b1b1b; stroke-width: 1.5; }
+    .sprotty-label { fill: #1b1b1b; stroke: none; }
+    .node-label { fill: #1b1b1b; }
+    .sprotty-port { fill: #1b1b1b; stroke: #7b337d; stroke-width: 1; }
+    .sprotty-edge { fill: none; stroke: #3b3b3b; }
+    .sprotty-edge-arrow { fill: #3b3b3b; stroke-width: 0; }
+    .component-active { stroke: #3FB984; }
+    .component-passive { stroke: #fe92a8; }
+    .topology-node { fill: #f1f1f1; stroke: #1b1b1b; stroke-dasharray: 8 4; }
+    .boundary-port { stroke: #1b1b1b; stroke-width: 1; }
+    .boundary-input { fill: #9cc8ff; }
+    .boundary-output { fill: #f5c58a; }
+    .sprotty-edge path.edge-implicit { stroke-dasharray: 5 4; opacity: 0.85; }
+    .sprotty-edge path.edge-bus { stroke-width: 3px; }
+    .sprotty-edge path.edge-bus.edge-implicit { stroke-dasharray: 8 5; }
+    .sprotty-edge .edge-bus-slash { stroke-width: 1.5px; }
+    .port-sync { fill: #fe92a8; }
+    .port-guarded { fill: #FDD35C; }
+    </style>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse" class="sprotty-edge-arrow"><path d="M 0 0 L 10 5 L 0 10 z"/></marker>
+</defs>
+<rect x="-8" y="-8" width="489" height="166" fill="#ffffff"/>
+<g id="Svc.SeqScheduler" transform="translate(191,12)"><rect class="sprotty-node task component-active" width="80" height="126" rx="10"/><text class="sprotty-label node-label" x="5" y="66">SeqScheduler</text><g id="Svc.SeqScheduler.pingIn.0" transform="translate(-10,34)"><title>Svc.SeqScheduler.pingIn.0 (async)</title><rect class="sprotty-port port-async" width="10" height="10"/><text class="sprotty-label" x="-85" y="8">pingIn: Svc.Ping</text></g><g id="Svc.SeqScheduler.pingOut.0" transform="translate(80,22)"><title>Svc.SeqScheduler.pingOut.0 (output)</title><rect class="sprotty-port" width="10" height="10"/><text class="sprotty-label" x="15" y="8">pingOut: Svc.Ping</text></g><g id="Svc.SeqScheduler.queryIn.0" transform="translate(-10,58)"><title>Svc.SeqScheduler.queryIn.0 (guarded)</title><rect class="sprotty-port port-guarded" width="10" height="10"/><text class="sprotty-label" x="-169" y="8">queryIn: Svc.SeqSchedulerQuery</text></g><g id="Svc.SeqScheduler.run.0" transform="translate(-10,82)"><title>Svc.SeqScheduler.run.0 (sync)</title><rect class="sprotty-port port-sync" width="10" height="10"/><text class="sprotty-label" x="-80" y="8">run: Svc.Sched</text></g><g id="Svc.SeqScheduler.runInternal.0" transform="translate(-10,106)"><title>Svc.SeqScheduler.runInternal.0 (internal)</title><rect class="sprotty-port" width="10" height="10"/><text class="sprotty-label" x="-58" y="8">runInternal</text></g><g id="Svc.SeqScheduler.seqCancelOut.0" transform="translate(80,58)"><title>Svc.SeqScheduler.seqCancelOut.0 (output)</title><rect class="sprotty-port" width="10" height="10"/><text class="sprotty-label" x="15" y="8">seqCancelOut: Svc.CmdSeqCancel</text></g><g id="Svc.SeqScheduler.seqDoneIn.0" transform="translate(-10,10)"><title>Svc.SeqScheduler.seqDoneIn.0 (async)</title><rect class="sprotty-port port-async" width="10" height="10"/><text class="sprotty-label" x="-155" y="8">seqDoneIn: Fw.CmdResponse</text></g><g id="Svc.SeqScheduler.seqRunOut.0" transform="translate(80,94)"><title>Svc.SeqScheduler.seqRunOut.0 (output)</title><rect class="sprotty-port" width="10" height="10"/><text class="sprotty-label" x="15" y="8">seqRunOut: Svc.CmdSeqIn</text></g></g>
+</svg>

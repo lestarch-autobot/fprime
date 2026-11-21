@@ -19,4 +19,12 @@ module Svc {
   @ Port to cancel a sequence
   port CmdSeqCancel
 
+  @ Port for querying the i-th upcoming row of a sequence schedule table, 0 being the soonest
+  @ Returns true when the reply is valid
+  port SeqSchedulerQuery(
+                          i: FwSizeType @< Position among the upcoming rows, 0 being the soonest
+                          ref timeDue: Fw.Time @< Time the row is due
+                          ref fileName: string size FileNameStringSize @< Sequence file of the row
+                        ) -> bool
+
 }
