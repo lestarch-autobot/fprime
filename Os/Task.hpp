@@ -202,6 +202,7 @@ class TaskInterface {
     virtual Status start(const Arguments& arguments) = 0;
 };
 
+//! \brief interface presented to users of Os::Task, an alias of Os::TaskInterface
 using TaskUserInterface = TaskInterface;
 
 //! Task class intended to be used by the rest of the fprime system. This is final as it is not intended to be a
@@ -404,6 +405,7 @@ class TaskCommon final : public TaskUserInterface {
     TaskInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
 
+//! \brief Os::Task is an alias of the common wrapper class Os::TaskCommon
 using Task = TaskCommon;
 
 class TaskRegistry {

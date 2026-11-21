@@ -43,6 +43,7 @@ class MemoryInterface {
     static MemoryInterface* getDelegate(MemoryHandleStorage& aligned_new_memory);
 };
 
+//! \brief interface presented to users of Os::Memory, an alias of Os::MemoryInterface
 using MemoryUserInterface = MemoryInterface;
 
 //! \brief memory implementation
@@ -109,6 +110,7 @@ class MemoryCommon final : public MemoryUserInterface {
     MemoryInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
 
+//! \brief Os::Memory is an alias of the common wrapper class Os::MemoryCommon
 using Memory = MemoryCommon;
 }  // namespace Os
 #endif  // OS_CONDITION_HPP_

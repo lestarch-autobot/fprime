@@ -109,6 +109,7 @@ class DirectoryInterface {
     virtual void close() = 0;
 };
 
+//! \brief interface presented to users of Os::Directory, an alias of Os::DirectoryInterface
 using DirectoryUserInterface = DirectoryInterface;
 
 //! \brief Directory class
@@ -231,6 +232,7 @@ class DirectoryCommon final : public DirectoryUserInterface {
     DirectoryInterface& m_delegate;
 };
 
+//! \brief Os::Directory is an alias of the common wrapper class Os::DirectoryCommon
 using Directory = DirectoryCommon;
 
 }  // namespace Os

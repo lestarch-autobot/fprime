@@ -60,6 +60,7 @@ class CountingSemaphoreInterface {
                                                    U32 initial_count);
 };
 
+//! \brief interface presented to users of Os::CountingSemaphore, an alias of Os::CountingSemaphoreInterface
 using CountingSemaphoreUserInterface = CountingSemaphoreInterface;
 
 class CountingSemaphoreCommon final : public CountingSemaphoreUserInterface {
@@ -90,6 +91,7 @@ class CountingSemaphoreCommon final : public CountingSemaphoreUserInterface {
     CountingSemaphoreInterface& m_delegate;
 };
 
+//! \brief Os::CountingSemaphore is an alias of the common wrapper class Os::CountingSemaphoreCommon
 using CountingSemaphore = CountingSemaphoreCommon;
 }  // namespace Os
 #endif  // OS_COUNTING_SEMAPHORE_HPP_

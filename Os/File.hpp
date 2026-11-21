@@ -225,6 +225,7 @@ class FileInterface {
                                       const FileInterface* to_copy = nullptr);
 };
 
+//! \brief interface presented to users of Os::File, an alias of Os::FileInterface
 using FileUserInterface = FileInterface;
 
 class FileCommon final : public FileUserInterface {
@@ -601,6 +602,7 @@ class FileCommon final : public FileUserInterface {
     FileInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
 
+//! \brief Os::File is an alias of the common wrapper class Os::FileCommon
 using File = FileCommon;
 }  // namespace Os
 #endif

@@ -56,6 +56,7 @@ class CpuInterface {
     static CpuInterface* getDelegate(CpuHandleStorage& aligned_new_memory);
 };
 
+//! \brief interface presented to users of Os::Cpu, an alias of Os::CpuInterface
 using CpuUserInterface = CpuInterface;
 
 //! \brief cpu implementation
@@ -150,6 +151,7 @@ class CpuCommon final : public CpuUserInterface {
     CpuInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
 
+//! \brief Os::Cpu is an alias of the common wrapper class Os::CpuCommon
 using Cpu = CpuCommon;
 }  // namespace Os
 #endif  // OS_CONDITION_HPP_

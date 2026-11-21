@@ -116,6 +116,7 @@ class FileSystemInterface {
     virtual Status _changeWorkingDirectory(const char* path) = 0;
 };
 
+//! \brief interface presented to users of Os::FileSystem, an alias of Os::FileSystemInterface
 using FileSystemUserInterface = FileSystemInterface;
 
 //! \brief FileSystem class
@@ -396,6 +397,7 @@ class FileSystemCommon final : public FileSystemUserInterface {
     FileSystemInterface& m_delegate;
 };
 
+//! \brief Os::FileSystem is an alias of the common wrapper class Os::FileSystemCommon
 using FileSystem = FileSystemCommon;
 
 }  // namespace Os

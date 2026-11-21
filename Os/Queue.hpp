@@ -162,6 +162,7 @@ class QueueInterface {
     static QueueInterface* getDelegate(QueueHandleStorage& aligned_placement_new_memory);
 };
 
+//! \brief interface presented to users of Os::Queue, an alias of Os::QueueInterface
 using QueueUserInterface = QueueInterface;
 
 class QueueCommon final : public QueueUserInterface {
@@ -326,7 +327,9 @@ class QueueCommon final : public QueueUserInterface {
     QueueInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
 
+//! \brief Os::Queue is an alias of the common wrapper class Os::QueueCommon
 using Queue = QueueCommon;
+
 //! \brief queue registry interface
 //!
 //! The QueueRegistry is used to track queues in the system. There is intended to be a single, global, queue registry

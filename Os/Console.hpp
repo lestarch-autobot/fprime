@@ -65,6 +65,7 @@ class ConsoleInterface {
                                          const ConsoleInterface* to_copy = nullptr);
 };
 
+//! \brief interface presented to users of Os::Console, an alias of Os::ConsoleInterface
 using ConsoleUserInterface = ConsoleInterface;
 
 class ConsoleCommon : public ConsoleUserInterface, public Fw::Logger {
@@ -137,6 +138,7 @@ class ConsoleCommon : public ConsoleUserInterface, public Fw::Logger {
     ConsoleInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
 
+//! \brief Os::Console is an alias of the common wrapper class Os::ConsoleCommon
 using Console = ConsoleCommon;
 }  // namespace Os
 
