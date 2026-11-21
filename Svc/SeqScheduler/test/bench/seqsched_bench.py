@@ -183,7 +183,9 @@ def manifest_versions(args):
         evidence({"describe": []})
         return
     with open(path, encoding="utf-8") as manifest:
-        repos = json.load(manifest).get("repos", [])
+        pinned = json.load(manifest)
+    # a harness the manifest declares a test tool only (harness_in_image false) is not compiled into Ref
+    repos = [r for r in pinned.get("repos", []) if pinned.get("harness_in_image", True) or r.get("name") != "harness"]
     evidence({"describe": sorted({str(r["describe"]) for r in repos if r.get("describe")})})
 
 

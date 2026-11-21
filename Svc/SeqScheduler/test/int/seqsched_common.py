@@ -284,13 +284,20 @@ def bracket(bench, n=2):
     bench.wait_samples(SAMPLE, n)
 
 
+def describes_in_image(manifest):
+    """Describe strings of the repositories a manifest says are compiled into the image: all of them, less the
+    harness when the manifest declares it a test tool only (`harness_in_image` false)."""
+    return {str(r["describe"]) for r in manifest.get("repos", [])
+            if r.get("describe") and (manifest.get("harness_in_image", True) or r.get("name") != "harness")}
+
+
 def manifest_in_hand():
     """Describe strings of the manifest given to this `fth run` or replay (named in FTH_MANIFEST), or None."""
     path = os.environ.get("FTH_MANIFEST")
     if not path or not Path(path).is_file():
         return None
-    repos = json.loads(Path(path).read_text(encoding="utf-8")).get("repos", [])
-    return sorted({str(r["describe"]) for r in repos if r.get("describe")})
+    manifest = json.loads(Path(path).read_text(encoding="utf-8"))
+    return sorted(describes_in_image(manifest))
 
 
 def version_strings_match(h):

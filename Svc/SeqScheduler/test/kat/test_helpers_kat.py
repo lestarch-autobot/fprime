@@ -255,6 +255,11 @@ def test_version_strings_match(tmp_path, monkeypatch):
     manifest("736179b67")
     assert not holds(sc.version_strings_match(case("Framework Version: [608087211]")))
     assert not holds(sc.version_strings_match(case("Framework Version: [736179b67]")))
+    # a harness the manifest declares a test tool only is not looked for in the image; one compiled in is
+    tool = {"repos": [{"name": "uut", "describe": "608087211"}, {"name": "harness", "describe": "v0.1.28"}]}
+    assert sc.describes_in_image(tool) == {"608087211", "v0.1.28"}
+    assert sc.describes_in_image({**tool, "harness_in_image": False}) == {"608087211"}
+    assert sc.describes_in_image({**tool, "harness_in_image": True}) == {"608087211", "v0.1.28"}
     # no manifest in hand
     monkeypatch.delenv("FTH_MANIFEST")
     assert not holds(sc.version_strings_match(case("Framework Version: [608087211]")))
