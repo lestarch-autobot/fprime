@@ -2,7 +2,7 @@
   "deployment": "",
   "boot_event": "FileHandling.prmDb.PrmFileLoadComplete",
   "dictionary": "uut/TestDeploymentsProject/build-artifacts/Linux/Ref/dict/RefTopologyDictionary.json",
-  "serial": "",
+  "serial": "devin-box",
   "vars": {
     "bench": "uut/Svc/SeqScheduler/test/bench/seqsched_bench.py",
     "port": "50000"
