@@ -202,17 +202,20 @@ class TaskInterface {
     virtual Status start(const Arguments& arguments) = 0;
 };
 
+//! \brief interface presented to users of Os::Task, an alias of Os::TaskInterface
+using TaskUserInterface = TaskInterface;
+
 //! Task class intended to be used by the rest of the fprime system. This is final as it is not intended to be a
 //! parent class. Instead it wraps a delegate provided by `TaskInterface::getDelegate()` to provide system specific
 //! behaviour.
-class Task final : public TaskInterface {
+class TaskCommon final : public TaskUserInterface {
     friend struct Os::Test::Task::Tester;
 
   public:
     //! Wrapper for task routine that ensures `onStart()` is called once the task actually begins
     class TaskRoutineWrapper {
       public:
-        explicit TaskRoutineWrapper(Task& self);
+        explicit TaskRoutineWrapper(TaskCommon& self);
 
         //! \brief run the task routine wrapper
         //!
@@ -224,7 +227,7 @@ class Task final : public TaskInterface {
         //! \brief invoke the run method with "self" as argument
         void invoke();
 
-        Task& m_task;                           //!< Reference to owning task
+        TaskCommon& m_task;                     //!< Reference to owning task
         taskRoutine m_user_function = nullptr;  //!< User function to run once started
         void* m_user_argument = nullptr;        //!<  Argument to user function
     };
@@ -233,16 +236,16 @@ class Task final : public TaskInterface {
     typedef FwSizeType ParamType;
 
     //! \brief default constructor
-    Task();
+    TaskCommon();
 
     //! \brief default virtual destructor
-    ~Task() final;
+    ~TaskCommon() final;
 
     //! \brief copy constructor is forbidden
-    Task(const Task& other) = delete;
+    TaskCommon(const TaskCommon& other) = delete;
 
     //! \brief assignment operator is forbidden
-    Task& operator=(const Task& other) = delete;
+    TaskCommon& operator=(const TaskCommon& other) = delete;
 
     //! \brief suspend the current task
     //!
@@ -370,7 +373,7 @@ class Task final : public TaskInterface {
 
     //! \brief get a reference to singleton
     //! \return reference to singleton
-    static Task& getSingleton();
+    static TaskCommon& getSingleton();
 
     //! \brief delay the current task
     //!
@@ -387,7 +390,7 @@ class Task final : public TaskInterface {
     static Mutex s_taskMutex;             //!< Guards s_numTasks
 
     TaskString m_name;  //!< Task object name
-    TaskInterface::State m_state = Task::NOT_STARTED;
+    TaskInterface::State m_state = TaskCommon::NOT_STARTED;
     mutable Mutex m_lock;               //!< Guards state transitions
     TaskRoutineWrapper m_wrapper;       //!< Concrete storage for task routine wrapper
     FwTaskPriorityType m_priority = 0;  // Storage of priority
@@ -401,6 +404,9 @@ class Task final : public TaskInterface {
     alignas(FW_HANDLE_ALIGNMENT) TaskHandleStorage m_handle_storage;  //!< Storage for aligned FileHandle data
     TaskInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
+
+//! \brief Os::Task is an alias of the common wrapper class Os::TaskCommon
+using Task = TaskCommon;
 
 class TaskRegistry {
   public:

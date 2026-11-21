@@ -7,12 +7,12 @@
 
 namespace Os {
 
-Directory::Directory()
+DirectoryCommon::DirectoryCommon()
     : m_is_open(false), m_handle_storage(), m_delegate(*DirectoryInterface::getDelegate(m_handle_storage)) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
 }
 
-Directory::~Directory() {
+DirectoryCommon::~DirectoryCommon() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
     if (this->m_is_open) {
         this->close();
@@ -23,12 +23,12 @@ Directory::~Directory() {
 // ------------------------------------------------------------
 // Directory operations delegating to implementation
 // ------------------------------------------------------------
-DirectoryHandle* Directory::getHandle() {
+DirectoryHandle* DirectoryCommon::getHandle() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
     return this->m_delegate.getHandle();
 }
 
-Directory::Status Directory::open(const char* path, OpenMode mode) {
+DirectoryCommon::Status DirectoryCommon::open(const char* path, OpenMode mode) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
     FW_ASSERT(path != nullptr);
     FW_ASSERT(mode >= 0 and mode < OpenMode::MAX_OPEN_MODE);
@@ -39,11 +39,11 @@ Directory::Status Directory::open(const char* path, OpenMode mode) {
     return status;
 }
 
-bool Directory::isOpen() {
+bool DirectoryCommon::isOpen() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
     return this->m_is_open;
 }
-Directory::Status Directory::rewind() {
+DirectoryCommon::Status DirectoryCommon::rewind() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
     if (not this->m_is_open) {
         return Status::NOT_OPENED;
@@ -51,7 +51,7 @@ Directory::Status Directory::rewind() {
     return this->m_delegate.rewind();
 }
 
-Directory::Status Directory::read(char* fileNameBuffer, FwSizeType bufSize) {
+DirectoryCommon::Status DirectoryCommon::read(char* fileNameBuffer, FwSizeType bufSize) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
     if (not this->m_is_open) {
         return Status::NOT_OPENED;
@@ -63,7 +63,7 @@ Directory::Status Directory::read(char* fileNameBuffer, FwSizeType bufSize) {
     return status;
 }
 
-Directory::Status Directory::read(Fw::StringBase& filename) {
+DirectoryCommon::Status DirectoryCommon::read(Fw::StringBase& filename) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
     if (not this->m_is_open) {
         return Status::NOT_OPENED;
@@ -71,7 +71,7 @@ Directory::Status Directory::read(Fw::StringBase& filename) {
     return this->m_delegate.read(const_cast<char*>(filename.toChar()), filename.getCapacity());
 }
 
-void Directory::close() {
+void DirectoryCommon::close() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
     this->m_is_open = false;
     return this->m_delegate.close();
@@ -81,7 +81,7 @@ void Directory::close() {
 // Common functions built on top of OS-specific functions
 // ------------------------------------------------------------
 
-Directory::Status Directory::getFileCount(FwSizeType& fileCount) {
+DirectoryCommon::Status DirectoryCommon::getFileCount(FwSizeType& fileCount) {
     if (not this->m_is_open) {
         return Status::NOT_OPENED;
     }
@@ -111,7 +111,8 @@ Directory::Status Directory::getFileCount(FwSizeType& fileCount) {
     return Status::OP_OK;
 }
 
-Directory::Status Directory::readDirectory(Fw::ExternalArray<Fw::String>& filenameArray, FwSizeType& filenameCount) {
+DirectoryCommon::Status DirectoryCommon::readDirectory(Fw::ExternalArray<Fw::String>& filenameArray,
+                                                       FwSizeType& filenameCount) {
     FW_ASSERT(filenameArray.getElements() != nullptr);
     FW_ASSERT(filenameArray.getSize() > 0);
     if (not this->m_is_open) {
@@ -144,9 +145,9 @@ Directory::Status Directory::readDirectory(Fw::ExternalArray<Fw::String>& filena
     return returnStatus;
 }
 
-Directory::Status Directory::readDirectory(Fw::String filenameArray[],
-                                           const FwSizeType filenameArraySize,
-                                           FwSizeType& filenameCount) {
+DirectoryCommon::Status DirectoryCommon::readDirectory(Fw::String filenameArray[],
+                                                       const FwSizeType filenameArraySize,
+                                                       FwSizeType& filenameCount) {
     Fw::ExternalArray<Fw::String> array(filenameArray, filenameArraySize);
     return this->readDirectory(array, filenameCount);
 }

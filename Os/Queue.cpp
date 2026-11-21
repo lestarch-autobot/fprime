@@ -8,21 +8,22 @@
 
 namespace Os {
 
-FwSizeType Queue::s_queueCount = 0;
+FwSizeType QueueCommon::s_queueCount = 0;
 #if FW_QUEUE_REGISTRATION
-QueueRegistry* Queue::s_queueRegistry = nullptr;
+QueueRegistry* QueueCommon::s_queueRegistry = nullptr;
 #endif
 
-Queue::Queue() : m_name(""), m_depth(0), m_size(0), m_delegate(*QueueInterface::getDelegate(m_handle_storage)) {}
+QueueCommon::QueueCommon()
+    : m_name(""), m_depth(0), m_size(0), m_delegate(*QueueInterface::getDelegate(m_handle_storage)) {}
 
-Queue::~Queue() {
+QueueCommon::~QueueCommon() {
     m_delegate.~QueueInterface();
 }
 
-QueueInterface::Status Queue ::create(FwEnumStoreType id,
-                                      const Fw::ConstStringBase& name,
-                                      FwSizeType depth,
-                                      FwSizeType messageSize) {
+QueueInterface::Status QueueCommon ::create(FwEnumStoreType id,
+                                            const Fw::ConstStringBase& name,
+                                            FwSizeType depth,
+                                            FwSizeType messageSize) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<QueueInterface*>(&this->m_handle_storage[0]));
     FW_ASSERT(depth > 0);
     FW_ASSERT(messageSize > 0);
@@ -35,26 +36,26 @@ QueueInterface::Status Queue ::create(FwEnumStoreType id,
         this->m_name = name;
         this->m_depth = depth;
         this->m_size = messageSize;
-        ScopeLock lock(Queue::getStaticMutex());
-        Queue::s_queueCount++;
+        ScopeLock lock(QueueCommon::getStaticMutex());
+        QueueCommon::s_queueCount++;
 #if FW_QUEUE_REGISTRATION
-        if (Queue::s_queueRegistry != nullptr) {
-            Queue::s_queueRegistry->registerQueue(this);
+        if (QueueCommon::s_queueRegistry != nullptr) {
+            QueueCommon::s_queueRegistry->registerQueue(this);
         }
 #endif
     }
     return status;
 }
 
-void Queue::teardown() {
+void QueueCommon::teardown() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<QueueInterface*>(&this->m_handle_storage[0]));
     return this->m_delegate.teardown();
 }
 
-QueueInterface::Status Queue::send(const U8* buffer,
-                                   FwSizeType size,
-                                   FwQueuePriorityType priority,
-                                   QueueInterface::BlockingType blockType) {
+QueueInterface::Status QueueCommon::send(const U8* buffer,
+                                         FwSizeType size,
+                                         FwQueuePriorityType priority,
+                                         QueueInterface::BlockingType blockType) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<QueueInterface*>(&this->m_handle_storage[0]));
     FW_ASSERT(buffer != nullptr);
     // Check if initialized
@@ -68,11 +69,11 @@ QueueInterface::Status Queue::send(const U8* buffer,
     return this->m_delegate.send(buffer, size, priority, blockType);
 }
 
-QueueInterface::Status Queue::receive(U8* destination,
-                                      FwSizeType capacity,
-                                      QueueInterface::BlockingType blockType,
-                                      FwSizeType& actualSize,
-                                      FwQueuePriorityType& priority) {
+QueueInterface::Status QueueCommon::receive(U8* destination,
+                                            FwSizeType capacity,
+                                            QueueInterface::BlockingType blockType,
+                                            FwSizeType& actualSize,
+                                            FwQueuePriorityType& priority) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<QueueInterface*>(&this->m_handle_storage[0]));
     FW_ASSERT(destination != nullptr);
     // Check if initialized
@@ -86,30 +87,30 @@ QueueInterface::Status Queue::receive(U8* destination,
     return this->m_delegate.receive(destination, capacity, blockType, actualSize, priority);
 }
 
-FwSizeType Queue::getMessagesAvailable() const {
+FwSizeType QueueCommon::getMessagesAvailable() const {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<const QueueInterface*>(&this->m_handle_storage[0]));
     return this->m_delegate.getMessagesAvailable();
 }
 
-FwSizeType Queue::getMessageHighWaterMark() const {
+FwSizeType QueueCommon::getMessageHighWaterMark() const {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<const QueueInterface*>(&this->m_handle_storage[0]));
     return this->m_delegate.getMessageHighWaterMark();
 }
 
-QueueHandle* Queue::getHandle() {
+QueueHandle* QueueCommon::getHandle() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<const QueueInterface*>(&this->m_handle_storage[0]));
     return this->m_delegate.getHandle();
 }
 
-QueueInterface::Status Queue::send(const Fw::LinearBufferBase& message,
-                                   FwQueuePriorityType priority,
-                                   QueueInterface::BlockingType blockType) {
+QueueInterface::Status QueueCommon::send(const Fw::LinearBufferBase& message,
+                                         FwQueuePriorityType priority,
+                                         QueueInterface::BlockingType blockType) {
     return this->send(message.getBuffAddr(), message.getSize(), priority, blockType);
 }
 
-QueueInterface::Status Queue::receive(Fw::LinearBufferBase& destination,
-                                      QueueInterface::BlockingType blockType,
-                                      FwQueuePriorityType& priority) {
+QueueInterface::Status QueueCommon::receive(Fw::LinearBufferBase& destination,
+                                            QueueInterface::BlockingType blockType,
+                                            FwQueuePriorityType& priority) {
     FwSizeType actualSize = 0;
     destination.resetSer();  // Reset the buffer
     QueueInterface::Status status =
@@ -124,32 +125,32 @@ QueueInterface::Status Queue::receive(Fw::LinearBufferBase& destination,
     return status;
 }
 
-FwSizeType Queue::getDepth() const {
+FwSizeType QueueCommon::getDepth() const {
     return this->m_depth;
 }
 
-FwSizeType Queue::getMessageSize() const {
+FwSizeType QueueCommon::getMessageSize() const {
     return this->m_size;
 }
 
-const QueueString& Queue::getName() const {
+const QueueString& QueueCommon::getName() const {
     return this->m_name;
 }
 
-FwSizeType Queue::getNumQueues() {
-    ScopeLock lock(Queue::getStaticMutex());
-    return Queue::s_queueCount;
+FwSizeType QueueCommon::getNumQueues() {
+    ScopeLock lock(QueueCommon::getStaticMutex());
+    return QueueCommon::s_queueCount;
 }
 
-Os::Mutex& Queue::getStaticMutex() {
+Os::Mutex& QueueCommon::getStaticMutex() {
     static Os::Mutex s_mutex;
     return s_mutex;
 }
 
 #if FW_QUEUE_REGISTRATION
-void Queue::setRegistry(QueueRegistry* registry) {
-    ScopeLock lock(Queue::getStaticMutex());
-    Queue::s_queueRegistry = registry;
+void QueueCommon::setRegistry(QueueRegistry* registry) {
+    ScopeLock lock(QueueCommon::getStaticMutex());
+    QueueCommon::s_queueRegistry = registry;
 }
 #endif
 

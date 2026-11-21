@@ -225,23 +225,26 @@ class FileInterface {
                                       const FileInterface* to_copy = nullptr);
 };
 
-class File final : public FileInterface {
+//! \brief interface presented to users of Os::File, an alias of Os::FileInterface
+using FileUserInterface = FileInterface;
+
+class FileCommon final : public FileUserInterface {
     friend struct Os::Test::FileTest::Tester;
 
   public:
     //! \brief constructor
     //!
-    File();
+    FileCommon();
     //! \brief destructor
     //!
     //! Destructor closes the file if it is open
-    ~File() final;
+    ~FileCommon() final;
 
     //! \brief copy constructor that copies the internal representation
-    File(const File& other);
+    FileCommon(const FileCommon& other);
 
     //! \brief assignment operator that copies the internal representation
-    File& operator=(const File& other);
+    FileCommon& operator=(const FileCommon& other);
 
     //! \brief determine if the file is open
     //! \return true if file is open, false otherwise
@@ -598,5 +601,8 @@ class File final : public FileInterface {
     alignas(FW_HANDLE_ALIGNMENT) FileHandleStorage m_handle_storage;  //!< Storage for aligned FileHandle data
     FileInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
+
+//! \brief Os::File is an alias of the common wrapper class Os::FileCommon
+using File = FileCommon;
 }  // namespace Os
 #endif

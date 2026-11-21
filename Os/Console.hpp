@@ -65,19 +65,22 @@ class ConsoleInterface {
                                          const ConsoleInterface* to_copy = nullptr);
 };
 
-class Console : public ConsoleInterface, public Fw::Logger {
+//! \brief interface presented to users of Os::Console, an alias of Os::ConsoleInterface
+using ConsoleUserInterface = ConsoleInterface;
+
+class ConsoleCommon : public ConsoleUserInterface, public Fw::Logger {
   public:
     //! \brief Default constructor
-    Console();
+    ConsoleCommon();
 
     //! \brief Default destructor
-    ~Console();
+    ~ConsoleCommon();
 
     //! \brief copy constructor that copies the internal representation
-    Console(const Console& other);
+    ConsoleCommon(const ConsoleCommon& other);
 
     //! \brief assignment operator that copies the internal representation
-    Console& operator=(const Console& other);
+    ConsoleCommon& operator=(const ConsoleCommon& other);
 
     //! \brief write message to console
     //!
@@ -125,7 +128,7 @@ class Console : public ConsoleInterface, public Fw::Logger {
 
     //! \brief get a reference to singleton
     //! \return reference to singleton
-    static Console& getSingleton();
+    static ConsoleCommon& getSingleton();
 
   private:
     // This section is used to store the implementation-defined console handle. To Os::Console and fprime, this type
@@ -134,6 +137,9 @@ class Console : public ConsoleInterface, public Fw::Logger {
     alignas(FW_HANDLE_ALIGNMENT) ConsoleHandleStorage m_handle_storage;  // Storage for the delegate
     ConsoleInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
+
+//! \brief Os::Console is an alias of the common wrapper class Os::ConsoleCommon
+using Console = ConsoleCommon;
 }  // namespace Os
 
 #endif

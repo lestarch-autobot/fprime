@@ -162,19 +162,22 @@ class QueueInterface {
     static QueueInterface* getDelegate(QueueHandleStorage& aligned_placement_new_memory);
 };
 
-class Queue final : public QueueInterface {
+//! \brief interface presented to users of Os::Queue, an alias of Os::QueueInterface
+using QueueUserInterface = QueueInterface;
+
+class QueueCommon final : public QueueUserInterface {
   public:
     //! \brief queue constructor
-    Queue();
+    QueueCommon();
 
     //! \brief default queue destructor
-    virtual ~Queue();
+    virtual ~QueueCommon();
 
     //! \brief copy constructor is forbidden
-    Queue(const Queue& other) = delete;
+    QueueCommon(const QueueCommon& other) = delete;
 
     //! \brief copy constructor is forbidden
-    Queue(const Queue* other) = delete;
+    QueueCommon(const QueueCommon* other) = delete;
 
     //! \brief assignment operator is forbidden
     QueueInterface& operator=(const QueueInterface& other) override = delete;
@@ -323,6 +326,10 @@ class Queue final : public QueueInterface {
     alignas(FW_HANDLE_ALIGNMENT) QueueHandleStorage m_handle_storage;  //!< Storage for aligned handle
     QueueInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
+
+//! \brief Os::Queue is an alias of the common wrapper class Os::QueueCommon
+using Queue = QueueCommon;
+
 //! \brief queue registry interface
 //!
 //! The QueueRegistry is used to track queues in the system. There is intended to be a single, global, queue registry

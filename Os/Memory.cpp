@@ -7,31 +7,31 @@
 
 namespace Os {
 
-Memory::Memory() : m_delegate(*MemoryInterface::getDelegate(m_handle_storage)) {}
+MemoryCommon::MemoryCommon() : m_delegate(*MemoryInterface::getDelegate(m_handle_storage)) {}
 
-Memory::~Memory() {
+MemoryCommon::~MemoryCommon() {
     m_delegate.~MemoryInterface();
 }
 
-void Memory::init() {
-    (void)Memory::getSingleton();
+void MemoryCommon::init() {
+    (void)MemoryCommon::getSingleton();
 }
 
-Memory& Memory::getSingleton() {
-    static Memory _singleton;
+MemoryCommon& MemoryCommon::getSingleton() {
+    static MemoryCommon _singleton;
     return _singleton;
 }
 
-Memory::Status Memory::_getUsage(Os::Memory::Usage& memory_usage) {
+MemoryCommon::Status MemoryCommon::_getUsage(Os::MemoryCommon::Usage& memory_usage) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<MemoryInterface*>(&this->m_handle_storage[0]));
     return this->m_delegate._getUsage(memory_usage);
 }
 
-Memory::Status Memory::getUsage(Os::Memory::Usage& memory_usage) {
-    return Memory::getSingleton()._getUsage(memory_usage);
+MemoryCommon::Status MemoryCommon::getUsage(Os::MemoryCommon::Usage& memory_usage) {
+    return MemoryCommon::getSingleton()._getUsage(memory_usage);
 }
 
-MemoryHandle* Memory::getHandle() {
+MemoryHandle* MemoryCommon::getHandle() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<MemoryInterface*>(&this->m_handle_storage[0]));
     return this->m_delegate.getHandle();
 }
