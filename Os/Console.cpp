@@ -6,60 +6,60 @@
 #include <Os/Console.hpp>
 
 namespace Os {
-Console::Console()
+ConsoleCommon::ConsoleCommon()
     : ConsoleInterface(),
       Fw::Logger(),
       m_handle_storage(),
       m_delegate(*ConsoleInterface::getDelegate(m_handle_storage)) {}
 
-Console::~Console() {
+ConsoleCommon::~ConsoleCommon() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<ConsoleInterface*>(&this->m_handle_storage[0]));
     m_delegate.~ConsoleInterface();
 }
 
-Console::Console(const Console& other)
-    : m_handle_storage(), m_delegate(*Console::getDelegate(m_handle_storage, &other.m_delegate)) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<Console*>(&this->m_handle_storage[0]));
+ConsoleCommon::ConsoleCommon(const ConsoleCommon& other)
+    : m_handle_storage(), m_delegate(*ConsoleCommon::getDelegate(m_handle_storage, &other.m_delegate)) {
+    FW_ASSERT(&this->m_delegate == reinterpret_cast<ConsoleCommon*>(&this->m_handle_storage[0]));
 }
 
-Console& Console::operator=(const Console& other) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<Console*>(&this->m_handle_storage[0]));
+ConsoleCommon& ConsoleCommon::operator=(const ConsoleCommon& other) {
+    FW_ASSERT(&this->m_delegate == reinterpret_cast<ConsoleCommon*>(&this->m_handle_storage[0]));
     if (this != &other) {
         this->m_delegate = *ConsoleInterface::getDelegate(m_handle_storage, &other.m_delegate);
     }
     return *this;
 }
 
-void Console::writeMessage(const CHAR* message, const FwSizeType size) {
+void ConsoleCommon::writeMessage(const CHAR* message, const FwSizeType size) {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<ConsoleInterface*>(&this->m_handle_storage));
     FW_ASSERT(message != nullptr || size == 0);
     this->m_delegate.writeMessage(message, size);
 }
 
-void Console::writeMessage(const Fw::ConstStringBase& message) {
+void ConsoleCommon::writeMessage(const Fw::ConstStringBase& message) {
     this->writeMessage(message.toChar(), message.length());
 }
 
-ConsoleHandle* Console::getHandle() {
+ConsoleHandle* ConsoleCommon::getHandle() {
     FW_ASSERT(&this->m_delegate == reinterpret_cast<ConsoleInterface*>(&this->m_handle_storage));
     return this->m_delegate.getHandle();
 }
 
-void Console::write(const CHAR* message, const FwSizeType size) {
-    Console::getSingleton().writeMessage(message, size);
+void ConsoleCommon::write(const CHAR* message, const FwSizeType size) {
+    ConsoleCommon::getSingleton().writeMessage(message, size);
 }
 
-void Console::write(const Fw::ConstStringBase& message) {
-    Console::getSingleton().writeMessage(message.toChar(), message.length());
+void ConsoleCommon::write(const Fw::ConstStringBase& message) {
+    ConsoleCommon::getSingleton().writeMessage(message.toChar(), message.length());
 }
 
-void Console::init() {
+void ConsoleCommon::init() {
     // Force trigger on the fly singleton setup
-    (void)Console::getSingleton();
+    (void)ConsoleCommon::getSingleton();
 }
 
-Console& Console::getSingleton() {
-    static Console s_singleton;
+ConsoleCommon& ConsoleCommon::getSingleton() {
+    static ConsoleCommon s_singleton;
     // Registration happens once: re-registering on every access would silently replace a
     // logger the project registered after the console singleton was first used
     static bool s_registered = false;

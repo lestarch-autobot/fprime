@@ -56,20 +56,22 @@ class CpuInterface {
     static CpuInterface* getDelegate(CpuHandleStorage& aligned_new_memory);
 };
 
+using CpuUserInterface = CpuInterface;
+
 //! \brief cpu implementation
-class Cpu final : public CpuInterface {
+class CpuCommon final : public CpuUserInterface {
   public:
     //! \brief default constructor
-    Cpu();
+    CpuCommon();
 
     //! \brief default virtual destructor
-    ~Cpu() final;
+    ~CpuCommon() final;
 
     //! \brief copy constructor is forbidden
-    Cpu(const CpuInterface& other) = delete;
+    CpuCommon(const CpuInterface& other) = delete;
 
     //! \brief copy constructor is forbidden
-    Cpu(const CpuInterface* other) = delete;
+    CpuCommon(const CpuInterface* other) = delete;
 
     //! \brief assignment operator is forbidden
     CpuInterface& operator=(const CpuInterface& other) override = delete;
@@ -82,7 +84,7 @@ class Cpu final : public CpuInterface {
     static void init();
 
     //! \brief return singleton
-    static Cpu& getSingleton();
+    static CpuCommon& getSingleton();
 
     //-----------------------------------------------------------------------------
     // Delegating methods
@@ -147,5 +149,7 @@ class Cpu final : public CpuInterface {
     alignas(FW_HANDLE_ALIGNMENT) CpuHandleStorage m_handle_storage;  //!< Storage for aligned data
     CpuInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
+
+using Cpu = CpuCommon;
 }  // namespace Os
 #endif  // OS_CONDITION_HPP_

@@ -25,7 +25,7 @@ const char* QueuedComponentBase::getToStringFormatString() {
 }
 #endif
 
-Os::Queue::Queue::Status QueuedComponentBase::createQueue(FwSizeType depth, FwSizeType msgSize) {
+Os::Queue::Status QueuedComponentBase::createQueue(FwSizeType depth, FwSizeType msgSize) {
     Os::QueueString queueName;
 #if FW_OBJECT_NAMES == 1
     queueName = this->m_objName;

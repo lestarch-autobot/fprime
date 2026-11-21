@@ -116,16 +116,18 @@ class FileSystemInterface {
     virtual Status _changeWorkingDirectory(const char* path) = 0;
 };
 
+using FileSystemUserInterface = FileSystemInterface;
+
 //! \brief FileSystem class
 //!
 //! This class provides a common interface for file system operations.
 //! This class uses the singleton pattern and should be accessed through
 //! its static functions, for example using `Os::FileSystem::removeFile(path)`.
-class FileSystem final : public FileSystemInterface {
+class FileSystemCommon final : public FileSystemUserInterface {
   private:
-    FileSystem();  //!<  Constructor (private because singleton pattern)
+    FileSystemCommon();  //!<  Constructor (private because singleton pattern)
   public:
-    ~FileSystem() final;  //!<  Destructor
+    ~FileSystemCommon() final;  //!<  Destructor
 
     //! \brief return the underlying FileSystem handle (implementation specific)
     //! \return internal FileSystem handle representation
@@ -360,7 +362,7 @@ class FileSystem final : public FileSystemInterface {
 
     //! \brief get a reference to singleton
     //! \return reference to singleton
-    static FileSystem& getSingleton();
+    static FileSystemCommon& getSingleton();
 
   private:
     // ------------------------------------------------------------
@@ -393,6 +395,8 @@ class FileSystem final : public FileSystemInterface {
     alignas(FW_HANDLE_ALIGNMENT) FileSystemHandleStorage m_handle_storage;  //!< FileSystem handle storage
     FileSystemInterface& m_delegate;
 };
+
+using FileSystem = FileSystemCommon;
 
 }  // namespace Os
 

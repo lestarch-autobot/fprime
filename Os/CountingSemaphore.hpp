@@ -60,18 +60,20 @@ class CountingSemaphoreInterface {
                                                    U32 initial_count);
 };
 
-class CountingSemaphore final : public CountingSemaphoreInterface {
+using CountingSemaphoreUserInterface = CountingSemaphoreInterface;
+
+class CountingSemaphoreCommon final : public CountingSemaphoreUserInterface {
   public:
-    explicit CountingSemaphore(U32 initial_count);  //!< Constructor with initial count
+    explicit CountingSemaphoreCommon(U32 initial_count);  //!< Constructor with initial count
 
-    ~CountingSemaphore() final;  //!< Destructor
+    ~CountingSemaphoreCommon() final;  //!< Destructor
 
-    CountingSemaphore(const CountingSemaphoreInterface& other) = delete;
+    CountingSemaphoreCommon(const CountingSemaphoreInterface& other) = delete;
 
-    CountingSemaphore(const CountingSemaphore& other) = delete;
-    CountingSemaphore& operator=(const CountingSemaphore& other) = delete;
-    CountingSemaphore(CountingSemaphore&& other) = delete;
-    CountingSemaphore& operator=(CountingSemaphore&& other) = delete;
+    CountingSemaphoreCommon(const CountingSemaphoreCommon& other) = delete;
+    CountingSemaphoreCommon& operator=(const CountingSemaphoreCommon& other) = delete;
+    CountingSemaphoreCommon(CountingSemaphoreCommon&& other) = delete;
+    CountingSemaphoreCommon& operator=(CountingSemaphoreCommon&& other) = delete;
 
     Status wait() override;  //!< wait (decrement), blocking if count is zero
 
@@ -87,5 +89,7 @@ class CountingSemaphore final : public CountingSemaphoreInterface {
     alignas(FW_HANDLE_ALIGNMENT) CountingSemaphoreHandleStorage m_handle_storage;
     CountingSemaphoreInterface& m_delegate;
 };
+
+using CountingSemaphore = CountingSemaphoreCommon;
 }  // namespace Os
 #endif  // OS_COUNTING_SEMAPHORE_HPP_
