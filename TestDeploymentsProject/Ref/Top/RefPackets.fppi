@@ -39,6 +39,8 @@ telemetry packets RefPackets {
     FileHandling.fileUplink.Warnings
     FileHandling.fileDownlink.Warnings
     FileHandling.fileManager.Errors
+    FileHandling.prmDb.PrmFileLoadStatus
+    FileHandling.prmDb.PrmFileLoadRecords
 
     cmdSeq.CS_Errors
     wasmSeq.SequencesFailed

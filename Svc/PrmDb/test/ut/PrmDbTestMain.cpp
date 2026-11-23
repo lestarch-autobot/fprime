@@ -26,6 +26,7 @@ void connectPorts(Svc::PrmDbImpl& impl, Svc::PrmDbTester& tester) {
     impl.set_Time_OutputPort(0, tester.get_from_Time(0));
     impl.set_Log_OutputPort(0, tester.get_from_Log(0));
     impl.set_LogText_OutputPort(0, tester.get_from_LogText(0));
+    impl.set_Tlm_OutputPort(0, tester.get_from_Tlm(0));
 
     // parameter ports
     tester.connect_to_getPrm(0, impl.get_getPrm_InputPort(0));

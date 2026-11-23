@@ -15,6 +15,7 @@ PRMDB-002 | The `Svc::PrmDb` component shall provide an interface to read parame
 PRMDB-003 | The `Svc::PrmDb` component shall provide an interface to update parameter values | Inspection, Unit Test
 PRMDB-004 | The `Svc::PrmDb` component shall provide a command to save the current parameter values | Inspection, Unit Test
 PRMDB-005 | The `Svc::PrmDb` component shall reject a `PRM_LOAD_FILE` command with an empty file name with a `VALIDATION_ERROR` response and a `PrmDbFileLoadFailed` event, without asserting or altering the staging database | Unit Test, Integration Test
+PRMDB-006 | The `Svc::PrmDb` component shall report the outcome of the most recent parameter file load, and the number of records it read, as telemetry | Unit Test
 
 ## 3. Design
 
@@ -67,6 +68,15 @@ Entry Delimiter | 1 | 0xA5
 Record Size | 4 | Id type size + number of bytes in parameter value
 Parameter ID | Size of FwPrmIdType | Value of parameter ID
 Parameter value | number of bytes in parameter | serialized bytes of value
+
+Each parameter file load, at startup (`readParamFile()`) or by the `PRM_LOAD_FILE` command, writes two telemetry channels:
+
+Channel | Type | Description
+------- | ---- | -----------
+PrmFileLoadStatus | PrmFileLoadStatus | Outcome of the most recent load: `LOADED` (every record loaded), `FAILED` (no record from the file kept), or `PARTIAL` (the startup load failed after records were loaded into the active database; those records stay in use).
+PrmFileLoadRecords | U32 | Number of records read from the file by the most recent load, including records read before a failure.
+
+A failed `PRM_LOAD_FILE` clears the staging database, so it reports `FAILED`, never `PARTIAL`.
 
 ### 3.3 Scenarios
 
@@ -124,4 +134,4 @@ Date | Description
 ---- | -----------
 7/15/2015 | Design review edits
 10/6/2015 | Unit test review edits 
-
+11/23/2026 | Added the `PrmFileLoadStatus` and `PrmFileLoadRecords` telemetry channels

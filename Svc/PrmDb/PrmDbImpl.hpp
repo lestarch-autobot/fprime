@@ -125,8 +125,15 @@ class PrmDbImpl final : public PrmDbComponentBase {
     //!
     //!  \param fileName The name of the parameter file to read
     //!  \param dbType The type of database to read into  (active or staging)
+    //!  \param numRecords Set to the number of records read from the file, including on failure
     //!  \return status success (True) / failure(False)
-    PrmLoadStatus readParamFileImpl(const Fw::StringBase& fileName, PrmDbType dbType);
+    PrmLoadStatus readParamFileImpl(const Fw::StringBase& fileName, PrmDbType dbType, U32& numRecords);
+
+    //!  \brief Write the parameter file load telemetry channels
+    //!
+    //!  \param status outcome of the file load
+    //!  \param numRecords number of records read from the file
+    void writeLoadTlm(PrmDb_PrmFileLoadStatus status, U32 numRecords);
 
     //!  \brief Apply the configured sandbox directory (if any) to a file object
     //!

@@ -156,10 +156,14 @@ void PrmDbTester::runNominalLoadFile() {
         pdb001 = true;
     }
 
+    this->clearTlm();
     this->m_impl.readParamFile();
     ASSERT_EVENTS_SIZE(1);
     ASSERT_EVENTS_PrmFileLoadComplete_SIZE(1);
     ASSERT_EVENTS_PrmFileLoadComplete(0, "ACTIVE", 2, 2, 0);
+    ASSERT_TLM_SIZE(2);
+    ASSERT_TLM_PrmFileLoadStatus(0, PrmDb_PrmFileLoadStatus::LOADED);
+    ASSERT_TLM_PrmFileLoadRecords(0, 2);
 
     // verify values (populated by runNominalPopulate())
 
@@ -356,9 +360,13 @@ void PrmDbTester::runFileReadError() {
     FwSizeType za = 0;
     for (FwSizeType i = 0; i < 5; i++) {
         clearEvents();
+        clearTlm();
         this->m_waits = i + za;
         this->m_impl.readParamFile();
         ASSERT_EVENTS_SIZE(1);
+        ASSERT_TLM_SIZE(2);
+        ASSERT_TLM_PrmFileLoadStatus(0, PrmDb_PrmFileLoadStatus::FAILED);
+        ASSERT_TLM_PrmFileLoadRecords(0, 0);
         switch (i) {
             case 0:
                 ASSERT_EVENTS_PrmFileReadError_SIZE(1);
@@ -438,6 +446,17 @@ void PrmDbTester::runFileReadError() {
             }
         }
     }
+
+    // A read failure after the first record leaves that record in the active database
+    clearEvents();
+    clearTlm();
+    this->m_waits = 6;
+    this->m_impl.readParamFile();
+    ASSERT_EVENTS_SIZE(1);
+    ASSERT_EVENTS_PrmFileReadError(0, PrmReadError::DELIMITER, 1, this->m_status);
+    ASSERT_TLM_SIZE(2);
+    ASSERT_TLM_PrmFileLoadStatus(0, PrmDb_PrmFileLoadStatus::PARTIAL);
+    ASSERT_TLM_PrmFileLoadRecords(0, 1);
 
     FwSizeType xa = 0;
     this->m_errorType = FILE_DATA_ERROR;
@@ -944,6 +963,9 @@ void PrmDbTester::runPrmFileLoadNominal() {
     EXPECT_EQ(this->m_impl.m_state, PrmDbFileLoadState::FILE_UPDATES_STAGED);
     ASSERT_CMD_RESPONSE_SIZE(1);
     ASSERT_CMD_RESPONSE(0, PrmDbImpl::OPCODE_PRM_LOAD_FILE, 10, Fw::CmdResponse::OK);
+    ASSERT_TLM_SIZE(2);
+    ASSERT_TLM_PrmFileLoadStatus(0, PrmDb_PrmFileLoadStatus::LOADED);
+    ASSERT_TLM_PrmFileLoadRecords(0, 2);
 
     // Verify that parameters in staging database have expected values
     {
@@ -1089,6 +1111,9 @@ void PrmDbTester::runPrmFileLoadWithErrors() {
     //  Verify state and command response after PRM_LOAD_FILE
     EXPECT_EQ(this->m_impl.m_state, PrmDbFileLoadState::IDLE);
     ASSERT_CMD_RESPONSE(0, PrmDbImpl::OPCODE_PRM_LOAD_FILE, 10, Fw::CmdResponse::EXECUTION_ERROR);
+    ASSERT_TLM_SIZE(2);
+    ASSERT_TLM_PrmFileLoadStatus(0, PrmDb_PrmFileLoadStatus::FAILED);
+    ASSERT_TLM_PrmFileLoadRecords(0, 0);
 
     // Verify the database pointers have NOT been swapped
     EXPECT_EQ(this->m_impl.m_activeDb, preSwapActiveDb);
@@ -1121,6 +1146,9 @@ void PrmDbTester::runPrmFileLoadEmptyFileName() {
 
         ASSERT_CMD_RESPONSE_SIZE(1);
         ASSERT_CMD_RESPONSE(0, PrmDbImpl::OPCODE_PRM_LOAD_FILE, 10, Fw::CmdResponse::VALIDATION_ERROR);
+        ASSERT_TLM_SIZE(2);
+        ASSERT_TLM_PrmFileLoadStatus(0, PrmDb_PrmFileLoadStatus::FAILED);
+        ASSERT_TLM_PrmFileLoadRecords(0, 0);
         ASSERT_EVENTS_SIZE(1);
         ASSERT_EVENTS_PrmDbFileLoadFailed_SIZE(1);
         ASSERT_EVENTS_PrmFileReadError_SIZE(0);
@@ -1191,6 +1219,9 @@ void PrmDbTester::runPrmFileLoadSandboxViolation() {
 
     ASSERT_CMD_RESPONSE_SIZE(1);
     ASSERT_CMD_RESPONSE(0, PrmDbImpl::OPCODE_PRM_LOAD_FILE, 10, Fw::CmdResponse::EXECUTION_ERROR);
+    ASSERT_TLM_SIZE(2);
+    ASSERT_TLM_PrmFileLoadStatus(0, PrmDb_PrmFileLoadStatus::FAILED);
+    ASSERT_TLM_PrmFileLoadRecords(0, 0);
     ASSERT_EVENTS_PrmFileReadError_SIZE(1);
     ASSERT_EVENTS_PrmFileReadError(0, PrmDb_PrmReadError::OPEN, 0, Os::File::OUTSIDE_SANDBOX);
     ASSERT_EVENTS_PrmDbFileLoadFailed_SIZE(1);

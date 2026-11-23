@@ -118,6 +118,15 @@ TEST_F(PassiveRateGroupTestFixture, InitialTelemetry) {
     tester.runInitialTlmTest();
 }
 
+TEST_F(PassiveRateGroupTestFixture, CycleSlips) {
+    Svc::PassiveRateGroup impl("PassiveRateGroup");
+    Svc::PassiveRateGroupTester tester(impl);
+
+    configureAndConnect(impl, tester, 0, Os::RAWTIME_DEFAULT, true);
+
+    tester.runCycleSlipTest();
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

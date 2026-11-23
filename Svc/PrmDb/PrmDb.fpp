@@ -21,6 +21,13 @@ module Svc {
     }
 
 
+    @ Outcome of the most recent parameter file load
+    enum PrmFileLoadStatus : U8 {
+      FAILED @< The load failed and no record from the file was kept
+      PARTIAL @< The load failed after records were loaded into the active database
+      LOADED @< Every record in the file was loaded
+    }
+
     @ Parameter read error
     enum PrmReadError : U8 {
       OPEN
@@ -96,6 +103,9 @@ module Svc {
     @ Time get port
     time get port Time
 
+    @ Telemetry port
+    telemetry port Tlm
+
     # ----------------------------------------------------------------------
     # Commands
     # ----------------------------------------------------------------------
@@ -107,6 +117,16 @@ module Svc {
     # ----------------------------------------------------------------------
 
     include "PrmDbEventDict.fppi"
+
+    # ----------------------------------------------------------------------
+    # Telemetry
+    # ----------------------------------------------------------------------
+
+    @ Outcome of the most recent parameter file load
+    telemetry PrmFileLoadStatus: PrmFileLoadStatus
+
+    @ Number of records read from the file by the most recent parameter file load
+    telemetry PrmFileLoadRecords: U32
 
   }
 
