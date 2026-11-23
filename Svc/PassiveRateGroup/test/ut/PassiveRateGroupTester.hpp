@@ -30,6 +30,7 @@ class PassiveRateGroupTester : public PassiveRateGroupGTestBase {
     void runClearStatisticsTest();
     void runRawTimeSourceTest();
     void runInitialTlmTest();
+    void runCycleSlipTest();
 
     static FwSizeType getNumRateGroupMemberOutPorts() {
         return Svc::PassiveRateGroupComponentBase::NUM_RATEGROUPMEMBEROUT_OUTPUT_PORTS;
@@ -49,6 +50,8 @@ class PassiveRateGroupTester : public PassiveRateGroupGTestBase {
     } m_callLog[Svc::PassiveRateGroupComponentBase::NUM_RATEGROUPMEMBEROUT_OUTPUT_PORTS];
 
     FwIndexType m_callOrder;  //!< tracks order of port call.
+
+    bool m_reenterCycle;  //!< when set, the next member port call re-invokes CycleIn once
 };
 
 } /* namespace Svc */

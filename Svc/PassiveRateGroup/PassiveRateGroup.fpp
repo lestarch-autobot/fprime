@@ -18,6 +18,9 @@ module Svc {
     @ Count of number of cycles
     telemetry CycleCount: U32
 
+    @ Count of cycle slips: CycleIn invoked while the previous cycle was still executing
+    telemetry CycleSlips: U32 update on change
+
     array CycleTime = [PassiveRateGroupOutputPorts] U32 default 0
     telemetry PortCycleTime: CycleTime
 

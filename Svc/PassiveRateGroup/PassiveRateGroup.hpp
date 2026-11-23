@@ -109,6 +109,9 @@ class PassiveRateGroup final : public PassiveRateGroupComponentBase {
 
     U32 m_cycles;                //!< cycles executed (no protection needed - single writer)
     std::atomic<U32> m_maxTime;  //!< maximum execution time in microseconds (atomic for ISR safety)
+    std::atomic<U32>
+        m_cycleRunning;  //!< 1 while a cycle is executing, used to detect cycle slips (U32: no 8-bit atomics)
+    std::atomic<U32> m_cycleSlips;  //!< cycles started while the previous cycle was still executing
     std::atomic<U32> m_portCycleTimeHWMUsec[NUM_RATEGROUPMEMBEROUT_OUTPUT_PORTS];  //!< HWM per port in microseconds
     Os::RawTimeSource m_rawTimeSource;                                             //!< time source set by client
     FwIndexType m_numContexts;                                                     //!< number of contexts

@@ -72,7 +72,14 @@ void PrmDbImpl::readParamFile() {
     this->clearDb(PrmDbType::DB_STAGING);
 
     // Read parameter file to active database
-    (void)readParamFileImpl(this->m_fileName, PrmDbType::DB_ACTIVE);
+    U32 numRecords = 0;
+    const PrmLoadStatus status = readParamFileImpl(this->m_fileName, PrmDbType::DB_ACTIVE, numRecords);
+    // Records read before a failure remain in the active database
+    PrmDb_PrmFileLoadStatus tlmStatus = PrmDb_PrmFileLoadStatus::LOADED;
+    if (status != PrmLoadStatus::SUCCESS) {
+        tlmStatus = (numRecords > 0) ? PrmDb_PrmFileLoadStatus::PARTIAL : PrmDb_PrmFileLoadStatus::FAILED;
+    }
+    this->writeLoadTlm(tlmStatus, numRecords);
 }
 
 //! ----------------------------------------------------------------------
@@ -306,6 +313,7 @@ void PrmDbImpl::PRM_LOAD_FILE_cmdHandler(FwOpcodeType opCode,
     // Reject an empty file name before touching the staging database
     if (fileName.length() == 0) {
         this->log_WARNING_HI_PrmDbFileLoadFailed();
+        this->writeLoadTlm(PrmDb_PrmFileLoadStatus::FAILED, 0);
         this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::VALIDATION_ERROR);
         return;
     }
@@ -325,13 +333,16 @@ void PrmDbImpl::PRM_LOAD_FILE_cmdHandler(FwOpcodeType opCode,
     // Load the file into staging database
     // The readParamFileImpl will emit the relevant EVR if the file load fails
     // and also if it succeeds will emit EVRs with the number of records
-    PrmDbImpl::PrmLoadStatus success = PrmDbImpl::readParamFileImpl(fileName, PrmDbType::DB_STAGING);
+    U32 numRecords = 0;
+    PrmDbImpl::PrmLoadStatus success = PrmDbImpl::readParamFileImpl(fileName, PrmDbType::DB_STAGING, numRecords);
 
     if (success == PrmLoadStatus::SUCCESS) {
+        this->writeLoadTlm(PrmDb_PrmFileLoadStatus::LOADED, numRecords);
         this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);
         m_state = PrmDbFileLoadState::FILE_UPDATES_STAGED;
     } else {
         this->log_WARNING_HI_PrmDbFileLoadFailed();
+        this->writeLoadTlm(PrmDb_PrmFileLoadStatus::FAILED, numRecords);
         // clear the staging DB and reset to an IDLE state in case of issues
         this->clearDb(PrmDbType::DB_STAGING);
         m_state = PrmDbFileLoadState::IDLE;
@@ -368,7 +379,15 @@ void PrmDbImpl::PRM_COMMIT_STAGED_cmdHandler(FwOpcodeType opCode, U32 cmdSeq) {
 //! Helpers for construction/destruction, init, & handlers
 //! ----------------------------------------------------------------------
 
-PrmDbImpl::PrmLoadStatus PrmDbImpl::readParamFileImpl(const Fw::StringBase& fileName, PrmDbType dbType) {
+void PrmDbImpl::writeLoadTlm(PrmDb_PrmFileLoadStatus status, U32 numRecords) {
+    this->tlmWrite_PrmFileLoadStatus(status);
+    this->tlmWrite_PrmFileLoadRecords(numRecords);
+}
+
+PrmDbImpl::PrmLoadStatus PrmDbImpl::readParamFileImpl(const Fw::StringBase& fileName,
+                                                      PrmDbType dbType,
+                                                      U32& recordNumTotal) {
+    recordNumTotal = 0;
     FW_ASSERT(dbType == PrmDbType::DB_ACTIVE or dbType == PrmDbType::DB_STAGING);
     FW_ASSERT(fileName.length() > 0);
 
@@ -429,7 +448,6 @@ PrmDbImpl::PrmLoadStatus PrmDbImpl::readParamFileImpl(const Fw::StringBase& file
     }
     //===========================================================================
 
-    U32 recordNumTotal = 0;
     U32 recordNumAdded = 0;
     U32 recordNumUpdated = 0;
     U32 recordNumDropped = 0;

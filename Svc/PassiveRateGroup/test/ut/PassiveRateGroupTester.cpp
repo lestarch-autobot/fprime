@@ -24,7 +24,7 @@
 namespace Svc {
 
 PassiveRateGroupTester::PassiveRateGroupTester(Svc::PassiveRateGroup& inst)
-    : PassiveRateGroupGTestBase("testerbase", 1000), m_impl(inst), m_callOrder(0) {
+    : PassiveRateGroupGTestBase("testerbase", 1000), m_impl(inst), m_callOrder(0), m_reenterCycle(false) {
     this->clearPortCalls();
 }
 
@@ -42,6 +42,12 @@ void PassiveRateGroupTester::from_RateGroupMemberOut_handler(FwIndexType portNum
     this->m_callLog[portNum].order = this->m_callOrder++;
     // Adding a small sleep to ensure that the cycle time is bigger than 0 us
     usleep(1);
+    if (this->m_reenterCycle) {
+        this->m_reenterCycle = false;
+        Os::RawTime timestamp;
+        timestamp.now();
+        this->invoke_to_CycleIn(0, timestamp);
+    }
 }
 
 void PassiveRateGroupTester::runNominal(U32 contexts[], FwIndexType numContexts, FwEnumStoreType instance) {
@@ -348,9 +354,48 @@ void PassiveRateGroupTester::runInitialTlmTest() {
     ASSERT_TLM_CycleTime(0, 0U);
     ASSERT_TLM_CycleCount_SIZE(1);
     ASSERT_TLM_CycleCount(0, 0U);
+    ASSERT_TLM_CycleSlips_SIZE(1);
+    ASSERT_TLM_CycleSlips(0, 0U);
     if (Svc::PassiveRateGroupCfg::PortCycleTime) {
         ASSERT_TLM_PortCycleTimeHWM_SIZE(1);
     }
+}
+
+void PassiveRateGroupTester::runCycleSlipTest() {
+    TEST_CASE(101.6.1, "Test cycle slip counting");
+    REQUIREMENT("FPRIME-PRG-006");
+
+    Os::RawTime timestamp;
+    timestamp.now();
+
+    // A cycle that completes before the next one starts is not a slip
+    this->clearTlm();
+    this->invoke_to_CycleIn(0, timestamp);
+    this->invoke_to_CycleIn(0, timestamp);
+    ASSERT_TLM_CycleCount_SIZE(2);
+    ASSERT_TLM_CycleSlips_SIZE(0);
+
+    // A cycle invoked while another is executing is a slip, and both cycles run
+    this->clearTlm();
+    this->m_reenterCycle = true;
+    this->invoke_to_CycleIn(0, timestamp);
+    ASSERT_FALSE(this->m_reenterCycle);
+    ASSERT_TLM_CycleCount_SIZE(2);
+    ASSERT_TLM_CycleSlips_SIZE(1);
+    ASSERT_TLM_CycleSlips(0, 1U);
+
+    // The slip does not latch: later sequential cycles are not counted
+    this->clearTlm();
+    this->invoke_to_CycleIn(0, timestamp);
+    this->invoke_to_CycleIn(0, timestamp);
+    ASSERT_TLM_CycleSlips_SIZE(0);
+
+    // A second slip increments the running total
+    this->clearTlm();
+    this->m_reenterCycle = true;
+    this->invoke_to_CycleIn(0, timestamp);
+    ASSERT_TLM_CycleSlips_SIZE(1);
+    ASSERT_TLM_CycleSlips(0, 2U);
 }
 
 }  // namespace Svc

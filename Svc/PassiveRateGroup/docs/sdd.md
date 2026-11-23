@@ -15,6 +15,7 @@ FPRIME-PRG-002 | The `Svc::PassiveRateGroup` component shall invoke its output p
 FPRIME-PRG-003 | The `Svc::PassiveRateGroup` component shall track the time required to execute the rate group and report it as telemetry | Unit Test
 FPRIME-PRG-004 | The `Svc::PassiveRateGroup` component shall track per-port execution times and high water marks when configured | Unit Test
 FPRIME-PRG-005 | The `Svc::PassiveRateGroup` component shall provide a command to clear statistics and high water marks | Unit Test
+FPRIME-PRG-006 | The `Svc::PassiveRateGroup` component shall count cycle slips, where a slip is a `CycleIn` invocation that arrives while the previous cycle is still executing, and report the count as telemetry | Unit Test
 
 
 ## 3. Design
@@ -49,12 +50,13 @@ The component must be configured via `configure()` with:
 - A context array of U32 values (one per output port) passed to each rate group member
 - An optional `Os::RawTimeSource` specifying which hardware timer to use for execution time measurements (defaults to `Os::RAWTIME_DEFAULT`)
 
-`configure()` also writes the initial values of the `MaxCycleTime`, `CycleTime`, `CycleCount` and (when enabled) `PortCycleTimeHWM` channels so that they are available before the first cycle runs. The telemetry and time ports must be connected before calling `configure()` for these writes to be delivered.
+`configure()` also writes the initial values of the `MaxCycleTime`, `CycleTime`, `CycleCount`, `CycleSlips` and (when enabled) `PortCycleTimeHWM` channels so that they are available before the first cycle runs. The telemetry and time ports must be connected before calling `configure()` for these writes to be delivered.
 
 The component tracks execution time statistics:
 - Overall rate group cycle time (current and maximum)
 - Per-port execution times and high water marks (when PassiveRateGroupCfg::PortCycleTime is enabled)
 - Total cycle count
+- Total cycle slips: a `CycleIn` invocation that arrives while the previous cycle is still executing (for example from an ISR or a second thread). The slipped cycle still runs; it is only counted.
 
 These statistics can be cleared via the `CLEAR_STATISTICS` sync command, which resets the maximum cycle time and per-port high water marks to zero (the running cycle count is not cleared). All statistics are protected by lock-free atomic operations, making them ISR-safe and eliminating mutex overhead.
 
@@ -77,6 +79,7 @@ Channel | Type | Description
 MaxCycleTime | U32 | Maximum execution time of rate group cycle (microseconds). Cleared by CLEAR_STATISTICS command. Updated only when maximum increases (update on change).
 CycleTime | U32 | Execution time of current cycle (microseconds). Sent every cycle.
 CycleCount | U32 | Running total count of cycles executed. NOT cleared by CLEAR_STATISTICS command. Sent every cycle.
+CycleSlips | U32 | Running total count of cycle slips. NOT cleared by CLEAR_STATISTICS command. Updated only when the count changes (update on change).
 PortCycleTime | U32[PassiveRateGroupOutputPorts] | Execution time for each port in the most recent cycle (microseconds). Sent every cycle (only when PassiveRateGroupCfg::PortCycleTime is enabled).
 PortCycleTimeHWM | U32[PassiveRateGroupOutputPorts] | High water mark for each port execution time (microseconds). Cleared by CLEAR_STATISTICS command. Updated only when any high water mark increases (update on change). Only available when PassiveRateGroupCfg::PortCycleTime is enabled.   
 
@@ -114,6 +117,4 @@ Date | Description
 ---- | -----------
 2/9/2017 | First Draft
 8/8/2026 | Updated to document CLEAR_STATISTICS command, telemetry channels, and standard ports. Added lock-free atomic operations for all statistics (m_maxTime and per-port HWMs) to provide ISR-safe, race-free concurrent access without mutex overhead.
-
-
-
+11/23/2026 | Added the `CycleSlips` telemetry channel counting cycles started while the previous cycle was still executing.

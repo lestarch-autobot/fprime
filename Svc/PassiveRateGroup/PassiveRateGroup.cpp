@@ -23,6 +23,8 @@ PassiveRateGroup::PassiveRateGroup(const char* compName)
     : PassiveRateGroupComponentBase(compName),
       m_cycles(0),
       m_maxTime(0),
+      m_cycleRunning(0),
+      m_cycleSlips(0),
       m_portCycleTimeHWMUsec{},  // Zero-initialize atomic array
       m_rawTimeSource(Os::RAWTIME_DEFAULT),
       m_numContexts(0) {}
@@ -58,6 +60,7 @@ void PassiveRateGroup::configure(const ContextArray& contexts, const Os::RawTime
     this->tlmWrite_MaxCycleTime(this->m_maxTime.load(std::memory_order_relaxed));
     this->tlmWrite_CycleTime(0);
     this->tlmWrite_CycleCount(this->m_cycles);
+    this->tlmWrite_CycleSlips(this->m_cycleSlips.load(std::memory_order_relaxed));
 }
 
 void PassiveRateGroup::configure(const U32 contexts[], const FwIndexType numContexts) {
@@ -75,6 +78,12 @@ void PassiveRateGroup::configure(const U32 contexts[], const FwIndexType numCont
 void PassiveRateGroup::CycleIn_handler(FwIndexType portNum, Os::RawTime& cycleStart) {
     Os::RawTime endTime = this->createRawTime();
     FW_ASSERT(this->m_numContexts != 0);
+
+    // A cycle that starts while another is still executing is a cycle slip
+    const bool slipped = this->m_cycleRunning.exchange(1, std::memory_order_relaxed) != 0;
+    if (slipped) {
+        (void)this->m_cycleSlips.fetch_add(1, std::memory_order_relaxed);
+    }
 
     // Pre-allocate RawTime objects outside loop to avoid repeated constructor calls
     Os::RawTime portStart = this->createRawTime();
@@ -142,6 +151,12 @@ void PassiveRateGroup::CycleIn_handler(FwIndexType portNum, Os::RawTime& cycleSt
     this->tlmWrite_MaxCycleTime(maxTime);
     this->tlmWrite_CycleTime(cycleTime);
     this->tlmWrite_CycleCount(cycles);
+    this->tlmWrite_CycleSlips(this->m_cycleSlips.load(std::memory_order_relaxed));
+
+    // Only the cycle that set the flag clears it
+    if (not slipped) {
+        this->m_cycleRunning.store(0, std::memory_order_relaxed);
+    }
 }
 
 void PassiveRateGroup::CLEAR_STATISTICS_cmdHandler(FwOpcodeType opCode, U32 cmdSeq) {
