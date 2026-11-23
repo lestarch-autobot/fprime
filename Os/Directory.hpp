@@ -109,19 +109,22 @@ class DirectoryInterface {
     virtual void close() = 0;
 };
 
+//! \brief interface presented to users of Os::Directory, an alias of Os::DirectoryInterface
+using DirectoryUserInterface = DirectoryInterface;
+
 //! \brief Directory class
 //!
 //! This class provides a common interface for directory operations, such as reading files in a directory
 //! and getting the number of files in a directory.
-class Directory final : public DirectoryInterface {
+class DirectoryCommon final : public DirectoryUserInterface {
   public:
     //! \brief Constructor
-    Directory();
+    DirectoryCommon();
 
     //! \brief Destructor
     //!
     //! Destructor will close the Directory if it is open
-    ~Directory() final;
+    ~DirectoryCommon() final;
 
     //! \brief return the underlying Directory handle (implementation specific)
     //! \return internal Directory handle representation
@@ -228,6 +231,9 @@ class Directory final : public DirectoryInterface {
     alignas(FW_HANDLE_ALIGNMENT) DirectoryHandleStorage m_handle_storage;  //!< Directory handle storage
     DirectoryInterface& m_delegate;
 };
+
+//! \brief Os::Directory is an alias of the common wrapper class Os::DirectoryCommon
+using Directory = DirectoryCommon;
 
 }  // namespace Os
 

@@ -43,20 +43,23 @@ class MemoryInterface {
     static MemoryInterface* getDelegate(MemoryHandleStorage& aligned_new_memory);
 };
 
+//! \brief interface presented to users of Os::Memory, an alias of Os::MemoryInterface
+using MemoryUserInterface = MemoryInterface;
+
 //! \brief memory implementation
-class Memory final : public MemoryInterface {
+class MemoryCommon final : public MemoryUserInterface {
   public:
     //! \brief default constructor
-    Memory();
+    MemoryCommon();
 
     //! \brief default virtual destructor
-    ~Memory() final;
+    ~MemoryCommon() final;
 
     //! \brief copy constructor is forbidden
-    Memory(const MemoryInterface& other) = delete;
+    MemoryCommon(const MemoryInterface& other) = delete;
 
     //! \brief copy constructor is forbidden
-    Memory(const MemoryInterface* other) = delete;
+    MemoryCommon(const MemoryInterface* other) = delete;
 
     //! \brief assignment operator is forbidden
     MemoryInterface& operator=(const MemoryInterface& other) override = delete;
@@ -69,7 +72,7 @@ class Memory final : public MemoryInterface {
     static void init();
 
     //! \brief return singleton
-    static Memory& getSingleton();
+    static MemoryCommon& getSingleton();
 
     //-----------------------------------------------------------------------------
     // Delegating methods
@@ -106,5 +109,8 @@ class Memory final : public MemoryInterface {
     alignas(FW_HANDLE_ALIGNMENT) MemoryHandleStorage m_handle_storage;  //!< Storage for aligned data
     MemoryInterface& m_delegate;                                        //!< Delegate for the real implementation
 };
+
+//! \brief Os::Memory is an alias of the common wrapper class Os::MemoryCommon
+using Memory = MemoryCommon;
 }  // namespace Os
 #endif  // OS_CONDITION_HPP_
