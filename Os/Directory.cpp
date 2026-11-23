@@ -3,33 +3,31 @@
 // \brief common function implementation for Os::Directory
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
+#include <Os/Delegate.hpp>
 #include <Os/Directory.hpp>
 
 namespace Os {
 
-DirectoryCommon::DirectoryCommon()
-    : m_is_open(false), m_handle_storage(), m_delegate(*DirectoryInterface::getDelegate(m_handle_storage)) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
-}
+template <typename T>
+DirectoryCommon<T>::DirectoryCommon() : m_is_open(false), m_delegate() {}
 
-DirectoryCommon::~DirectoryCommon() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+DirectoryCommon<T>::~DirectoryCommon() {
     if (this->m_is_open) {
         this->close();
     }
-    this->m_delegate.~DirectoryInterface();
 }
 
 // ------------------------------------------------------------
 // Directory operations delegating to implementation
 // ------------------------------------------------------------
-DirectoryHandle* DirectoryCommon::getHandle() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+DirectoryHandle* DirectoryCommon<T>::getHandle() {
     return this->m_delegate.getHandle();
 }
 
-DirectoryCommon::Status DirectoryCommon::open(const char* path, OpenMode mode) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename DirectoryCommon<T>::Status DirectoryCommon<T>::open(const char* path, OpenMode mode) {
     FW_ASSERT(path != nullptr);
     FW_ASSERT(mode >= 0 and mode < OpenMode::MAX_OPEN_MODE);
     Status status = this->m_delegate.open(path, mode);
@@ -39,20 +37,20 @@ DirectoryCommon::Status DirectoryCommon::open(const char* path, OpenMode mode) {
     return status;
 }
 
-bool DirectoryCommon::isOpen() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+bool DirectoryCommon<T>::isOpen() {
     return this->m_is_open;
 }
-DirectoryCommon::Status DirectoryCommon::rewind() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename DirectoryCommon<T>::Status DirectoryCommon<T>::rewind() {
     if (not this->m_is_open) {
         return Status::NOT_OPENED;
     }
     return this->m_delegate.rewind();
 }
 
-DirectoryCommon::Status DirectoryCommon::read(char* fileNameBuffer, FwSizeType bufSize) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename DirectoryCommon<T>::Status DirectoryCommon<T>::read(char* fileNameBuffer, FwSizeType bufSize) {
     if (not this->m_is_open) {
         return Status::NOT_OPENED;
     }
@@ -63,16 +61,16 @@ DirectoryCommon::Status DirectoryCommon::read(char* fileNameBuffer, FwSizeType b
     return status;
 }
 
-DirectoryCommon::Status DirectoryCommon::read(Fw::StringBase& filename) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename DirectoryCommon<T>::Status DirectoryCommon<T>::read(Fw::StringBase& filename) {
     if (not this->m_is_open) {
         return Status::NOT_OPENED;
     }
     return this->m_delegate.read(const_cast<char*>(filename.toChar()), filename.getCapacity());
 }
 
-void DirectoryCommon::close() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<DirectoryInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+void DirectoryCommon<T>::close() {
     this->m_is_open = false;
     return this->m_delegate.close();
 }
@@ -81,7 +79,8 @@ void DirectoryCommon::close() {
 // Common functions built on top of OS-specific functions
 // ------------------------------------------------------------
 
-DirectoryCommon::Status DirectoryCommon::getFileCount(FwSizeType& fileCount) {
+template <typename T>
+typename DirectoryCommon<T>::Status DirectoryCommon<T>::getFileCount(FwSizeType& fileCount) {
     if (not this->m_is_open) {
         return Status::NOT_OPENED;
     }
@@ -111,8 +110,9 @@ DirectoryCommon::Status DirectoryCommon::getFileCount(FwSizeType& fileCount) {
     return Status::OP_OK;
 }
 
-DirectoryCommon::Status DirectoryCommon::readDirectory(Fw::ExternalArray<Fw::String>& filenameArray,
-                                                       FwSizeType& filenameCount) {
+template <typename T>
+typename DirectoryCommon<T>::Status DirectoryCommon<T>::readDirectory(Fw::ExternalArray<Fw::String>& filenameArray,
+                                                                      FwSizeType& filenameCount) {
     FW_ASSERT(filenameArray.getElements() != nullptr);
     FW_ASSERT(filenameArray.getSize() > 0);
     if (not this->m_is_open) {
@@ -145,11 +145,15 @@ DirectoryCommon::Status DirectoryCommon::readDirectory(Fw::ExternalArray<Fw::Str
     return returnStatus;
 }
 
-DirectoryCommon::Status DirectoryCommon::readDirectory(Fw::String filenameArray[],
-                                                       const FwSizeType filenameArraySize,
-                                                       FwSizeType& filenameCount) {
+template <typename T>
+typename DirectoryCommon<T>::Status DirectoryCommon<T>::readDirectory(Fw::String filenameArray[],
+                                                                      const FwSizeType filenameArraySize,
+                                                                      FwSizeType& filenameCount) {
     Fw::ExternalArray<Fw::String> array(filenameArray, filenameArraySize);
     return this->readDirectory(array, filenameCount);
 }
+
+// Instantiate the common class for the implementation selected in config/OsSelection.hpp
+template class DirectoryCommon<Delegate::Selected<Directory>::type>;
 
 }  // namespace Os

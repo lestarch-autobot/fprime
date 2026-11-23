@@ -11,6 +11,7 @@
 #include <Os/Mutex.hpp>
 #include <Os/Os.hpp>
 #include <Os/QueueString.hpp>
+#include "config/OsSelection.hpp"  // defines the Os::Queue alias and OS_QUEUE_HEADER; do not remove
 namespace Os {
 // Forward declaration for registry
 class QueueRegistry;
@@ -139,32 +140,12 @@ class QueueInterface {
     //! \brief return the underlying queue handle (implementation specific)
     //! \return internal task handle representation
     virtual QueueHandle* getHandle() = 0;
-
-    //! \brief provide a pointer to a queue delegate object
-    //!
-    //! This function must return a pointer to a `QueueInterface` object that contains the real implementation of the
-    //! queue functions as defined by the implementor.  This function must do several things to be considered correctly
-    //! implemented:
-    //!
-    //! 1. Assert that the supplied memory is non-null. e.g `FW_ASSERT(aligned_placement_new_memory != NULL);`
-    //! 2. Assert that their implementation fits within FW_HANDLE_MAX_SIZE.
-    //!    e.g. `static_assert(sizeof(PosixQueueImplementation) <= sizeof Os::Queue::m_handle_storage,
-    //!        "FW_HANDLE_MAX_SIZE to small");`
-    //! 3. Assert that their implementation aligns within FW_HANDLE_ALIGNMENT.
-    //!    e.g. `static_assert((FW_HANDLE_ALIGNMENT % alignof(PosixQueueImplementation)) == 0, "Bad handle alignment");`
-    //! 4. Placement new their implementation into `aligned_placement_new_memory`
-    //!    e.g. `TaskInterface* interface = new (aligned_placement_new_memory) PosixQueueImplementation;`
-    //! 5. Return the result of the placement new
-    //!    e.g. `return interface;`
-    //!
-    //! \return result of placement new, must be equivalent to `aligned_placement_new_memory`
-    //!
-    static QueueInterface* getDelegate(QueueHandleStorage& aligned_placement_new_memory);
 };
 
 //! \brief interface presented to users of Os::Queue, an alias of Os::QueueInterface
 using QueueUserInterface = QueueInterface;
 
+template <typename T>
 class QueueCommon final : public QueueUserInterface {
   public:
     //! \brief queue constructor
@@ -323,12 +304,8 @@ class QueueCommon final : public QueueUserInterface {
     // opaque and thus normal allocation cannot be done. Instead, we allow the implementor to store then handle in
     // the byte-array here and set `handle` to that address for storage.
     //
-    alignas(FW_HANDLE_ALIGNMENT) QueueHandleStorage m_handle_storage;  //!< Storage for aligned handle
-    QueueInterface& m_delegate;                                        //!< Delegate for the real implementation
+    T m_delegate;  //!< Delegate for the real implementation
 };
-
-//! \brief Os::Queue is an alias of the common wrapper class Os::QueueCommon
-using Queue = QueueCommon;
 
 //! \brief queue registry interface
 //!
@@ -349,4 +326,11 @@ class QueueRegistry {
     virtual void registerQueue(Queue* queue) = 0;  //!< method called by queue init() methods to register a new queue
 };
 }  // namespace Os
+// Validate that OS_QUEUE_HEADER was defined by config/OsSelection.hpp
+#ifndef OS_QUEUE_HEADER
+#error "OS_QUEUE_HEADER must be defined in config/OsSelection.hpp"
+#endif
+
+#include OS_QUEUE_HEADER
+
 #endif

@@ -28,6 +28,7 @@ register_fprime_module(
   DEPENDS
     Fw_Time
     Fw_Types
+    Os_Posix_Models
 )
 
 # Set up Posix implementations

@@ -4,35 +4,42 @@
 // ======================================================================
 #include "Os/Memory.hpp"
 #include "Fw/Types/Assert.hpp"
+#include "Os/Delegate.hpp"
 
 namespace Os {
 
-MemoryCommon::MemoryCommon() : m_delegate(*MemoryInterface::getDelegate(m_handle_storage)) {}
+template <typename T>
+MemoryCommon<T>::MemoryCommon() : m_delegate() {}
 
-MemoryCommon::~MemoryCommon() {
-    m_delegate.~MemoryInterface();
-}
+template <typename T>
+MemoryCommon<T>::~MemoryCommon() {}
 
-void MemoryCommon::init() {
+template <typename T>
+void MemoryCommon<T>::init() {
     (void)MemoryCommon::getSingleton();
 }
 
-MemoryCommon& MemoryCommon::getSingleton() {
+template <typename T>
+MemoryCommon<T>& MemoryCommon<T>::getSingleton() {
     static MemoryCommon _singleton;
     return _singleton;
 }
 
-MemoryCommon::Status MemoryCommon::_getUsage(Os::MemoryCommon::Usage& memory_usage) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<MemoryInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename MemoryCommon<T>::Status MemoryCommon<T>::_getUsage(Os::MemoryCommon<T>::Usage& memory_usage) {
     return this->m_delegate._getUsage(memory_usage);
 }
 
-MemoryCommon::Status MemoryCommon::getUsage(Os::MemoryCommon::Usage& memory_usage) {
+template <typename T>
+typename MemoryCommon<T>::Status MemoryCommon<T>::getUsage(Os::MemoryCommon<T>::Usage& memory_usage) {
     return MemoryCommon::getSingleton()._getUsage(memory_usage);
 }
 
-MemoryHandle* MemoryCommon::getHandle() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<MemoryInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+MemoryHandle* MemoryCommon<T>::getHandle() {
     return this->m_delegate.getHandle();
 }
+// Instantiate the common class for the implementation selected in config/OsSelection.hpp
+template class MemoryCommon<Delegate::Selected<Memory>::type>;
+
 }  // namespace Os

@@ -58,10 +58,6 @@ function(add_fprime_supplied_os_module NAMES SUFFIX)
     list(GET NAMES 0 FIRST_ITEM)
 
     # Ensure expected files with expected filenames exist
-    if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/Default${FIRST_ITEM}.cpp")
-        message(FATAL_ERROR "${CMAKE_CURRENT_LIST_DIR}/Default${FIRST_ITEM}.cpp does not exist.")
-    endif()
-
     foreach (NAME IN LISTS NAMES)
         if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp")
             message(FATAL_ERROR "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp does not exist.")
@@ -94,17 +90,31 @@ function(add_fprime_supplied_os_module NAMES SUFFIX)
         "Os_${FIRST_ITEM}"
         ${ARGN}
     )
-    register_fprime_implementation(
-         "${OS_MODULE_NAME}"
-      SOURCES
-        "${CMAKE_CURRENT_LIST_DIR}/Default${FIRST_ITEM}.cpp"
-      IMPLEMENTS
-        "Os_${FIRST_ITEM}"
-      DEPENDS
-        Fw_Time
-        Fw_Types
-        "${OS_MODULE_NAME}_Implementation"
-    )
+    # Services selected at link time supply Default<Name>.cpp; the others are selected in config/OsSelection.hpp
+    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Default${FIRST_ITEM}.cpp")
+        register_fprime_implementation(
+             "${OS_MODULE_NAME}"
+          SOURCES
+            "${CMAKE_CURRENT_LIST_DIR}/Default${FIRST_ITEM}.cpp"
+          IMPLEMENTS
+            "Os_${FIRST_ITEM}"
+          DEPENDS
+            Fw_Time
+            Fw_Types
+            "${OS_MODULE_NAME}_Implementation"
+        )
+    else()
+        register_fprime_implementation(
+             "${OS_MODULE_NAME}"
+          IMPLEMENTS
+            "Os_${FIRST_ITEM}"
+          INTERFACE
+        )
+        # Os_<Name> instantiates the common class on the implementation: link the whole implementation
+        # as nothing earlier in the link order references it
+        target_link_libraries("${OS_MODULE_NAME}" INTERFACE
+            "$<LINK_LIBRARY:WHOLE_ARCHIVE,${OS_MODULE_NAME}_Implementation>")
+    endif()
 endfunction()
 
 add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Models")
@@ -138,6 +148,13 @@ register_fprime_module(
 add_named_os_module(Console Fw_Logger)
 add_named_os_module("File;FileSystem;Directory" Utils_Hash Fw_DataStructures)
 add_named_os_module(Task ${CMAKE_THREAD_LIBS_INIT})
+# Os/Task.hpp includes the implementation header selected in config/OsSelection.hpp. The Posix
+# implementation header needs the constants autocoded by Os_Posix_Models, thus users of the Os
+# headers must build after Os_Posix_Models.
+if (TARGET Os_Posix_Models)
+    fprime_target_dependencies(Os_Models PUBLIC Os_Posix_Models)
+    fprime_target_dependencies(Os_Task PUBLIC Os_Posix_Models)
+endif()
 # Mutex: Mutex.hpp is a thin public alias header (no Mutex.cpp); the interface and
 # link-time delegate live in MutexInterface.hpp / DelegateMutex.{hpp,cpp}. Registered
 # explicitly (rather than via add_named_os_module) because that helper assumes a

@@ -3,6 +3,7 @@
 // \brief common function implementation for Os::Task
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
+#include <Os/Delegate.hpp>
 #include <Os/Task.hpp>
 
 namespace Os {
@@ -24,9 +25,11 @@ TaskInterface::Arguments::Arguments(const Fw::ConstStringBase& name,
     FW_ASSERT(routine != nullptr);
 }
 
-TaskCommon::TaskRoutineWrapper::TaskRoutineWrapper(TaskCommon& self) : m_task(self) {}
+template <typename T>
+TaskCommon<T>::TaskRoutineWrapper::TaskRoutineWrapper(TaskCommon& self) : m_task(self) {}
 
-void TaskCommon::TaskRoutineWrapper::run(void* wrapper_pointer) {
+template <typename T>
+void TaskCommon<T>::TaskRoutineWrapper::run(void* wrapper_pointer) {
     FW_ASSERT(wrapper_pointer != nullptr);
     TaskRoutineWrapper& wrapper = *reinterpret_cast<TaskRoutineWrapper*>(wrapper_pointer);
     FW_ASSERT(wrapper.m_user_function != nullptr);
@@ -47,34 +50,40 @@ void TaskCommon::TaskRoutineWrapper::run(void* wrapper_pointer) {
     wrapper.m_user_function(wrapper.m_user_argument);
 }
 
-void TaskCommon::TaskRoutineWrapper::invoke() {
+template <typename T>
+void TaskCommon<T>::TaskRoutineWrapper::invoke() {
     TaskRoutineWrapper::run(this);
 }
 
-TaskRegistry* TaskCommon::s_taskRegistry = nullptr;
-FwSizeType TaskCommon::s_numTasks = 0;
-Mutex TaskCommon::s_taskMutex;
+template <typename T>
+TaskRegistry* TaskCommon<T>::s_taskRegistry = nullptr;
+template <typename T>
+FwSizeType TaskCommon<T>::s_numTasks = 0;
+template <typename T>
+Mutex TaskCommon<T>::s_taskMutex;
 
 bool TaskInterface::isCooperative() {
     return false;
 }
 
-TaskCommon::TaskCommon()
-    : m_wrapper(*this), m_handle_storage(), m_delegate(*TaskInterface::getDelegate(m_handle_storage)) {}
+template <typename T>
+TaskCommon<T>::TaskCommon() : m_wrapper(*this), m_delegate() {}
 
-TaskCommon::~TaskCommon() {
+template <typename T>
+TaskCommon<T>::~TaskCommon() {
     // If a registry has been registered and the task has been started then remove task from the registry
     if ((TaskCommon::s_taskRegistry != nullptr) && this->m_registered) {
         TaskCommon::s_taskRegistry->removeTask(this);
     }
-    m_delegate.~TaskInterface();
 }
 
-void TaskCommon::suspend() {
+template <typename T>
+void TaskCommon<T>::suspend() {
     this->suspend(TaskCommon::SuspensionType::UNINTENTIONAL);
 }
 
-TaskCommon::State TaskCommon::getState() const {
+template <typename T>
+typename TaskCommon<T>::State TaskCommon<T>::getState() const {
     TaskCommon::State state;
     this->m_lock.lock();
     state = this->m_state;
@@ -82,25 +91,26 @@ TaskCommon::State TaskCommon::getState() const {
     return state;
 }
 
-TaskCommon::Status TaskCommon::start(const Fw::ConstStringBase& name,
-                                     const taskRoutine routine,
-                                     void* const arg,
-                                     const FwTaskPriorityType priority,
-                                     const ParamType stackSize,
-                                     const ParamType cpuAffinity,
-                                     const ParamType identifier) {
+template <typename T>
+typename TaskCommon<T>::Status TaskCommon<T>::start(const Fw::ConstStringBase& name,
+                                                    const taskRoutine routine,
+                                                    void* const arg,
+                                                    const FwTaskPriorityType priority,
+                                                    const ParamType stackSize,
+                                                    const ParamType cpuAffinity,
+                                                    const ParamType identifier) {
     FW_ASSERT(routine != nullptr);
     return this->start(TaskCommon::Arguments(name, routine, arg, priority, stackSize, cpuAffinity,
                                              static_cast<FwTaskIdType>(identifier)));
 }
 
-TaskCommon::Status TaskCommon::start(const TaskCommon::Arguments& arguments) {
+template <typename T>
+typename TaskCommon<T>::Status TaskCommon<T>::start(const TaskCommon<T>::Arguments& arguments) {
     TaskCommon::init();
     // init call above is to ensure singleton is initialized in a thread-safe
     // manner and such that the address sanitizer does not inadvertently
     // result in a stack overflow when multiple calls to getSingleton are made
     // simultaneously from different threads. (As was observed in UT runs.)
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<TaskInterface*>(&this->m_handle_storage[0]));
     FW_ASSERT(arguments.m_routine != nullptr);
     this->m_name = arguments.m_name;
     this->m_state = State::STARTING;
@@ -130,17 +140,18 @@ TaskCommon::Status TaskCommon::start(const TaskCommon::Arguments& arguments) {
     return status;
 }
 
-void TaskCommon::onStart() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<TaskInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+void TaskCommon<T>::onStart() {
     this->m_delegate.onStart();
 }
 
-void TaskCommon::invokeRoutine() {
+template <typename T>
+void TaskCommon<T>::invokeRoutine() {
     this->m_wrapper.invoke();
 }
 
-TaskCommon::Status TaskCommon::join() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<TaskInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename TaskCommon<T>::Status TaskCommon<T>::join() {
     TaskCommon::Status status = TaskCommon::Status::INVALID_STATE;
     TaskCommon::State state = this->getState();
     if (state == TaskCommon::RUNNING || state == STARTING) {
@@ -156,8 +167,8 @@ TaskCommon::Status TaskCommon::join() {
     return status;
 }
 
-void TaskCommon::suspend(TaskCommon::SuspensionType suspensionType) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<TaskInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+void TaskCommon<T>::suspend(TaskCommon<T>::SuspensionType suspensionType) {
     this->m_delegate.suspend(suspensionType);
     this->m_lock.lock();
     this->m_state = (suspensionType == TaskCommon::SuspensionType::INTENTIONAL) ? State::SUSPENDED_INTENTIONALLY
@@ -165,58 +176,68 @@ void TaskCommon::suspend(TaskCommon::SuspensionType suspensionType) {
     this->m_lock.unlock();
 }
 
-void TaskCommon::resume() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<TaskInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+void TaskCommon<T>::resume() {
     this->m_delegate.resume();
 }
 
-bool TaskCommon::isCooperative() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<TaskInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+bool TaskCommon<T>::isCooperative() {
     return this->m_delegate.isCooperative();
 }
 
-TaskString TaskCommon::getName() {
+template <typename T>
+TaskString TaskCommon<T>::getName() {
     Os::ScopeLock lock(this->m_lock);
     return this->m_name;
 }
 
-FwTaskPriorityType TaskCommon::getPriority() {
+template <typename T>
+FwTaskPriorityType TaskCommon<T>::getPriority() {
     Os::ScopeLock lock(this->m_lock);
     return this->m_priority;
 }
 
-TaskHandle* TaskCommon::getHandle() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<TaskInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+TaskHandle* TaskCommon<T>::getHandle() {
     return this->m_delegate.getHandle();
 }
 
-FwSizeType TaskCommon::getNumTasks() {
+template <typename T>
+FwSizeType TaskCommon<T>::getNumTasks() {
     TaskCommon::s_taskMutex.lock();
     FwSizeType num_tasks = TaskCommon::s_numTasks;
     TaskCommon::s_taskMutex.unlock();
     return num_tasks;
 }
 
-Os::TaskInterface::Status TaskCommon::_delay(const Fw::TimeInterval& interval) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<TaskInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+Os::TaskInterface::Status TaskCommon<T>::_delay(const Fw::TimeInterval& interval) {
     return this->m_delegate._delay(interval);
 }
 
-Os::TaskInterface::Status TaskCommon::delay(const Fw::TimeInterval& interval) {
+template <typename T>
+Os::TaskInterface::Status TaskCommon<T>::delay(const Fw::TimeInterval& interval) {
     return TaskCommon::getSingleton()._delay(interval);
 }
 
-void TaskCommon::init() {
+template <typename T>
+void TaskCommon<T>::init() {
     // Force trigger on the fly singleton setup
     (void)TaskCommon::getSingleton();
 }
 
-TaskCommon& TaskCommon::getSingleton() {
+template <typename T>
+TaskCommon<T>& TaskCommon<T>::getSingleton() {
     static TaskCommon s_singleton;
     return s_singleton;
 }
 
-void TaskCommon::registerTaskRegistry(TaskRegistry* registry) {
+template <typename T>
+void TaskCommon<T>::registerTaskRegistry(TaskRegistry* registry) {
     TaskCommon::s_taskRegistry = registry;
 }
+// Instantiate the common class for the implementation selected in config/OsSelection.hpp
+template class TaskCommon<Delegate::Selected<Task>::type>;
+
 }  // namespace Os

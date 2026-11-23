@@ -11,6 +11,7 @@
 #include <Os/Mutex.hpp>
 #include <Os/Os.hpp>
 #include <Os/TaskString.hpp>
+#include "config/OsSelection.hpp"  // defines the Os::Task alias and OS_TASK_HEADER; do not remove
 
 #include <Fw/Deprecate.hpp>
 #include <limits>
@@ -117,27 +118,6 @@ class TaskInterface {
     // Implementation functions (static) to be supplied by the linker
     // =================
 
-    //! \brief provide a pointer to a task delegate object
-    //!
-    //! This function must return a pointer to a `TaskInterface` object that contains the real implementation of the
-    //! file functions as defined by the implementor.  This function must do several things to be considered correctly
-    //! implemented:
-    //!
-    //! 1. Assert that the supplied memory is non-null. e.g `FW_ASSERT(aligned_placement_new_memory != NULL);`
-    //! 2. Assert that their implementation fits within FW_HANDLE_MAX_SIZE.
-    //!    e.g. `static_assert(sizeof(PosixTaskImplementation) <= sizeof Os::Task::m_handle_storage,
-    //!        "FW_HANDLE_MAX_SIZE to small");`
-    //! 3. Assert that their implementation aligns within FW_HANDLE_ALIGNMENT.
-    //!    e.g. `static_assert((FW_HANDLE_ALIGNMENT % alignof(PosixTaskImplementation)) == 0, "Bad handle alignment");`
-    //! 4. Placement new their implementation into `aligned_placement_new_memory`
-    //!    e.g. `TaskInterface* interface = new (aligned_placement_new_memory) PosixTaskImplementation;`
-    //! 5. Return the result of the placement new
-    //!    e.g. `return interface;`
-    //!
-    //! \return result of placement new, must be equivalent to `aligned_placement_new_memory`
-    //!
-    static TaskInterface* getDelegate(TaskHandleStorage& aligned_placement_new_memory);
-
     // =================
     // Implementation functions (instance) to be supplied by the Os::TaskInterface children
     // =================
@@ -206,8 +186,9 @@ class TaskInterface {
 using TaskUserInterface = TaskInterface;
 
 //! Task class intended to be used by the rest of the fprime system. This is final as it is not intended to be a
-//! parent class. Instead it wraps a delegate provided by `TaskInterface::getDelegate()` to provide system specific
+//! parent class. Instead it wraps a delegate of the template type `T` to provide system specific
 //! behaviour.
+template <typename T>
 class TaskCommon final : public TaskUserInterface {
     friend struct Os::Test::Task::Tester;
 
@@ -401,12 +382,8 @@ class TaskCommon final : public TaskUserInterface {
     // opaque and thus normal allocation cannot be done. Instead, we allow the implementor to store then handle in
     // the byte-array here and set `handle` to that address for storage.
     //
-    alignas(FW_HANDLE_ALIGNMENT) TaskHandleStorage m_handle_storage;  //!< Storage for aligned FileHandle data
-    TaskInterface& m_delegate;                                        //!< Delegate for the real implementation
+    T m_delegate;  //!< Delegate for the real implementation
 };
-
-//! \brief Os::Task is an alias of the common wrapper class Os::TaskCommon
-using Task = TaskCommon;
 
 class TaskRegistry {
   public:
@@ -425,5 +402,12 @@ class TaskRegistry {
     virtual void removeTask(Task* task) = 0;
 };
 }  // namespace Os
+
+// Validate that OS_TASK_HEADER was defined by config/OsSelection.hpp
+#ifndef OS_TASK_HEADER
+#error "OS_TASK_HEADER must be defined in config/OsSelection.hpp"
+#endif
+
+#include OS_TASK_HEADER
 
 #endif

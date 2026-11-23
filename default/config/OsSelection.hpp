@@ -106,6 +106,109 @@ using ConditionVariable = DelegateConditionVariable;
 
 }  // namespace Os
 
+// Compile-time selection of the implementations wrapped by the Os::<Service>Common classes
+namespace Os {
+
+template <typename T>
+class ConsoleCommon;
+template <typename T>
+class TaskCommon;
+template <typename T>
+class FileCommon;
+template <typename T>
+class FileSystemCommon;
+template <typename T>
+class DirectoryCommon;
+template <typename T>
+class QueueCommon;
+template <typename T>
+class CountingSemaphoreCommon;
+template <typename T>
+class CpuCommon;
+template <typename T>
+class MemoryCommon;
+
+namespace Posix {
+namespace Console {
+class PosixConsole;
+}
+namespace Task {
+class PosixTask;
+}
+namespace File {
+class PosixFile;
+}
+namespace FileSystem {
+class PosixFileSystem;
+}
+namespace Directory {
+class PosixDirectory;
+}
+}  // namespace Posix
+namespace Generic {
+class PriorityQueue;
+}
+using Console = ConsoleCommon<Posix::Console::PosixConsole>;
+using Task = TaskCommon<Posix::Task::PosixTask>;
+using File = FileCommon<Posix::File::PosixFile>;
+using FileSystem = FileSystemCommon<Posix::FileSystem::PosixFileSystem>;
+using Directory = DirectoryCommon<Posix::Directory::PosixDirectory>;
+using Queue = QueueCommon<Generic::PriorityQueue>;
+
+#if defined(TGT_OS_TYPE_LINUX)
+namespace Posix {
+namespace Semaphore {
+class PosixCountingSemaphore;
+}
+}  // namespace Posix
+namespace Linux {
+namespace Cpu {
+class LinuxCpu;
+}
+namespace Memory {
+class LinuxMemory;
+}
+}  // namespace Linux
+using CountingSemaphore = CountingSemaphoreCommon<Posix::Semaphore::PosixCountingSemaphore>;
+using Cpu = CpuCommon<Linux::Cpu::LinuxCpu>;
+using Memory = MemoryCommon<Linux::Memory::LinuxMemory>;
+#elif defined(TGT_OS_TYPE_DARWIN)
+namespace Darwin {
+namespace Semaphore {
+class DarwinCountingSemaphore;
+}
+namespace Cpu {
+class DarwinCpu;
+}
+namespace Memory {
+class DarwinMemory;
+}
+}  // namespace Darwin
+using CountingSemaphore = CountingSemaphoreCommon<Darwin::Semaphore::DarwinCountingSemaphore>;
+using Cpu = CpuCommon<Darwin::Cpu::DarwinCpu>;
+using Memory = MemoryCommon<Darwin::Memory::DarwinMemory>;
+#else
+#error "No default Os implementations for this platform: override config/OsSelection.hpp"
+#endif
+
+}  // namespace Os
+
+#define OS_CONSOLE_HEADER <Os/Posix/Console.hpp>
+#define OS_TASK_HEADER <Os/Posix/Task.hpp>
+#define OS_FILE_HEADER <Os/Posix/File.hpp>
+#define OS_FILE_SYSTEM_HEADER <Os/Posix/FileSystem.hpp>
+#define OS_DIRECTORY_HEADER <Os/Posix/Directory.hpp>
+#define OS_QUEUE_HEADER <Os/Generic/PriorityQueue.hpp>
+#if defined(TGT_OS_TYPE_LINUX)
+#define OS_COUNTING_SEMAPHORE_HEADER <Os/Posix/CountingSemaphore.hpp>
+#define OS_CPU_HEADER <Os/Linux/Cpu.hpp>
+#define OS_MEMORY_HEADER <Os/Linux/Memory.hpp>
+#elif defined(TGT_OS_TYPE_DARWIN)
+#define OS_COUNTING_SEMAPHORE_HEADER <Os/Darwin/CountingSemaphore.hpp>
+#define OS_CPU_HEADER <Os/Darwin/Cpu.hpp>
+#define OS_MEMORY_HEADER <Os/Darwin/Memory.hpp>
+#endif
+
 #define OS_RAW_TIME_HEADER <Os/DelegateRawTime.hpp>
 #define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
 #define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>

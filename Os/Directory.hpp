@@ -11,6 +11,7 @@
 #include <Fw/FPrimeBasicTypes.hpp>
 #include <Fw/Types/String.hpp>
 #include <Os/Os.hpp>
+#include "config/OsSelection.hpp"  // defines the Os::Directory alias and OS_DIRECTORY_HEADER; do not remove
 
 namespace Os {
 
@@ -54,9 +55,6 @@ class DirectoryInterface {
     //! \brief return the underlying Directory handle (implementation specific)
     //! \return internal Directory handle representation
     virtual DirectoryHandle* getHandle() = 0;
-
-    //! \brief provide a pointer to a Directory delegate object
-    static DirectoryInterface* getDelegate(DirectoryHandleStorage& aligned_new_memory);
 
     // -----------------------------------------------------------------
     // Directory operations to be implemented by an OSAL implementation
@@ -116,6 +114,7 @@ using DirectoryUserInterface = DirectoryInterface;
 //!
 //! This class provides a common interface for directory operations, such as reading files in a directory
 //! and getting the number of files in a directory.
+template <typename T>
 class DirectoryCommon final : public DirectoryUserInterface {
   public:
     //! \brief Constructor
@@ -228,13 +227,16 @@ class DirectoryCommon final : public DirectoryUserInterface {
     // This section is used to store the implementation-defined Directory handle. To Os::Directory and fprime, this type
     // is opaque and thus normal allocation cannot be done. Instead, we allow the implementor to store then handle in
     // the byte-array here and set `handle` to that address for storage.
-    alignas(FW_HANDLE_ALIGNMENT) DirectoryHandleStorage m_handle_storage;  //!< Directory handle storage
-    DirectoryInterface& m_delegate;
+    T m_delegate;
 };
 
-//! \brief Os::Directory is an alias of the common wrapper class Os::DirectoryCommon
-using Directory = DirectoryCommon;
-
 }  // namespace Os
+
+// Validate that OS_DIRECTORY_HEADER was defined by config/OsSelection.hpp
+#ifndef OS_DIRECTORY_HEADER
+#error "OS_DIRECTORY_HEADER must be defined in config/OsSelection.hpp"
+#endif
+
+#include OS_DIRECTORY_HEADER
 
 #endif
