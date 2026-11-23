@@ -3,6 +3,7 @@
 // \brief common function definitions for Os::Cpu
 // ======================================================================
 #include "Os/Os.hpp"
+#include "config/OsSelection.hpp"  // defines the Os::Cpu alias and OS_CPU_HEADER; do not remove
 
 #ifndef OS_CPU_HPP_
 #define OS_CPU_HPP_
@@ -51,15 +52,13 @@ class CpuInterface {
     //! \brief return the underlying cpu handle (implementation specific).
     //! \return internal task handle representation
     virtual CpuHandle* getHandle() = 0;
-
-    //! \brief provide a pointer to a Mutex delegate object
-    static CpuInterface* getDelegate(CpuHandleStorage& aligned_new_memory);
 };
 
 //! \brief interface presented to users of Os::Cpu, an alias of Os::CpuInterface
 using CpuUserInterface = CpuInterface;
 
 //! \brief cpu implementation
+template <typename T>
 class CpuCommon final : public CpuUserInterface {
   public:
     //! \brief default constructor
@@ -147,11 +146,15 @@ class CpuCommon final : public CpuUserInterface {
     // This section is used to store the implementation-defined file handle. To Os::File and fprime, this type is
     // opaque and thus normal allocation cannot be done. Instead, we allow the implementor to store then handle in
     // the byte-array here and set `handle` to that address for storage.
-    alignas(FW_HANDLE_ALIGNMENT) CpuHandleStorage m_handle_storage;  //!< Storage for aligned data
-    CpuInterface& m_delegate;                                        //!< Delegate for the real implementation
+    T m_delegate;  //!< Delegate for the real implementation
 };
 
-//! \brief Os::Cpu is an alias of the common wrapper class Os::CpuCommon
-using Cpu = CpuCommon;
 }  // namespace Os
+// Validate that OS_CPU_HEADER was defined by config/OsSelection.hpp
+#ifndef OS_CPU_HEADER
+#error "OS_CPU_HEADER must be defined in config/OsSelection.hpp"
+#endif
+
+#include OS_CPU_HEADER
+
 #endif  // OS_CONDITION_HPP_

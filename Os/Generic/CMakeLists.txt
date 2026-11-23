@@ -15,14 +15,14 @@ register_fprime_module(
 )
 register_fprime_implementation(
     Os_Generic_PriorityMemQueue
-  SOURCES
-    "${CMAKE_CURRENT_LIST_DIR}/DefaultPriorityMemQueue.cpp"
   IMPLEMENTS
     Os_Queue
-  DEPENDS
-    Fw_Types
-    Os_Generic_PriorityMemQueue_Implementation
+  INTERFACE
 )
+# Os_Queue instantiates the common class on the implementation: link the whole implementation
+# as nothing earlier in the link order references it
+target_link_libraries(Os_Generic_PriorityMemQueue INTERFACE
+    "$<LINK_LIBRARY:WHOLE_ARCHIVE,Os_Generic_PriorityMemQueue_Implementation>")
 
 register_fprime_ut(
     PriorityMemQueue_UnitTest
@@ -52,14 +52,14 @@ register_fprime_module(
 )
 register_fprime_implementation(
     Os_Generic_PriorityQueue
-  SOURCES
-    "${CMAKE_CURRENT_LIST_DIR}/DefaultPriorityQueue.cpp"
   IMPLEMENTS
     Os_Queue
-  DEPENDS
-    Fw_Types
-    Os_Generic_PriorityQueue_Implementation
+  INTERFACE
 )
+# Os_Queue instantiates the common class on the implementation: link the whole implementation
+# as nothing earlier in the link order references it
+target_link_libraries(Os_Generic_PriorityQueue INTERFACE
+    "$<LINK_LIBRARY:WHOLE_ARCHIVE,Os_Generic_PriorityQueue_Implementation>")
 
 register_fprime_ut(
     PriorityQueueTest
@@ -94,14 +94,14 @@ register_fprime_module(
 )
 register_fprime_implementation(
     Os_Generic_LocklessPriorityQueue
-  SOURCES
-    "${CMAKE_CURRENT_LIST_DIR}/DefaultLocklessPriorityQueue.cpp"
   IMPLEMENTS
     Os_Queue
-  DEPENDS
-    Fw_Types
-    Os_Generic_LocklessPriorityQueue_Implementation
+  INTERFACE
 )
+# Os_Queue instantiates the common class on the implementation: link the whole implementation
+# as nothing earlier in the link order references it
+target_link_libraries(Os_Generic_LocklessPriorityQueue INTERFACE
+    "$<LINK_LIBRARY:WHOLE_ARCHIVE,Os_Generic_LocklessPriorityQueue_Implementation>")
 
 register_fprime_ut(
     LocklessPriorityQueueTest

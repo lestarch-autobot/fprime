@@ -44,7 +44,7 @@ class DarwinMemory : public MemoryInterface {
     //!
     //! \param memory_usage: (output) data structure used to store memory usage
     //! \return:  ERROR when error occurs, OK otherwise.
-    Status _getUsage(Os::Memory::Usage& memory_usage) override;
+    Status _getUsage(Os::MemoryInterface::Usage& memory_usage) override;
 
     //! \brief returns the raw console handle
     //!

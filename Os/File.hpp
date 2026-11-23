@@ -9,6 +9,7 @@
 #include <Fw/Types/ConstStringBase.hpp>
 #include <Os/Os.hpp>
 #include <Utils/Hash/Hash.hpp>
+#include "config/OsSelection.hpp"  // defines the Os::File alias and OS_FILE_HEADER; do not remove
 
 // Forward declaration for UTs
 namespace Os {
@@ -198,36 +199,12 @@ class FileInterface {
     //! \return raw file handle
     //!
     virtual FileHandle* getHandle() = 0;
-
-    //! \brief provide a pointer to a file delegate object
-    //!
-    //! This function must return a pointer to a `FileInterface` object that contains the real implementation of the
-    //! file functions as defined by the implementor.  This function must do several things to be considered correctly
-    //! implemented:
-    //!
-    //! 1. Assert that the supplied memory is non-null. e.g `FW_ASSERT(aligned_placement_new_memory != NULL);`
-    //! 2. Assert that their implementation fits within FW_HANDLE_MAX_SIZE.
-    //!    e.g. `static_assert(sizeof(PosixFileImplementation) <= sizeof Os::File::m_handle_storage,
-    //!        "FW_HANDLE_MAX_SIZE too small");`
-    //! 3. Assert that their implementation aligns within FW_HANDLE_ALIGNMENT.
-    //!    e.g. `static_assert((FW_HANDLE_ALIGNMENT % alignof(PosixFileImplementation)) == 0, "Bad handle alignment");`
-    //! 4. If to_copy is null, placement new their implementation into `aligned_placement_new_memory`
-    //!    e.g. `FileInterface* interface = new (aligned_placement_new_memory) PosixFileImplementation;`
-    //! 5. If to_copy is non-null, placement new using copy constructor their implementation into
-    //!    `aligned_placement_new_memory`
-    //!    e.g. `FileInterface* interface = new (aligned_placement_new_memory) PosixFileImplementation(*to_copy);`
-    //! 6. Return the result of the placement new
-    //!    e.g. `return interface;`
-    //!
-    //! \return result of placement new, must be equivalent to `aligned_placement_new_memory`
-    //!
-    static FileInterface* getDelegate(FileHandleStorage& aligned_placement_new_memory,
-                                      const FileInterface* to_copy = nullptr);
 };
 
 //! \brief interface presented to users of Os::File, an alias of Os::FileInterface
 using FileUserInterface = FileInterface;
 
+template <typename T>
 class FileCommon final : public FileUserInterface {
     friend struct Os::Test::FileTest::Tester;
 
@@ -598,11 +575,15 @@ class FileCommon final : public FileUserInterface {
     // opaque and thus normal allocation cannot be done. Instead, we allow the implementor to store then handle in
     // the byte-array here and set `handle` to that address for storage.
     //
-    alignas(FW_HANDLE_ALIGNMENT) FileHandleStorage m_handle_storage;  //!< Storage for aligned FileHandle data
-    FileInterface& m_delegate;                                        //!< Delegate for the real implementation
+    T m_delegate;  //!< Delegate for the real implementation
 };
 
-//! \brief Os::File is an alias of the common wrapper class Os::FileCommon
-using File = FileCommon;
 }  // namespace Os
+// Validate that OS_FILE_HEADER was defined by config/OsSelection.hpp
+#ifndef OS_FILE_HEADER
+#error "OS_FILE_HEADER must be defined in config/OsSelection.hpp"
+#endif
+
+#include OS_FILE_HEADER
+
 #endif

@@ -6,6 +6,7 @@
 #define OS_COUNTING_SEMAPHORE_HPP_
 #include "Fw/Time/TimeInterval.hpp"
 #include "Os/Os.hpp"
+#include "config/OsSelection.hpp"  // defines the Os::CountingSemaphore alias and OS_COUNTING_SEMAPHORE_HEADER; do not remove
 
 namespace Os {
 
@@ -54,15 +55,12 @@ class CountingSemaphoreInterface {
     //! \brief return the underlying semaphore handle (implementation specific)
     //! \return internal semaphore handle representation
     virtual CountingSemaphoreHandle* getHandle() = 0;
-
-    //! \brief provide a pointer to a CountingSemaphore delegate object
-    static CountingSemaphoreInterface* getDelegate(CountingSemaphoreHandleStorage& aligned_new_memory,
-                                                   U32 initial_count);
 };
 
 //! \brief interface presented to users of Os::CountingSemaphore, an alias of Os::CountingSemaphoreInterface
 using CountingSemaphoreUserInterface = CountingSemaphoreInterface;
 
+template <typename T>
 class CountingSemaphoreCommon final : public CountingSemaphoreUserInterface {
   public:
     explicit CountingSemaphoreCommon(U32 initial_count);  //!< Constructor with initial count
@@ -87,11 +85,15 @@ class CountingSemaphoreCommon final : public CountingSemaphoreUserInterface {
     CountingSemaphoreHandle* getHandle() override;
 
   private:
-    alignas(FW_HANDLE_ALIGNMENT) CountingSemaphoreHandleStorage m_handle_storage;
-    CountingSemaphoreInterface& m_delegate;
+    T m_delegate;
 };
 
-//! \brief Os::CountingSemaphore is an alias of the common wrapper class Os::CountingSemaphoreCommon
-using CountingSemaphore = CountingSemaphoreCommon;
 }  // namespace Os
+// Validate that OS_COUNTING_SEMAPHORE_HEADER was defined by config/OsSelection.hpp
+#ifndef OS_COUNTING_SEMAPHORE_HEADER
+#error "OS_COUNTING_SEMAPHORE_HEADER must be defined in config/OsSelection.hpp"
+#endif
+
+#include OS_COUNTING_SEMAPHORE_HEADER
+
 #endif  // OS_COUNTING_SEMAPHORE_HPP_

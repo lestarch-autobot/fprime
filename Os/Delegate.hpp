@@ -132,6 +132,15 @@ inline Interface* makeDelegate(StorageType& aligned_new_memory, const Interface*
     FW_ASSERT(interface != nullptr);
     return interface;
 }
+//! \brief extract the implementation type T from an Os::<S>Common<T> type
+//!
+//! Used to explicitly instantiate Os::<S>Common for the implementation selected in config/OsSelection.hpp.
+template <class Common>
+struct Selected;
+template <template <class> class Common, class Implementation>
+struct Selected<Common<Implementation>> {
+    using type = Implementation;
+};
 }  // namespace Delegate
 }  // namespace Os
 #endif

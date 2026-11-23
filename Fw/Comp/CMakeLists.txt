@@ -16,6 +16,7 @@ register_fprime_module(
     Fw_Types
     Fw_Obj
     Fw_Port
+    Os_Models # generated headers used through Os/Task.hpp
 )
 # Makes active component its own library such that it can depend on Os where
 # passive components do not.

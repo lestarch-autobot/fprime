@@ -3,78 +3,77 @@
 // \brief common function implementation for Os::FileSystem
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
+#include <Os/Delegate.hpp>
 #include <Os/FileSystem.hpp>
 #include <algorithm>
 
 namespace Os {
 
-FileSystemCommon::FileSystemCommon()
-    : m_handle_storage(), m_delegate(*FileSystemInterface::getDelegate(m_handle_storage)) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-}
+template <typename T>
+FileSystemCommon<T>::FileSystemCommon() : m_delegate() {}
 
-FileSystemCommon::~FileSystemCommon() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
-    m_delegate.~FileSystemInterface();
-}
+template <typename T>
+FileSystemCommon<T>::~FileSystemCommon() {}
 
-FileSystemHandle* FileSystemCommon::getHandle() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+FileSystemHandle* FileSystemCommon<T>::getHandle() {
     return this->m_delegate.getHandle();
 }
 
-FileSystemCommon::Status FileSystemCommon::_removeDirectory(const char* path) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::_removeDirectory(const char* path) {
     FW_ASSERT(path != nullptr);
     return this->m_delegate._removeDirectory(path);
 }
 
-FileSystemCommon::Status FileSystemCommon::_removeFile(const char* path) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::_removeFile(const char* path) {
     FW_ASSERT(path != nullptr);
     return this->m_delegate._removeFile(path);
 }
 
-FileSystemCommon::Status FileSystemCommon::_rename(const char* sourcePath, const char* destPath) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::_rename(const char* sourcePath, const char* destPath) {
     FW_ASSERT(sourcePath != nullptr);
     FW_ASSERT(destPath != nullptr);
     return this->m_delegate._rename(sourcePath, destPath);
 }
 
-FileSystemCommon::Status FileSystemCommon::_getPathType(const char* path, PathType& pathType) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::_getPathType(const char* path, PathType& pathType) {
     FW_ASSERT(path != nullptr);
     return this->m_delegate._getPathType(path, pathType);
 }
 
-FileSystemCommon::Status FileSystemCommon::_getWorkingDirectory(char* path, FwSizeType bufferSize) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::_getWorkingDirectory(char* path, FwSizeType bufferSize) {
     FW_ASSERT(path != nullptr);
     FW_ASSERT(bufferSize > 0);  // because bufferSize=0 would trigger a malloc in some implementations (e.g. Posix)
     return this->m_delegate._getWorkingDirectory(path, bufferSize);
 }
 
-FileSystemCommon::Status FileSystemCommon::_changeWorkingDirectory(const char* path) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::_changeWorkingDirectory(const char* path) {
     FW_ASSERT(path != nullptr);
     return this->m_delegate._changeWorkingDirectory(path);
 }
 
-FileSystemCommon::Status FileSystemCommon::_getFreeSpace(const char* path,
-                                                         FwSizeType& totalBytes,
-                                                         FwSizeType& freeBytes) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileSystemInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::_getFreeSpace(const char* path,
+                                                                        FwSizeType& totalBytes,
+                                                                        FwSizeType& freeBytes) {
     FW_ASSERT(path != nullptr);
     return this->m_delegate._getFreeSpace(path, totalBytes, freeBytes);
 }
 
-void FileSystemCommon::init() {
+template <typename T>
+void FileSystemCommon<T>::init() {
     // Force trigger on the fly singleton setup
     (void)FileSystemCommon::getSingleton();
 }
 
-FileSystemCommon& FileSystemCommon::getSingleton() {
+template <typename T>
+FileSystemCommon<T>& FileSystemCommon<T>::getSingleton() {
     static FileSystemCommon s_singleton;
     return s_singleton;
 }
@@ -83,29 +82,35 @@ FileSystemCommon& FileSystemCommon::getSingleton() {
 // Static functions calling implementation-specific operations
 // ------------------------------------------------------------
 
-FileSystemCommon::Status FileSystemCommon::removeDirectory(const char* path) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::removeDirectory(const char* path) {
     return FileSystemCommon::getSingleton()._removeDirectory(path);
 }
 
-FileSystemCommon::Status FileSystemCommon::removeFile(const char* path) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::removeFile(const char* path) {
     return FileSystemCommon::getSingleton()._removeFile(path);
 }
 
-FileSystemCommon::Status FileSystemCommon::rename(const char* sourcePath, const char* destPath) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::rename(const char* sourcePath, const char* destPath) {
     return FileSystemCommon::getSingleton()._rename(sourcePath, destPath);
 }
 
-FileSystemCommon::Status FileSystemCommon::getWorkingDirectory(char* path, FwSizeType bufferSize) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::getWorkingDirectory(char* path, FwSizeType bufferSize) {
     return FileSystemCommon::getSingleton()._getWorkingDirectory(path, bufferSize);
 }
 
-FileSystemCommon::Status FileSystemCommon::changeWorkingDirectory(const char* path) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::changeWorkingDirectory(const char* path) {
     return FileSystemCommon::getSingleton()._changeWorkingDirectory(path);
 }
 
-FileSystemCommon::Status FileSystemCommon::getFreeSpace(const char* path,
-                                                        FwSizeType& totalBytes,
-                                                        FwSizeType& freeBytes) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::getFreeSpace(const char* path,
+                                                                       FwSizeType& totalBytes,
+                                                                       FwSizeType& freeBytes) {
     return FileSystemCommon::getSingleton()._getFreeSpace(path, totalBytes, freeBytes);
 }
 
@@ -113,7 +118,8 @@ FileSystemCommon::Status FileSystemCommon::getFreeSpace(const char* path,
 // Additional functions built on top of OS-specific operations
 // ------------------------------------------------------------
 
-FileSystemCommon::Status FileSystemCommon::createDirectory(const char* path, bool errorIfAlreadyExists) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::createDirectory(const char* path, bool errorIfAlreadyExists) {
     FW_ASSERT(path != nullptr);
     Status status = Status::OP_OK;
     Os::Directory dir;
@@ -128,7 +134,8 @@ FileSystemCommon::Status FileSystemCommon::createDirectory(const char* path, boo
     return status;
 }
 
-FileSystemCommon::Status FileSystemCommon::touch(const char* path) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::touch(const char* path) {
     FW_ASSERT(path != nullptr);
     Status status = Status::OP_OK;
     Os::File file;
@@ -140,7 +147,8 @@ FileSystemCommon::Status FileSystemCommon::touch(const char* path) {
     return status;
 }
 
-FileSystemCommon::PathType FileSystemCommon::getPathType(const char* path) {
+template <typename T>
+typename FileSystemCommon<T>::PathType FileSystemCommon<T>::getPathType(const char* path) {
     FW_ASSERT(path != nullptr);
     PathType pathType;
     Status status = getSingleton()._getPathType(path, pathType);
@@ -150,11 +158,13 @@ FileSystemCommon::PathType FileSystemCommon::getPathType(const char* path) {
     return pathType;
 }  // end getPathType
 
-bool FileSystemCommon::exists(const char* path) {
+template <typename T>
+bool FileSystemCommon<T>::exists(const char* path) {
     return FileSystemCommon::getPathType(path) != PathType::NOT_EXIST;
 }  // end exists
 
-FileSystemCommon::Status FileSystemCommon::copyFile(const char* sourcePath, const char* destPath) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::copyFile(const char* sourcePath, const char* destPath) {
     FW_ASSERT(sourcePath != nullptr);
     FW_ASSERT(destPath != nullptr);
     Os::File source;
@@ -179,9 +189,10 @@ FileSystemCommon::Status FileSystemCommon::copyFile(const char* sourcePath, cons
     return fs_status;
 }  // end copyFile
 
-FileSystemCommon::Status FileSystemCommon::appendFile(const char* sourcePath,
-                                                      const char* destPath,
-                                                      bool createMissingDest) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::appendFile(const char* sourcePath,
+                                                                     const char* destPath,
+                                                                     bool createMissingDest) {
     Os::File source;
     Os::File destination;
 
@@ -213,7 +224,8 @@ FileSystemCommon::Status FileSystemCommon::appendFile(const char* sourcePath,
     return fs_status;
 }  // end appendFile
 
-FileSystemCommon::Status FileSystemCommon::moveFile(const char* source, const char* destination) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::moveFile(const char* source, const char* destination) {
     Status status = Status::OP_OK;
 
     // Try to rename the file
@@ -231,7 +243,8 @@ FileSystemCommon::Status FileSystemCommon::moveFile(const char* source, const ch
     return status;
 }
 
-FileSystemCommon::Status FileSystemCommon::getFileSize(const char* path, FwSizeType& size) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::getFileSize(const char* path, FwSizeType& size) {
     Os::File file;
     Os::File::Status status = file.open(path, Os::File::OPEN_READ);
     if (status != File::Status::OP_OK) {
@@ -248,7 +261,8 @@ FileSystemCommon::Status FileSystemCommon::getFileSize(const char* path, FwSizeT
 // Internal helper functions
 // ------------------------------------------------------------
 
-FileSystemCommon::Status FileSystemCommon::handleFileError(File::Status fileStatus) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::handleFileError(File::Status fileStatus) {
     FileSystemCommon::Status status = FileSystemCommon::OTHER_ERROR;
 
     switch (fileStatus) {
@@ -267,7 +281,8 @@ FileSystemCommon::Status FileSystemCommon::handleFileError(File::Status fileStat
     return status;
 }  // end handleFileError
 
-FileSystemCommon::Status FileSystemCommon::handleDirectoryError(Directory::Status dirStatus) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::handleDirectoryError(Directory::Status dirStatus) {
     FileSystemCommon::Status status = FileSystemCommon::OTHER_ERROR;
 
     switch (dirStatus) {
@@ -289,7 +304,10 @@ FileSystemCommon::Status FileSystemCommon::handleDirectoryError(Directory::Statu
     return status;
 }  // end handleFileError
 
-FileSystemCommon::Status FileSystemCommon::copyFileData(File& source, File& destination, FwSizeType size) {
+template <typename T>
+typename FileSystemCommon<T>::Status FileSystemCommon<T>::copyFileData(File& source,
+                                                                       File& destination,
+                                                                       FwSizeType size) {
     static_assert(FILE_SYSTEM_FILE_CHUNK_SIZE != 0, "FILE_SYSTEM_FILE_CHUNK_SIZE must be >0");
     U8 fileBuffer[FILE_SYSTEM_FILE_CHUNK_SIZE];
     File::Status file_status;
@@ -336,5 +354,8 @@ FileSystemCommon::Status FileSystemCommon::copyFileData(File& source, File& dest
 
     return FileSystemCommon::OP_OK;
 }  // end copyFileData
+
+// Instantiate the common class for the implementation selected in config/OsSelection.hpp
+template class FileSystemCommon<Delegate::Selected<FileSystem>::type>;
 
 }  // namespace Os

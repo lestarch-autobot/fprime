@@ -58,7 +58,7 @@ class DarwinCpu : public CpuInterface {
     //! \param cpu_index: index for CPU to read. Default: 0
     //! \return:  ERROR when error occurs, OK otherwise.
     //!
-    Status _getTicks(Os::Cpu::Ticks& ticks, FwSizeType cpu_index) override;
+    Status _getTicks(Os::CpuInterface::Ticks& ticks, FwSizeType cpu_index) override;
 
     //! \brief returns the raw console handle
     //!

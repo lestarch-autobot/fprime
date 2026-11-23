@@ -4,70 +4,67 @@
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
 #include <Fw/Types/StringUtils.hpp>
+#include <Os/Delegate.hpp>
 #include <Os/File.hpp>
 #include <algorithm>
 #include <config/FppConstantsAc.hpp>
 
 namespace Os {
 
-FileCommon::FileCommon()
-    : m_crc_buffer(), m_handle_storage(), m_delegate(*FileInterface::getDelegate(m_handle_storage)) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
-}
+template <typename T>
+FileCommon<T>::FileCommon() : m_crc_buffer(), m_delegate() {}
 
-FileCommon::~FileCommon() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+FileCommon<T>::~FileCommon() {
     if (this->m_mode != OPEN_NO_MODE) {
         this->close();
     }
-    m_delegate.~FileInterface();
 }
 
-FileCommon::FileCommon(const FileCommon& other)
-    : m_mode(other.m_mode),
-      m_hash(other.m_hash),
-      m_crc_buffer(),
-      m_handle_storage(),
-      m_delegate(*FileInterface::getDelegate(m_handle_storage, &other.m_delegate)) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
-}
+template <typename T>
+FileCommon<T>::FileCommon(const FileCommon& other)
+    : m_mode(other.m_mode), m_hash(other.m_hash), m_crc_buffer(), m_delegate(other.m_delegate) {}
 
-FileCommon& FileCommon::operator=(const FileCommon& other) {
+template <typename T>
+FileCommon<T>& FileCommon<T>::operator=(const FileCommon& other) {
     if (this != &other) {
-        // The delegate below is constructed over the storage of the existing one. Any file this
-        // object currently holds must be closed first or its handle is orphaned permanently.
+        // The delegate below is assigned over the existing one. Any file this object currently
+        // holds must be closed first or its handle is orphaned permanently.
         if (this->m_mode != OPEN_NO_MODE) {
             this->close();
         }
-        this->m_delegate.~FileInterface();
         this->m_mode = other.m_mode;
         this->m_hash = other.m_hash;
-        (void)FileInterface::getDelegate(m_handle_storage, &other.m_delegate);
-        FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+        this->m_delegate = other.m_delegate;
     }
     return *this;
 }
 
-FileCommon::Status FileCommon::open(const CHAR* filepath, FileCommon::Mode requested_mode) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::open(const CHAR* filepath, FileCommon<T>::Mode requested_mode) {
     return this->open(filepath, requested_mode, OverwriteType::NO_OVERWRITE);
 }
 
-FileCommon::Status FileCommon::open(const CHAR* filepath,
-                                    FileCommon::Mode requested_mode,
-                                    FileCommon::OverwriteType overwrite) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::open(const CHAR* filepath,
+                                                   FileCommon::Mode requested_mode,
+                                                   FileCommon::OverwriteType overwrite) {
     FW_ASSERT(nullptr != filepath);
     return this->open(filepath, static_cast<FwSizeType>(FileNameStringSize + 1), requested_mode, overwrite);
 }
 
-FileCommon::Status FileCommon::open(const CHAR* filepath, FwSizeType length, FileCommon::Mode requested_mode) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::open(const CHAR* filepath,
+                                                   FwSizeType length,
+                                                   FileCommon<T>::Mode requested_mode) {
     return this->open(filepath, length, requested_mode, OverwriteType::NO_OVERWRITE);
 }
 
-FileCommon::Status FileCommon::open(const CHAR* filepath,
-                                    FwSizeType length,
-                                    FileCommon::Mode requested_mode,
-                                    FileCommon::OverwriteType overwrite) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::open(const CHAR* filepath,
+                                                   FwSizeType length,
+                                                   FileCommon::Mode requested_mode,
+                                                   FileCommon::OverwriteType overwrite) {
     FW_ASSERT(nullptr != filepath);
     const FwSizeType string_len = static_cast<FwSizeType>(Fw::StringUtils::string_length(filepath, length));
     FW_ASSERT(string_len < length, static_cast<FwAssertArgType>(string_len), static_cast<FwAssertArgType>(length));
@@ -88,33 +85,36 @@ FileCommon::Status FileCommon::open(const CHAR* filepath,
     return status;
 }
 
-FileCommon::Status FileCommon::open(const Fw::ConstStringBase& path, FileCommon::Mode requested_mode) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::open(const Fw::ConstStringBase& path,
+                                                   FileCommon<T>::Mode requested_mode) {
     return this->open(path.toChar(), static_cast<FwSizeType>(path.getCapacity()), requested_mode,
                       OverwriteType::NO_OVERWRITE);
 }
 
-FileCommon::Status FileCommon::open(const Fw::ConstStringBase& path,
-                                    FileCommon::Mode requested_mode,
-                                    FileCommon::OverwriteType overwrite) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::open(const Fw::ConstStringBase& path,
+                                                   FileCommon::Mode requested_mode,
+                                                   FileCommon::OverwriteType overwrite) {
     return this->open(path.toChar(), static_cast<FwSizeType>(path.getCapacity()), requested_mode, overwrite);
 }
 
-void FileCommon::close() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+void FileCommon<T>::close() {
     FW_ASSERT(this->m_mode < Mode::MAX_OPEN_MODE);
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     this->m_delegate.close();
     this->m_mode = Mode::OPEN_NO_MODE;
 }
 
-bool FileCommon::isOpen() const {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<const FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+bool FileCommon<T>::isOpen() const {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     return this->m_mode != Mode::OPEN_NO_MODE;
 }
 
-FileCommon::Status FileCommon::size(FwSizeType& size_result) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::size(FwSizeType& size_result) {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     if (OPEN_NO_MODE == this->m_mode) {
         return FileCommon::Status::NOT_OPENED;
@@ -122,8 +122,8 @@ FileCommon::Status FileCommon::size(FwSizeType& size_result) {
     return this->m_delegate.size(size_result);
 }
 
-FileCommon::Status FileCommon::position(FwSizeType& position_result) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::position(FwSizeType& position_result) {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
     if (OPEN_NO_MODE == this->m_mode) {
@@ -132,8 +132,8 @@ FileCommon::Status FileCommon::position(FwSizeType& position_result) {
     return this->m_delegate.position(position_result);
 }
 
-FileCommon::Status FileCommon::preallocate(FwSizeType offset, FwSizeType length) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::preallocate(FwSizeType offset, FwSizeType length) {
     FW_ASSERT((0 <= this->m_mode) && (this->m_mode < Mode::MAX_OPEN_MODE));
     // Check that the file is open before attempting operation
     if (OPEN_NO_MODE == this->m_mode) {
@@ -144,8 +144,8 @@ FileCommon::Status FileCommon::preallocate(FwSizeType offset, FwSizeType length)
     return this->m_delegate.preallocate(offset, length);
 }
 
-FileCommon::Status FileCommon::seek(FwSignedSizeType offset, FileCommon::SeekType seekType) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::seek(FwSignedSizeType offset, FileCommon<T>::SeekType seekType) {
     FW_ASSERT((0 <= seekType) && (seekType < SeekType::MAX_SEEK_TYPE));
     // Cannot do a seek with a negative offset in absolute mode
     FW_ASSERT((seekType == FileCommon::SeekType::RELATIVE) || (offset >= 0));
@@ -157,8 +157,9 @@ FileCommon::Status FileCommon::seek(FwSignedSizeType offset, FileCommon::SeekTyp
     return this->m_delegate.seek(offset, seekType);
 }
 
-FileCommon::Status FileCommon::seek_absolute(FwSizeType offset) {
-    Os::FileCommon::Status status = FileCommon::Status::OTHER_ERROR;
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::seek_absolute(FwSizeType offset) {
+    FileCommon::Status status = FileCommon::Status::OTHER_ERROR;
     // If the offset can be represented by a signed value, then we can perform a single seek
     if (static_cast<FwSizeType>(std::numeric_limits<FwSignedSizeType>::max()) >= offset) {
         // Check that the bounding above is correct
@@ -184,8 +185,8 @@ FileCommon::Status FileCommon::seek_absolute(FwSizeType offset) {
     return status;
 }
 
-FileCommon::Status FileCommon::flush() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::flush() {
     FW_ASSERT(this->m_mode < Mode::MAX_OPEN_MODE);
     // Check that the file is open before attempting operation
     if (OPEN_NO_MODE == this->m_mode) {
@@ -196,12 +197,13 @@ FileCommon::Status FileCommon::flush() {
     return this->m_delegate.flush();
 }
 
-FileCommon::Status FileCommon::read(U8* buffer, FwSizeType& size) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::read(U8* buffer, FwSizeType& size) {
     return this->read(buffer, size, WaitType::WAIT);
 }
 
-FileCommon::Status FileCommon::read(U8* buffer, FwSizeType& size, FileCommon::WaitType wait) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::read(U8* buffer, FwSizeType& size, FileCommon<T>::WaitType wait) {
     FW_ASSERT(buffer != nullptr);
     FW_ASSERT(this->m_mode < Mode::MAX_OPEN_MODE);
     // Check that the file is open before attempting operation
@@ -215,12 +217,13 @@ FileCommon::Status FileCommon::read(U8* buffer, FwSizeType& size, FileCommon::Wa
     return this->m_delegate.read(buffer, size, wait);
 }
 
-FileCommon::Status FileCommon::write(const U8* buffer, FwSizeType& size) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::write(const U8* buffer, FwSizeType& size) {
     return this->write(buffer, size, WaitType::WAIT);
 }
 
-FileCommon::Status FileCommon::write(const U8* buffer, FwSizeType& size, FileCommon::WaitType wait) {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::write(const U8* buffer, FwSizeType& size, FileCommon<T>::WaitType wait) {
     FW_ASSERT(buffer != nullptr);
     FW_ASSERT(this->m_mode < Mode::MAX_OPEN_MODE);
     // Check that the file is open before attempting operation
@@ -234,12 +237,13 @@ FileCommon::Status FileCommon::write(const U8* buffer, FwSizeType& size, FileCom
     return this->m_delegate.write(buffer, size, wait);
 }
 
-FileHandle* FileCommon::getHandle() {
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
+template <typename T>
+FileHandle* FileCommon<T>::getHandle() {
     return this->m_delegate.getHandle();
 }
 
-FileCommon::Status FileCommon::calculateCrc(U32& crc) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::calculateCrc(U32& crc) {
     FileCommon::Status status = FileCommon::Status::OP_OK;
     FwSizeType size = FW_FILE_CHUNK_SIZE;
     crc = 0;
@@ -257,7 +261,8 @@ FileCommon::Status FileCommon::calculateCrc(U32& crc) {
     return status;
 }
 
-FileCommon::Status FileCommon::incrementalCrc(FwSizeType& size) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::incrementalCrc(FwSizeType& size) {
     FileCommon::Status status = FileCommon::Status::OP_OK;
     FW_ASSERT(size <= FW_FILE_CHUNK_SIZE, FwAssertArgType(size));
     if (OPEN_NO_MODE == this->m_mode) {
@@ -275,7 +280,8 @@ FileCommon::Status FileCommon::incrementalCrc(FwSizeType& size) {
     return status;
 }
 
-FileCommon::Status FileCommon::finalizeCrc(U32& crc) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::finalizeCrc(U32& crc) {
     FileCommon::Status status = FileCommon::Status::OP_OK;
     this->m_hash.finalize(crc);
     // Historically, the CRC calculation in File omitted the final 1's complement step. Utils::Hash performs that step
@@ -285,9 +291,9 @@ FileCommon::Status FileCommon::finalizeCrc(U32& crc) {
     return status;
 }
 
-FileCommon::Status FileCommon::readline(U8* buffer, FwSizeType& size, FileCommon::WaitType wait) {
+template <typename T>
+typename FileCommon<T>::Status FileCommon<T>::readline(U8* buffer, FwSizeType& size, FileCommon<T>::WaitType wait) {
     const FwSizeType requested_size = size;
-    FW_ASSERT(&this->m_delegate == reinterpret_cast<FileInterface*>(&this->m_handle_storage[0]));
     FW_ASSERT(buffer != nullptr);
     FW_ASSERT(this->m_mode < Mode::MAX_OPEN_MODE);
     // Check that the file is open before attempting operation
@@ -300,7 +306,7 @@ FileCommon::Status FileCommon::readline(U8* buffer, FwSizeType& size, FileCommon
     }
     FwSizeType original_location = 0;
     FileCommon::Status status = this->position(original_location);
-    if (status != Os::FileCommon::Status::OP_OK) {
+    if (status != FileCommon::Status::OP_OK) {
         size = 0;
         (void)this->seek_absolute(original_location);
         return status;
@@ -321,7 +327,7 @@ FileCommon::Status FileCommon::readline(U8* buffer, FwSizeType& size, FileCommon
         // EOF break out now
         if (read == 0) {
             size = i;
-            return Os::FileCommon::Status::OP_OK;
+            return FileCommon::Status::OP_OK;
         }
         // Loop from i to i + current_chunk_size looking for `\n`
         const FwSizeType chunk_end = i + read;
@@ -333,7 +339,7 @@ FileCommon::Status FileCommon::readline(U8* buffer, FwSizeType& size, FileCommon
                 FW_ASSERT(size <= requested_size);
                 FW_ASSERT(std::numeric_limits<FwSizeType>::max() - size >= original_location);
                 (void)this->seek_absolute(original_location + j + 1);
-                return Os::FileCommon::Status::OP_OK;
+                return FileCommon::Status::OP_OK;
             }
         }
     }
@@ -341,6 +347,9 @@ FileCommon::Status FileCommon::readline(U8* buffer, FwSizeType& size, FileCommon
     // Contract: on error, seek back to the original location
     size = 0;
     (void)this->seek_absolute(original_location);
-    return Os::FileCommon::Status::OTHER_ERROR;
+    return FileCommon::Status::OTHER_ERROR;
 }
+// Instantiate the common class for the implementation selected in config/OsSelection.hpp
+template class FileCommon<Delegate::Selected<File>::type>;
+
 }  // namespace Os

@@ -10,6 +10,7 @@
 #include <Os/Directory.hpp>
 #include <Os/File.hpp>
 #include <Os/Os.hpp>
+#include "config/OsSelection.hpp"  // defines the Os::FileSystem alias and OS_FILE_SYSTEM_HEADER; do not remove
 
 namespace Os {
 
@@ -62,9 +63,6 @@ class FileSystemInterface {
     //! \brief return the underlying FileSystem handle (implementation specific)
     //! \return internal FileSystem handle representation
     virtual FileSystemHandle* getHandle() = 0;
-
-    //! \brief provide a pointer to a FileSystem delegate object
-    static FileSystemInterface* getDelegate(FileSystemHandleStorage& aligned_new_memory);
 
     // ------------------------------------------------------------------
     // FileSystem operations to be implemented by an OSAL implementation
@@ -124,6 +122,7 @@ using FileSystemUserInterface = FileSystemInterface;
 //! This class provides a common interface for file system operations.
 //! This class uses the singleton pattern and should be accessed through
 //! its static functions, for example using `Os::FileSystem::removeFile(path)`.
+template <typename T>
 class FileSystemCommon final : public FileSystemUserInterface {
   private:
     FileSystemCommon();  //!<  Constructor (private because singleton pattern)
@@ -393,13 +392,16 @@ class FileSystemCommon final : public FileSystemUserInterface {
     // type is opaque and thus normal allocation cannot be done. Instead, we allow the implementor to store then handle
     // in the byte-array here and set `handle` to that address for storage.
 
-    alignas(FW_HANDLE_ALIGNMENT) FileSystemHandleStorage m_handle_storage;  //!< FileSystem handle storage
-    FileSystemInterface& m_delegate;
+    T m_delegate;
 };
 
-//! \brief Os::FileSystem is an alias of the common wrapper class Os::FileSystemCommon
-using FileSystem = FileSystemCommon;
-
 }  // namespace Os
+
+// Validate that OS_FILE_SYSTEM_HEADER was defined by config/OsSelection.hpp
+#ifndef OS_FILE_SYSTEM_HEADER
+#error "OS_FILE_SYSTEM_HEADER must be defined in config/OsSelection.hpp"
+#endif
+
+#include OS_FILE_SYSTEM_HEADER
 
 #endif
