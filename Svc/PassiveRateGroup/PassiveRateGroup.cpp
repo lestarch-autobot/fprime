@@ -23,7 +23,7 @@ PassiveRateGroup::PassiveRateGroup(const char* compName)
     : PassiveRateGroupComponentBase(compName),
       m_cycles(0),
       m_maxTime(0),
-      m_cycleRunning(false),
+      m_cycleRunning(0),
       m_cycleSlips(0),
       m_portCycleTimeHWMUsec{},  // Zero-initialize atomic array
       m_rawTimeSource(Os::RAWTIME_DEFAULT),
@@ -80,7 +80,7 @@ void PassiveRateGroup::CycleIn_handler(FwIndexType portNum, Os::RawTime& cycleSt
     FW_ASSERT(this->m_numContexts != 0);
 
     // A cycle that starts while another is still executing is a cycle slip
-    const bool slipped = this->m_cycleRunning.exchange(true, std::memory_order_relaxed);
+    const bool slipped = this->m_cycleRunning.exchange(1, std::memory_order_relaxed) != 0;
     if (slipped) {
         (void)this->m_cycleSlips.fetch_add(1, std::memory_order_relaxed);
     }
@@ -155,7 +155,7 @@ void PassiveRateGroup::CycleIn_handler(FwIndexType portNum, Os::RawTime& cycleSt
 
     // Only the cycle that set the flag clears it
     if (not slipped) {
-        this->m_cycleRunning.store(false, std::memory_order_relaxed);
+        this->m_cycleRunning.store(0, std::memory_order_relaxed);
     }
 }
 
