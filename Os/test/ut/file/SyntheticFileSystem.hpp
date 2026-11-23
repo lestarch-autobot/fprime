@@ -3,11 +3,11 @@
 // \brief standard template library driven synthetic file system definitions
 // ======================================================================
 #include <Fw/FPrimeBasicTypes.hpp>
+#include <Os/Interfaces/FileInterface.hpp>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include "Os/File.hpp"
 
 #ifndef OS_TEST_UT_FILE_SYNTHETIC_FILE_SYSTEM
 #define OS_TEST_UT_FILE_SYNTHETIC_FILE_SYSTEM

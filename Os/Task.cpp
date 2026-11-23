@@ -8,13 +8,13 @@
 
 namespace Os {
 
-TaskInterface::Arguments::Arguments(const Fw::ConstStringBase& name,
-                                    const Os::TaskInterface::taskRoutine routine,
-                                    void* const routine_argument,
-                                    const FwTaskPriorityType priority,
-                                    const FwSizeType stackSize,
-                                    const FwSizeType cpuAffinity,
-                                    const FwTaskIdType identifier)
+TaskUserInterface::Arguments::Arguments(const Fw::ConstStringBase& name,
+                                        const Os::TaskUserInterface::taskRoutine routine,
+                                        void* const routine_argument,
+                                        const FwTaskPriorityType priority,
+                                        const FwSizeType stackSize,
+                                        const FwSizeType cpuAffinity,
+                                        const FwTaskIdType identifier)
     : m_name(name),
       m_routine(routine),
       m_routine_argument(routine_argument),
@@ -61,10 +61,6 @@ template <typename T>
 FwSizeType TaskCommon<T>::s_numTasks = 0;
 template <typename T>
 Mutex TaskCommon<T>::s_taskMutex;
-
-bool TaskInterface::isCooperative() {
-    return false;
-}
 
 template <typename T>
 TaskCommon<T>::TaskCommon() : m_wrapper(*this), m_delegate() {}
@@ -212,12 +208,12 @@ FwSizeType TaskCommon<T>::getNumTasks() {
 }
 
 template <typename T>
-Os::TaskInterface::Status TaskCommon<T>::_delay(const Fw::TimeInterval& interval) {
+Os::TaskUserInterface::Status TaskCommon<T>::_delay(const Fw::TimeInterval& interval) {
     return this->m_delegate._delay(interval);
 }
 
 template <typename T>
-Os::TaskInterface::Status TaskCommon<T>::delay(const Fw::TimeInterval& interval) {
+Os::TaskUserInterface::Status TaskCommon<T>::delay(const Fw::TimeInterval& interval) {
     return TaskCommon::getSingleton()._delay(interval);
 }
 

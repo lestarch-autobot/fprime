@@ -5,7 +5,7 @@
 #ifndef OS_POSIX_DIRECTORY_HPP
 #define OS_POSIX_DIRECTORY_HPP
 #include <dirent.h>
-#include <Os/Directory.hpp>
+#include <Os/Interfaces/DirectoryInterface.hpp>
 
 namespace Os {
 namespace Posix {

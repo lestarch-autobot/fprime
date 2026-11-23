@@ -13,49 +13,11 @@ namespace Os {
 //! \brief Cpu variable handle parent
 class CpuHandle {};
 
-//! \brief interface for cpu implementation
-class CpuInterface {
-  public:
+//! \brief types and constants shared by users of Os::Cpu and by its implementations
+struct CpuUserInterface {
     using Status = Os::Generic::Status;
     using Ticks = Os::Generic::UsedTotal;
-
-    //! Default constructor
-    CpuInterface() = default;
-    //! Default destructor
-    virtual ~CpuInterface() = default;
-
-    //! \brief copy constructor is forbidden
-    CpuInterface(const CpuInterface& other) = delete;
-
-    //! \brief assignment operator is forbidden
-    virtual CpuInterface& operator=(const CpuInterface& other) = delete;  //  NO_CODESONAR (cpp:S3657)
-
-    //! \brief Request the count of the CPUs detected by the system
-    //!
-    //! \param cpu_count: (output) filled with CPU count on system
-    //! \return: OP_OK with valid CPU count, ERROR when error occurs
-    //!
-    virtual Status _getCount(FwSizeType& cpu_count) = 0;
-
-    //! \brief Get the CPU tick information for a given CPU
-    //!
-    //! CPU ticks represent a small time slice of processor time. This will retrieve the used CPU ticks and total
-    //! ticks for a given CPU. This information in a running accumulation and thus a sample-to-sample
-    //! differencing is needed to see the 'realtime' changing load. This shall be done by the caller.
-    //!
-    //! \param ticks: (output) filled with the tick information for the given CPU
-    //! \param cpu_index: index for CPU to read. Default: 0
-    //! \return:  ERROR when error occurs, OK otherwise.
-    //!
-    virtual Status _getTicks(Ticks& ticks, FwSizeType cpu_index) = 0;
-
-    //! \brief return the underlying cpu handle (implementation specific).
-    //! \return internal task handle representation
-    virtual CpuHandle* getHandle() = 0;
 };
-
-//! \brief interface presented to users of Os::Cpu, an alias of Os::CpuInterface
-using CpuUserInterface = CpuInterface;
 
 //! \brief cpu implementation
 template <typename T>
@@ -65,16 +27,16 @@ class CpuCommon final : public CpuUserInterface {
     CpuCommon();
 
     //! \brief default virtual destructor
-    ~CpuCommon() final;
+    ~CpuCommon();
 
     //! \brief copy constructor is forbidden
-    CpuCommon(const CpuInterface& other) = delete;
+    CpuCommon(const CpuCommon& other) = delete;
 
     //! \brief copy constructor is forbidden
-    CpuCommon(const CpuInterface* other) = delete;
+    CpuCommon(const CpuCommon* other) = delete;
 
     //! \brief assignment operator is forbidden
-    CpuInterface& operator=(const CpuInterface& other) override = delete;
+    CpuCommon& operator=(const CpuCommon& other) = delete;
 
     //-----------------------------------------------------------------------------
     // Interface methods
@@ -97,7 +59,7 @@ class CpuCommon final : public CpuUserInterface {
     //! \param cpu_count: (output) filled with CPU count on system
     //! \return: OP_OK with valid CPU count, ERROR when error occurs
     //!
-    Status _getCount(FwSizeType& cpu_count) override;
+    Status _getCount(FwSizeType& cpu_count);
 
     //! \brief Get the CPU tick information for a given CPU
     //!
@@ -110,11 +72,11 @@ class CpuCommon final : public CpuUserInterface {
     //! \param cpu_index: index for CPU to read. Default: 0
     //! \return:  ERROR when error occurs, OK otherwise.
     //!
-    Status _getTicks(Ticks& ticks, FwSizeType cpu_index) override;
+    Status _getTicks(Ticks& ticks, FwSizeType cpu_index);
 
     //! \brief return the underlying cpu handle (implementation specific).
     //! \return internal task handle representation
-    CpuHandle* getHandle() override;
+    CpuHandle* getHandle();
 
     //-----------------------------------------------------------------------------
     // Static interface (singleton) methods

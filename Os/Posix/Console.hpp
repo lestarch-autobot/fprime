@@ -2,7 +2,7 @@
 // \title Os/Posix/Console.hpp
 // \brief posix implementation for Os::Console, header and test definitions
 // ======================================================================
-#include <Os/Console.hpp>
+#include <Os/Interfaces/ConsoleInterface.hpp>
 #include <cstdio>
 #ifndef OS_POSIX_Console_HPP
 #define OS_POSIX_Console_HPP

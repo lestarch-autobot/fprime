@@ -2,7 +2,7 @@
 // \title Os/Stub/File.hpp
 // \brief stub file definitions for Os::File
 // ======================================================================
-#include "Os/File.hpp"
+#include <Os/Interfaces/FileInterface.hpp>
 
 #ifndef OS_STUB_FILE_HPP
 #define OS_STUB_FILE_HPP

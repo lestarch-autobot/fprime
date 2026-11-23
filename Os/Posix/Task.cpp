@@ -260,6 +260,10 @@ TaskHandle* PosixTask::getHandle() {
     return &this->m_handle;
 }
 
+bool PosixTask::isCooperative() {
+    return false;
+}
+
 // Note: not implemented for Posix threads. Must be manually done using a mutex or other blocking construct as there
 // is no top-level pthreads support for suspend and resume.
 void PosixTask::suspend(Os::Task::SuspensionType suspensionType) {

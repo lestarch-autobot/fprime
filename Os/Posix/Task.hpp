@@ -6,7 +6,7 @@
 #define Os_Posix_Task_hpp_
 
 #include <pthread.h>
-#include <Os/Task.hpp>
+#include <Os/Interfaces/TaskInterface.hpp>
 #include <atomic>
 
 #include <Fw/Deprecate.hpp>
@@ -112,6 +112,10 @@ class PosixTask : public TaskInterface {
     //! \brief return the underlying task handle (implementation specific)
     //! \return internal task handle representation
     TaskHandle* getHandle() override;
+
+    //! \brief determine if the task requires cooperative multitasking
+    //! \return false: posix tasks are scheduled by the operating system
+    bool isCooperative() override;
 
   private:
     //! \brief create a configured pthread

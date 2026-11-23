@@ -1,5 +1,5 @@
 #include <string.h>
-#include "Os/File.hpp"
+#include <Os/Interfaces/FileInterface.hpp>
 
 #ifndef OS_STUB_FILE_TEST_HPP
 #define OS_STUB_FILE_TEST_HPP

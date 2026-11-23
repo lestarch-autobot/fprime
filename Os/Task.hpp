@@ -33,8 +33,8 @@ class TaskRegistry;
 //! Task handle representation
 class TaskHandle {};
 
-class TaskInterface {
-  public:
+//! \brief types and constants shared by users of Os::Task and by its implementations
+struct TaskUserInterface {
     //! Sentinel value to use a default value for the task argument to which this is supplied.
     //!
     //! Implementations of TaskInterface::start() should make a special case to use some default value that is
@@ -101,89 +101,7 @@ class TaskInterface {
         FwSizeType m_cpuAffinity;
         FwTaskIdType m_identifier;
     };
-
-    //! \brief default constructor
-    TaskInterface() = default;
-
-    //! \brief default virtual destructor
-    virtual ~TaskInterface() = default;
-
-    //! \brief copy constructor is forbidden
-    TaskInterface(const TaskInterface& other) = delete;
-
-    //! \brief assignment operator is forbidden
-    TaskInterface& operator=(const TaskInterface& other) = delete;
-
-    // =================
-    // Implementation functions (static) to be supplied by the linker
-    // =================
-
-    // =================
-    // Implementation functions (instance) to be supplied by the Os::TaskInterface children
-    // =================
-
-    //! \brief perform required task start actions
-    virtual void onStart() = 0;
-
-    //! \brief block until the task has ended
-    //!
-    //! Blocks the current (calling) task until this task execution has ended. Callers should ensure that any
-    //! signals required to stop this task have already been emitted or will be emitted by another task.
-    //!
-    //! \return status of the block
-    virtual Status join() = 0;
-
-    //! \brief suspend the task given the suspension type
-    //!
-    //! Suspends the task. Some implementations track if the suspension of a task was intentional or
-    //! unintentional. The supplied `suspensionType` parameter indicates that this was intentional or
-    //! unintentional. The type of suspension is also returned when calling `isSuspended`.
-    //!
-    //! \param suspensionType intentionality of the suspension
-    virtual void suspend(SuspensionType suspensionType) = 0;
-
-    //! \brief resume a suspended task
-    //!
-    //! Resumes this task. Not started, running, and exited tasks take no action.
-    //!
-    virtual void resume() = 0;
-
-    //! \brief delay the currently scheduled task using the given architecture
-    //!
-    //! Delays, or sleeps, the current task by the supplied time interval. In non-preempting os implementations
-    //! the task will resume no earlier than expected but an exact wake-up time is not guaranteed.
-    //!
-    //! \param interval: delay time
-    //! \return status of the delay
-    virtual Status _delay(const Fw::TimeInterval& interval) = 0;
-
-    //! \brief determine if the task requires cooperative multitasking
-    //!
-    //! Some task implementations require cooperative multitasking where the task execution is run by a user
-    //! defined task scheduler and not the operating system task scheduler. These tasks cooperatively on
-    //! multitask by doing one unit of work and return from the function.
-    //!
-    //! This function indicates if the task requires cooperative support.
-    //! The default implementation returns false.
-    //!
-    //! \return true when the task expects cooperation, false otherwise
-    virtual bool isCooperative();
-
-    //! \brief return the underlying task handle (implementation specific)
-    //! \return internal task handle representation
-    virtual TaskHandle* getHandle() = 0;
-
-    //! \brief start the task
-    //!
-    //! Starts the task given the supplied arguments.
-    //!
-    //! \param arguments: arguments supplied to the task start call
-    //! \return status of the task start
-    virtual Status start(const Arguments& arguments) = 0;
 };
-
-//! \brief interface presented to users of Os::Task, an alias of Os::TaskInterface
-using TaskUserInterface = TaskInterface;
 
 //! Task class intended to be used by the rest of the fprime system. This is final as it is not intended to be a
 //! parent class. Instead it wraps a delegate of the template type `T` to provide system specific
@@ -220,7 +138,7 @@ class TaskCommon final : public TaskUserInterface {
     TaskCommon();
 
     //! \brief default virtual destructor
-    ~TaskCommon() final;
+    ~TaskCommon();
 
     //! \brief copy constructor is forbidden
     TaskCommon(const TaskCommon& other) = delete;
@@ -275,10 +193,10 @@ class TaskCommon final : public TaskUserInterface {
     //!
     //! \param arguments: arguments supplied to the task start call
     //! \return status of the task start
-    Status start(const Arguments& arguments) override;
+    Status start(const Arguments& arguments);
 
     //! \brief perform delegate's required task start actions
-    void onStart() override;
+    void onStart();
 
     //! \brief invoke the task's routine
     //~
@@ -301,7 +219,7 @@ class TaskCommon final : public TaskUserInterface {
     //! signals required to stop this task have already been emitted or will be emitted by another task.
     //!
     //! \return status of the block
-    Status join() override;  //!< Wait for task to finish
+    Status join();  //!< Wait for task to finish
 
     //! \brief suspend the task given the suspension type
     //!
@@ -310,13 +228,13 @@ class TaskCommon final : public TaskUserInterface {
     //! unintentional. The type of suspension is also returned when calling `isSuspended`.
     //!
     //! \param suspensionType intentionality of the suspension
-    void suspend(SuspensionType suspensionType) override;
+    void suspend(SuspensionType suspensionType);
 
     //! \brief resume a suspended task
     //!
     //! Resumes this task. Not started, running, and exited tasks take no action.
     //!
-    void resume() override;
+    void resume();
 
     //! \brief delay the current task
     //!
@@ -325,11 +243,11 @@ class TaskCommon final : public TaskUserInterface {
     //!
     //! \param interval: delay time
     //! \return status of the delay
-    Status _delay(const Fw::TimeInterval& interval) override;
+    Status _delay(const Fw::TimeInterval& interval);
 
     //! \brief determine if the task is cooperative multitasking (implementation specific)
     //! \return true if cooperative, false otherwise
-    bool isCooperative() override;
+    bool isCooperative();
 
     //! \brief get the task name
     TaskString getName();
@@ -339,7 +257,7 @@ class TaskCommon final : public TaskUserInterface {
 
     //! \brief return the underlying task handle (implementation specific)
     //! \return internal task handle representation
-    TaskHandle* getHandle() override;
+    TaskHandle* getHandle();
 
     //! \brief initialize singleton
     static void init();
@@ -371,7 +289,7 @@ class TaskCommon final : public TaskUserInterface {
     static Mutex s_taskMutex;             //!< Guards s_numTasks
 
     TaskString m_name;  //!< Task object name
-    TaskInterface::State m_state = TaskCommon::NOT_STARTED;
+    TaskUserInterface::State m_state = TaskCommon::NOT_STARTED;
     mutable Mutex m_lock;               //!< Guards state transitions
     TaskRoutineWrapper m_wrapper;       //!< Concrete storage for task routine wrapper
     FwTaskPriorityType m_priority = 0;  // Storage of priority

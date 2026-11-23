@@ -2,10 +2,10 @@
 // \title Os/Generic/PriorityQueue.hpp
 // \brief priority queue implementation definitions for Os::Queue
 // ======================================================================
+#include <Os/Interfaces/QueueInterface.hpp>
 #include "Os/Condition.hpp"
 #include "Os/Generic/Types/MaxHeap.hpp"
 #include "Os/Mutex.hpp"
-#include "Os/Queue.hpp"
 #ifndef OS_GENERIC_PRIORITYQUEUE_HPP
 #define OS_GENERIC_PRIORITYQUEUE_HPP
 

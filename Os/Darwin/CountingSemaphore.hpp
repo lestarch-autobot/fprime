@@ -5,7 +5,7 @@
 #ifndef OS_DARWIN_COUNTING_SEMAPHORE_HPP
 #define OS_DARWIN_COUNTING_SEMAPHORE_HPP
 #include <dispatch/dispatch.h>
-#include <Os/CountingSemaphore.hpp>
+#include <Os/Interfaces/CountingSemaphoreInterface.hpp>
 
 namespace Os {
 namespace Darwin {

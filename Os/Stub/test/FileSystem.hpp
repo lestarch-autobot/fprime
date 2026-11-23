@@ -8,7 +8,7 @@
 #ifndef OS_STUB_FILESYSTEM_TEST_HPP
 #define OS_STUB_FILESYSTEM_TEST_HPP
 
-#include "Os/FileSystem.hpp"
+#include <Os/Interfaces/FileSystemInterface.hpp>
 
 namespace Os {
 namespace Stub {

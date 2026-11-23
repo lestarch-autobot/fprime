@@ -13,36 +13,11 @@ namespace Os {
 //! \brief Memory variable handle parent
 class MemoryHandle {};
 
-//! \brief interface for memory implementation
-class MemoryInterface {
-  public:
+//! \brief types and constants shared by users of Os::Memory and by its implementations
+struct MemoryUserInterface {
     using Status = Os::Generic::Status;
     using Usage = Os::Generic::UsedTotal;
-
-    //! Default constructor
-    MemoryInterface() = default;
-    //! Default destructor
-    virtual ~MemoryInterface() = default;
-
-    //! \brief copy constructor is forbidden
-    MemoryInterface(const MemoryInterface& other) = delete;  // NO_CODESONAR (cpp:S3657)
-
-    //! \brief assignment operator is forbidden
-    virtual MemoryInterface& operator=(const MemoryInterface& other) = delete;
-
-    //! \brief get system memory usage
-    //!
-    //! \param memory_usage: (output) data structure used to store memory usage
-    //! \return: ERROR when error occurs, OK otherwise.
-    virtual Status _getUsage(Usage& memory_usage) = 0;
-
-    //! \brief return the underlying memory handle (implementation specific).
-    //! \return internal task handle representation
-    virtual MemoryHandle* getHandle() = 0;
 };
-
-//! \brief interface presented to users of Os::Memory, an alias of Os::MemoryInterface
-using MemoryUserInterface = MemoryInterface;
 
 //! \brief memory implementation
 template <typename T>
@@ -52,16 +27,16 @@ class MemoryCommon final : public MemoryUserInterface {
     MemoryCommon();
 
     //! \brief default virtual destructor
-    ~MemoryCommon() final;
+    ~MemoryCommon();
 
     //! \brief copy constructor is forbidden
-    MemoryCommon(const MemoryInterface& other) = delete;
+    MemoryCommon(const MemoryCommon& other) = delete;
 
     //! \brief copy constructor is forbidden
-    MemoryCommon(const MemoryInterface* other) = delete;
+    MemoryCommon(const MemoryCommon* other) = delete;
 
     //! \brief assignment operator is forbidden
-    MemoryInterface& operator=(const MemoryInterface& other) override = delete;
+    MemoryCommon& operator=(const MemoryCommon& other) = delete;
 
     //-----------------------------------------------------------------------------
     // Interface methods
@@ -83,11 +58,11 @@ class MemoryCommon final : public MemoryUserInterface {
     //!
     //! \param memory_usage: (output) data structure used to store memory usage
     //! \return:  ERROR when error occurs, OK otherwise.
-    Status _getUsage(Usage& memory_usage) override;
+    Status _getUsage(Usage& memory_usage);
 
     //! \brief return the underlying memory handle (implementation specific).
     //! \return internal task handle representation
-    MemoryHandle* getHandle() override;
+    MemoryHandle* getHandle();
 
     //-----------------------------------------------------------------------------
     // Static interface (singleton) methods

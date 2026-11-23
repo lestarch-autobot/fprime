@@ -2,7 +2,7 @@
 // \title Os/Linux/Memory.hpp
 // \brief Linux implementation for Os::Memory, header and test definitions
 // ======================================================================
-#include <Os/Memory.hpp>
+#include <Os/Interfaces/MemoryInterface.hpp>
 #ifndef OS_Linux_Memory_HPP
 #define OS_Linux_Memory_HPP
 
