@@ -386,8 +386,8 @@ void PrmDbImpl::writeLoadTlm(PrmDb_PrmFileLoadStatus status, U32 numRecords) {
 
 PrmDbImpl::PrmLoadStatus PrmDbImpl::readParamFileImpl(const Fw::StringBase& fileName,
                                                       PrmDbType dbType,
-                                                      U32& numRecords) {
-    numRecords = 0;
+                                                      U32& recordNumTotal) {
+    recordNumTotal = 0;
     FW_ASSERT(dbType == PrmDbType::DB_ACTIVE or dbType == PrmDbType::DB_STAGING);
     FW_ASSERT(fileName.length() > 0);
 
@@ -448,7 +448,6 @@ PrmDbImpl::PrmLoadStatus PrmDbImpl::readParamFileImpl(const Fw::StringBase& file
     }
     //===========================================================================
 
-    U32& recordNumTotal = numRecords;
     U32 recordNumAdded = 0;
     U32 recordNumUpdated = 0;
     U32 recordNumDropped = 0;
