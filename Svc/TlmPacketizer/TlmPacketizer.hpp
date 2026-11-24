@@ -24,6 +24,8 @@
 #include "Svc/TlmPacketizer/TlmPacketizer_TelemetrySendPortMapArrayAc.hpp"
 #include "TlmPacketizerConfig/FppConstantsAc.hpp"
 #include "TlmPacketizerConfig/FwTlmPacketizeOffsetTypeAliasAc.h"
+#include "TlmPacketizerConfig/FwTlmPacketizePacketIndexTypeAliasAc.h"
+#include "TlmPacketizerConfig/FwTlmPacketizePoolIndexTypeAliasAc.h"
 #include "TlmPacketizerConfig/TlmPacketizerCfg.hpp"
 
 #include <limits>
@@ -215,18 +217,19 @@ class TlmPacketizer final : public TlmPacketizerComponentBase, public Fw::ParamE
     // buffers for filling with telemetry
     BufferEntry m_fillBuffers[MAX_PACKETIZER_PACKETS];
 
-    //! packetOffset value for no packet. Never a valid offset: the static_assert in TlmPacketizer.cpp keeps
-    //! FW_COM_BUFFER_MAX_SIZE within this type, and setPacketList asserts every offset is below this sentinel
-    static constexpr FwTlmPacketizeOffsetType NOT_IN_PACKET = std::numeric_limits<FwTlmPacketizeOffsetType>::max();
-
     struct TlmEntry {
-        FwChanIdType id;  //!< telemetry id stored in slot
-        // Offsets into packet buffers.
-        // NOT_IN_PACKET means that channel is not in that packet
-        FwTlmPacketizeOffsetType packetOffset[MAX_PACKETIZER_PACKETS];
-        FwSizeType channelSize;  //!< max serialized size of the channel in bytes
-        bool ignored;            //!< ignored channel id
-        bool hasValue;           //!< if the entry has received a value at least once
+        FwChanIdType id;                    //!< telemetry id stored in slot
+        FwSizeType channelSize;             //!< max serialized size of the channel in bytes
+        FwTlmPacketizePoolIndexType first;  //!< index in m_memberships of the channel's first membership
+        FwTlmPacketizePoolIndexType count;  //!< number of memberships of the channel; 0 for an omitted channel
+        bool ignored;                       //!< ignored channel id
+        bool hasValue;                      //!< if the entry has received a value at least once
+    };
+
+    //! One listing of a channel in a packet
+    struct Membership {
+        FwTlmPacketizeOffsetType offset;       //!< byte offset of the channel's value in the packet buffer
+        FwTlmPacketizePacketIndexType packet;  //!< index of the packet in the packet list
     };
 
     Os::Mutex m_lock;  //!< used to lock access to packet buffers
@@ -325,6 +328,8 @@ class TlmPacketizer final : public TlmPacketizerComponentBase, public Fw::ParamE
     Fw::RedBlackTreeMap<FwChanIdType, FwSizeType, MAX_PACKETIZER_CHANNELS> m_channelIndices;
     Fw::Array<TlmEntry, MAX_PACKETIZER_CHANNELS>
         m_channels;  //!< flat storage for channel entries indexed by m_channelIndices
+    //! Memberships of all channels; a channel's memberships are contiguous, in packet-list order
+    Fw::Array<Membership, MAX_PACKETIZER_MEMBERSHIPS> m_memberships;
 };
 
 }  // end namespace Svc

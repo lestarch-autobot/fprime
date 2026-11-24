@@ -224,6 +224,60 @@ TEST(TestNominal, GroupSendCommandTest) {
     tester.groupSendCommandTest();
 }
 
+TEST(TestNominal, MembershipCapacityExactTest) {
+    TEST_CASE(100.1.27, "Exactly MAX_PACKETIZER_MEMBERSHIPS channel entries are accepted");
+    Svc::TlmPacketizerTester tester;
+    tester.membershipCapacityExactTest();
+}
+
+TEST(TestOffNominal, MembershipOverflowTest) {
+    TEST_CASE(100.2.8, "One channel entry over MAX_PACKETIZER_MEMBERSHIPS asserts with the total needed");
+    Svc::TlmPacketizerTester tester;
+    tester.membershipOverflowTest();
+}
+
+TEST(TestNominal, OmittedChannelsUseNoPoolEntryTest) {
+    TEST_CASE(100.1.28, "Omitted channels take a channel slot and no membership");
+    Svc::TlmPacketizerTester tester;
+    tester.omittedChannelsUseNoPoolEntryTest();
+}
+
+TEST(TestNominal, ChannelInTwoPacketsTest) {
+    TEST_CASE(100.1.29, "A channel listed in two packets is written to both");
+    Svc::TlmPacketizerTester tester;
+    tester.channelInTwoPacketsTest();
+}
+
+TEST(TestNominal, ChannelTwiceInOnePacketTest) {
+    TEST_CASE(100.1.30, "A channel listed twice in one packet is written at both offsets");
+    Svc::TlmPacketizerTester tester;
+    tester.channelTwiceInOnePacketTest();
+}
+
+TEST(TestNominal, TlmGetFirstMembershipTest) {
+    TEST_CASE(100.1.31, "TlmGet reads from the first packet listing the channel");
+    Svc::TlmPacketizerTester tester;
+    tester.tlmGetFirstMembershipTest();
+}
+
+TEST(TestNominal, TlmGetOmittedChannelTest) {
+    TEST_CASE(100.1.32, "TlmGet of an omitted channel is invalid without NoChan");
+    Svc::TlmPacketizerTester tester;
+    tester.tlmGetOmittedChannelTest();
+}
+
+TEST(TestNominal, IgnoreOmitListTest) {
+    TEST_CASE(100.1.33, "IGNORE_OMIT_LIST gives omitted channels no channel slot");
+    Svc::TlmPacketizerTester tester;
+    tester.ignoreOmitListTest();
+}
+
+TEST(TestOffNominal, PortsBeforeSetPacketListAssertTest) {
+    TEST_CASE(100.2.9, "TlmRecv, TlmGet and Run assert before setPacketList");
+    Svc::TlmPacketizerTester tester;
+    tester.portsBeforeSetPacketListAssertTest();
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

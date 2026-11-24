@@ -1991,10 +1991,8 @@ void TlmPacketizerTester::fullComBufferPacketTest() {
     TlmPacketizerPacket fullPacket = {fullList, 30, 1, FW_NUM_ARRAY_ELEMENTS(fullList)};
     TlmPacketizerPacketList fullPacketList = {{&fullPacket}, 1};
     this->component.setPacketList(fullPacketList, IGNORE_OMIT_LIST, 1);
-    ASSERT_EQ(this->component.m_channels[1].packetOffset[0], LAST_OFFSET);
-    // local copy: ASSERT_NE binds its arguments by reference, which would ODR-use the static constexpr member
-    constexpr FwTlmPacketizeOffsetType notInPacket = TlmPacketizer::NOT_IN_PACKET;
-    ASSERT_NE(this->component.m_channels[1].packetOffset[0], notInPacket);
+    ASSERT_EQ(this->component.m_channels[1].count, 1);
+    ASSERT_EQ(this->component.m_memberships[this->component.m_channels[1].first].offset, LAST_OFFSET);
 
     Fw::Time ts(5, 6);
     Fw::TlmBuffer buff;
@@ -2015,6 +2013,236 @@ void TlmPacketizerTester::fullComBufferPacketTest() {
     const Fw::ComBuffer& sent = this->fromPortHistory_PktSend->at(0).data;
     ASSERT_EQ(sent.getSize(), FW_COM_BUFFER_MAX_SIZE);
     ASSERT_EQ(sent.getBuffAddr()[LAST_OFFSET], 0xA5);
+}
+
+void TlmPacketizerTester::fillSizedPacketList(SizedPacketList& sized, FwSizeType numEntries, FwSizeType numChannels) {
+    // local copy: ASSERT_LE binds its arguments by reference, which would ODR-use the static constexpr member
+    constexpr FwSizeType maxEntries = SizedPacketList::MAX_ENTRIES;
+    ASSERT_LE(numEntries, maxEntries);
+    ASSERT_GT(numChannels, 0U);
+    const FwSizeType perPacket = (numEntries + MAX_PACKETIZER_PACKETS - 1) / MAX_PACKETIZER_PACKETS;
+    for (FwSizeType i = 0; i < numEntries; i++) {
+        sized.entries[i] = {static_cast<FwChanIdType>((i % numChannels) + 1), 1};
+    }
+    sized.list = {};
+    FwSizeType used = 0;
+    while (used < numEntries) {
+        const FwSizeType count = std::min(perPacket, numEntries - used);
+        const FwChanIdType packet = sized.list.numEntries;
+        sized.packets[packet] = {&sized.entries[used], static_cast<FwTlmPacketizeIdType>(packet + 1), 1,
+                                 static_cast<FwChanIdType>(count)};
+        sized.list.list[packet] = &sized.packets[packet];
+        sized.list.numEntries++;
+        used += count;
+    }
+}
+
+FwSizeType TlmPacketizerTester::membershipsInUse() const {
+    FwSizeType total = 0;
+    for (FwSizeType i = 0; i < this->component.m_numChannels; i++) {
+        total += this->component.m_channels[i].count;
+    }
+    return total;
+}
+
+void TlmPacketizerTester::membershipCapacityExactTest() {
+    this->stockConfiguration();
+    SizedPacketList sized;
+    fillSizedPacketList(sized, MAX_PACKETIZER_MEMBERSHIPS, MAX_PACKETIZER_CHANNELS);
+    this->component.setPacketList(sized.list, IGNORE_OMIT_LIST, 1);
+    ASSERT_EQ(this->membershipsInUse(), MAX_PACKETIZER_MEMBERSHIPS);
+
+    // The channel of the last pool entry is written and read back
+    const FwChanIdType lastId = sized.entries[MAX_PACKETIZER_MEMBERSHIPS - 1].id;
+    Fw::Time ts(3, 4);
+    Fw::TlmBuffer buff;
+    ASSERT_EQ(Fw::FW_SERIALIZE_OK, buff.serializeFrom(static_cast<U8>(0x5A)));
+    this->invoke_to_TlmRecv(0, lastId, ts, buff);
+    Fw::Time time;
+    Fw::TlmBuffer val;
+    ASSERT_EQ(Fw::TlmValid::VALID, this->invoke_to_TlmGet(0, lastId, time, val));
+    U8 readBack = 0;
+    ASSERT_EQ(Fw::FW_SERIALIZE_OK, val.deserializeTo(readBack));
+    ASSERT_EQ(readBack, 0x5A);
+    ASSERT_EVENTS_NoChan_SIZE(0);
+}
+
+void TlmPacketizerTester::membershipOverflowTest() {
+    this->stockConfiguration();
+    SizedPacketList sized;
+    fillSizedPacketList(sized, MAX_PACKETIZER_MEMBERSHIPS + 1, MAX_PACKETIZER_CHANNELS);
+    // The assert reports the total needed first, then the capacity
+    ASSERT_DEATH_IF_SUPPORTED(this->component.setPacketList(sized.list, IGNORE_OMIT_LIST, 1),
+                              "TlmPacketizer\\.cpp:[0-9]+\" " + std::to_string(MAX_PACKETIZER_MEMBERSHIPS + 1) + " " +
+                                  std::to_string(MAX_PACKETIZER_MEMBERSHIPS));
+}
+
+void TlmPacketizerTester::omittedChannelsUseNoPoolEntryTest() {
+    this->stockConfiguration();
+    // The pool is filled completely by the packets, so an omitted channel taking an entry would assert
+    constexpr FwSizeType NUM_OMITTED = 2;
+    static_assert(MAX_PACKETIZER_CHANNELS > NUM_OMITTED, "test needs channel slots for the omitted channels");
+    constexpr FwSizeType NUM_USED = MAX_PACKETIZER_CHANNELS - NUM_OMITTED;
+    SizedPacketList sized;
+    fillSizedPacketList(sized, MAX_PACKETIZER_MEMBERSHIPS, NUM_USED);
+    TlmPacketizerChannelEntry omittedList[NUM_OMITTED] = {{static_cast<FwChanIdType>(NUM_USED + 1), 0},
+                                                          {static_cast<FwChanIdType>(NUM_USED + 2), 0}};
+    const TlmPacketizerPacket omitted = {omittedList, 0, 0, FW_NUM_ARRAY_ELEMENTS(omittedList)};
+    this->component.setPacketList(sized.list, omitted, 1);
+
+    // Each omitted channel has a slot of its own, and the slots hold no membership
+    ASSERT_EQ(this->component.m_numChannels, MAX_PACKETIZER_CHANNELS);
+    ASSERT_EQ(this->membershipsInUse(), MAX_PACKETIZER_MEMBERSHIPS);
+    for (FwSizeType i = NUM_USED; i < MAX_PACKETIZER_CHANNELS; i++) {
+        ASSERT_TRUE(this->component.m_channels[i].ignored);
+        ASSERT_EQ(this->component.m_channels[i].count, 0);
+    }
+
+    // A write to an omitted channel is dropped silently and marks no packet updated
+    Fw::Time ts;
+    Fw::TlmBuffer buff;
+    ASSERT_EQ(Fw::FW_SERIALIZE_OK, buff.serializeFrom(static_cast<U8>(1)));
+    this->invoke_to_TlmRecv(0, omittedList[0].id, ts, buff);
+    ASSERT_EVENTS_NoChan_SIZE(0);
+    this->invoke_to_Run(0, 0);
+    this->component.doDispatch();
+    ASSERT_from_PktSend_SIZE(0);
+}
+
+void TlmPacketizerTester::channelInTwoPacketsTest() {
+    this->stockConfiguration();
+    constexpr FwSizeType HEADER =
+        sizeof(FwPacketDescriptorType) + Fw::Time::SERIALIZED_SIZE + sizeof(FwTlmPacketizeIdType);
+    // Channel 10 sits at a different offset in each packet
+    TlmPacketizerChannelEntry firstList[] = {{10, 1}, {11, 1}};
+    TlmPacketizerChannelEntry secondList[] = {{12, 1}, {13, 1}, {10, 1}};
+    TlmPacketizerPacket first = {firstList, 1, 1, FW_NUM_ARRAY_ELEMENTS(firstList)};
+    TlmPacketizerPacket second = {secondList, 2, 1, FW_NUM_ARRAY_ELEMENTS(secondList)};
+    TlmPacketizerPacketList twoPacketList = {{&first, &second}, 2};
+    this->component.setPacketList(twoPacketList, IGNORE_OMIT_LIST, 1);
+
+    Fw::Time ts(7, 8);
+    Fw::TlmBuffer buff;
+    ASSERT_EQ(Fw::FW_SERIALIZE_OK, buff.serializeFrom(static_cast<U8>(0xC3)));
+    this->invoke_to_TlmRecv(0, 10, ts, buff);
+    this->invoke_to_Run(0, 0);
+    this->component.doDispatch();
+
+    // Both packets were updated by the one write and carry the value at the channel's offset
+    ASSERT_from_PktSend_SIZE(2 * Svc::TelemetrySection::NUM_SECTIONS);
+    const Fw::ComBuffer& sentFirst = this->fromPortHistory_PktSend->at(0).data;
+    ASSERT_EQ(sentFirst.getSize(), HEADER + 2);
+    ASSERT_EQ(sentFirst.getBuffAddr()[HEADER], 0xC3);
+    ASSERT_EQ(sentFirst.getBuffAddr()[HEADER + 1], 0);
+    const Fw::ComBuffer& sentSecond = this->fromPortHistory_PktSend->at(Svc::TelemetrySection::NUM_SECTIONS).data;
+    ASSERT_EQ(sentSecond.getSize(), HEADER + 3);
+    ASSERT_EQ(sentSecond.getBuffAddr()[HEADER], 0);
+    ASSERT_EQ(sentSecond.getBuffAddr()[HEADER + 1], 0);
+    ASSERT_EQ(sentSecond.getBuffAddr()[HEADER + 2], 0xC3);
+}
+
+void TlmPacketizerTester::channelTwiceInOnePacketTest() {
+    this->stockConfiguration();
+    constexpr FwSizeType HEADER =
+        sizeof(FwPacketDescriptorType) + Fw::Time::SERIALIZED_SIZE + sizeof(FwTlmPacketizeIdType);
+    TlmPacketizerChannelEntry twiceList[] = {{10, 1}, {11, 1}, {10, 1}};
+    TlmPacketizerPacket twicePacket = {twiceList, 1, 1, FW_NUM_ARRAY_ELEMENTS(twiceList)};
+    TlmPacketizerPacketList twicePacketList = {{&twicePacket}, 1};
+    this->component.setPacketList(twicePacketList, IGNORE_OMIT_LIST, 1);
+
+    Fw::Time ts(7, 8);
+    Fw::TlmBuffer buff;
+    ASSERT_EQ(Fw::FW_SERIALIZE_OK, buff.serializeFrom(static_cast<U8>(0x3C)));
+    this->invoke_to_TlmRecv(0, 10, ts, buff);
+    this->invoke_to_Run(0, 0);
+    this->component.doDispatch();
+
+    // The one packet carries the value at both offsets of channel 10; channel 11 between them is untouched
+    ASSERT_from_PktSend_SIZE(Svc::TelemetrySection::NUM_SECTIONS);
+    const Fw::ComBuffer& sent = this->fromPortHistory_PktSend->at(0).data;
+    ASSERT_EQ(sent.getSize(), HEADER + 3);
+    ASSERT_EQ(sent.getBuffAddr()[HEADER], 0x3C);
+    ASSERT_EQ(sent.getBuffAddr()[HEADER + 1], 0);
+    ASSERT_EQ(sent.getBuffAddr()[HEADER + 2], 0x3C);
+}
+
+void TlmPacketizerTester::tlmGetFirstMembershipTest() {
+    this->stockConfiguration();
+    constexpr FwSizeType HEADER =
+        sizeof(FwPacketDescriptorType) + Fw::Time::SERIALIZED_SIZE + sizeof(FwTlmPacketizeIdType);
+    // Channel 10 is first listed in the second packet of the list, then in the third
+    TlmPacketizerChannelEntry otherList[] = {{11, 1}};
+    TlmPacketizerChannelEntry firstList[] = {{12, 1}, {10, 1}};
+    TlmPacketizerChannelEntry laterList[] = {{10, 1}};
+    TlmPacketizerPacket other = {otherList, 1, 1, FW_NUM_ARRAY_ELEMENTS(otherList)};
+    TlmPacketizerPacket first = {firstList, 2, 1, FW_NUM_ARRAY_ELEMENTS(firstList)};
+    TlmPacketizerPacket later = {laterList, 3, 1, FW_NUM_ARRAY_ELEMENTS(laterList)};
+    TlmPacketizerPacketList threePacketList = {{&other, &first, &later}, 3};
+    this->component.setPacketList(threePacketList, IGNORE_OMIT_LIST, 1);
+
+    Fw::Time ts(9, 10);
+    Fw::TlmBuffer buff;
+    ASSERT_EQ(Fw::FW_SERIALIZE_OK, buff.serializeFrom(static_cast<U8>(0x11)));
+    this->invoke_to_TlmRecv(0, 10, ts, buff);
+
+    // Make the stored copies differ, so the read shows which packet it came from
+    this->component.m_fillBuffers[1].buffer.getBuffAddr()[HEADER + 1] = 0x22;
+    this->component.m_fillBuffers[2].buffer.getBuffAddr()[HEADER] = 0x33;
+    this->component.m_fillBuffers[2].latestTime = Fw::Time(99, 99);
+
+    Fw::Time time;
+    Fw::TlmBuffer val;
+    ASSERT_EQ(Fw::TlmValid::VALID, this->invoke_to_TlmGet(0, 10, time, val));
+    ASSERT_EQ(time, ts);
+    U8 readBack = 0;
+    ASSERT_EQ(Fw::FW_SERIALIZE_OK, val.deserializeTo(readBack));
+    ASSERT_EQ(readBack, 0x22);
+}
+
+void TlmPacketizerTester::tlmGetOmittedChannelTest() {
+    this->stockConfiguration();
+    this->component.setPacketList(packetList, ignore, 2);
+
+    Fw::Time ts;
+    Fw::TlmBuffer buff;
+    ASSERT_EQ(Fw::FW_SERIALIZE_OK, buff.serializeFrom(static_cast<U32>(20)));
+    this->invoke_to_TlmRecv(0, 25, ts, buff);
+
+    Fw::Time time;
+    Fw::TlmBuffer val;
+    ASSERT_EQ(Fw::TlmValid::INVALID, this->invoke_to_TlmGet(0, 25, time, val));
+    ASSERT_EQ(val.getSize(), 0U);
+    ASSERT_EVENTS_NoChan_SIZE(0);
+}
+
+void TlmPacketizerTester::ignoreOmitListTest() {
+    this->stockConfiguration();
+    // packetList lists six distinct channels; the omit list adds two
+    this->component.setPacketList(packetList, ignore, 2);
+    ASSERT_EQ(this->component.m_numChannels, 8U);
+
+    // Without the omit list the omitted channels take no slot and are reported as unknown
+    this->component.setPacketList(packetList, IGNORE_OMIT_LIST, 2);
+    ASSERT_EQ(this->component.m_numChannels, 6U);
+    Fw::Time ts;
+    Fw::TlmBuffer buff;
+    ASSERT_EQ(Fw::FW_SERIALIZE_OK, buff.serializeFrom(static_cast<U32>(20)));
+    this->invoke_to_TlmRecv(0, 25, ts, buff);
+    ASSERT_EVENTS_NoChan_SIZE(1);
+    ASSERT_EVENTS_NoChan(0, 25);
+}
+
+void TlmPacketizerTester::portsBeforeSetPacketListAssertTest() {
+    Fw::Time ts;
+    Fw::TlmBuffer buff;
+    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_TlmRecv(0, 10, ts, buff), "TlmPacketizer\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_TlmGet(0, 10, ts, buff), "TlmPacketizer\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(
+        {
+            this->invoke_to_Run(0, 0);
+            this->component.doDispatch();
+        },
+        "TlmPacketizer\\.cpp");
 }
 
 void TlmPacketizerTester::oversizedPacketTest() {

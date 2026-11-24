@@ -169,6 +169,33 @@ class TlmPacketizerTester : public TlmPacketizerGTestBase {
     //! records before it still apply, and an invalid buffer is still returned via packetOverrideReturnOut
     void configInMalformedReloadTest(void);
 
+    //! Exactly MAX_PACKETIZER_MEMBERSHIPS channel entries are accepted
+    void membershipCapacityExactTest(void);
+
+    //! One channel entry more than MAX_PACKETIZER_MEMBERSHIPS asserts, reporting the total needed
+    void membershipOverflowTest(void);
+
+    //! Omitted channels take a channel slot and no membership
+    void omittedChannelsUseNoPoolEntryTest(void);
+
+    //! A channel listed in two packets is written to both
+    void channelInTwoPacketsTest(void);
+
+    //! A channel listed twice in one packet is written at both offsets
+    void channelTwiceInOnePacketTest(void);
+
+    //! TlmGet reads from the channel's first membership
+    void tlmGetFirstMembershipTest(void);
+
+    //! TlmGet of an omitted channel is invalid and raises no NoChan
+    void tlmGetOmittedChannelTest(void);
+
+    //! With IGNORE_OMIT_LIST omitted channels take no channel slot
+    void ignoreOmitListTest(void);
+
+    //! TlmRecv, TlmGet and Run assert before setPacketList
+    void portsBeforeSetPacketListAssertTest(void);
+
     //! Helper to set the component into a stock-configuration regardless of default config
     //!
     void stockConfiguration();
@@ -236,6 +263,21 @@ class TlmPacketizerTester : public TlmPacketizerGTestBase {
     //! Reset Counter
     //!
     void resetCounter(void);
+
+    //! Packet list of one-byte channel entries spread evenly over the packets
+    struct SizedPacketList {
+        //! One entry more than the membership pool holds, for the overflow test
+        static constexpr FwSizeType MAX_ENTRIES = MAX_PACKETIZER_MEMBERSHIPS + 1;
+        TlmPacketizerChannelEntry entries[MAX_ENTRIES];
+        TlmPacketizerPacket packets[MAX_PACKETIZER_PACKETS];
+        TlmPacketizerPacketList list;
+    };
+
+    //! Fill a packet list with numEntries channel entries cycling through numChannels channel ids (1..numChannels)
+    static void fillSizedPacketList(SizedPacketList& sized, FwSizeType numEntries, FwSizeType numChannels);
+
+    //! Sum of the membership counts of all channel slots
+    FwSizeType membershipsInUse() const;
 
   private:
     // ----------------------------------------------------------------------

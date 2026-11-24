@@ -22,10 +22,15 @@ const TlmPacketizer_TelemetrySendPortMap TlmPacketizer::TELEMETRY_SEND_PORT_MAP 
 
 static_assert(Svc::TelemetrySection::NUM_SECTIONS >= 1, "At least one telemetry section is required");
 
-// Keeps every offset a ComBuffer can hold representable in the offset type; setPacketList additionally asserts
-// at runtime that no offset equals the NOT_IN_PACKET sentinel (the type's maximum)
+// Keeps every offset a ComBuffer can hold representable in the offset type
 static_assert(FW_COM_BUFFER_MAX_SIZE <= std::numeric_limits<FwTlmPacketizeOffsetType>::max(),
               "FwTlmPacketizeOffsetType must span an entire ComBuffer");
+
+static_assert(MAX_PACKETIZER_PACKETS - 1 <= std::numeric_limits<FwTlmPacketizePacketIndexType>::max(),
+              "FwTlmPacketizePacketIndexType must index every packet");
+
+static_assert(MAX_PACKETIZER_MEMBERSHIPS <= std::numeric_limits<FwTlmPacketizePoolIndexType>::max(),
+              "FwTlmPacketizePoolIndexType must index the whole membership pool");
 
 static_assert(static_cast<U8>(Fw::FW_DESERIALIZE_BUFFER_EMPTY) == Fw::DeserialStatus::BUFFER_EMPTY and
                   static_cast<U8>(Fw::FW_DESERIALIZE_FORMAT_ERROR) == Fw::DeserialStatus::FORMAT_ERROR and
@@ -73,8 +78,9 @@ void TlmPacketizer::setPacketList(const TlmPacketizerPacketList& packetList,
     this->m_channelIndices.clear();
     this->m_configured = false;
 
-    // validate packet sizes against maximum com buffer size and populate hash
-    // table
+    // Pass 1: validate packet sizes against maximum com buffer size, register the channels and count
+    // their memberships
+    FwSizeType totalMemberships = 0;
     FwChanIdType maxLevel = 0;
     for (FwChanIdType pktEntry = 0; pktEntry < packetList.numEntries; pktEntry++) {
         // Initial size is packetized telemetry descriptor + size of time tag + sizeof packet ID
@@ -89,14 +95,13 @@ void TlmPacketizer::setPacketList(const TlmPacketizerPacketList& packetList,
             const FwSizeType channelSize = packetList.list[pktEntry]->list[tlmEntry].size;
             FwSizeType entryIndex = 0;
             if (this->m_channelIndices.find(id, entryIndex) != Fw::Success::SUCCESS) {
-                // New channel - allocate a slot and initialize offsets to NOT_IN_PACKET
+                // New channel - allocate a slot with no memberships
                 entryIndex = this->m_numChannels++;
                 this->m_channels[entryIndex].id = id;
                 this->m_channels[entryIndex].hasValue = false;
                 this->m_channels[entryIndex].channelSize = channelSize;
-                for (FwChanIdType pktOffsetEntry = 0; pktOffsetEntry < MAX_PACKETIZER_PACKETS; pktOffsetEntry++) {
-                    this->m_channels[entryIndex].packetOffset[pktOffsetEntry] = NOT_IN_PACKET;
-                }
+                this->m_channels[entryIndex].first = 0;
+                this->m_channels[entryIndex].count = 0;
                 const Fw::Success insertStatus = this->m_channelIndices.insert(id, entryIndex);
                 FW_ASSERT(insertStatus == Fw::Success::SUCCESS, static_cast<FwAssertArgType>(insertStatus));
             } else {
@@ -111,10 +116,8 @@ void TlmPacketizer::setPacketList(const TlmPacketizerPacketList& packetList,
             TlmEntry& entry = this->m_channels[entryIndex];
             entry.ignored = false;
             entry.channelSize = channelSize;
-            // the offset into the buffer will be the current packet length
-            // the offset must fit within FwTlmPacketizeOffsetType and must not equal NOT_IN_PACKET
-            FW_ASSERT(packetLen < NOT_IN_PACKET, static_cast<FwAssertArgType>(packetLen));
-            entry.packetOffset[pktEntry] = static_cast<FwTlmPacketizeOffsetType>(packetLen);
+            entry.count++;
+            totalMemberships++;
 
             packetLen += entry.channelSize;
 
@@ -143,6 +146,37 @@ void TlmPacketizer::setPacketList(const TlmPacketizerPacketList& packetList,
 
     }  // end packet list
     FW_ASSERT(maxLevel <= MAX_CONFIGURABLE_TLMPACKETIZER_GROUP, static_cast<FwAssertArgType>(maxLevel));
+    // The first argument is the pool capacity the packet list needs
+    FW_ASSERT(totalMemberships <= MAX_PACKETIZER_MEMBERSHIPS, static_cast<FwAssertArgType>(totalMemberships),
+              static_cast<FwAssertArgType>(MAX_PACKETIZER_MEMBERSHIPS));
+
+    // Pass 2: prefix sum of the counts gives each channel the start of its range in the pool. The counts are
+    // reset to serve as the fill cursors of pass 3.
+    FwSizeType runningMemberships = 0;
+    for (FwSizeType entryIndex = 0; entryIndex < this->m_numChannels; entryIndex++) {
+        TlmEntry& entry = this->m_channels[entryIndex];
+        entry.first = static_cast<FwTlmPacketizePoolIndexType>(runningMemberships);
+        runningMemberships += entry.count;
+        entry.count = 0;
+    }
+
+    // Pass 3: fill the pool in packet-list order; offsets are recomputed as in pass 1
+    for (FwChanIdType pktEntry = 0; pktEntry < packetList.numEntries; pktEntry++) {
+        FwSizeType packetLen =
+            sizeof(FwPacketDescriptorType) + Fw::Time::SERIALIZED_SIZE + sizeof(FwTlmPacketizeIdType);
+        for (FwChanIdType tlmEntry = 0; tlmEntry < packetList.list[pktEntry]->numEntries; tlmEntry++) {
+            const FwChanIdType id = packetList.list[pktEntry]->list[tlmEntry].id;
+            FwSizeType entryIndex = 0;
+            const Fw::Success findStatus = this->m_channelIndices.find(id, entryIndex);
+            FW_ASSERT(findStatus == Fw::Success::SUCCESS, static_cast<FwAssertArgType>(id));
+            TlmEntry& entry = this->m_channels[entryIndex];
+            Membership& membership = this->m_memberships[static_cast<FwSizeType>(entry.first) + entry.count];
+            membership.offset = static_cast<FwTlmPacketizeOffsetType>(packetLen);
+            membership.packet = static_cast<FwTlmPacketizePacketIndexType>(pktEntry);
+            entry.count++;
+            packetLen += entry.channelSize;
+        }
+    }
 
     // This section adds entries in the map for channels that are intended to be ignored. When the user supplies
     // a list with no length, this loop is skipped. To turn-off ignoring of channels, the user can provide a null
@@ -151,13 +185,12 @@ void TlmPacketizer::setPacketList(const TlmPacketizerPacketList& packetList,
         FwChanIdType id = ignoreList.list[channelEntry].id;
         FwSizeType entryIndex = 0;
         if (this->m_channelIndices.find(id, entryIndex) != Fw::Success::SUCCESS) {
-            // New channel - allocate a slot and initialize offsets to NOT_IN_PACKET
+            // New channel - allocate a slot with no memberships
             entryIndex = this->m_numChannels++;
             this->m_channels[entryIndex].id = id;
             this->m_channels[entryIndex].hasValue = false;
-            for (FwChanIdType pktOffsetEntry = 0; pktOffsetEntry < MAX_PACKETIZER_PACKETS; pktOffsetEntry++) {
-                this->m_channels[entryIndex].packetOffset[pktOffsetEntry] = NOT_IN_PACKET;
-            }
+            this->m_channels[entryIndex].first = 0;
+            this->m_channels[entryIndex].count = 0;
             const Fw::Success insertStatus = this->m_channelIndices.insert(id, entryIndex);
             FW_ASSERT(insertStatus == Fw::Success::SUCCESS, static_cast<FwAssertArgType>(insertStatus));
         } else {
@@ -211,19 +244,19 @@ void TlmPacketizer ::TlmRecv_handler(const FwIndexType portNum,
     }
 
     // copy telemetry value into active buffers; hasValue written in-place via reference
-    for (FwChanIdType pkt = 0; pkt < MAX_PACKETIZER_PACKETS; pkt++) {
-        // check if current packet has this channel
-        if (entry.packetOffset[pkt] != NOT_IN_PACKET) {
-            // get destination address
-            Os::ScopeLock lock(this->m_lock);
-            this->m_fillBuffers[pkt].updated = true;
-            this->m_fillBuffers[pkt].latestTime = timeTag;
-            U8* ptr = &this->m_fillBuffers[pkt].buffer.getBuffAddr()[entry.packetOffset[pkt]];
+    const FwSizeType first = entry.first;
+    for (FwSizeType index = first; index < first + entry.count; index++) {
+        const Membership& membership = this->m_memberships[index];
+        BufferEntry& fillBuffer = this->m_fillBuffers[membership.packet];
+        // get destination address
+        Os::ScopeLock lock(this->m_lock);
+        fillBuffer.updated = true;
+        fillBuffer.latestTime = timeTag;
+        U8* ptr = &fillBuffer.buffer.getBuffAddr()[membership.offset];
 
-            (void)memcpy(ptr, val.getBuffAddr(), static_cast<size_t>(val.getSize()));
-            // set under the lock, after the copy, so TlmGet cannot see a value-less VALID entry
-            entry.hasValue = true;
-        }
+        (void)memcpy(ptr, val.getBuffAddr(), static_cast<size_t>(val.getSize()));
+        // set under the lock, after the copy, so TlmGet cannot see a value-less VALID entry
+        entry.hasValue = true;
     }
 }
 
@@ -273,22 +306,21 @@ Fw::TlmValid TlmPacketizer ::TlmGet_handler(FwIndexType portNum,  //!< The port 
               static_cast<FwAssertArgType>(val.getCapacity()));
 
     // okay, we have the matching entry.
-    // go over each packet and find the first one which stores this channel
+    // read from the channel's first membership: the first packet which stores this channel
 
-    for (FwChanIdType pkt = 0; pkt < MAX_PACKETIZER_PACKETS; pkt++) {
-        // check if current packet has this channel
-        if (entry.packetOffset[pkt] != NOT_IN_PACKET) {
-            // okay, it has the channel. copy chan val into the tlm buf
-            Os::ScopeLock lock(this->m_lock);
-            timeTag = this->m_fillBuffers[pkt].latestTime;
-            U8* ptr = &this->m_fillBuffers[pkt].buffer.getBuffAddr()[entry.packetOffset[pkt]];
-            (void)memcpy(val.getBuffAddr(), ptr, static_cast<size_t>(entry.channelSize));
-            // set buf len to the channelSize. keep in mind, this is the MAX serialized size of the channel.
-            // so we may actually be filling val with some junk after the value of the channel.
-            const Fw::SerializeStatus setStatus = val.setBuffLen(entry.channelSize);
-            FW_ASSERT(setStatus == Fw::SerializeStatus::FW_SERIALIZE_OK, static_cast<FwAssertArgType>(setStatus));
-            return Fw::TlmValid::VALID;
-        }
+    if (entry.count > 0) {
+        const Membership& membership = this->m_memberships[entry.first];
+        const BufferEntry& fillBuffer = this->m_fillBuffers[membership.packet];
+        // copy chan val into the tlm buf
+        Os::ScopeLock lock(this->m_lock);
+        timeTag = fillBuffer.latestTime;
+        const U8* ptr = &fillBuffer.buffer.getBuffAddr()[membership.offset];
+        (void)memcpy(val.getBuffAddr(), ptr, static_cast<size_t>(entry.channelSize));
+        // set buf len to the channelSize. keep in mind, this is the MAX serialized size of the channel.
+        // so we may actually be filling val with some junk after the value of the channel.
+        const Fw::SerializeStatus setStatus = val.setBuffLen(entry.channelSize);
+        FW_ASSERT(setStatus == Fw::SerializeStatus::FW_SERIALIZE_OK, static_cast<FwAssertArgType>(setStatus));
+        return Fw::TlmValid::VALID;
     }
 
     // did not find a packet which stores this channel.
