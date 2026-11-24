@@ -53,9 +53,9 @@ Title:     Channel value reaches its first packet
 Purpose:   Shows channel updates are stored in, and downlinked by, the first packet listing the channel.
 Covers:    TPK-001, TPK-003
 Setup:     L0-2 passed.
-Procedure: OVERRIDE_PACKET_SEND(REALTIME, 61, SEND_NEVER); wait 2 ticks; MARK(30); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(31); wait 2 ticks; CLEAR_PACKET_OVERRIDE(REALTIME, 61).
-Window:    Marker(id=30) … Marker(id=31)
-Pass rule: complete: STD. all_of: ABS; cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them (the channel is listed only in packets 60 and 61; packet 61 is set SEND_NEVER two ticks before the start marker and released two ticks after the end marker, so every sample inside the window is downlinked by packet 60. The end marker is itself a dispatched command, so the held packet's pending sample carries a time after the window and its flush on release is excluded. A membership that is not written leaves packet 60 unchanged, it is not sent, and the check fails on sample count).
+Procedure: MARK(29); OVERRIDE_PACKET_SEND(REALTIME, 61, SEND_NEVER); wait 2 ticks; MARK(30); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(31); wait 2 ticks; CLEAR_PACKET_OVERRIDE(REALTIME, 61); MARK(32).
+Window:    S = Marker(id=29) … Marker(id=30); W = Marker(id=30) … Marker(id=31); T = Marker(id=31) … Marker(id=32)
+Pass rule: complete: S: STD; W: STD; T: STD. all_of: S: event tlmSend.PacketNotFound count == 0; W: ABS; cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them (the channel is listed only in packets 60 and 61; packet 61 is set SEND_NEVER two ticks before the start marker and released two ticks after the end marker, so every sample inside the window is downlinked by packet 60. The end marker is itself a dispatched command, so the held packet's pending sample carries a time after the window and its flush on release is excluded. A membership that is not written leaves packet 60 unchanged, it is not sent, and the check fails on sample count); T: event tlmSend.PacketNotFound count == 0.
 Evidence:  At least two rising CommandsDispatched samples, each step equal to the OpCodeDispatched rows archived between them.
 Planted faults:first_packet_also_held
 
@@ -64,9 +64,9 @@ Title:     Channel value reaches its second packet
 Purpose:   Shows the same channel's updates are also stored in the second packet listing it.
 Covers:    TPK-001, TPK-003
 Setup:     L2-1 run.
-Procedure: OVERRIDE_PACKET_SEND(REALTIME, 60, SEND_NEVER); wait 2 ticks; MARK(40); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(41); wait 2 ticks; CLEAR_PACKET_OVERRIDE(REALTIME, 60).
-Window:    Marker(id=40) … Marker(id=41)
-Pass rule: complete: STD. all_of: ABS; cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them (the channel is listed only in packets 60 and 61; packet 60 is set SEND_NEVER two ticks before the start marker and released two ticks after the end marker, so every sample inside the window is downlinked by packet 61. The end marker is itself a dispatched command, so the held packet's pending sample carries a time after the window and its flush on release is excluded. A membership that is not written leaves packet 61 unchanged, it is not sent, and the check fails on sample count).
+Procedure: MARK(39); OVERRIDE_PACKET_SEND(REALTIME, 60, SEND_NEVER); wait 2 ticks; MARK(40); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(41); wait 2 ticks; CLEAR_PACKET_OVERRIDE(REALTIME, 60); MARK(42).
+Window:    S = Marker(id=39) … Marker(id=40); W = Marker(id=40) … Marker(id=41); T = Marker(id=41) … Marker(id=42)
+Pass rule: complete: S: STD; W: STD; T: STD. all_of: S: event tlmSend.PacketNotFound count == 0; W: ABS; cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them (the channel is listed only in packets 60 and 61; packet 60 is set SEND_NEVER two ticks before the start marker and released two ticks after the end marker, so every sample inside the window is downlinked by packet 61. The end marker is itself a dispatched command, so the held packet's pending sample carries a time after the window and its flush on release is excluded. A membership that is not written leaves packet 61 unchanged, it is not sent, and the check fails on sample count); T: event tlmSend.PacketNotFound count == 0.
 Evidence:  At least two rising CommandsDispatched samples, each step equal to the OpCodeDispatched rows archived between them.
 Planted faults:second_packet_also_held
 
@@ -86,9 +86,9 @@ Title:     Final state
 Purpose:   Leaves both test packets enabled; the channel's value still follows the archive's dispatch count.
 Covers:    —
 Setup:     All earlier tests run.
-Procedure: CLEAR_PACKET_OVERRIDE(REALTIME, 60); CLEAR_PACKET_OVERRIDE(REALTIME, 61); wait 2 ticks; MARK(60); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(61).
-Window:    Marker(id=60) … Marker(id=61)
-Pass rule: complete: STD. all_of: ABS; cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them.
+Procedure: MARK(59); CLEAR_PACKET_OVERRIDE(REALTIME, 60); CLEAR_PACKET_OVERRIDE(REALTIME, 61); wait 2 ticks; MARK(60); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(61).
+Window:    S = Marker(id=59) … Marker(id=60); W = Marker(id=60) … Marker(id=61)
+Pass rule: complete: S: STD; W: STD. all_of: S: event tlmSend.PacketNotFound count == 0; W: ABS; cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them.
 Evidence:  Rising CommandsDispatched samples that match the OpCodeDispatched rows the ground archive holds (a path independent of the packetizer's storage).
 Planted faults:final_packets_held
 
@@ -120,3 +120,4 @@ Generated from `planted_faults.py` planted fault declarations (`fth planted-faul
 5. 2026-11-23 designer — system coverage threshold provisionally 50 % lines; for gate 1.
 6. 2026-11-24 designer, review round 1 — packets are sent by the rate logic, not SEND_PKT (SEND_PKT bypasses enable checks and logs PacketSent on acceptance); menu max_count 2 over four faulted tests; TPK-013 is UT only with no system test traced.
 7. 2026-11-24 designer, review round 2 — the hold-back and its release sit outside the L2 windows, two ticks clear of the markers.
+8. 2026-11-24 harness builder, venue A dry runs — the tooling's record integrity accepts no command outside a declared window, so the hold-back and release commands of L2-1 and L2-2 and the two clears of L7-1 are bracketed by setup (`S`) and teardown (`T`) windows that share an edge with the measurement window `W`; they are judged for completeness and for no `PacketNotFound` only. `W`, its markers, checks and planted faults are unchanged.
