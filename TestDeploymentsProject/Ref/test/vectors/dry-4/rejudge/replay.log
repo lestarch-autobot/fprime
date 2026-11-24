@@ -1,0 +1,1 @@
+run dry-4: record cc64a06a -> runner/verdicts.json (pytest exit 1)

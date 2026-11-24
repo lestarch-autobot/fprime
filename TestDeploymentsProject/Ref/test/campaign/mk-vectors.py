@@ -32,4 +32,6 @@ for run in sorted(p for p in runs.iterdir() if (p / "record").is_dir() and (runs
     if plant:
         (d / "sealed").mkdir(); (d / "sealed" / "faults.json").write_text(json.dumps({"faults": plant}, indent=2) + "\n")
     (d / "vector.json").write_text(json.dumps({"kind": "single-knob" if plant else "clean", "note": f"{note}, run {run.name}" + (f", planted {plant}" if plant else ""), "plan": "plans/tpk-pool/plan.json"}, indent=2) + "\n")
+    fs = sorted(f for f in d.rglob("*") if f.is_file())   # record.sha256 also names raw/ files, which a vector does not hold
+    (d / "files.sha256").write_text("".join(f"{hashlib.sha256(f.read_bytes()).hexdigest()}  {f.relative_to(d).as_posix()}\n" for f in fs))
     print(run.name, "single-knob" if plant else "clean", plant)

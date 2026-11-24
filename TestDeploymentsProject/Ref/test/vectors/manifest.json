@@ -1,15 +1,15 @@
 {
   "uut": {
     "path": "uut-ref",
-    "sha": "b93ae6f19c049b238806c698c265255c0adc368f",
-    "describe": "b93ae6f19",
+    "sha": "e290ef095b546e645ea99ec09d53500d2c3d993d",
+    "describe": "e290ef095",
     "url": "https://github.com/lestarch-autobot/fprime",
     "dirty": false
   },
   "harness": {
     "path": "uut-ref",
-    "sha": "b93ae6f19c049b238806c698c265255c0adc368f",
-    "describe": "b93ae6f19",
+    "sha": "e290ef095b546e645ea99ec09d53500d2c3d993d",
+    "describe": "e290ef095",
     "url": "https://github.com/lestarch-autobot/fprime",
     "dirty": false
   },
@@ -17,23 +17,23 @@
     {
       "name": "uut",
       "path": "uut-ref",
-      "sha": "b93ae6f19c049b238806c698c265255c0adc368f",
-      "describe": "b93ae6f19",
+      "sha": "e290ef095b546e645ea99ec09d53500d2c3d993d",
+      "describe": "e290ef095",
       "url": "https://github.com/lestarch-autobot/fprime",
       "dirty": false
     },
     {
       "name": "harness",
       "path": "uut-ref",
-      "sha": "b93ae6f19c049b238806c698c265255c0adc368f",
-      "describe": "b93ae6f19",
+      "sha": "e290ef095b546e645ea99ec09d53500d2c3d993d",
+      "describe": "e290ef095",
       "url": "https://github.com/lestarch-autobot/fprime",
       "dirty": false
     }
   ],
   "plan": {
     "path": "uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/plan.json",
-    "sha256": "b185e14fbe8598214cdfe827327728f2b52b1b980bb2126a1cc3e30eb1931488",
+    "sha256": "3f0e3a04388581829dd2ded43514c9bab57eed9e8012e667d202809e1cb7d5aa",
     "revision": "",
     "tests": [
       "L0-1",
@@ -76,16 +76,15 @@
   "stimulus": {
     "path": "uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool",
     "repo": "uut",
-    "sha": "b93ae6f19c049b238806c698c265255c0adc368f",
+    "sha": "e290ef095b546e645ea99ec09d53500d2c3d993d",
     "files": {
-      "planted_faults.py": "a209b0c1d6341689d75621544cd3f9f388e6e7af7a17daa266a4381dad5c3c00",
+      "planted_faults.py": "3d3f178bed530e883324b421c9fd898e242d7ebd1366014c538d58fec0725a9f",
       "test_L0_1.py": "0398b1809ca95a48e92a9857921dbde0af085586df3a54aa8b657c90f984f622",
       "test_L0_2.py": "3eced18f4905e8385a22eb99ba96114cbb3296efc6f088274e627c002f9468f2",
       "test_L2_1.py": "32328b62d43d9df937b2565072a1c049678716e37cbbaf370a38e35449338f94",
       "test_L2_2.py": "61bde241a2585b9578f6e9085bdabfd8f2742437d37149fd54f48fc05fa90582",
       "test_L6_1.py": "496a694ac844f1e223710e07cee7291c3cfe22b7731fae8252b2232569c4cb10",
-      "test_L7_1.py": "3ae1607708ba8db657b44bb6f8b2a3eaca7068f3c6182ae1d1de5aba63405076",
-      "venue/check-vectors.py": "3782020ad8873a8e1c71c95f344fb00e993fe15bc90b2f3b9615eadc66f0d059"
+      "test_L7_1.py": "3ae1607708ba8db657b44bb6f8b2a3eaca7068f3c6182ae1d1de5aba63405076"
     }
   },
   "images": [
@@ -94,7 +93,7 @@
       "path": "uut-ref/TestDeploymentsProject/build-artifacts/Linux/Ref/bin/Ref",
       "sha256": "f6caa77a9f030ffe70f1573a8d92f90a2c689b28b1eca6c29623bc68571b8839",
       "build_cmd": [],
-      "version_check": "all repo describe strings found in image"
+      "version_check": "SKIPPED (uut, harness not found): replay of the committed vector records only: the image is the one of those runs, built at b93ae6f19, not at this commit"
     }
   ],
   "menu": {
@@ -179,5 +178,5 @@
     "sha256": "d6ff4e9ceb35b75fe8f91f3fa572b687b2964f91a7ee41cb32f93ce6de6572df"
   },
   "toolchain": {},
-  "no_version_check": ""
+  "no_version_check": "replay of the committed vector records only: the image is the one of those runs, built at b93ae6f19, not at this commit"
 }

@@ -181,7 +181,7 @@ made at this branch for the replay (same image entry; plan and stimulus hashes o
 `record.sha256` is the tool's list for the whole record and also names the `raw/` files, which are not
 committed (they are in the evidence bundle); `files.sha256` lists the files that are committed.
 `rejudge/` holds the verdicts of a replay of each record with the plan files of this branch (amendment 7):
-equal to `runner/verdicts.json` in every vector. `../../campaign/dry-runs.sh` makes the runs, replays each record
+verdict and failed checks equal to `runner/verdicts.json` in every vector. `../../campaign/dry-runs.sh` makes the runs, replays each record
 (`fth run --replay-record`), builds the set (`../../campaign/mk-vectors.py`) and applies the vector rule:
 
 ```sh
@@ -195,7 +195,8 @@ To repeat the gate on the committed records (no bench; from a campaign root, too
 ```sh
 V=$T/../../vectors
 for n in 1 2 3 4 5; do fth run --replay-record $V/dry-$n/record --run-dir replay/dry-$n --manifest $V/manifest.json --plan $T/plan.json --bench $T/bench-ref.json --tests $T; done
-for n in 1 2 3 4 5; do cmp replay/dry-$n/runner/verdicts.json $V/dry-$n/rejudge/verdicts.json && echo "dry-$n equal"; done
+python3 $T/../../campaign/compare-verdicts.py $V replay      # 15 lines "equal": against the run, its replay and its audit; exit 0
+(cd $V/dry-1 && sha256sum -c --quiet files.sha256)               # the committed files of a vector
 ```
 The campaign scripts sit outside this directory (`../../campaign/`) because they name the planted fault of each
 run, which the stimulus directory must not (`fth verify-plan` refuses it).
@@ -212,6 +213,8 @@ run, which the stimulus directory must not (`fth verify-plan` refuses it).
   held packet released later carries its old time tag (teardown windows of L2-1 and L2-2). The helper therefore
   drops a sample equal in time and value to the one before it (plan amendment 7) and nothing else: an equal
   value with a later time is a step of 0 and FAIL. `test/kat` pins both.
+  The filter is exact only while `TpkA` and `TpkB` list this one channel and no other, so that a packet's time
+  is the time of this channel's write: `TestDeploymentsProject/Ref/Top/RefPackets.fppi:303-309`.
 - **State a planted fault leaves behind.** A test's teardown clears only the test's own override.
   `first_packet_also_held` leaves packet 60 held from the setup of L2-1 until the teardown of L2-2 (L2-2 holds
   packet 60 itself). `second_packet_also_held` leaves packet 61 held from the setup of L2-2 through L6-1 until
