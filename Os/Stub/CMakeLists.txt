@@ -47,9 +47,8 @@ register_fprime_ut(
     Os_Cpu_Stub_Implementation
     Os_Memory_Stub_Implementation
     Os_Queue_Stub_Implementation
-  CHOOSES_IMPLEMENTATIONS
-    Os_Mutex_Stub
-    Os_RawTime_Stub
+    Os_Mutex_Stub_Implementation
+    Os_RawTime_Stub_Implementation
 )
 if (TARGET StubTest)
     target_compile_options(StubTest PRIVATE -Wno-conversion)

@@ -24,10 +24,10 @@ PosixRawTime::Status PosixRawTime::now() {
     return Status::OP_OK;
 }
 
-PosixRawTime::Status PosixRawTime::getTimeInterval(const Os::RawTime& other, Fw::TimeInterval& interval) const {
+PosixRawTime::Status PosixRawTime::getTimeInterval(const RawTimeInterface& other, Fw::TimeInterval& interval) const {
     // const_cast: RawTimeInterface::getHandle() is non-const; the handle is only read here
     const PosixRawTimeHandle* other_handle =
-        static_cast<const PosixRawTimeHandle*>(const_cast<Os::RawTime&>(other).getHandle());
+        static_cast<const PosixRawTimeHandle*>(const_cast<RawTimeInterface&>(other).getHandle());
     FW_ASSERT(other_handle != nullptr);
     // Times read from different clocks share no epoch, so their difference is meaningless
     if (this->m_handle.m_clock_id != other_handle->m_clock_id) {

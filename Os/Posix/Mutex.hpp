@@ -5,7 +5,7 @@
 #ifndef OS_POSIX_MUTEX_HPP
 #define OS_POSIX_MUTEX_HPP
 #include <pthread.h>
-#include <Os/Mutex.hpp>
+#include <Os/Interfaces/MutexInterface.hpp>
 
 namespace Os {
 namespace Posix {

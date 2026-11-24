@@ -2,10 +2,11 @@
 // \title Os/Posix/RawTime.hpp
 // \brief Posix definitions for Os::RawTime
 // ======================================================================
+// Included before the guard: Os/RawTime.hpp may include this file while it is itself being included
+#include <Os/Interfaces/RawTimeInterface.hpp>
 #ifndef OS_POSIX_RAWTIME_HPP
 #define OS_POSIX_RAWTIME_HPP
 
-#include <Os/RawTime.hpp>
 #include <ctime>
 
 namespace Os {
@@ -57,7 +58,7 @@ class PosixRawTime : public RawTimeInterface {
     //! \param other The other RawTimeHandle to compare against.
     //! \param interval Output parameter to store the calculated time interval.
     //! \return Status indicating the result of the operation; INVALID_PARAMS if the clock sources differ.
-    Status getTimeInterval(const Os::RawTime& other, Fw::TimeInterval& interval) const override;
+    Status getTimeInterval(const RawTimeInterface& other, Fw::TimeInterval& interval) const override;
 
     //! \brief Serialize the contents of the RawTimeInterface object into a buffer.
     //!

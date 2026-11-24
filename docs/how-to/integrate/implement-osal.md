@@ -17,7 +17,7 @@ Before starting, you should have:
 
 ## Overview
 
-The OSAL uses a delegate pattern to decouple F´ application code from platform-specific OS calls. Each OSAL _service_ (Mutex, File, Task, etc.) has three layers: an **interface class** defining the contract, a **wrapper class** (e.g., `Os::Mutex`) that application code uses, and a **platform-specific implementation** that the wrapper delegates to. The build system selects the implementation at link time. Before proceeding, read the [OSAL Software Design Document](../../../Os/docs/sdd.md) — in particular the [delegate pattern](../../../Os/docs/sdd.md#51-delegate-pattern) and [implementation architecture](../../../Os/docs/sdd.md#5-implementation-architecture) sections — as this guide assumes familiarity with those concepts.
+The OSAL uses a wrapper pattern to decouple F´ application code from platform-specific OS calls. Each OSAL _service_ (Mutex, File, Task, etc.) has three layers: an **interface class** defining the contract, a **wrapper class** (e.g., `Os::Mutex`) that application code uses, and a **platform-specific implementation** that the wrapper holds by value and forwards to. The implementation is selected at compile time in `config/OsSelection.hpp`. Before proceeding, read the [OSAL Software Design Document](../../../Os/docs/sdd.md) — in particular the [delegate pattern](../../../Os/docs/sdd.md#51-delegate-pattern) and [implementation architecture](../../../Os/docs/sdd.md#5-implementation-architecture) sections — as this guide assumes familiarity with those concepts.
 
 This guide walks through implementing an OSAL for a hypothetical OS called **"MyOs"**, and walks through the implementation of the `Os::Mutex` service as the example. The same process applies for all other OSAL services. Reference implementations are linked in the [Additional Resources](#additional-resources) section below.
 
@@ -34,7 +34,6 @@ fprime-my-os/
 │       ├── CMakeLists.txt
 │       ├── Mutex.hpp
 │       ├── Mutex.cpp
-│       └── DefaultMutex.cpp
 └── library.cmake
 ```
 
@@ -65,7 +64,7 @@ Create `FprimeMyOs/Os/Mutex.hpp`:
 #ifndef MYOS_MUTEX_HPP
 #define MYOS_MUTEX_HPP
 
-#include <Os/MutexInterface.hpp>  // the interface + Status; Os/Mutex.hpp is only the alias/aggregation header
+#include <Os/Interfaces/MutexInterface.hpp>  // the pure-virtual interface; Status comes from Os::MutexUserInterface
 #include <myos/mutex.h>  // MyOs native mutex API
 
 namespace Os {
@@ -98,7 +97,7 @@ class MyOsMutex : public MutexInterface {
 ```
 
 > [!TIP]
-> Look at each interface header in `Os/` (e.g., `Os/MutexInterface.hpp`, `Os/File.hpp`, `Os/Task.hpp`) to see the exact set of pure virtual methods that need to be implemented for each. Each interface also defines a `Status` enum — your implementation must return the appropriate [status values](../../../Os/docs/sdd.md#24-error-handling). Note: for services that support compile-time selection, the pure-virtual contract lives in the `*Interface.hpp` header (e.g. `Os/MutexInterface.hpp`, `Os/RawTimeInterface.hpp`), while `Os/Mutex.hpp` / `Os/RawTime.hpp` are thin alias/aggregation headers.
+> Look at each interface header in `Os/` (e.g., `Os/Interfaces/MutexInterface.hpp`, `Os/Interfaces/FileInterface.hpp`, `Os/Interfaces/TaskInterface.hpp`) to see the exact set of pure virtual methods that need to be implemented for each. Each interface also defines a `Status` enum — your implementation must return the appropriate [status values](../../../Os/docs/sdd.md#24-error-handling). Note: for services that support compile-time selection, the pure-virtual contract lives in the `*Interface.hpp` header (e.g. `Os/MutexInterface.hpp`, `Os/RawTimeInterface.hpp`), while `Os/Mutex.hpp` / `Os/RawTime.hpp` are thin alias/aggregation headers.
 
 ### 2.2 — Implement the Methods
 
@@ -156,27 +155,13 @@ MutexHandle* MyOsMutex::getHandle() {
 
 ---
 
-## Step 2.5 — Optional: Override for Compile-Time Selection (Performance Optimization)
+## Step 3 — Select the Implementation
 
-By default, F´ uses **link-time selection** with runtime virtual dispatch through the delegate pattern (see [OSAL SDD §5.2](../../../Os/docs/sdd.md#52-selection-mechanisms-link-time-vs-compile-time)). For performance-critical platforms (e.g., bare-metal embedded systems with tight timing constraints), projects can override the default configuration to enable compile-time selection that eliminates virtual dispatch overhead and enables aggressive compiler optimizations including function inlining and link-time optimization (LTO).
+Every OSAL service is selected at compile time. `Os::Mutex` is an alias of `Os::MutexCommon<T>`, a wrapper template that holds the implementation `T` by value and forwards each call to it directly: no virtual dispatch, no factory function, and no handle storage. The alias and the header defining `T` are set in the configuration header `config/OsSelection.hpp`.
 
-> [!NOTE]
-> The F´ OSAL provides a default configuration header (`default/config/OsSelection.hpp`) that enables aliasing and defaults to link-time selection. These are part of F´'s core configuration. This step describes how **projects** can override these defaults for their specific deployments.
+F´'s default `default/config/OsSelection.hpp` selects the in-tree Posix, Linux, Darwin and Generic implementations. To select yours, override that header. An override replaces the whole file, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed: start from a copy of the default.
 
-### Why Compile-Time Selection?
-
-See [OSAL SDD §5.2.2 "Compile-Time Selection"](../../../Os/docs/sdd.md#522-compile-time-selection-performance-optimization) for a detailed explanation of the trade-offs between link-time and compile-time selection. In summary:
-
-- **Link-time selection (default)** uses virtual dispatch (~10-50 cycles overhead) but provides runtime flexibility
-- **Compile-time selection** enables inlining and LTO, eliminating call overhead for performance-critical code
-
-This optimization is most valuable for bare-metal systems with high-frequency operations like telemetry timestamping.
-
-### How Projects Override for Compile-Time Selection
-
-Projects override compile-time selection by providing their own configuration header that replaces F´'s default. The override replaces the whole `config/OsSelection.hpp`, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed. For `RawTime`, create a project-specific override of `config/OsSelection.hpp`:
-
-**Step 1:** In your project's config directory, create `OsSelection.hpp`:
+**Step 1:** In your project's (or platform's) config directory, create `OsSelection.hpp` from a copy of the default and change the Mutex entries:
 
 ```c++
 // my-project/config-overrides/OsSelection.hpp
@@ -184,34 +169,31 @@ Projects override compile-time selection by providing their own configuration he
 #define CONFIG_OSSELECTION_HPP
 
 // Do not include any Os OSAL headers here (circular dependency); forward-declare only.
-
-// Forward-declare your concrete implementation class
-namespace MyPlatform {
-    class MyRawTime;
-}
-
 namespace Os {
-    class DelegateMutex;             // Forward-declare the link-time delegates
-    class DelegateConditionVariable; // kept for Mutex and ConditionVariable
 
-    // Alias Os::RawTime directly to your implementation (no delegate wrapper)
-    using RawTime = MyPlatform::MyRawTime;
+template <typename T>
+class MutexCommon;
+// ... the other Os::<Service>Common templates, as in the default
 
-    // The override file replaces the whole default, so every selection must be
-    // present: keep Mutex and ConditionVariable on the link-time delegates
-    using Mutex = DelegateMutex;
-    using ConditionVariable = DelegateConditionVariable;
+namespace MyOs {
+namespace Mutex {
+class MyOsMutex;
 }
+}  // namespace MyOs
 
-// Point to your implementation header (will be included after RawTimeInterface.hpp)
-#define OS_RAW_TIME_HEADER "MyPlatform/Os/RawTime.hpp"
-#define OS_MUTEX_HEADER <Os/DelegateMutex.hpp>
-#define OS_CONDITION_VARIABLE_HEADER <Os/DelegateConditionVariable.hpp>
+using Mutex = MutexCommon<MyOs::Mutex::MyOsMutex>;
+// ... every other Os::<Service> alias, as in the default
+
+}  // namespace Os
+
+// Header defining the implementation; included by Os/Mutex.hpp after it defines Os::MutexCommon
+#define OS_MUTEX_HEADER <FprimeMyOs/Os/Mutex.hpp>
+// ... every other OS_*_HEADER macro, as in the default
 
 #endif  // CONFIG_OSSELECTION_HPP
 ```
 
-**Step 2:** Register the config header in your project's `config-overrides/CMakeLists.txt` (see [Configuration Modules](../../user-manual/build-system/configuration.md#overriding-configuration-in-a-project)):
+**Step 2:** Register the config header in the `config-overrides/CMakeLists.txt` (see [Configuration Modules](../../user-manual/build-system/configuration.md#overriding-configuration-in-a-project)):
 
 ```diff
 register_fprime_config(
@@ -223,73 +205,14 @@ register_fprime_config(
 )
 ```
 
-**Step 3:** Ensure your implementation class inherits from `RawTimeInterface`:
-
-```c++
-// MyPlatform/Os/RawTime.hpp
-#include <Os/RawTimeInterface.hpp>
-
-namespace MyPlatform {
-
-class MyRawTime : public Os::RawTimeInterface {
-    // Implementation of RawTimeInterface methods
-    // Now called directly without delegation wrapper
-    // ...
-};
-
-}  // namespace MyPlatform
-```
-
 ### Important Constraints
 
-See [OSAL SDD §5.2.2](../../../Os/docs/sdd.md#522-compile-time-selection-performance-optimization) for the complete list of constraints. Key points:
-
-- **ABI Compatibility**: All files must use the same configuration
-- **No Circular Dependencies**: Config header must not include Os OSAL headers
-- **Interface Inheritance Required**: Implementation must inherit from interface
-- **An Implementation Must Still Be Chosen**: the alias changes only the C++ type. The `Os_<Service>` module still `REQUIRES_IMPLEMENTATIONS`, so CMake will fail with `requires implementation of Os_Mutex but none was chosen` unless some `Os_<Service>_<Impl>` is selected via `CHOOSES_IMPLEMENTATIONS` (an in-tree one such as `Os_Mutex_Stub` is sufficient; its `getDelegate()` is compiled but unused), and the module providing the aliased class must be in the link
-- **Paired Services**: `Os::Mutex` and `Os::ConditionVariable` are both configured in `config/OsSelection.hpp` and must be overridden together with a ConditionVariable that accepts the selected Mutex's handle (see that header)
-
-### Which Services Support Compile-Time Selection?
-
-See [OSAL SDD §5.2.2](../../../Os/docs/sdd.md#522-compile-time-selection-performance-optimization) for OS services which support aliasing. 
-
----
-
-## Step 3 — Register the Delegate Factory
-
-> [!NOTE]
-> If you enabled compile-time selection in Step 2.5, the delegate factory is not called, but the build still requires an implementation to be chosen (see Step 7). You may either keep a `DefaultMutex.cpp` as below, or choose an existing in-tree implementation (e.g. `Os_Mutex_Stub`) and skip this step.
-
-Create `FprimeMyOs/Os/DefaultMutex.cpp`. This file provides the `getDelegate()` factory function that the `Os::Mutex` wrapper calls to construct the implementation:
-
-```c++
-// FprimeMyOs/Os/DefaultMutex.cpp
-#include <Os/Delegate.hpp>
-#include <FprimeMyOs/Os/Mutex.hpp>
-
-namespace Os {
-
-MutexInterface* MutexInterface::getDelegate(MutexHandleStorage& aligned_new_memory) {
-    return Os::Delegate::makeDelegate<MutexInterface, Os::MyOs::Mutex::MyOsMutex>(
-        aligned_new_memory);
-}
-
-}  // namespace Os
-```
-
-`Os::Delegate::makeDelegate` is a helper that performs the placement-new with compile-time checks that verify:
-
-- `MyOsMutex` derives from `MutexInterface`
-- `sizeof(MyOsMutex)` fits within `MutexHandleStorage`
-- `alignof(MyOsMutex)` is compatible with `FW_HANDLE_ALIGNMENT`
-
-> [!NOTE]
-> Some interfaces require additional parameters in their `getDelegate` signature:
-> - `FileInterface` takes an optional `const FileInterface* to_copy` parameter for copy construction
-> - `RawTimeInterface` takes optional `const RawTimeInterface* to_copy` and `RawTimeSource source` parameters to support both copy construction and selectable timer sources. Pass `source` to the implementation's constructor via the three-argument `makeDelegate(aligned_new_memory, to_copy, source)` overload; the implementation should store the selected source in its handle so copies preserve it, honor it in `now()`, and return `INVALID_PARAMS` from `getTimeInterval()` when the two instances use different sources. See `Os/Posix/RawTime.cpp` and `config/RawTimeSource.hpp`, whose enumerators carry the platform clock id.
-> 
-> The `makeDelegate` helper supports all these signatures. Check each interface header for the exact `getDelegate` signature required.
+- **One Selection per Build**: every file in a build must see the same `config/OsSelection.hpp`; `Os::Mutex` is a different type for each selection.
+- **No Circular Dependencies**: the config header must not include Os OSAL headers; forward-declare only.
+- **The Implementation Must Be Linked**: the alias changes only the C++ type. The module providing the implementation must still be in the link (see Step 7).
+- **Paired Services**: a ConditionVariable implementation operates on the handle of the selected `Os::Mutex`, so the two must be selected as a compatible pair (see the default header).
+- **RawTime**: the implementation must be copyable and constructible from a `RawTimeSource`.
+- **Unit Test Builds**: under `BUILD_UT` the default wraps the File and RawTime selections in `Os::Ut::File::UtFile` and `Os::Ut::RawTime::UtRawTime` so that unit tests can intercept calls (see `Os/Interfaces/Test/`). Keep that structure in an override if the unit tests of F´ components are to be run against it.
 
 ---
 
@@ -306,9 +229,9 @@ register_os_implementation("Mutex" MyOs) # args: "ServiceName" "PlatformSuffix"
 
 This single `register_os_implementation` call:
 
-1. Expects the files `Mutex.hpp`, `Mutex.cpp`, and `DefaultMutex.cpp` in the current directory.
+1. Expects the files `Mutex.hpp` and `Mutex.cpp` in the current directory.
 2. Creates an `Os_Mutex_MyOs_Implementation` target with the implementation sources (`Mutex.cpp`, `Mutex.hpp`).
-3. Creates an `Os_Mutex_MyOs` target with `DefaultMutex.cpp` (the delegate factory), registered as an implementation of `Os_Mutex`.
+3. Creates an `Os_Mutex_MyOs` target, registered as an implementation of `Os_Mutex`, that brings the implementation into the link.
 
 If the module depends on other modules, pass them as additional arguments:
 
@@ -316,7 +239,7 @@ If the module depends on other modules, pass them as additional arguments:
 register_os_implementation("Task" MyOs MyOs_Shared Fw_Time)
 ```
 
-If multiple interfaces share a `Default*.cpp`, list them together:
+Interfaces that are implemented together are listed together:
 
 ```cmake
 register_os_implementation("Mutex;ConditionVariable" MyOs MyOs_Shared)
@@ -339,7 +262,7 @@ The process described above for `Os::Mutex` is the same for every OSAL module. F
 
 1. Create `<Module>.hpp` with a handle struct and implementation class inheriting from the interface.
 2. Create `<Module>.cpp` implementing the virtual methods using your OS's native APIs.
-3. Create `Default<Module>.cpp` implementing the `getDelegate()` factory.
+3. Select it in `config/OsSelection.hpp`.
 4. Register with `register_os_implementation` in `CMakeLists.txt`.
 
 > [!NOTE]
@@ -358,11 +281,11 @@ The full set of [OSAL modules](../../../Os/docs/sdd.md#2-core-services) that can
 | **FileSystem** | `FileSystemInterface` | `rename()`, `remove()`, `stat()` |
 | **Directory** | `DirectoryInterface` | `open()`, `read()`, `close()` |
 | **Console** | `ConsoleInterface` | `write()` |
-| **RawTime** | `RawTimeInterface` | `now()`, `getTimeInterval()` (getDelegate takes `RawTimeSource`) |
+| **RawTime** | `RawTimeInterface` | `now()`, `getTimeInterval()` (constructible from `RawTimeSource`) |
 | **Cpu** | `CpuInterface` | `getCount()`, `getTicks()` |
 | **Memory** | `MemoryInterface` | `getUsage()` |
 
-Refer to each interface header in `Os/` for the full method signatures and status enums.
+Refer to each interface header in `Os/Interfaces/` for the full method signatures and status enums.
 
 ---
 
@@ -370,7 +293,7 @@ Refer to each interface header in `Os/` for the full method signatures and statu
 
 Some guidance is available in the [Porting Guide](porting-guide.md), and a full How-To will soon follow on how to port F Prime to a new platform.
 
-The bottom line is that to use your new OSAL implementation, you need to add the `Os_<Module>_<Suffix>` target to the `CHOOSES_IMPLEMENTATIONS` list in your platform CMake files. Examples are available:
+The bottom line is that to use your new OSAL implementation, you need to select it in `config/OsSelection.hpp` (Step 3) and add the `Os_<Module>_<Suffix>` target to the `CHOOSES_IMPLEMENTATIONS` list in your platform CMake files. Examples are available:
 
 - [F Prime Zephyr Support Package](https://github.com/fprime-community/fprime-zephyr/tree/main/cmake/platform)
 - [F Prime VxWorks Support Package](https://github.com/fprime-community/fprime-vxworks/tree/devel/cmake/platform)

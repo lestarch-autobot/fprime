@@ -10,6 +10,9 @@
 
 using namespace Os::Stub::Mutex::Test;
 
+// Os::Mutex wrapper instantiated on the test stub, independent of the selection in config/OsSelection.hpp
+using MutexUnderTest = Os::MutexCommon<TestMutex>;
+
 // Basic file tests
 class Interface : public ::testing::Test {
   public:
@@ -22,19 +25,19 @@ class Interface : public ::testing::Test {
 
 // Ensure that Os::Mutex properly calls the implementation constructor
 TEST_F(Interface, Construction) {
-    Os::Mutex mutex;
+    MutexUnderTest mutex;
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CONSTRUCT_FN);
 }
 
 // Ensure that Os::Mutex properly calls the implementation destructor
 TEST_F(Interface, Destruction) {
-    delete (new Os::Mutex);
+    delete (new MutexUnderTest);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::DESTRUCT_FN);
 }
 
 // Ensure that Os::Mutex properly calls the implementation take()
 TEST_F(Interface, Take) {
-    Os::Mutex mutex;
+    MutexUnderTest mutex;
     StaticData::data.takeStatus = Os::Mutex::Status::ERROR_OTHER;
     ASSERT_EQ(mutex.take(), StaticData::data.takeStatus);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::TAKE_FN);
@@ -42,7 +45,7 @@ TEST_F(Interface, Take) {
 
 // Ensure that Os::Mutex properly calls the implementation release()
 TEST_F(Interface, Release) {
-    Os::Mutex mutex;
+    MutexUnderTest mutex;
     StaticData::data.releaseStatus = Os::Mutex::Status::ERROR_OTHER;
     ASSERT_EQ(mutex.release(), StaticData::data.releaseStatus);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::RELEASE_FN);
@@ -50,28 +53,28 @@ TEST_F(Interface, Release) {
 
 // Ensure that Os::Mutex properly calls the implementation lock()
 TEST_F(Interface, Lock) {
-    Os::Mutex mutex;
+    MutexUnderTest mutex;
     mutex.lock();
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::TAKE_FN);
 }
 
 // Ensure that Os::Mutex properly calls the implementation unLock()
 TEST_F(Interface, UnLock) {
-    Os::Mutex mutex;
+    MutexUnderTest mutex;
     mutex.unLock();
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::RELEASE_FN);
 }
 
 // Ensure that Os::Mutex properly calls the implementation unlock()
 TEST_F(Interface, UnlockAlias) {
-    Os::Mutex mutex;
+    MutexUnderTest mutex;
     mutex.unlock();
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::RELEASE_FN);
 }
 
 // Ensure that Os::Mutex properly calls the implementation getHandle()
 TEST_F(Interface, GetHandle) {
-    Os::Mutex mutex;
+    MutexUnderTest mutex;
     ASSERT_EQ(mutex.getHandle(), nullptr);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_HANDLE_FN);
 }

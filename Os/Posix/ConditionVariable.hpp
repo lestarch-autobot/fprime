@@ -5,7 +5,7 @@
 #ifndef OS_POSIX_CONDITION_VARIABLE_HPP
 #define OS_POSIX_CONDITION_VARIABLE_HPP
 #include <pthread.h>
-#include <Os/Condition.hpp>
+#include <Os/Interfaces/ConditionVariableInterface.hpp>
 
 namespace Os {
 namespace Posix {

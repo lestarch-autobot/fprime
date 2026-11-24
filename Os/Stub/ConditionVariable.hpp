@@ -4,7 +4,7 @@
 // ======================================================================
 #ifndef OS_STUB_CONDITION_VARIABLE_HPP
 #define OS_STUB_CONDITION_VARIABLE_HPP
-#include <Os/Condition.hpp>
+#include <Os/Interfaces/ConditionVariableInterface.hpp>
 
 namespace Os {
 namespace Stub {

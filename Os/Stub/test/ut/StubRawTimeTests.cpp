@@ -12,6 +12,9 @@
 
 using namespace Os::Stub::RawTime::Test;
 
+// Os::RawTime wrapper instantiated on the test stub, independent of the selection in config/OsSelection.hpp
+using RawTimeUnderTest = Os::RawTimeCommon<TestRawTime>;
+
 // Basic file tests
 class Interface : public ::testing::Test {
   public:
@@ -24,33 +27,33 @@ class Interface : public ::testing::Test {
 
 // Ensure that Os::RawTime properly calls the implementation constructor
 TEST_F(Interface, Construction) {
-    Os::RawTime rawtime;
+    RawTimeUnderTest rawtime;
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CONSTRUCT_FN);
 }
 
 // Ensure that Os::RawTime properly calls the implementation constructor
 TEST_F(Interface, CopyConstruction) {
-    Os::RawTime rawtime;
-    Os::RawTime rawtime_copy(rawtime);
+    RawTimeUnderTest rawtime;
+    RawTimeUnderTest rawtime_copy(rawtime);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::COPY_CONSTRUCT_FN);
 }
 
 // Ensure that Os::RawTime properly calls the implementation destructor
 TEST_F(Interface, Destruction) {
-    delete (new Os::RawTime);
+    delete (new RawTimeUnderTest);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::DESTRUCT_FN);
 }
 
 // Ensure that Os::RawTime properly calls the following delegate function
 TEST_F(Interface, Now) {
-    Os::RawTime rawtime;
+    RawTimeUnderTest rawtime;
     ASSERT_EQ(rawtime.now(), Os::RawTime::Status::OP_OK);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_TIME_FN);
 }
 
 // Ensure that Os::RawTime properly calls the following delegate function
 TEST_F(Interface, GetTimeInterval) {
-    Os::RawTime rawtime;
+    RawTimeUnderTest rawtime;
     Fw::TimeInterval unused;
     ASSERT_EQ(rawtime.getTimeInterval(rawtime, unused), Os::RawTime::Status::OP_OK);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_INTERVAL_FN);
@@ -58,7 +61,7 @@ TEST_F(Interface, GetTimeInterval) {
 
 // Ensure that Os::RawTime properly calls the following delegate function
 TEST_F(Interface, Serialize) {
-    Os::RawTime rawtime;
+    RawTimeUnderTest rawtime;
     Fw::Buffer buffer;
     auto esb = buffer.getSerializer();
     ASSERT_EQ(rawtime.serializeTo(esb), Fw::FW_SERIALIZE_OK);
@@ -67,7 +70,7 @@ TEST_F(Interface, Serialize) {
 
 // Ensure that Os::RawTime properly calls the following delegate function
 TEST_F(Interface, Deserialize) {
-    Os::RawTime rawtime;
+    RawTimeUnderTest rawtime;
     Fw::Buffer buffer;
     auto esb = buffer.getDeserializer();
     ASSERT_EQ(rawtime.deserializeFrom(esb), Fw::FW_SERIALIZE_OK);
@@ -76,7 +79,7 @@ TEST_F(Interface, Deserialize) {
 
 // Ensure that Os::RawTime properly calls the implementation getHandle()
 TEST_F(Interface, GetHandle) {
-    Os::RawTime rawtime;
+    RawTimeUnderTest rawtime;
     rawtime.getHandle();
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_HANDLE_FN);
 }

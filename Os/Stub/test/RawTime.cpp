@@ -15,6 +15,11 @@ TestRawTime::TestRawTime() {
     StaticData::data.lastCalled = StaticData::LastFn::CONSTRUCT_FN;
 }
 
+TestRawTime::TestRawTime(RawTimeSource source) {
+    (void)source;
+    StaticData::data.lastCalled = StaticData::LastFn::CONSTRUCT_FN;
+}
+
 TestRawTime::TestRawTime(const TestRawTime& other) {
     StaticData::data.lastCalled = StaticData::LastFn::COPY_CONSTRUCT_FN;
 }
@@ -33,7 +38,7 @@ TestRawTime::Status TestRawTime::now() {
     return Status::OP_OK;
 }
 
-TestRawTime::Status TestRawTime::getTimeInterval(const Os::RawTime& other, Fw::TimeInterval& interval) const {
+TestRawTime::Status TestRawTime::getTimeInterval(const RawTimeInterface& other, Fw::TimeInterval& interval) const {
     StaticData::data.lastCalled = StaticData::LastFn::GET_INTERVAL_FN;
     return Status::OP_OK;
 }

@@ -128,17 +128,17 @@ Os::Directory::Status errno_to_directory_status(int errno_input) {
     return status;
 }
 
-RawTime::Status errno_to_rawtime_status(int errno_input) {
-    RawTime::Status status = RawTime::Status::OP_OK;
+Os::RawTime::Status errno_to_rawtime_status(int errno_input) {
+    Os::RawTime::Status status = Os::RawTime::Status::OP_OK;
     switch (errno_input) {
         case 0:
-            status = RawTime::Status::OP_OK;
+            status = Os::RawTime::Status::OP_OK;
             break;
         case EINVAL:
-            status = RawTime::Status::INVALID_PARAMS;
+            status = Os::RawTime::Status::INVALID_PARAMS;
             break;
         default:
-            status = RawTime::Status::OTHER_ERROR;
+            status = Os::RawTime::Status::OTHER_ERROR;
             break;
     }
     return status;
