@@ -40,7 +40,8 @@
       "fails": {
         "L6-1": [
           "event tlmSend.PacketNotFound(packetId=999) count == 1",
-          "event cmdDisp.OpCodeError count == 1"
+          "event cmdDisp.OpCodeError count == 1",
+          "event tlmSend.PacketSent count == 0"
         ]
       },
       "mechanism": "SEND_PKT is sent for packet 60, which exists, so no refusal is produced",

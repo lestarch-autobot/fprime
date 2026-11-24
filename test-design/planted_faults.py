@@ -44,7 +44,7 @@ planted_fault("second_packet_also_held", applies_to=["L2-2"], fails={"L2-2": [VA
               mechanism="packet 61 is also set SEND_NEVER, so no packet downlinks the channel")(_hold_back(61))
 
 
-@planted_fault("known_packet_requested", applies_to=["L6-1"], fails={"L6-1": [NOTFOUND, OPERR]}, cls="stimulus",
+@planted_fault("known_packet_requested", applies_to=["L6-1"], fails={"L6-1": [NOTFOUND, OPERR, "event tlmSend.PacketSent count == 0"]}, cls="stimulus",
                mechanism="SEND_PKT is sent for packet 60, which exists, so no refusal is produced")
 def known_packet_requested(test_id, command_name, args):
     if _is(command_name, "tlmSend.SEND_PKT"):
