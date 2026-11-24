@@ -15,7 +15,7 @@ description: >-
 Turn an approved plan into runnable tests whose output lands in an
 auditable record. Governing rules are in
 `.github/agents/_shared/test-process-contract.md`; code is written via
-`fprime-development.agent.md` and must satisfy `fprime-cpp-design`.
+`agent-fprime-development` and must satisfy `fprime-cpp-design`.
 
 ---
 
@@ -280,7 +280,7 @@ tester hiding UUT errors; steps that depend on another test's device
 state). Review findings are written locally, never posted to GitHub.
 
 Before hand-off the builder answers the reviewer's five questions
-(`system-test-review.agent.md` Mode B step 3b) as a self-check, with
+(`agent-system-test-review` Mode B step 3b) as a self-check, with
 file:line evidence: (1) tautology — does any plan check pass because the
 harness emits what the oracle checks, without the UUT doing the work?
 (2) swallowed status — does the tester swallow, default or remap any

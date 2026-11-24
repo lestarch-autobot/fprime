@@ -4,7 +4,7 @@ The requirements, FPP-design and test-design phases of component
 development each end in an adversarial review loop before the human
 gate. This file is
 the only place that names the reviewers, the bound and the round
-rules; `fprime-development.agent.md` §2 runs it (and
+rules; `agent-fprime-development` §2 runs it (and
 `fprime-component-development` cardinal rule 2 points here). The
 writing skills (`fprime-component-requirements`,
 `fprime-component-design-fpp`, `fprime-system-test-design`, the test
@@ -15,9 +15,9 @@ orchestrating agent loops them.
 
 | Phase | Artifact under review | Reviewer(s) | Intent input |
 |---|---|---|---|
-| Requirements | Requirements table (`fprime-component-requirements` Step 2 form) | `requirements-review.agent.md` | The request (issue / human goals, quoted) |
-| Design | The `.fpp` model, the `docs/sdd.md` draft (`fprime-component-design-fpp` Step 5), any new port definitions — as a design-only diff | `design-review.agent.md` (categories 1, 3, 4, 6, 7, 9; categories 2, 5, 8 need an implementation and are n/a); `architecture-review.agent.md` (whole model); `design-principles-review.agent.md` | The approved requirements table and the request |
-| Test design | The system test plan and `faults-menu.json` (`fprime-system-test-design` §2–§4) and the unit-test list (`fprime-component-unit-test`, "Test list", in `docs/sdd.md`) — written from the approved requirements, SDD and FPP model; normally no implementation exists yet — where one does, `fprime-system-test-design` §1 code-read-last applies | `system-test-review.agent.md` Mode A | The approved requirements table, SDD and FPP model, and the request |
+| Requirements | Requirements table (`fprime-component-requirements` Step 2 form) | `agent-requirements-review` | The request (issue / human goals, quoted) |
+| Design | The `.fpp` model, the `docs/sdd.md` draft (`fprime-component-design-fpp` Step 5), any new port definitions — as a design-only diff | `agent-design-review` (categories 1, 3, 4, 6, 7, 9; categories 2, 5, 8 need an implementation and are n/a); `agent-architecture-review` (whole model); `agent-design-principles-review` | The approved requirements table and the request |
+| Test design | The system test plan and `faults-menu.json` (`fprime-system-test-design` §2–§4) and the unit-test list (`fprime-component-unit-test`, "Test list", in `docs/sdd.md`) — written from the approved requirements, SDD and FPP model; normally no implementation exists yet — where one does, `fprime-system-test-design` §1 code-read-last applies | `agent-system-test-review` Mode A | The approved requirements table, SDD and FPP model, and the request |
 
 Reviewer agent files are read fresh from `nasa/fprime` `devel`, not
 from the branch being worked on; a reviewer not yet on `devel` is read

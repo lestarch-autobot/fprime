@@ -27,7 +27,7 @@ review. **Never begin it on your own initiative.** Before executing:
 
 ## 1. Phase 1 — development (ask-heavy)
 
-Follow `.github/agents/fprime-development.agent.md`, which classifies
+Follow `.agents/skills/agent-fprime-development/SKILL.md`, which classifies
 the task and sequences the development skills with their phase gates
 (requirements and FPP-design approval before implementation). This is
 the phase to ask questions — front-load every question you can
@@ -58,7 +58,7 @@ environment/hardware access). Do not spin in place or guess.
    (send commands, verify events / telemetry / data products) as an
    operator would. Record observations.
 4. **Run the multi-agent review LOCALLY ONLY** — the same pipeline as
-   `.github/agents/review-orchestrator.agent.md`, with one critical
+   `.agents/skills/agent-review-orchestrator/SKILL.md`, with one critical
    change: **no reviewer, aggregator, or subagent may post anything
    to GitHub** — no PR reviews, inline comments, issue comments,
    statuses, or labels. All findings go to local files only (e.g.
@@ -70,7 +70,7 @@ environment/hardware access). Do not spin in place or guess.
      local diff (`git diff <base>...HEAD`). Every reviewer kickoff
      prompt MUST state in capital letters: LOCAL REVIEW ONLY — DO NOT
      POST TO GITHUB; write findings to the local output file.
-   - Aggregate the findings locally per `review-summary.agent.md`
+   - Aggregate the findings locally per `agent-review-summary`
      into `review-iter-N/summary.md`.
 5. **Triage and fix**: classify each finding (fix / false positive /
    acknowledged nit / accepted as designed / future work), fix test
@@ -129,7 +129,7 @@ and summary) and the ledger shared with the user.
   review pipeline. Validation: zero comments/reviews/statuses created
   by this run on any PR or commit.
 - Never skip the requirements/design approval gates of
-  `fprime-development.agent.md`.
+  `agent-fprime-development`.
 - Never modify or weaken tests to make them pass.
 - Do not give reviewer subagents a token with write scope; grant read
   access only when needed for context.

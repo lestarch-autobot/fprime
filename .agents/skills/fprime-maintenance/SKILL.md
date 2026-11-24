@@ -22,7 +22,7 @@ necessary (for example, to avoid adding technical debt), propose it and
 obtain an engineer's approval before doing it.
 
 Creating new components, topologies, or build modules is not
-maintenance; follow `.github/agents/fprime-development.agent.md` for
+maintenance; follow `.agents/skills/agent-fprime-development/SKILL.md` for
 that work. This skill applies alongside the phase skills whenever the
 task touches code that already exists.
 

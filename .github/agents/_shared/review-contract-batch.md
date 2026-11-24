@@ -155,7 +155,7 @@ After all reviewers complete a unit, the unit aggregator pass writes
 
 - The per-reviewer results table (reviewer, counts by tag, verdict,
   or `ERROR: <reason>` for a failed reviewer — no silent fallback,
-  mirroring `review-summary.agent.md`).
+  mirroring `agent-review-summary`).
 - Unit verdict: `Go` iff every reviewer completed AND every
   reviewer's verdict is `Go`. A failed / missing reviewer forces the
   unit to `No-Go` — a unit is never marked complete with a reviewer

@@ -144,7 +144,7 @@ Where:
      still stable across line drift.
 - `finding_class` is the agent-defined name of the finding (e.g.,
   `ground-reachable-assert`, `cmd-arg-overflow`, `unverified-action`).
-  Each agent's `.agent.md` enumerates its finding classes.
+  Each agent's `agent-<name>` skill enumerates its finding classes.
 
 The same finding (same symbol, same line content, same class) will
 produce the same `finding-key` across reformatting and line drift,

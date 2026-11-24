@@ -165,7 +165,7 @@ Trace from line `L`:
 
 The predicate operand `dispatchOpCode` is `ground-input`. Therefore
 `FW_ASSERT` on it is a ground-reachable assert →
-`security-review.agent.md` category 1 → `**must fix**`.
+`agent-security-review` category 1 → `**must fix**`.
 
 Suggestion: replace the assert with a validation:
 

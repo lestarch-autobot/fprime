@@ -41,7 +41,7 @@ implementation procedure, see `fprime-unit-testing` and the
 ## Test list
 
 The unit-test list is written in the test-design phase (before any
-implementation; `fprime-development.agent.md` §2 phase 3) from the
+implementation; `agent-fprime-development` §2 phase 3) from the
 approved requirements and FPP model, lives in the component's
 `docs/sdd.md` under a "Unit-test list" heading, and is reviewed with
 the system test plan (`.github/agents/_shared/phase-review-loop.md`).

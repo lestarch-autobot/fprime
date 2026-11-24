@@ -20,7 +20,7 @@ and CI paths with attention to intent — anything that smells off in
 the runtime path is in scope, regardless of whether it matches the
 patterns below.
 
-This skill is consumed by `security-review.agent.md` (the runtime-policy
+This skill is consumed by `agent-security-review` (the runtime-policy
 category).
 
 ---

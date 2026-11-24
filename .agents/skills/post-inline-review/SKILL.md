@@ -141,7 +141,7 @@ Replies are used for:
   contract §6a / §9, `reply-kind: concurrence`).
 - The **Duplicate** reply the aggregator posts on a non-canonical
   duplicate thread during its de-duplication post-pass
-  (review-summary.agent.md §5h, `reply-kind: duplicate-close`),
+  (agent-review-summary §5h, `reply-kind: duplicate-close`),
   followed by `resolveReviewThread` on that thread:
 
   ```
@@ -275,7 +275,7 @@ The agent uses this to:
 | `unresolveReviewThread` returns `403` | Post the improperly-resolved reply anyway. The thread remains visibly resolved on GitHub but the reply + maintainer ping is visible inline. Increment `improperly resolved` regardless. |
 | Inline-comment POST returns `422 Pull Request Review thread cannot be created on this line of the diff` | The line is not in the PR's diff. Re-anchor to the nearest line that is in the diff (typically the function header) and prefix the comment body with `(Anchored above the offending line; the diff does not include line N.)` |
 | `PUT .../reviews/{review_id}` (body update) returns `404`/`403` | Submit a fresh metadata-only review instead (§4). Never attempt `/dismissals` on a `COMMENTED` review. |
-| Token missing entirely | Fail fast. The agent emits a single line to the orchestrator: `Cannot post review: TOKEN not provided.` and exits. The orchestrator treats this as a FAILED reviewer per review-summary.agent.md §5. |
+| Token missing entirely | Fail fast. The agent emits a single line to the orchestrator: `Cannot post review: TOKEN not provided.` and exits. The orchestrator treats this as a FAILED reviewer per agent-review-summary §5. |
 
 ---
 

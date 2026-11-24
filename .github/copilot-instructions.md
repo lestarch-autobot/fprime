@@ -6,7 +6,7 @@ conventions, and available skills — is in
 
 When reviewing a pull request, invoke the F Prime multi-agent PR
 review flow at
-[`.github/agents/review-orchestrator.agent.md`](agents/review-orchestrator.agent.md).
+[`.agents/skills/agent-review-orchestrator/SKILL.md`](../.agents/skills/agent-review-orchestrator/SKILL.md).
 
 The orchestrator's behavior is governed by the shared review
 contract

@@ -129,4 +129,5 @@ temp_dir/
 .mylocalauthcache
 .claude/*
 !.claude/skills
+!.claude/agents
 .auth_key

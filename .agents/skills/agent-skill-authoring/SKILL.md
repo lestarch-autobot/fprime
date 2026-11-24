@@ -19,7 +19,8 @@ one directory per skill, holding a file named exactly `SKILL.md`.
 | Artifact | Path |
 |---|---|
 | Skill | `.agents/skills/<skill-name>/SKILL.md` |
-| Agent | `.github/agents/<agent-name>.agent.md` |
+| Agent | `.agents/skills/agent-<agent-name>/SKILL.md` |
+| Generated agent files (never hand-edited) | `.github/agents/<agent-name>.agent.md`, `.claude/agents/<agent-name>.md` |
 | Shared review contract / registry / phase procedures (e.g. `phase-review-loop.md`) | `.github/agents/_shared/` |
 
 The directory name must equal the `name` in the skill's frontmatter,
@@ -74,7 +75,16 @@ Checklist for a new rule:
   not the rule text.
 - Multiple code examples showing the same point.
 
-## 2. Updating agent files (e.g., fprime-code-review.agent.md)
+## 2. Updating agent files (e.g., agent-fprime-code-review)
+
+An agent is a skill named `agent-<name>`. Its frontmatter is `name`, a
+double-quoted one-line `description`, and a `metadata` block with
+exactly `agent-name`, `agent-tools` (space-separated subset of `read
+search edit execute`), `agent-user-invocable` and
+`agent-model-invocable` (`"true"` / `"false"`). After adding an agent or
+changing its frontmatter, run
+`python3 .agents/tools/generate_agent_wrappers.py` and commit the
+regenerated Copilot and Claude Code files; CI fails when they are stale.
 
 Agent files reference the skill as the source of truth. When adding
 a rule to a skill, update the agent file with **minimal additions**:
@@ -134,8 +144,8 @@ Before committing a new rule, verify all references are updated:
 | `fprime-cpp-design` §1 | Rule text |
 | `fprime-cpp-design` §2 | Finding-class row |
 | `fprime-cpp-design` §3 | Triage hint + cluster header |
-| `fprime-code-review.agent.md` scope | "CPP-1 through CPP-N" (2 occurrences) |
-| `fprime-code-review.agent.md` finding classes | New entry |
-| `fprime-code-review.agent.md` heuristics | Clause in scan item |
-| `fprime-code-review.agent.md` triage | Clause in cluster bullet |
+| `agent-fprime-code-review` scope | "CPP-1 through CPP-N" (2 occurrences) |
+| `agent-fprime-code-review` finding classes | New entry |
+| `agent-fprime-code-review` heuristics | Clause in scan item |
+| `agent-fprime-code-review` triage | Clause in cluster bullet |
 | `agent-registry.yml` | `scope_summary` range |
