@@ -809,9 +809,7 @@ endfunction()
 #
 # Assumptions:
 #   1. NAMES is a list of 1 or more named files separated by ;
-#   2. There exists a file named Default${FIRST_ITEM}, where FIRST_ITEM is the first element in NAME, in the same
-#       directory where this cmake function was called
-#   3. For each item e listed in NAMES, there exists a file called ${e}.hpp and ${e}.cpp in the same directory
+#   2. For each item e listed in NAMES, there exists a file called ${e}.hpp and ${e}.cpp in the same directory
 #       where this cmake function was called
 #
 # NAMES: list of named files to add to this module.  The first will be treated as the name of the module.

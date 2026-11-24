@@ -3,7 +3,7 @@
 #define OS_STUB_TEST_CONDITION_VARIABLE_HPP
 #include <deque>
 #include <queue>
-#include "Os/Condition.hpp"
+#include "Os/Interfaces/ConditionVariableInterface.hpp"
 
 namespace Os {
 namespace Stub {

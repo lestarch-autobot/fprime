@@ -16,7 +16,7 @@ StubRawTime::Status StubRawTime::now() {
     return Status::OP_OK;
 }
 
-StubRawTime::Status StubRawTime::getTimeInterval(const Os::RawTime& other, Fw::TimeInterval& interval) const {
+StubRawTime::Status StubRawTime::getTimeInterval(const RawTimeInterface& other, Fw::TimeInterval& interval) const {
     interval.set(0, 0);
     return Status::OP_OK;
 }

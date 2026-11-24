@@ -10,13 +10,16 @@
 #include <Os/Queue.hpp>
 #include <Os/RawTime.hpp>
 #include <Os/Task.hpp>
+#include "Os/Stub/ConditionVariable.hpp"
 #include "Os/Stub/Console.hpp"
 #include "Os/Stub/Cpu.hpp"
 #include "Os/Stub/Directory.hpp"
 #include "Os/Stub/File.hpp"
 #include "Os/Stub/FileSystem.hpp"
 #include "Os/Stub/Memory.hpp"
+#include "Os/Stub/Mutex.hpp"
 #include "Os/Stub/Queue.hpp"
+#include "Os/Stub/RawTime.hpp"
 #include "Os/Stub/Task.hpp"
 // Wrappers under test: Os::<S>Common on the no-op stubs, not the selection in config/OsSelection.hpp
 using MemoryUnderTest = Os::MemoryCommon<Os::Stub::Memory::StubMemory>;
@@ -26,6 +29,9 @@ using FileSystemUnderTest = Os::FileSystemCommon<Os::Stub::FileSystem::StubFileS
 using ConsoleUnderTest = Os::ConsoleCommon<Os::Stub::Console::StubConsole>;
 using QueueUnderTest = Os::QueueCommon<Os::Stub::Queue::StubQueue>;
 using TaskUnderTest = Os::TaskCommon<Os::Stub::Task::StubTask>;
+using MutexUnderTest = Os::MutexCommon<Os::Stub::Mutex::StubMutex>;
+using ConditionVariableUnderTest = Os::ConditionVariableCommon<Os::Stub::Mutex::StubConditionVariable>;
+using RawTimeUnderTest = Os::RawTimeCommon<Os::Stub::RawTime::StubRawTime>;
 using FileUnderTest = Os::FileCommon<Os::Stub::File::StubFile>;
 
 TEST(Stub, File) {
@@ -41,11 +47,11 @@ TEST(Stub, Queue) {
 }
 
 TEST(Stub, ConditionVariable) {
-    Os::ConditionVariable _;
+    ConditionVariableUnderTest _;
 }
 
 TEST(Stub, Mutex) {
-    Os::Mutex _;
+    MutexUnderTest _;
 }
 
 TEST(Stub, Console) {
@@ -69,7 +75,7 @@ TEST(Stub, Memory) {
 }
 
 TEST(Stub, RawTime) {
-    Os::RawTime _;
+    RawTimeUnderTest _;
 }
 
 int main(int argc, char** argv) {

@@ -2,7 +2,7 @@
 // \title Os/Stub/test/Mutex.cpp
 // \brief definitions for TestMutex stubs for interface testing
 // ======================================================================
-#include "Os/Mutex.hpp"
+#include "Os/Interfaces/MutexInterface.hpp"
 
 #ifndef OS_STUB_MUTEX_TEST_HPP
 #define OS_STUB_MUTEX_TEST_HPP

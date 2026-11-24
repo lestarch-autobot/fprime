@@ -2,10 +2,10 @@
 // \title Os/Stub/RawTime.hpp
 // \brief stub definitions for Os::RawTime
 // ======================================================================
+// Included before the guard: Os/RawTime.hpp may include this file while it is itself being included
+#include "Os/Interfaces/RawTimeInterface.hpp"
 #ifndef OS_STUB_RAWTIME_TEST_HPP
 #define OS_STUB_RAWTIME_TEST_HPP
-
-#include "Os/RawTime.hpp"
 
 namespace Os {
 namespace Stub {
@@ -51,6 +51,12 @@ class TestRawTime : public RawTimeInterface {
     //!
     TestRawTime();
 
+    //! \brief constructor with timer source selection (source unused by the stub)
+    explicit TestRawTime(RawTimeSource source);
+
+    //! \brief assignment operator
+    TestRawTime& operator=(const TestRawTime& other) = default;
+
     //! \brief copy constructor
     TestRawTime(const TestRawTime& other);
 
@@ -66,7 +72,7 @@ class TestRawTime : public RawTimeInterface {
     // Implementation-specific RawTime overrides
     // ------------------------------------------------------------
     Status now() override;
-    Status getTimeInterval(const Os::RawTime& other, Fw::TimeInterval& interval) const override;
+    Status getTimeInterval(const RawTimeInterface& other, Fw::TimeInterval& interval) const override;
     Fw::SerializeStatus serializeTo(Fw::SerialBufferBase& buffer,
                                     Fw::Endianness mode = Fw::Endianness::BIG) const override;
     Fw::SerializeStatus deserializeFrom(Fw::SerialBufferBase& buffer,

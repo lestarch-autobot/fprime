@@ -2,10 +2,10 @@
 // \title Os/Stub/RawTime.hpp
 // \brief stub definitions for Os::RawTime
 // ======================================================================
+// Included before the guard: Os/RawTime.hpp may include this file while it is itself being included
+#include "Os/Interfaces/RawTimeInterface.hpp"
 #ifndef OS_STUB_RAWTIME_HPP
 #define OS_STUB_RAWTIME_HPP
-
-#include "Os/RawTime.hpp"
 
 namespace Os {
 namespace Stub {
@@ -22,6 +22,9 @@ class StubRawTime : public RawTimeInterface {
     //! \brief constructor
     //!
     StubRawTime() = default;
+
+    //! \brief constructor with timer source selection (source unused by the stub)
+    explicit StubRawTime(RawTimeSource source) { (void)source; }
 
     //! \brief destructor
     //!
@@ -50,7 +53,7 @@ class StubRawTime : public RawTimeInterface {
     //! \param other The other RawTimeHandle to compare against.
     //! \param interval Output parameter to store the calculated time interval.
     //! \return Status indicating the result of the operation.
-    Status getTimeInterval(const Os::RawTime& other, Fw::TimeInterval& interval) const override;
+    Status getTimeInterval(const RawTimeInterface& other, Fw::TimeInterval& interval) const override;
 
     //! \brief Serialize the contents of the RawTimeInterface object into a buffer.
     //!

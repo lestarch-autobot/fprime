@@ -2,7 +2,7 @@
 // \title Os/Stub/Mutex.hpp
 // \brief stub definitions for Os::Mutex
 // ======================================================================
-#include "Os/Mutex.hpp"
+#include "Os/Interfaces/MutexInterface.hpp"
 
 #include <atomic>
 

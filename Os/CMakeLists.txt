@@ -92,31 +92,17 @@ function(add_fprime_supplied_os_module NAMES SUFFIX)
         "Os_${FIRST_ITEM}"
         ${ARGN}
     )
-    # Services selected at link time supply Default<Name>.cpp; the others are selected in config/OsSelection.hpp
-    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Default${FIRST_ITEM}.cpp")
-        register_fprime_implementation(
-             "${OS_MODULE_NAME}"
-          SOURCES
-            "${CMAKE_CURRENT_LIST_DIR}/Default${FIRST_ITEM}.cpp"
-          IMPLEMENTS
-            "Os_${FIRST_ITEM}"
-          DEPENDS
-            Fw_Time
-            Fw_Types
-            "${OS_MODULE_NAME}_Implementation"
-        )
-    else()
-        register_fprime_implementation(
-             "${OS_MODULE_NAME}"
-          IMPLEMENTS
-            "Os_${FIRST_ITEM}"
-          INTERFACE
-        )
-        # Os_<Name> instantiates the common class on the implementation: link the whole implementation
-        # as nothing earlier in the link order references it
-        target_link_libraries("${OS_MODULE_NAME}" INTERFACE
-            "$<LINK_LIBRARY:WHOLE_ARCHIVE,${OS_MODULE_NAME}_Implementation>")
-    endif()
+    # The implementation is selected in config/OsSelection.hpp
+    register_fprime_implementation(
+         "${OS_MODULE_NAME}"
+      IMPLEMENTS
+        "Os_${FIRST_ITEM}"
+      INTERFACE
+    )
+    # Os_<Name> instantiates the common class on the implementation: link the whole implementation
+    # as nothing earlier in the link order references it
+    target_link_libraries("${OS_MODULE_NAME}" INTERFACE
+        "$<LINK_LIBRARY:WHOLE_ARCHIVE,${OS_MODULE_NAME}_Implementation>")
 endfunction()
 
 add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Models")
@@ -161,54 +147,17 @@ if (TARGET Os_Posix_Models)
     fprime_target_dependencies(Os_Models PUBLIC Os_Posix_Models)
     fprime_target_dependencies(Os_Task PUBLIC Os_Posix_Models)
 endif()
-# Mutex: Mutex.hpp is a thin public alias header (no Mutex.cpp); the interface and
-# link-time delegate live in MutexInterface.hpp / DelegateMutex.{hpp,cpp}. Registered
-# explicitly (rather than via add_named_os_module) because that helper assumes a
-# matching <name>.cpp per header. ConditionVariable (Condition.hpp alias header,
-# ConditionVariableInterface.hpp, DelegateConditionVariable.{hpp,cpp}) stays bundled
-# into Os_Mutex as before, preserving the module name that the Stub impl and
-# REQUIRES_IMPLEMENTATIONS references depend on.
-register_fprime_module(
-      "Os_Mutex"
-    REQUIRES_IMPLEMENTATIONS
-      "Os_Mutex"
-    SOURCES
-      "${CMAKE_CURRENT_LIST_DIR}/DelegateMutex.cpp"
-      "${CMAKE_CURRENT_LIST_DIR}/DelegateConditionVariable.cpp"
-    HEADERS
-      "${CMAKE_CURRENT_LIST_DIR}/Mutex.hpp"
-      "${CMAKE_CURRENT_LIST_DIR}/MutexInterface.hpp"
-      "${CMAKE_CURRENT_LIST_DIR}/DelegateMutex.hpp"
-      "${CMAKE_CURRENT_LIST_DIR}/Condition.hpp"
-      "${CMAKE_CURRENT_LIST_DIR}/ConditionVariableInterface.hpp"
-      "${CMAKE_CURRENT_LIST_DIR}/DelegateConditionVariable.hpp"
-    DEPENDS
-      Fw_Time
-      Fw_Types
-)
-fprime_target_dependencies(Os PUBLIC "Os_Mutex")
+# ConditionVariable (Condition.hpp) is bundled into Os_Mutex: it operates on the selected Os::Mutex
+add_named_os_module("Mutex;Condition")
 add_named_os_module(CountingSemaphore)
 add_named_os_module(Queue)
 add_named_os_module(Cpu)
 add_named_os_module(Memory)
-# RawTime: RawTime.hpp is a thin public alias header (no .cpp); the interface and
-# link-time delegate live in DelegateRawTime.{hpp,cpp}. Registered explicitly
-# because add_named_os_module assumes a matching <name>.cpp per header.
-register_fprime_module(
-      "Os_RawTime"
-    REQUIRES_IMPLEMENTATIONS
-      "Os_RawTime"
-    SOURCES
-      "${CMAKE_CURRENT_LIST_DIR}/DelegateRawTime.cpp"
-    HEADERS
-      "${CMAKE_CURRENT_LIST_DIR}/RawTime.hpp"
-      "${CMAKE_CURRENT_LIST_DIR}/DelegateRawTime.hpp"
-    DEPENDS
-      Fw_Time
-      Fw_Types
-      Fw_Buffer
-)
-fprime_target_dependencies(Os PUBLIC "Os_RawTime")
+add_named_os_module(RawTime Fw_Buffer)
+# Unit test builds select Os::Ut::RawTime::UtRawTime, which wraps the non-test selection (see config/OsSelection.hpp)
+if (BUILD_TESTING)
+    target_sources(Os_RawTime PRIVATE "${CMAKE_CURRENT_LIST_DIR}/Ut/RawTime.cpp")
+endif()
 
 ### UTS ### Note: 3 separate UTs registered here.
 register_fprime_ut(

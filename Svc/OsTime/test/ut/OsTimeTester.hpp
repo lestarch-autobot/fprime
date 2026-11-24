@@ -9,6 +9,7 @@
 
 #include "Svc/OsTime/OsTime.hpp"
 #include "Svc/OsTime/OsTimeGTestBase.hpp"
+#include "Svc/OsTime/test/RawTimeTester/RawTimeTester.hpp"
 
 namespace Svc {
 
@@ -73,6 +74,9 @@ class OsTimeTester : public OsTimeGTestBase {
     // ----------------------------------------------------------------------
     // Member variables
     // ----------------------------------------------------------------------
+
+    //! Intercepts Os::RawTime::now for the lifetime of the tester
+    RawTimeTester rawTimeTester;
 
     //! The component under test
     OsTime component;

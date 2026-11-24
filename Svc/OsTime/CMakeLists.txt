@@ -10,8 +10,6 @@
 #
 ####
 
-add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/test/RawTimeTester")
-
 register_fprime_module(
   AUTOCODER_INPUTS
     "${CMAKE_CURRENT_LIST_DIR}/OsTime.fpp"
@@ -27,7 +25,6 @@ register_fprime_ut(
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/OsTimeTester.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/OsTimeTestMain.cpp"
-  CHOOSES_IMPLEMENTATIONS
-    Svc_OsTime_test_RawTimeTester
+    "${CMAKE_CURRENT_LIST_DIR}/test/RawTimeTester/RawTimeTester.cpp"
   UT_AUTO_HELPERS
 )
