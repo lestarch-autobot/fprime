@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-The `Svc::TlmPacketizer` Component is used to store telemetry values written by other components. The values are stored in serialized form. TlmPacketizer stores telemetry in defined packets, which it sends on invocation of the `run` port. The defined packets are passed in as a table to the `setPacketList()` public method. When telemetry updates are passed to the component, they are placed at the offset in a packet buffer defined by the table. When the `run` port is called, all the defined packets are sent to the output ports with the most recent values. All channels in a packet are pushed together as a packet.
+The `Svc::TlmPacketizer` Component is used to store telemetry values written by other components. The values are stored in serialized form. TlmPacketizer stores telemetry in defined packets, which it sends on invocation of the `run` port. The defined packets are passed in as a packet list to the `setPacketList()` public method. When telemetry updates are passed to the component, they are placed at the offset in a packet buffer defined by the table. When the `run` port is called, all the defined packets are sent to the output ports with the most recent values. All channels in a packet are pushed together as a packet.
 
 TlmPacketizer has a configurable set of sections (e.g. realtime, recorded, etc.). Every packet has a numerical group (aka level). Every section controls the output of packets based on their group.
 
@@ -28,7 +28,7 @@ The requirements for `Svc::TlmPacketizer` are as follows:
 | TPK-010 | The `Svc::TlmPacketizer` component shall mirror per-packet override changes out `packetOverrideOut` and accept a reload of overrides on `packetOverrideIn` for persistence across reboot | Unit Test |
 | TPK-011 | The `Svc::TlmPacketizer` component shall event on a configuration referencing an unknown packet id, on a `packetOverrideIn` record carrying a section out of range, and on a `packetOverrideIn` buffer that could not be fully applied | Unit Test |
 | TPK-012 | The `Svc::TlmPacketizer` component shall event each per-packet override applied or cleared by command, and shall reject the command when the override could not be mirrored out `packetOverrideOut` | Unit Test |
-| TPK-013 | The maximum total number of channel-to-packet memberships, defined as the sum over all packets in the packet list of the number of channels listed in each packet (omitted channels excluded), shall be configurable through `MAX_PACKETIZER_MEMBERSHIPS` | Unit Test |
+| TPK-013 | The `Svc::TlmPacketizer` component shall accept a packet list of at most `MAX_PACKETIZER_MEMBERSHIPS` channel entries and assert otherwise | Unit Test |
 
 
 ## 3. Design
