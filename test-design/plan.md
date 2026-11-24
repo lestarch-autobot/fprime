@@ -86,7 +86,7 @@ Title:     Final state
 Purpose:   Leaves both test packets enabled; the channel's value still follows the archive's dispatch count.
 Covers:    —
 Setup:     All earlier tests run.
-Procedure: MARK(60); CLEAR_PACKET_OVERRIDE(REALTIME, 60); CLEAR_PACKET_OVERRIDE(REALTIME, 61); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(61).
+Procedure: CLEAR_PACKET_OVERRIDE(REALTIME, 60); CLEAR_PACKET_OVERRIDE(REALTIME, 61); wait 2 ticks; MARK(60); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(61).
 Window:    Marker(id=60) … Marker(id=61)
 Pass rule: complete: STD. all_of: ABS; cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them.
 Evidence:  Rising CommandsDispatched samples that match the OpCodeDispatched rows the ground archive holds (a path independent of the packetizer's storage).

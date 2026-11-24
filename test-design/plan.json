@@ -306,9 +306,11 @@
    "covers": [],
    "setup": "All earlier tests run.",
    "procedure": [
-    "MARK(60)",
     "CLEAR_PACKET_OVERRIDE(REALTIME, 60)",
     "CLEAR_PACKET_OVERRIDE(REALTIME, 61)",
+    "wait 2 ticks",
+    "MARK(60)",
+    "CMD_NO_OP()",
     "wait 1 CommandsDispatched sample",
     "CMD_NO_OP()",
     "wait 1 CommandsDispatched sample",
