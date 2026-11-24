@@ -159,7 +159,7 @@ MutexHandle* MyOsMutex::getHandle() {
 
 Every OSAL service is selected at compile time. `Os::Mutex` is an alias of `Os::MutexCommon<T>`, a wrapper template that holds the implementation `T` by value and forwards each call to it directly: no virtual dispatch, no factory function, and no handle storage. The alias and the header defining `T` are set in the configuration header `config/OsSelection.hpp`.
 
-F´'s default `default/config/OsSelection.hpp` selects the in-tree Posix, Linux, Darwin and Generic implementations. To select yours, override that header. An override replaces the whole file, so it must define every alias and `OS_*_HEADER` macro, not just the service being changed: start from a copy of the default.
+F´'s default `default/config/OsSelection.hpp` selects the in-tree Posix, Linux, Darwin and Generic implementations. To select yours, override that header. An override replaces the whole file, so it must define every `Os::Selected::<Service>` alias and `OS_SELECTED_*_HEADER` macro, not just the service being changed: start from a copy of the default.
 
 **Step 1:** In your project's (or platform's) config directory, create `OsSelection.hpp` from a copy of the default and change the Mutex entries:
 
@@ -181,14 +181,19 @@ class MyOsMutex;
 }
 }  // namespace MyOs
 
-using Mutex = MutexCommon<MyOs::Mutex::MyOsMutex>;
-// ... every other Os::<Service> alias, as in the default
+namespace Selected {
+using Mutex = MyOs::Mutex::MyOsMutex;
+// ... every other Os::Selected::<Service> alias, as in the default
+}  // namespace Selected
 
 }  // namespace Os
 
 // Header defining the implementation; included by Os/Mutex.hpp after it defines Os::MutexCommon
-#define OS_MUTEX_HEADER <FprimeMyOs/Os/Mutex.hpp>
-// ... every other OS_*_HEADER macro, as in the default
+#define OS_SELECTED_MUTEX_HEADER <FprimeMyOs/Os/Mutex.hpp>
+// ... every other OS_SELECTED_*_HEADER macro, as in the default
+
+// ... the remainder of the default, unchanged: it derives the Os::<Service> aliases
+//     (e.g. Os::Mutex = Os::MutexCommon<Os::Selected::Mutex>) and the OS_*_HEADER macros
 
 #endif  // CONFIG_OSSELECTION_HPP
 ```
@@ -212,7 +217,7 @@ register_fprime_config(
 - **The Implementation Must Be Linked**: the alias changes only the C++ type. The module providing the implementation must still be in the link (see Step 7).
 - **Paired Services**: a ConditionVariable implementation operates on the handle of the selected `Os::Mutex`, so the two must be selected as a compatible pair (see the default header).
 - **RawTime**: the implementation must be copyable and constructible from a `RawTimeSource`.
-- **Unit Test Builds**: under `BUILD_UT` the default wraps the File, RawTime and Mutex selections in `Os::Ut::File::UtFile`, `Os::Ut::RawTime::UtRawTime` and `Os::Ut::Mutex::UtMutex` so that unit tests can intercept calls (see `Os/test/ut/interceptors/`). Keep that structure in an override if the unit tests of F´ components are to be run against it.
+- **Unit Test Builds**: under `BUILD_UT` the bottom of the default header wraps every selection in a test-only `Os::Ut::<Service>::Ut<Service>` implementation so that unit tests can intercept calls (see `Os/test/ut/interceptors/`). Keep that part of the default in an override if the unit tests of F´ components are to be run against it.
 
 ---
 

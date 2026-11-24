@@ -23,6 +23,6 @@ register_fprime_ut(
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/Scenarios/Random.cpp"
   DEPENDS
     STest
-    Os_File_Test_Stub_Implementation
+    Os_Stub_Test_File
   UT_AUTO_HELPERS
 )

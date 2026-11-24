@@ -1,28 +1,20 @@
 // ======================================================================
 // \title Os/test/ut/interceptors/UtFile.cpp
-// \brief TEST ONLY: Os::File implementation selected in unit test builds
+// \brief TEST ONLY: UtFile and FileTestInterceptor default implementations
 // ======================================================================
-#include <Fw/Types/Assert.hpp>
 #include <Os/test/ut/interceptors/FileTestInterceptor.hpp>
 #include <Os/test/ut/interceptors/UtFile.hpp>
 
 namespace Os {
 namespace Test {
 
-FileTestInterceptor* FileTestInterceptor::s_installed = nullptr;
+void FileTestInterceptor::constructed(FileInterface& /*real*/) {}
 
-FileTestInterceptor::FileTestInterceptor() {
-    FW_ASSERT(s_installed == nullptr);
-    s_installed = this;
-}
+void FileTestInterceptor::destructed(FileInterface& /*real*/) {}
 
-FileTestInterceptor::~FileTestInterceptor() {
-    s_installed = nullptr;
-}
+void FileTestInterceptor::copyConstructed(FileInterface& /*real*/, const FileInterface& /*other*/) {}
 
-FileTestInterceptor* FileTestInterceptor::getInstalled() {
-    return s_installed;
-}
+void FileTestInterceptor::copyAssigned(FileInterface& /*real*/, const FileInterface& /*other*/) {}
 
 FileTestInterceptor::Status FileTestInterceptor::open(FileInterface& real,
                                                       const char* path,
@@ -71,12 +63,48 @@ FileTestInterceptor::Status FileTestInterceptor::write(FileInterface& real,
     return real.write(buffer, size, wait);
 }
 
+FileHandle* FileTestInterceptor::getHandle(FileInterface& real) {
+    return real.getHandle();
+}
+
 }  // namespace Test
 
 namespace Ut {
 namespace File {
 
 using Os::Test::FileTestInterceptor;
+
+UtFile::UtFile() {
+    FileTestInterceptor* interceptor = FileTestInterceptor::getInstalled();
+    if (interceptor != nullptr) {
+        interceptor->constructed(this->m_real);
+    }
+}
+
+UtFile::UtFile(const UtFile& other) : m_real(other.m_real) {
+    FileTestInterceptor* interceptor = FileTestInterceptor::getInstalled();
+    if (interceptor != nullptr) {
+        interceptor->copyConstructed(this->m_real, other.m_real);
+    }
+}
+
+UtFile& UtFile::operator=(const UtFile& other) {
+    if (this != &other) {
+        this->m_real = other.m_real;
+    }
+    FileTestInterceptor* interceptor = FileTestInterceptor::getInstalled();
+    if (interceptor != nullptr) {
+        interceptor->copyAssigned(this->m_real, other.m_real);
+    }
+    return *this;
+}
+
+UtFile::~UtFile() {
+    FileTestInterceptor* interceptor = FileTestInterceptor::getInstalled();
+    if (interceptor != nullptr) {
+        interceptor->destructed(this->m_real);
+    }
+}
 
 UtFile::Status UtFile::open(const char* path, Mode mode, OverwriteType overwrite) {
     FileTestInterceptor* interceptor = FileTestInterceptor::getInstalled();
@@ -134,7 +162,8 @@ UtFile::Status UtFile::write(const U8* buffer, FwSizeType& size, WaitType wait) 
 }
 
 FileHandle* UtFile::getHandle() {
-    return this->m_real.getHandle();
+    FileTestInterceptor* interceptor = FileTestInterceptor::getInstalled();
+    return (interceptor != nullptr) ? interceptor->getHandle(this->m_real) : this->m_real.getHandle();
 }
 
 }  // namespace File

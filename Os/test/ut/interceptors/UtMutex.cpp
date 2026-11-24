@@ -1,32 +1,16 @@
 // ======================================================================
 // \title Os/test/ut/interceptors/UtMutex.cpp
-// \brief TEST ONLY: Os::Mutex implementation selected in unit test builds
+// \brief TEST ONLY: UtMutex and MutexTestInterceptor default implementations
 // ======================================================================
-#include <Fw/Types/Assert.hpp>
 #include <Os/test/ut/interceptors/MutexTestInterceptor.hpp>
 #include <Os/test/ut/interceptors/UtMutex.hpp>
 
 namespace Os {
 namespace Test {
 
-MutexTestInterceptor* MutexTestInterceptor::s_installed = nullptr;
+void MutexTestInterceptor::constructed(MutexInterface& /*real*/) {}
 
-MutexTestInterceptor::MutexTestInterceptor() {
-    FW_ASSERT(s_installed == nullptr);
-    s_installed = this;
-}
-
-MutexTestInterceptor::~MutexTestInterceptor() {
-    s_installed = nullptr;
-}
-
-MutexTestInterceptor* MutexTestInterceptor::getInstalled() {
-    return s_installed;
-}
-
-void MutexTestInterceptor::constructed(MutexInterface& real) {}
-
-void MutexTestInterceptor::destructed(MutexInterface& real) {}
+void MutexTestInterceptor::destructed(MutexInterface& /*real*/) {}
 
 MutexHandle* MutexTestInterceptor::getHandle(MutexInterface& real) {
     return real.getHandle();

@@ -1,33 +1,32 @@
 // ======================================================================
 // \title Os/test/ut/interceptors/UtRawTime.hpp
 // \brief TEST ONLY: Os::RawTime implementation selected in unit test builds
-//
-// Wraps the implementation selected for non-test builds and routes calls through the installed
-// Os::Test::RawTimeTestInterceptor, when there is one. Do not use in flight code.
 // ======================================================================
+// Included before the guard: Os/RawTime.hpp includes this file, and may be reached from the interface header
 #include <Os/Interfaces/RawTimeInterface.hpp>
-
 #ifndef OS_TEST_UT_INTERCEPTORS_UTRAWTIME_HPP_
 #define OS_TEST_UT_INTERCEPTORS_UTRAWTIME_HPP_
 
-#ifndef OS_UT_REAL_RAW_TIME_HEADER
-#error "OS_UT_REAL_RAW_TIME_HEADER must be defined in config/OsSelection.hpp"
+#ifndef OS_SELECTED_RAW_TIME_HEADER
+#error "OS_SELECTED_RAW_TIME_HEADER must be defined in config/OsSelection.hpp"
 #endif
-
-#include OS_UT_REAL_RAW_TIME_HEADER
+#include OS_SELECTED_RAW_TIME_HEADER
 
 namespace Os {
 namespace Ut {
 namespace RawTime {
 
-//! \brief TEST ONLY: Os::RawTime implementation holding the real implementation by value
+//! \brief TEST ONLY: wraps the selected Os::RawTime implementation so that unit tests may intercept its calls
+//!
+//! Each call is forwarded to the installed `Os::Test::RawTimeTestInterceptor`, or directly to the wrapped
+//! implementation (`Os::Selected::RawTime`) when no interceptor is installed.
 class UtRawTime : public RawTimeInterface {
   public:
-    UtRawTime() = default;
+    UtRawTime();
     explicit UtRawTime(RawTimeSource source);
-    UtRawTime(const UtRawTime& other) = default;
-    UtRawTime& operator=(const UtRawTime& other) = default;
-    ~UtRawTime() override = default;
+    UtRawTime(const UtRawTime& other);
+    UtRawTime& operator=(const UtRawTime& other);
+    ~UtRawTime() override;
 
     RawTimeHandle* getHandle() override;
     Status now() override;
@@ -38,7 +37,7 @@ class UtRawTime : public RawTimeInterface {
                                         Fw::Endianness mode = Fw::Endianness::BIG) override;
 
   private:
-    RealRawTime m_real;  //!< Implementation selected for non-test builds
+    Os::Selected::RawTime m_real;  //!< Implementation selected for non-test builds
 };
 
 }  // namespace RawTime

@@ -2,11 +2,12 @@
 // \title Os/Posix/Task.hpp
 // \brief definitions of Posix implementation of Os::Task
 // ======================================================================
+// Included before the guard: the interface header may itself include this file through config/OsSelection.hpp
+#include <Os/Interfaces/TaskInterface.hpp>
 #ifndef Os_Posix_Task_hpp_
 #define Os_Posix_Task_hpp_
 
 #include <pthread.h>
-#include <Os/Interfaces/TaskInterface.hpp>
 #include <atomic>
 
 #include <Fw/Deprecate.hpp>

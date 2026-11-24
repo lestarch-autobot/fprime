@@ -9,43 +9,33 @@
 #define OS_TEST_UT_INTERCEPTORS_FILETESTINTERCEPTOR_HPP_
 
 #include <Os/Interfaces/FileInterface.hpp>
+#include <Os/test/ut/interceptors/TestInterceptor.hpp>
 
 namespace Os {
 namespace Test {
 
 //! \brief TEST ONLY: intercepts the calls made on every Os::File in a unit test build
 //!
-//! A unit test subclasses this interface and overrides the functions it wants to intercept. Each function mirrors the
-//! `FileInterface` function of the same name with one extra first argument, `real`: the implementation a non-test
-//! build would have used (e.g. `PosixFile`) belonging to the `Os::File` on which the call was made. An override may
-//! call `real`, alter its results, or ignore it entirely. Functions that are not overridden pass through to `real`.
-//!
-//! The interceptor is active from construction to destruction, and at most one may exist at a time. While active it
-//! receives the calls of every `Os::File` in the process, from any thread: construct it before starting tasks that use
-//! files, destroy it after they stop, and guard any state it shares between threads.
-//!
-//! ```c++
-//! class FailingOpen : public Os::Test::FileTestInterceptor {
-//!     Status open(Os::FileInterface& real, const char* path, Mode mode, OverwriteType overwrite) override {
-//!         return this->m_fail ? Os::File::NO_PERMISSION : real.open(path, mode, overwrite);
-//!     }
-//!     bool m_fail = false;
-//! };
-//! ```
-class FileTestInterceptor : public FileUserInterface {
+//! Each function mirrors the `FileInterface` function of the same name with one extra first argument, `real`: the
+//! implementation a non-test build would have used, belonging to the `Os::File` on which the call was made.
+//! Functions that are not overridden pass through to `real`; the lifetime notifications do nothing unless
+//! overridden. See Os/test/ut/interceptors/TestInterceptor.hpp for installation and threading rules.
+class FileTestInterceptor : public FileUserInterface, public TestInterceptor<FileTestInterceptor> {
   public:
-    //! \brief constructor: installs this interceptor, asserting that no other interceptor is installed
-    FileTestInterceptor();
+    FileTestInterceptor() = default;
+    virtual ~FileTestInterceptor() = default;
 
-    //! \brief destructor: removes this interceptor
-    virtual ~FileTestInterceptor();
+    //! \brief notification: an Os::File implementation was constructed
+    virtual void constructed(FileInterface& real);
 
-    FileTestInterceptor(const FileTestInterceptor& other) = delete;
-    FileTestInterceptor& operator=(const FileTestInterceptor& other) = delete;
+    //! \brief notification: an Os::File implementation is being destroyed
+    virtual void destructed(FileInterface& real);
 
-    //! \brief get the installed interceptor
-    //! \return installed interceptor, or nullptr when none is installed
-    static FileTestInterceptor* getInstalled();
+    //! \brief notification: `real` was copy constructed from `other`
+    virtual void copyConstructed(FileInterface& real, const FileInterface& other);
+
+    //! \brief notification: `other` was copy assigned to `real`
+    virtual void copyAssigned(FileInterface& real, const FileInterface& other);
 
     //! \brief intercept `FileInterface::open`
     virtual Status open(FileInterface& real, const char* path, Mode mode, OverwriteType overwrite);
@@ -74,8 +64,8 @@ class FileTestInterceptor : public FileUserInterface {
     //! \brief intercept `FileInterface::write`
     virtual Status write(FileInterface& real, const U8* buffer, FwSizeType& size, WaitType wait);
 
-  private:
-    static FileTestInterceptor* s_installed;  //!< Installed interceptor, nullptr when none
+    //! \brief intercept `FileInterface::getHandle`
+    virtual FileHandle* getHandle(FileInterface& real);
 };
 
 }  // namespace Test

@@ -2,31 +2,30 @@
 // \title Os/test/ut/interceptors/UtFile.hpp
 // \brief TEST ONLY: Os::File implementation selected in unit test builds
 // ======================================================================
+// Included before the guard: Os/File.hpp includes this file, and may be reached from the interface header
 #include <Os/Interfaces/FileInterface.hpp>
 #ifndef OS_TEST_UT_INTERCEPTORS_UTFILE_HPP_
 #define OS_TEST_UT_INTERCEPTORS_UTFILE_HPP_
 
-// Validate that OS_UT_REAL_FILE_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_UT_REAL_FILE_HEADER
-#error "OS_UT_REAL_FILE_HEADER must be defined in config/OsSelection.hpp"
+#ifndef OS_SELECTED_FILE_HEADER
+#error "OS_SELECTED_FILE_HEADER must be defined in config/OsSelection.hpp"
 #endif
-#include OS_UT_REAL_FILE_HEADER
+#include OS_SELECTED_FILE_HEADER
 
 namespace Os {
 namespace Ut {
 namespace File {
 
-//! \brief TEST ONLY: implementation of Os::File that lets a unit test intercept file calls
+//! \brief TEST ONLY: wraps the selected Os::File implementation so that unit tests may intercept its calls
 //!
-//! Holds the implementation a non-test build would have selected (`RealFile`, set in config/OsSelection.hpp). Each call
-//! goes to the installed `Os::Test::FileTestInterceptor`, which is handed that real implementation, or straight to
-//! the real implementation when no interceptor is installed. `getHandle` is never intercepted.
+//! Each call is forwarded to the installed `Os::Test::FileTestInterceptor`, or directly to the wrapped
+//! implementation (`Os::Selected::File`) when no interceptor is installed.
 class UtFile : public FileInterface {
   public:
-    UtFile() = default;
-    UtFile(const UtFile& other) = default;
-    UtFile& operator=(const UtFile& other) = default;
-    ~UtFile() override = default;
+    UtFile();
+    UtFile(const UtFile& other);
+    UtFile& operator=(const UtFile& other);
+    ~UtFile() override;
 
     Status open(const char* path, Mode mode, OverwriteType overwrite) override;
     void close() override;
@@ -40,7 +39,7 @@ class UtFile : public FileInterface {
     FileHandle* getHandle() override;
 
   private:
-    RealFile m_real;  //!< Implementation selected for non-test builds
+    Os::Selected::File m_real;  //!< Implementation selected for non-test builds
 };
 
 }  // namespace File

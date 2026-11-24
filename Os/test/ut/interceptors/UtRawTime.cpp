@@ -1,27 +1,23 @@
 // ======================================================================
 // \title Os/test/ut/interceptors/UtRawTime.cpp
-// \brief TEST ONLY: Os::RawTime implementation selected in unit test builds
+// \brief TEST ONLY: UtRawTime and RawTimeTestInterceptor default implementations
 // ======================================================================
-#include <Fw/Types/Assert.hpp>
 #include <Os/test/ut/interceptors/RawTimeTestInterceptor.hpp>
 #include <Os/test/ut/interceptors/UtRawTime.hpp>
 
 namespace Os {
 namespace Test {
 
-RawTimeTestInterceptor* RawTimeTestInterceptor::s_installed = nullptr;
+void RawTimeTestInterceptor::constructed(RawTimeInterface& /*real*/) {}
 
-RawTimeTestInterceptor::RawTimeTestInterceptor() {
-    FW_ASSERT(s_installed == nullptr);
-    s_installed = this;
-}
+void RawTimeTestInterceptor::destructed(RawTimeInterface& /*real*/) {}
 
-RawTimeTestInterceptor::~RawTimeTestInterceptor() {
-    s_installed = nullptr;
-}
+void RawTimeTestInterceptor::copyConstructed(RawTimeInterface& /*real*/, const RawTimeInterface& /*other*/) {}
 
-RawTimeTestInterceptor* RawTimeTestInterceptor::getInstalled() {
-    return s_installed;
+void RawTimeTestInterceptor::copyAssigned(RawTimeInterface& /*real*/, const RawTimeInterface& /*other*/) {}
+
+RawTimeHandle* RawTimeTestInterceptor::getHandle(RawTimeInterface& real) {
+    return real.getHandle();
 }
 
 RawTimeTestInterceptor::Status RawTimeTestInterceptor::now(RawTimeInterface& real) {
@@ -51,35 +47,75 @@ Fw::SerializeStatus RawTimeTestInterceptor::deserializeFrom(RawTimeInterface& re
 namespace Ut {
 namespace RawTime {
 
-UtRawTime::UtRawTime(RawTimeSource source) : m_real(source) {}
+using Os::Test::RawTimeTestInterceptor;
+
+UtRawTime::UtRawTime() {
+    RawTimeTestInterceptor* interceptor = RawTimeTestInterceptor::getInstalled();
+    if (interceptor != nullptr) {
+        interceptor->constructed(this->m_real);
+    }
+}
+
+UtRawTime::UtRawTime(RawTimeSource source) : m_real(source) {
+    RawTimeTestInterceptor* interceptor = RawTimeTestInterceptor::getInstalled();
+    if (interceptor != nullptr) {
+        interceptor->constructed(this->m_real);
+    }
+}
+
+UtRawTime::UtRawTime(const UtRawTime& other) : m_real(other.m_real) {
+    RawTimeTestInterceptor* interceptor = RawTimeTestInterceptor::getInstalled();
+    if (interceptor != nullptr) {
+        interceptor->copyConstructed(this->m_real, other.m_real);
+    }
+}
+
+UtRawTime& UtRawTime::operator=(const UtRawTime& other) {
+    if (this != &other) {
+        this->m_real = other.m_real;
+    }
+    RawTimeTestInterceptor* interceptor = RawTimeTestInterceptor::getInstalled();
+    if (interceptor != nullptr) {
+        interceptor->copyAssigned(this->m_real, other.m_real);
+    }
+    return *this;
+}
+
+UtRawTime::~UtRawTime() {
+    RawTimeTestInterceptor* interceptor = RawTimeTestInterceptor::getInstalled();
+    if (interceptor != nullptr) {
+        interceptor->destructed(this->m_real);
+    }
+}
 
 RawTimeHandle* UtRawTime::getHandle() {
-    return this->m_real.getHandle();
+    RawTimeTestInterceptor* interceptor = RawTimeTestInterceptor::getInstalled();
+    return (interceptor != nullptr) ? interceptor->getHandle(this->m_real) : this->m_real.getHandle();
 }
 
 UtRawTime::Status UtRawTime::now() {
-    Os::Test::RawTimeTestInterceptor* interceptor = Os::Test::RawTimeTestInterceptor::getInstalled();
-    return (interceptor == nullptr) ? this->m_real.now() : interceptor->now(this->m_real);
+    RawTimeTestInterceptor* interceptor = RawTimeTestInterceptor::getInstalled();
+    return (interceptor != nullptr) ? interceptor->now(this->m_real) : this->m_real.now();
 }
 
 UtRawTime::Status UtRawTime::getTimeInterval(const RawTimeInterface& other, Fw::TimeInterval& interval) const {
-    // Os::RawTimeCommon only compares raw times of its own implementation type
+    // Os::RawTimeCommon<UtRawTime> only supplies another UtRawTime: hand the wrapped implementation to the real one
     const RawTimeInterface& other_real = static_cast<const UtRawTime&>(other).m_real;
-    Os::Test::RawTimeTestInterceptor* interceptor = Os::Test::RawTimeTestInterceptor::getInstalled();
-    return (interceptor == nullptr) ? this->m_real.getTimeInterval(other_real, interval)
-                                    : interceptor->getTimeInterval(this->m_real, other_real, interval);
+    RawTimeTestInterceptor* interceptor = RawTimeTestInterceptor::getInstalled();
+    return (interceptor != nullptr) ? interceptor->getTimeInterval(this->m_real, other_real, interval)
+                                    : this->m_real.getTimeInterval(other_real, interval);
 }
 
 Fw::SerializeStatus UtRawTime::serializeTo(Fw::SerialBufferBase& buffer, Fw::Endianness mode) const {
-    Os::Test::RawTimeTestInterceptor* interceptor = Os::Test::RawTimeTestInterceptor::getInstalled();
-    return (interceptor == nullptr) ? this->m_real.serializeTo(buffer, mode)
-                                    : interceptor->serializeTo(this->m_real, buffer, mode);
+    RawTimeTestInterceptor* interceptor = RawTimeTestInterceptor::getInstalled();
+    return (interceptor != nullptr) ? interceptor->serializeTo(this->m_real, buffer, mode)
+                                    : this->m_real.serializeTo(buffer, mode);
 }
 
 Fw::SerializeStatus UtRawTime::deserializeFrom(Fw::SerialBufferBase& buffer, Fw::Endianness mode) {
-    Os::Test::RawTimeTestInterceptor* interceptor = Os::Test::RawTimeTestInterceptor::getInstalled();
-    return (interceptor == nullptr) ? this->m_real.deserializeFrom(buffer, mode)
-                                    : interceptor->deserializeFrom(this->m_real, buffer, mode);
+    RawTimeTestInterceptor* interceptor = RawTimeTestInterceptor::getInstalled();
+    return (interceptor != nullptr) ? interceptor->deserializeFrom(this->m_real, buffer, mode)
+                                    : this->m_real.deserializeFrom(buffer, mode);
 }
 
 }  // namespace RawTime

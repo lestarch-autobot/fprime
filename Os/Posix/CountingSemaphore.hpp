@@ -2,10 +2,11 @@
 // \title Os/Posix/CountingSemaphore.hpp
 // \brief Posix definitions for Os::CountingSemaphore
 // ======================================================================
+// Included before the guard: the interface header may itself include this file through config/OsSelection.hpp
+#include <Os/Interfaces/CountingSemaphoreInterface.hpp>
 #ifndef OS_POSIX_COUNTING_SEMAPHORE_HPP
 #define OS_POSIX_COUNTING_SEMAPHORE_HPP
 #include <semaphore.h>
-#include <Os/Interfaces/CountingSemaphoreInterface.hpp>
 
 namespace Os {
 namespace Posix {

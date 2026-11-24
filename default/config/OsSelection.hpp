@@ -9,19 +9,24 @@
 //
 // For each service this header must:
 //
-//   - forward-declare the implementation and define the Os::<Service> alias
-//   - define OS_<SERVICE>_HEADER as the header defining the implementation
+//   - forward-declare the implementation and define the Os::Selected::<Service>
+//     alias naming it
+//   - define OS_SELECTED_<SERVICE>_HEADER as the header defining the
+//     implementation
+//
+// The Os::<Service> aliases and OS_<SERVICE>_HEADER macros are then derived from
+// these at the bottom of this header and need not change in an override.
 //
 // IMPORTANT: CIRCULAR DEPENDENCY PREVENTION
 //
 //   - This header MUST NOT include any Os OSAL headers (Os/*.hpp).
-//   - Only forward-declare types and define the Os::<Service> aliases.
-//   - Each OS_*_HEADER is included by the public Os/<Service>.hpp header
-//     after it defines Os::<Service>Common.
+//   - Only forward-declare types and define the aliases.
+//   - Each OS_<SERVICE>_HEADER is included by the public Os/<Service>.hpp
+//     header after it defines Os::<Service>Common.
 //
 // IMPORTANT: a project override of this header replaces it entirely, so the
-// override must define ALL aliases and OS_*_HEADER macros below, not just the
-// service being changed.
+// override must define ALL aliases and macros below, not just the service being
+// changed.
 //
 // Mutex and ConditionVariable: a condition variable implementation operates on
 // the handle of the selected Os::Mutex (e.g. Os/Posix/ConditionVariable.cpp
@@ -35,14 +40,14 @@
 // must still be in the link (via CHOOSES_IMPLEMENTATIONS for an in-tree
 // implementation, or DEPENDS for a project module).
 //
-// Unit test builds (BUILD_UT) wrap the File, RawTime and Mutex selections in
-// Os::Ut::File::UtFile, Os::Ut::RawTime::UtRawTime and Os::Ut::Mutex::UtMutex
-// so that tests may intercept calls (see Os/test/ut/interceptors).
+// Unit test builds (BUILD_UT) wrap every selection in a test-only
+// Os::Ut::<Service>::Ut<Service> implementation so that tests may intercept
+// calls (see Os/test/ut/interceptors). Os::Selected::<Service> always names the
+// implementation selected here.
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
 
-// Compile-time selection of the implementations wrapped by the Os::<Service>Common classes
 namespace Os {
 
 template <typename T>
@@ -70,6 +75,7 @@ class MutexCommon;
 template <typename T>
 class ConditionVariableCommon;
 
+// Forward declarations of the selected implementations
 namespace Posix {
 namespace Console {
 class PosixConsole;
@@ -97,49 +103,6 @@ class PosixConditionVariable;
 namespace Generic {
 class PriorityQueue;
 }
-using Console = ConsoleCommon<Posix::Console::PosixConsole>;
-using Task = TaskCommon<Posix::Task::PosixTask>;
-#ifdef BUILD_UT
-// Unit test builds wrap the selection above in UtFile so that tests may intercept file calls
-namespace Ut {
-namespace File {
-class UtFile;
-using RealFile = Posix::File::PosixFile;
-}  // namespace File
-}  // namespace Ut
-using File = FileCommon<Ut::File::UtFile>;
-#else
-using File = FileCommon<Posix::File::PosixFile>;
-#endif
-using FileSystem = FileSystemCommon<Posix::FileSystem::PosixFileSystem>;
-using Directory = DirectoryCommon<Posix::Directory::PosixDirectory>;
-using Queue = QueueCommon<Generic::PriorityQueue>;
-#ifdef BUILD_UT
-// Unit test builds wrap the selection in UtMutex so that tests may intercept mutex calls
-namespace Ut {
-namespace Mutex {
-class UtMutex;
-using RealMutex = Posix::Mutex::PosixMutex;
-}  // namespace Mutex
-}  // namespace Ut
-using Mutex = MutexCommon<Ut::Mutex::UtMutex>;
-#else
-using Mutex = MutexCommon<Posix::Mutex::PosixMutex>;
-#endif
-using ConditionVariable = ConditionVariableCommon<Posix::Mutex::PosixConditionVariable>;
-#ifdef BUILD_UT
-// Unit test builds wrap the selection in UtRawTime so that tests may intercept raw time calls
-namespace Ut {
-namespace RawTime {
-class UtRawTime;
-using RealRawTime = Posix::RawTime::PosixRawTime;
-}  // namespace RawTime
-}  // namespace Ut
-using RawTime = RawTimeCommon<Ut::RawTime::UtRawTime>;
-#else
-using RawTime = RawTimeCommon<Posix::RawTime::PosixRawTime>;
-#endif
-
 #if defined(TGT_OS_TYPE_LINUX)
 namespace Posix {
 namespace Semaphore {
@@ -154,9 +117,6 @@ namespace Memory {
 class LinuxMemory;
 }
 }  // namespace Linux
-using CountingSemaphore = CountingSemaphoreCommon<Posix::Semaphore::PosixCountingSemaphore>;
-using Cpu = CpuCommon<Linux::Cpu::LinuxCpu>;
-using Memory = MemoryCommon<Linux::Memory::LinuxMemory>;
 #elif defined(TGT_OS_TYPE_DARWIN)
 namespace Darwin {
 namespace Semaphore {
@@ -169,48 +129,85 @@ namespace Memory {
 class DarwinMemory;
 }
 }  // namespace Darwin
-using CountingSemaphore = CountingSemaphoreCommon<Darwin::Semaphore::DarwinCountingSemaphore>;
-using Cpu = CpuCommon<Darwin::Cpu::DarwinCpu>;
-using Memory = MemoryCommon<Darwin::Memory::DarwinMemory>;
 #else
 #error "No default Os implementations for this platform: override config/OsSelection.hpp"
 #endif
 
+// Compile-time selection of the implementation of each service
+namespace Selected {
+using Console = Posix::Console::PosixConsole;
+using Task = Posix::Task::PosixTask;
+using File = Posix::File::PosixFile;
+using FileSystem = Posix::FileSystem::PosixFileSystem;
+using Directory = Posix::Directory::PosixDirectory;
+using Queue = Generic::PriorityQueue;
+using Mutex = Posix::Mutex::PosixMutex;
+using ConditionVariable = Posix::Mutex::PosixConditionVariable;
+using RawTime = Posix::RawTime::PosixRawTime;
+#if defined(TGT_OS_TYPE_LINUX)
+using CountingSemaphore = Posix::Semaphore::PosixCountingSemaphore;
+using Cpu = Linux::Cpu::LinuxCpu;
+using Memory = Linux::Memory::LinuxMemory;
+#elif defined(TGT_OS_TYPE_DARWIN)
+using CountingSemaphore = Darwin::Semaphore::DarwinCountingSemaphore;
+using Cpu = Darwin::Cpu::DarwinCpu;
+using Memory = Darwin::Memory::DarwinMemory;
+#endif
+}  // namespace Selected
+
 }  // namespace Os
 
-#define OS_CONSOLE_HEADER <Os/Posix/Console.hpp>
-#define OS_TASK_HEADER <Os/Posix/Task.hpp>
-#ifdef BUILD_UT
-#define OS_FILE_HEADER <Os/test/ut/interceptors/UtFile.hpp>
-#define OS_UT_REAL_FILE_HEADER <Os/Posix/File.hpp>
-#else
-#define OS_FILE_HEADER <Os/Posix/File.hpp>
-#endif
-#define OS_FILE_SYSTEM_HEADER <Os/Posix/FileSystem.hpp>
-#define OS_DIRECTORY_HEADER <Os/Posix/Directory.hpp>
-#define OS_QUEUE_HEADER <Os/Generic/PriorityQueue.hpp>
+// Headers defining the selected implementations
+#define OS_SELECTED_CONSOLE_HEADER <Os/Posix/Console.hpp>
+#define OS_SELECTED_TASK_HEADER <Os/Posix/Task.hpp>
+#define OS_SELECTED_FILE_HEADER <Os/Posix/File.hpp>
+#define OS_SELECTED_FILE_SYSTEM_HEADER <Os/Posix/FileSystem.hpp>
+#define OS_SELECTED_DIRECTORY_HEADER <Os/Posix/Directory.hpp>
+#define OS_SELECTED_QUEUE_HEADER <Os/Generic/PriorityQueue.hpp>
+#define OS_SELECTED_MUTEX_HEADER <Os/Posix/Mutex.hpp>
+#define OS_SELECTED_CONDITION_VARIABLE_HEADER <Os/Posix/ConditionVariable.hpp>
+#define OS_SELECTED_RAW_TIME_HEADER <Os/Posix/RawTime.hpp>
 #if defined(TGT_OS_TYPE_LINUX)
-#define OS_COUNTING_SEMAPHORE_HEADER <Os/Posix/CountingSemaphore.hpp>
-#define OS_CPU_HEADER <Os/Linux/Cpu.hpp>
-#define OS_MEMORY_HEADER <Os/Linux/Memory.hpp>
+#define OS_SELECTED_COUNTING_SEMAPHORE_HEADER <Os/Posix/CountingSemaphore.hpp>
+#define OS_SELECTED_CPU_HEADER <Os/Linux/Cpu.hpp>
+#define OS_SELECTED_MEMORY_HEADER <Os/Linux/Memory.hpp>
 #elif defined(TGT_OS_TYPE_DARWIN)
-#define OS_COUNTING_SEMAPHORE_HEADER <Os/Darwin/CountingSemaphore.hpp>
-#define OS_CPU_HEADER <Os/Darwin/Cpu.hpp>
-#define OS_MEMORY_HEADER <Os/Darwin/Memory.hpp>
+#define OS_SELECTED_COUNTING_SEMAPHORE_HEADER <Os/Darwin/CountingSemaphore.hpp>
+#define OS_SELECTED_CPU_HEADER <Os/Darwin/Cpu.hpp>
+#define OS_SELECTED_MEMORY_HEADER <Os/Darwin/Memory.hpp>
 #endif
 
+// Os::<Service> aliases and OS_<SERVICE>_HEADER macros derived from the selection above
 #ifdef BUILD_UT
-#define OS_RAW_TIME_HEADER <Os/test/ut/interceptors/UtRawTime.hpp>
-#define OS_UT_REAL_RAW_TIME_HEADER <Os/Posix/RawTime.hpp>
+// Unit test builds wrap each selection in a test-only implementation so that tests may intercept calls
+#include <Os/test/ut/interceptors/UtSelection.hpp>
 #else
-#define OS_RAW_TIME_HEADER <Os/Posix/RawTime.hpp>
+namespace Os {
+using Console = ConsoleCommon<Selected::Console>;
+using Task = TaskCommon<Selected::Task>;
+using File = FileCommon<Selected::File>;
+using FileSystem = FileSystemCommon<Selected::FileSystem>;
+using Directory = DirectoryCommon<Selected::Directory>;
+using Queue = QueueCommon<Selected::Queue>;
+using Mutex = MutexCommon<Selected::Mutex>;
+using ConditionVariable = ConditionVariableCommon<Selected::ConditionVariable>;
+using RawTime = RawTimeCommon<Selected::RawTime>;
+using CountingSemaphore = CountingSemaphoreCommon<Selected::CountingSemaphore>;
+using Cpu = CpuCommon<Selected::Cpu>;
+using Memory = MemoryCommon<Selected::Memory>;
+}  // namespace Os
+#define OS_CONSOLE_HEADER OS_SELECTED_CONSOLE_HEADER
+#define OS_TASK_HEADER OS_SELECTED_TASK_HEADER
+#define OS_FILE_HEADER OS_SELECTED_FILE_HEADER
+#define OS_FILE_SYSTEM_HEADER OS_SELECTED_FILE_SYSTEM_HEADER
+#define OS_DIRECTORY_HEADER OS_SELECTED_DIRECTORY_HEADER
+#define OS_QUEUE_HEADER OS_SELECTED_QUEUE_HEADER
+#define OS_MUTEX_HEADER OS_SELECTED_MUTEX_HEADER
+#define OS_CONDITION_VARIABLE_HEADER OS_SELECTED_CONDITION_VARIABLE_HEADER
+#define OS_RAW_TIME_HEADER OS_SELECTED_RAW_TIME_HEADER
+#define OS_COUNTING_SEMAPHORE_HEADER OS_SELECTED_COUNTING_SEMAPHORE_HEADER
+#define OS_CPU_HEADER OS_SELECTED_CPU_HEADER
+#define OS_MEMORY_HEADER OS_SELECTED_MEMORY_HEADER
 #endif
-#ifdef BUILD_UT
-#define OS_MUTEX_HEADER <Os/test/ut/interceptors/UtMutex.hpp>
-#define OS_UT_REAL_MUTEX_HEADER <Os/Posix/Mutex.hpp>
-#else
-#define OS_MUTEX_HEADER <Os/Posix/Mutex.hpp>
-#endif
-#define OS_CONDITION_VARIABLE_HEADER <Os/Posix/ConditionVariable.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP

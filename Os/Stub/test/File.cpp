@@ -46,15 +46,18 @@ void StaticData::setWriteSize(FwSizeType size) {
     StaticData::data.writeSizeResult = size;
 }
 
-TestFile::TestFile() {
+void TestFileInterceptor::constructed(FileInterface& /*real*/) {
     StaticData::data.lastCalled = StaticData::CONSTRUCT_FN;
 }
 
-TestFile::~TestFile() {
+void TestFileInterceptor::destructed(FileInterface& /*real*/) {
     StaticData::data.lastCalled = StaticData::DESTRUCT_FN;
 }
 
-FileInterface::Status TestFile::open(const char* filepath, Mode open_mode, OverwriteType overwrite) {
+FileInterface::Status TestFileInterceptor::open(FileInterface& /*real*/,
+                                                const char* filepath,
+                                                Mode open_mode,
+                                                OverwriteType overwrite) {
     StaticData::data.openPath = filepath;
     StaticData::data.openMode = open_mode;
     StaticData::data.openOverwrite = overwrite;
@@ -64,30 +67,30 @@ FileInterface::Status TestFile::open(const char* filepath, Mode open_mode, Overw
     return StaticData::data.openStatus;
 }
 
-void TestFile::close() {
+void TestFileInterceptor::close(FileInterface& /*real*/) {
     StaticData::data.lastCalled = StaticData::CLOSE_FN;
 }
 
-FileInterface::Status TestFile::size(FwSizeType& size_result) {
+FileInterface::Status TestFileInterceptor::size(FileInterface& /*real*/, FwSizeType& size_result) {
     StaticData::data.lastCalled = StaticData::SIZE_FN;
     size_result = StaticData::data.sizeResult;
     return StaticData::data.sizeStatus;
 }
 
-FileInterface::Status TestFile::position(FwSizeType& position_result) {
+FileInterface::Status TestFileInterceptor::position(FileInterface& /*real*/, FwSizeType& position_result) {
     StaticData::data.lastCalled = StaticData::POSITION_FN;
     position_result = StaticData::data.positionResult;
     return StaticData::data.positionStatus;
 }
 
-FileInterface::Status TestFile::preallocate(FwSizeType offset, FwSizeType length) {
+FileInterface::Status TestFileInterceptor::preallocate(FileInterface& /*real*/, FwSizeType offset, FwSizeType length) {
     StaticData::data.preallocateOffset = offset;
     StaticData::data.preallocateLength = length;
     StaticData::data.lastCalled = StaticData::PREALLOCATE_FN;
     return StaticData::data.preallocateStatus;
 }
 
-FileInterface::Status TestFile::seek(FwSignedSizeType offset, SeekType seekType) {
+FileInterface::Status TestFileInterceptor::seek(FileInterface& /*real*/, FwSignedSizeType offset, SeekType seekType) {
     StaticData::data.seekOffset = offset;
     StaticData::data.seekType = seekType;
     StaticData::data.lastCalled = StaticData::SEEK_FN;
@@ -97,12 +100,12 @@ FileInterface::Status TestFile::seek(FwSignedSizeType offset, SeekType seekType)
     return StaticData::data.seekStatus;
 }
 
-FileInterface::Status TestFile::flush() {
+FileInterface::Status TestFileInterceptor::flush(FileInterface& /*real*/) {
     StaticData::data.lastCalled = StaticData::FLUSH_FN;
     return StaticData::data.flushStatus;
 }
 
-FileInterface::Status TestFile::read(U8* buffer, FwSizeType& size, WaitType wait) {
+FileInterface::Status TestFileInterceptor::read(FileInterface& /*real*/, U8* buffer, FwSizeType& size, WaitType wait) {
     StaticData::data.readBuffer = buffer;
     StaticData::data.readSize = size;
     StaticData::data.readWait = wait;
@@ -119,7 +122,10 @@ FileInterface::Status TestFile::read(U8* buffer, FwSizeType& size, WaitType wait
     return StaticData::data.readStatus;
 }
 
-FileInterface::Status TestFile::write(const U8* buffer, FwSizeType& size, WaitType wait) {
+FileInterface::Status TestFileInterceptor::write(FileInterface& /*real*/,
+                                                 const U8* buffer,
+                                                 FwSizeType& size,
+                                                 WaitType wait) {
     StaticData::data.writeBuffer = buffer;
     StaticData::data.writeSize = size;
     StaticData::data.writeWait = wait;
@@ -134,52 +140,6 @@ FileInterface::Status TestFile::write(const U8* buffer, FwSizeType& size, WaitTy
         size = StaticData::data.writeSizeResult;
     }
     return StaticData::data.writeStatus;
-}
-
-FileHandle* TestFile::getHandle() {
-    return &this->m_handle;
-}
-
-FileInterface::Status TestFileInterceptor::open(FileInterface& /*real*/,
-                                                const char* path,
-                                                Mode mode,
-                                                OverwriteType overwrite) {
-    return this->m_stub.open(path, mode, overwrite);
-}
-
-void TestFileInterceptor::close(FileInterface& /*real*/) {
-    this->m_stub.close();
-}
-
-FileInterface::Status TestFileInterceptor::size(FileInterface& /*real*/, FwSizeType& size_result) {
-    return this->m_stub.size(size_result);
-}
-
-FileInterface::Status TestFileInterceptor::position(FileInterface& /*real*/, FwSizeType& position_result) {
-    return this->m_stub.position(position_result);
-}
-
-FileInterface::Status TestFileInterceptor::preallocate(FileInterface& /*real*/, FwSizeType offset, FwSizeType length) {
-    return this->m_stub.preallocate(offset, length);
-}
-
-FileInterface::Status TestFileInterceptor::seek(FileInterface& /*real*/, FwSignedSizeType offset, SeekType seekType) {
-    return this->m_stub.seek(offset, seekType);
-}
-
-FileInterface::Status TestFileInterceptor::flush(FileInterface& /*real*/) {
-    return this->m_stub.flush();
-}
-
-FileInterface::Status TestFileInterceptor::read(FileInterface& /*real*/, U8* buffer, FwSizeType& size, WaitType wait) {
-    return this->m_stub.read(buffer, size, wait);
-}
-
-FileInterface::Status TestFileInterceptor::write(FileInterface& /*real*/,
-                                                 const U8* buffer,
-                                                 FwSizeType& size,
-                                                 WaitType wait) {
-    return this->m_stub.write(buffer, size, wait);
 }
 
 }  // namespace Test

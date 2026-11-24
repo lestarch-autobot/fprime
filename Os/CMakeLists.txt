@@ -26,6 +26,19 @@ function(add_named_os_module NAMES)
     foreach (NAME IN LISTS NAMES)
         list(APPEND SOURCE_INPUTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp")
         list(APPEND HEADER_INPUTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.hpp")
+        # Unit test builds select the Os::Ut implementation of each service, which wraps the non-test selection and
+        # lets tests intercept its calls (see config/OsSelection.hpp and Os/test/ut/interceptors)
+        if (BUILD_TESTING)
+            set(UT_NAME "${NAME}")
+            if (NAME STREQUAL "Condition")
+                set(UT_NAME "ConditionVariable")
+            endif()
+            list(APPEND SOURCE_INPUTS "${CMAKE_CURRENT_LIST_DIR}/test/ut/interceptors/Ut${UT_NAME}.cpp")
+            list(APPEND HEADER_INPUTS
+                "${CMAKE_CURRENT_LIST_DIR}/test/ut/interceptors/Ut${UT_NAME}.hpp"
+                "${CMAKE_CURRENT_LIST_DIR}/test/ut/interceptors/${UT_NAME}TestInterceptor.hpp"
+            )
+        endif()
     endforeach ()
     # Set up module
     register_fprime_module(
@@ -135,10 +148,6 @@ register_fprime_module(
 
 add_named_os_module(Console Fw_Logger)
 add_named_os_module("File;FileSystem;Directory" Utils_Hash Fw_DataStructures)
-# Unit test builds select Os::Ut::File::UtFile, which wraps the non-test selection (see config/OsSelection.hpp)
-if (BUILD_TESTING)
-    target_sources(Os_File PRIVATE "${CMAKE_CURRENT_LIST_DIR}/test/ut/interceptors/UtFile.cpp")
-endif()
 add_named_os_module(Task ${CMAKE_THREAD_LIBS_INIT})
 # Os/Task.hpp includes the implementation header selected in config/OsSelection.hpp. The Posix
 # implementation header needs the constants autocoded by Os_Posix_Models, thus users of the Os
@@ -149,19 +158,11 @@ if (TARGET Os_Posix_Models)
 endif()
 # ConditionVariable (Condition.hpp) is bundled into Os_Mutex: it operates on the selected Os::Mutex
 add_named_os_module("Mutex;Condition")
-# Unit test builds select Os::Ut::Mutex::UtMutex, which wraps the non-test selection (see config/OsSelection.hpp)
-if (BUILD_TESTING)
-    target_sources(Os_Mutex PRIVATE "${CMAKE_CURRENT_LIST_DIR}/test/ut/interceptors/UtMutex.cpp")
-endif()
 add_named_os_module(CountingSemaphore)
 add_named_os_module(Queue)
 add_named_os_module(Cpu)
 add_named_os_module(Memory)
 add_named_os_module(RawTime Fw_Buffer)
-# Unit test builds select Os::Ut::RawTime::UtRawTime, which wraps the non-test selection (see config/OsSelection.hpp)
-if (BUILD_TESTING)
-    target_sources(Os_RawTime PRIVATE "${CMAKE_CURRENT_LIST_DIR}/test/ut/interceptors/UtRawTime.cpp")
-endif()
 
 ### UTS ### Note: 3 separate UTs registered here.
 register_fprime_ut(
