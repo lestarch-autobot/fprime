@@ -28,7 +28,7 @@ the user before starting.
 
 ## 2. Component work
 
-Follow `.github/skills/fprime-component-development/SKILL.md`, which
+Follow `.agents/skills/fprime-component-development/SKILL.md`, which
 governs this sequence and its gates. The phases run in order, each
 producing the input to the next (phases 4 and 5 interleave per TDD,
 see below):
@@ -82,7 +82,7 @@ connect; see `fprime-component-design-fpp` "externally powered device".
 
 ## 3. Topology work
 
-Follow `.github/skills/fprime-topology-development/SKILL.md`.
+Follow `.agents/skills/fprime-topology-development/SKILL.md`.
 Topology changes are usually small deltas to an existing deployment,
 so the sequence is:
 
@@ -107,7 +107,7 @@ it links.
 
 When the user asks for a feature to be driven to convergence through
 repeated local test-and-review iterations, follow
-`.github/skills/fprime-iterative-development/SKILL.md`, which wraps
+`.agents/skills/fprime-iterative-development/SKILL.md`, which wraps
 the §2–§4 sequences in a local test / manual-GDS / multi-agent-review
 loop. That skill **requires explicit user approval before use** (its
 §0 gate): present the loop plan and obtain approval first — never

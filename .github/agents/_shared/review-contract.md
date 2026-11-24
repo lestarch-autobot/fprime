@@ -64,7 +64,7 @@ not "this comment has a suggestion block".
 **No defaulting to `could fix`** when a fix is unavailable — severity
 drives the tag.
 
-Decision tree and worked examples live in `.github/skills/triage-classifier/SKILL.md`.
+Decision tree and worked examples live in `.agents/skills/triage-classifier/SKILL.md`.
 
 ### 1a. Tag by consequence, never by effort spent
 
@@ -212,7 +212,7 @@ posted and the aggregator handles surfaces emission as an error case
 
 ## 3. "Introduced by this PR"
 
-Lives in `.github/skills/pr-diff-scoping/SKILL.md`. Summary:
+Lives in `.agents/skills/pr-diff-scoping/SKILL.md`. Summary:
 
 1. Offending line is added or modified in the PR diff → introduced.
 2. Offending line is unchanged, but a new caller added by the PR widens
@@ -232,7 +232,7 @@ in each agent's `.agent.md`):
    `**must fix**`, `**suggestion**`, or `**could fix**`. Never silently
    downgrade or drop (see §8, Priority 1).
 2. **Append a maintainer ping** at the end of the comment body, sourced
-   from `.github/skills/maintainer-lookup/SKILL.md`:
+   from `.agents/skills/maintainer-lookup/SKILL.md`:
 
    ```
    cc @<maintainer1> @<maintainer2> — low-confidence finding, please confirm.
@@ -308,7 +308,7 @@ site-key = sha256(file_path + "|" + anchor)
 ```
 
 `file_path` and `anchor` are computed exactly as for the finding-key
-(§7 / `.github/skills/re-review-state/SKILL.md` §2). Two comments with the
+(§7 / `.agents/skills/re-review-state/SKILL.md` §2). Two comments with the
 same site-key are anchored to the same spot; whether they are the
 same *issue* is decided by the concurrence rule below. Footers that
 carry a site-key use the `v2` marker (§9); `v1` footers without a
@@ -355,7 +355,7 @@ they track their finding on the linked canonical thread instead.
 
 When an agent runs on a PR whose head has new commits since the
 agent's prior run, it executes phases A–D in order. Mechanics live in
-`.github/skills/re-review-state/SKILL.md`.
+`.agents/skills/re-review-state/SKILL.md`.
 
 ### Phase A — Inventory prior comments
 
@@ -400,7 +400,7 @@ the agent also fetches via GraphQL:
 Resolution status drives the maintainer-adjudicated and
 improperly-resolved cases below — `resolvedBy.login` is checked
 against the core-maintainer set from
-`.github/skills/maintainer-lookup/SKILL.md` §1b; the reply chain
+`.agents/skills/maintainer-lookup/SKILL.md` §1b; the reply chain
 drives disagreement handling (see §11).
 
 ### Phase B — Run scope checker on the new head
@@ -418,7 +418,7 @@ if the line is absent). Then:
 - **Below-must-fix new findings** (`suggestion`, `could fix`,
   `future work`) are in scope only where the incremental diff
   `<last_reviewed_head>...<head>` reaches, applying the same
-  introduced/preexisting rules as `.github/skills/pr-diff-scoping/SKILL.md`
+  introduced/preexisting rules as `.agents/skills/pr-diff-scoping/SKILL.md`
   with the incremental diff in place of the PR diff: a line added or
   modified since the last review, or unchanged code newly reached by
   such a line. Below-must-fix issues on code untouched since
@@ -436,7 +436,7 @@ if the line is absent). Then:
 The point is that a re-run responds to what the author changed:
 reposting low-severity observations on code the author has not
 touched since the last pass is churn, not review. Mechanics live in
-`.github/skills/re-review-state/SKILL.md` §2a.
+`.agents/skills/re-review-state/SKILL.md` §2a.
 
 ### Phase C — Match and act
 
@@ -670,7 +670,7 @@ because of it.
 Inline review comments are posted through the GitHub Pull Request
 Review API. Mechanics, the suggestion-block syntax, the GraphQL
 mutations (`resolveReviewThread`, `unresolveReviewThread`), and the
-`TOKEN` env var live in `.github/skills/post-inline-review/SKILL.md`.
+`TOKEN` env var live in `.agents/skills/post-inline-review/SKILL.md`.
 
 Each reviewer submits a single PR review (event: `COMMENT`) whose
 body is the hidden metadata block from §2 and whose inline comments
@@ -727,7 +727,7 @@ is the whole point.
 1. **Reply once** on the thread using the disagreement-escalation
    reply shape (§9). One reply, no further back-and-forth.
 2. **Tag the code owner / maintainer** via
-   `.github/skills/maintainer-lookup/SKILL.md` (same 4-step lookup as §4).
+   `.agents/skills/maintainer-lookup/SKILL.md` (same 4-step lookup as §4).
 3. **Do not resolve the thread.** Leave it open for the maintainer.
 4. **Increment `disagreements escalated`** in the per-agent review's
    `since_last_run` metadata (§7 phase D).
@@ -850,8 +850,8 @@ parameters, uplinked file content, sequence directives, config
 constants a deployment can change) traces that value from its entry
 point to every `FW_ASSERT`, buffer-size computation, index, and array
 write it can reach, across files and components, per
-`.github/skills/fprime-ground-input-tracing/SKILL.md` and
-`.github/skills/fprime-hardware-input-tracing/SKILL.md`. The rationale
+`.agents/skills/fprime-ground-input-tracing/SKILL.md` and
+`.agents/skills/fprime-hardware-input-tracing/SKILL.md`. The rationale
 names which entry point reaches which assert.
 
 A reachable assert or bound violation driven by a ground-settable

@@ -6,7 +6,7 @@ user-invocable: true
 disable-model-invocation: false
 ---
 You are the F Prime Design Principles Reviewer. Apply
-`.github/skills/jpl-design-principles/SKILL.md` as the source of
+`.agents/skills/jpl-design-principles/SKILL.md` as the source of
 truth; this file is the index. You review a design that has no
 implementation yet, in the loop of
 `.github/agents/_shared/phase-review-loop.md`, as a session separate

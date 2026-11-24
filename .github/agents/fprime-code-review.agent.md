@@ -22,7 +22,7 @@ opening a new one, while still counting the finding in your own
 hidden metadata.
 
 The C/C++ design rules this agent enforces live in
-`.github/skills/fprime-cpp-design/SKILL.md`. That skill is the
+`.agents/skills/fprime-cpp-design/SKILL.md`. That skill is the
 single source of truth for the rule set (CPP-1 through CPP-37) and
 the finding-class vocabulary; this agent file specifies how the
 multi-agent flow applies it on a PR.
@@ -33,8 +33,8 @@ multi-agent flow applies it on a PR.
 
 You flag findings on touched C/C++ source where the offending
 construct violates one of the rules CPP-1 through CPP-37 in
-`.github/skills/fprime-cpp-design/SKILL.md`. The "introduced by this
-PR" test (`.github/skills/pr-diff-scoping/SKILL.md`) applies; pre-
+`.agents/skills/fprime-cpp-design/SKILL.md`. The "introduced by this
+PR" test (`.agents/skills/pr-diff-scoping/SKILL.md`) applies; pre-
 existing rule violations become `**future work**`.
 
 The touched-file set you analyze is, at minimum:
@@ -58,7 +58,7 @@ sources.
 ## Finding classes
 
 Use the finding-class names defined in
-`.github/skills/fprime-cpp-design/SKILL.md` §2 verbatim. Quick
+`.agents/skills/fprime-cpp-design/SKILL.md` §2 verbatim. Quick
 reference (the skill is authoritative):
 
 - `cpp-dynamic-memory-post-init` (CPP-1)
@@ -173,10 +173,10 @@ For each touched file in the PR diff, scan in this order:
    what depends on it.
 
 For each finding, classify the offending behavior as introduced or
-preexisting per `.github/skills/pr-diff-scoping/SKILL.md`, pick the
+preexisting per `.agents/skills/pr-diff-scoping/SKILL.md`, pick the
 triage tag per the per-cluster hints in
-`.github/skills/fprime-cpp-design/SKILL.md` §3 plus
-`.github/skills/triage-classifier/SKILL.md`, then format the comment
+`.agents/skills/fprime-cpp-design/SKILL.md` §3 plus
+`.agents/skills/triage-classifier/SKILL.md`, then format the comment
 per the review contract §9.
 
 ---
@@ -236,14 +236,14 @@ Treat a finding as low-confidence when ANY of these hold:
 
 Low confidence does not downgrade the tag (review contract §4).
 Append a maintainer ping per
-`.github/skills/maintainer-lookup/SKILL.md`.
+`.agents/skills/maintainer-lookup/SKILL.md`.
 
 ---
 
 ## Triage rules of thumb
 
 The per-cluster severity hints in
-`.github/skills/fprime-cpp-design/SKILL.md` §3 are the primary
+`.agents/skills/fprime-cpp-design/SKILL.md` §3 are the primary
 guide. Summarized here for fast reference:
 
 - **Memory & lifetime (CPP-1, 2, 17, 19, 20)**: default `**must
@@ -313,7 +313,7 @@ CI-safety agents).
 
 The agent's inline comment body cites the CPP-N rule number in the
 prose so a reader can jump to
-`.github/skills/fprime-cpp-design/SKILL.md` for context:
+`.agents/skills/fprime-cpp-design/SKILL.md` for context:
 
 ```
 [C++ Design] **must fix** CPP-1 (no dynamic memory after init): `new` / `delete` in steady-state handler.

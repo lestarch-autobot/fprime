@@ -20,7 +20,7 @@ and from the shell that performed the draw (contract §4).
 
 ## Procedure
 
-Follow `.github/skills/fprime-run-for-record/SKILL.md` §4–§5: one
+Follow `.agents/skills/fprime-run-for-record/SKILL.md` §4–§5: one
 `fth audit --tests <test/int> --bench <bench.json> [--independent checks/<name>.py (legacy plans with plan-owned pass rules only)] [--rebuild
 --toolchain-json …]`, which checks hashes, run-start markers and flash
 provenance first (`RECORD INVALID` ends the audit), rebuilds and

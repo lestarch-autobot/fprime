@@ -137,7 +137,7 @@ class of bug the PR is risking. Examples:
   instead of using `Fw::Prm`.
 - Custom message-queue mechanics where `Active` / `Queued` would do.
 - Bypassing the `Fw::Buffer` ownership contract (see
-  `.github/skills/fprime-cpp-design/SKILL.md` CPP-2 for the C++ side
+  `.agents/skills/fprime-cpp-design/SKILL.md` CPP-2 for the C++ side
   of the same concern).
 - Choosing a component kind (active / passive / queued) or port
   kind (sync / async / guarded) that doesn't match the work being
@@ -236,7 +236,7 @@ improvement but lacks documentation.
 The PR increases resource consumption (memory, CPU cycles, stack,
 bus bandwidth, queue depth) without analysis showing post-change
 margins remain acceptable, or without updating the CBE. Per
-`.github/skills/jpl-design-principles/SKILL.md` DR-6.3.5.3 and
+`.agents/skills/jpl-design-principles/SKILL.md` DR-6.3.5.3 and
 DR-4.11.6.3, constrained resources must be tracked and visible.
 
 For the framework: changes that degrade efficiency (larger buffers,
@@ -255,7 +255,7 @@ documented threshold.
 The PR adds a new code path (command handler, port handler, state
 transition) that can encounter a credible fault but provides no
 detection, recovery, or graceful-degradation logic. Per
-`.github/skills/jpl-design-principles/SKILL.md` DR-4.11.4.2,
+`.agents/skills/jpl-design-principles/SKILL.md` DR-4.11.4.2,
 DR-4.11.4.5, DR-4.11.4.6, and DR-4.9.1.2, every credible fault
 must be handled cleanly.
 
@@ -298,7 +298,7 @@ the PR description why it cannot be used).
 If the existing facility is *almost* sufficient, the preferred
 direction is to extend the existing facility, not to fork it.
 
-(Demarcation: CPP-33 in `.github/skills/fprime-cpp-design/SKILL.md`
+(Demarcation: CPP-33 in `.agents/skills/fprime-cpp-design/SKILL.md`
 covers *new* general-purpose logic that should be extracted to a
 utility module; `maint-code-duplication` covers verbatim duplication
 within the diff or file. This category covers reimplementing a
@@ -348,7 +348,7 @@ For `design-needs-human-adjudication`, the design reviewer pings
 code owners on EVERY occurrence — not gated on confidence (review
 contract §4) and not gated on the standard re-review escalation
 rules (§7, §11). The pinged set is resolved via
-`.github/skills/maintainer-lookup/SKILL.md`, with the design
+`.agents/skills/maintainer-lookup/SKILL.md`, with the design
 reviewer's own conventions on top:
 
 1. **README "Core Maintainer(s)" table** — always included.
@@ -385,7 +385,7 @@ from the review contract applies, with no special always-on behavior.
 ## Out of scope
 
 - C/C++ idiom and style — handled by `fprime-code-review.agent.md`
-  and `.github/skills/fprime-cpp-design/SKILL.md`.
+  and `.agents/skills/fprime-cpp-design/SKILL.md`.
 - Security findings (asserts, overflow, validation gaps) — handled
   by `security-review.agent.md`.
 - Supply-chain / runner-safety findings — handled by
@@ -427,7 +427,7 @@ hold:
 
 Low confidence does not downgrade the tag (review contract §4).
 Append a maintainer ping per
-`.github/skills/maintainer-lookup/SKILL.md`.
+`.agents/skills/maintainer-lookup/SKILL.md`.
 
 ---
 

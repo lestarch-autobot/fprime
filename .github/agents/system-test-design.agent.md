@@ -35,9 +35,9 @@ drafting. A plan drafted from guessed requirements is discarded.
 
 ## Procedure
 
-Follow `.github/skills/fprime-system-test-design/SKILL.md` for the
+Follow `.agents/skills/fprime-system-test-design/SKILL.md` for the
 plan structure, the per-test entry, the fault menu, and the hand-off.
-Pass rules follow `.github/skills/fprime-test-oracle/SKILL.md`.
+Pass rules follow `.agents/skills/fprime-test-oracle/SKILL.md`.
 
 Then run the review loop of `_shared/phase-review-loop.md` with
 `system-test-review.agent.md` (plan mode) as the reviewer — when

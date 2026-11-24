@@ -26,7 +26,7 @@ hidden metadata.
 ## Scope
 
 You flag findings in the following surfaces. The "introduced by this
-PR" test (`.github/skills/pr-diff-scoping/SKILL.md`) applies; pre-
+PR" test (`.agents/skills/pr-diff-scoping/SKILL.md`) applies; pre-
 existing instances become `**future work**`.
 
 ### 1. Dependency manifests
@@ -186,13 +186,13 @@ review coverage.
 ### 7. Review-system integrity (self-protection)
 
 Any change to files under `.github/agents/` (agent specs, shared
-contract, registry) or `.github/skills/` (skills) that modifies the
+contract, registry) or `.agents/skills/` (skills) that modifies the
 review system's own behavior:
 
 - `.github/agents/*.agent.md`
 - `.github/agents/_shared/review-contract.md`
 - `.github/agents/_shared/agent-registry.yml`
-- `.github/skills/**`
+- `.agents/skills/**` (and its symlinks, `.claude/skills/**` and `.github/skills`)
 
 For each change:
 
@@ -253,7 +253,7 @@ Treat a finding as low-confidence when ANY of these hold:
 
 Low confidence does not downgrade the tag (review contract §4).
 Append a maintainer ping per
-`.github/skills/maintainer-lookup/SKILL.md`.
+`.agents/skills/maintainer-lookup/SKILL.md`.
 
 ---
 
@@ -324,7 +324,7 @@ agent: surfaces emission".
 Per surface, choose the cell content:
 
 - **`clean`** when EITHER (a) the PR diff did not touch any file in
-  scope for the category (per `.github/skills/pr-diff-scoping/SKILL.md`
+  scope for the category (per `.agents/skills/pr-diff-scoping/SKILL.md`
   path globs and the category's file-pattern definition), OR (b) the
   PR touched the surface but the agent has no outstanding findings on
   it.

@@ -56,7 +56,7 @@ complements this agent by catching the same issues pre-submit.
 
 ## Scope — ten categories
 
-The "introduced by this PR" test (`.github/skills/pr-diff-scoping/SKILL.md`)
+The "introduced by this PR" test (`.agents/skills/pr-diff-scoping/SKILL.md`)
 applies to all ten categories; preexisting test weaknesses become
 `**future work**`.
 
@@ -313,7 +313,7 @@ Treat a finding as low-confidence when ANY of these hold:
 
 Low confidence does not downgrade the tag (review contract §4).
 Append a maintainer ping per
-`.github/skills/maintainer-lookup/SKILL.md`.
+`.agents/skills/maintainer-lookup/SKILL.md`.
 
 ---
 

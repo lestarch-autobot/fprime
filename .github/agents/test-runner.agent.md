@@ -20,7 +20,7 @@ auditor (contract §4).
 
 ## Procedure
 
-Follow `.github/skills/fprime-run-for-record/SKILL.md` §3 exactly: one
+Follow `.agents/skills/fprime-run-for-record/SKILL.md` §3 exactly: one
 `fth run` per run ID, which verifies the manifest, flashes with
 read-back, starts the ground system and one recorder, sends the
 run-start markers, runs the stimulus once in plan order, exports,

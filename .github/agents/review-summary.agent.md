@@ -618,7 +618,7 @@ cc @<maintainer1> @<maintainer2> — please confirm close.
 ### Maintainer ping
 
 `Recommend: Close` is a high-stakes call; ping maintainers per
-`.github/skills/maintainer-lookup/SKILL.md` (steps 1, 3, 4) so a
+`.agents/skills/maintainer-lookup/SKILL.md` (steps 1, 3, 4) so a
 human decides whether to close or hold for discussion. This ping is
 always posted (not gated on confidence) because the close decision
 is human territory.
@@ -814,7 +814,7 @@ reviewers. This is the only automatic human ping on the happy path,
 so it fires **at most once per PR**.
 
 1. **Recipients**: the core-maintainer set per
-   `.github/skills/maintainer-lookup/SKILL.md` §1b (README
+   `.agents/skills/maintainer-lookup/SKILL.md` §1b (README
    `Core Maintainer(s)` from the trusted `nasa/fprime` `devel`
    checkout; no Security Overseer, no `git log` approvers), minus
    the PR author (GitHub rejects requesting the author).

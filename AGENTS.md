@@ -22,7 +22,7 @@ follow; the details live in the documents linked below.
 | `default/config/` | Default compile-time configuration headers and `AcConstants.fpp`; projects override these to tune a deployment. |
 | `TestDeploymentsProject/Ref/` | The `Ref` reference deployment, used to exercise the framework end to end. |
 | `FppTestProject/` | Validation suite for FPP-generated code. |
-| `.github/agents/`, `.github/skills/` | Agent definitions and reusable agent procedures. |
+| `.github/agents/`, `.agents/skills/` | Agent definitions and reusable agent procedures. |
 
 For a narrative tour of the tree, see
 [`docs/user-manual/overview/source-tree.md`](docs/user-manual/overview/source-tree.md).
@@ -72,14 +72,15 @@ Build-system usage, `fprime-util` subcommands, and settings are documented in
 - Flight code must be deterministic and bounded: no unbounded loops, no
   unbounded buffers, explicit handling of every error return.
 - The authoritative C/C++ rules are in
-  [`.github/skills/fprime-cpp-design/SKILL.md`](.github/skills/fprime-cpp-design/SKILL.md);
+  [`.agents/skills/fprime-cpp-design/SKILL.md`](.agents/skills/fprime-cpp-design/SKILL.md);
   JPL-level design expectations are in
-  [`.github/skills/jpl-design-principles/SKILL.md`](.github/skills/jpl-design-principles/SKILL.md).
+  [`.agents/skills/jpl-design-principles/SKILL.md`](.agents/skills/jpl-design-principles/SKILL.md).
 
 ## Procedures (skills)
 
-Reusable procedures live in `.github/skills/<skill-name>/SKILL.md` and follow the
-[Agent Skills specification](https://agentskills.io/specification). Follow the
+Reusable procedures live in `.agents/skills/<skill-name>/SKILL.md` and follow the
+[Agent Skills specification](https://agentskills.io/specification). `.claude/skills/`
+and `.github/skills` are symlinks to them for tools that scan only those paths. Follow the
 relevant one instead of improvising:
 
 - Building a component end to end: `fprime-component-development`, which

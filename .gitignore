@@ -127,5 +127,6 @@ temp_dir/
 
 # Claude files
 .mylocalauthcache
-.claude
+.claude/*
+!.claude/skills
 .auth_key

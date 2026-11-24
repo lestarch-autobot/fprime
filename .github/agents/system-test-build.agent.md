@@ -17,7 +17,7 @@ UUT SHA from stage 1, and the deployment/testbed the human chose.
 
 ## Procedure
 
-1. Follow `.github/skills/fprime-system-test-harness/SKILL.md`: reuse
+1. Follow `.agents/skills/fprime-system-test-harness/SKILL.md`: reuse
    first, system deployment by default, markers and stimulus through
    the fth fixtures, `bench.json`, record completeness, planted faults and
    helpers as declarations in the plan's helpers module
