@@ -48,6 +48,7 @@ register_fprime_module(
   DEPENDS
     Fw_Types
     Os_Generic_Types
+    Os_Mutex
 )
 register_fprime_implementation(
     Os_Generic_PriorityQueue
