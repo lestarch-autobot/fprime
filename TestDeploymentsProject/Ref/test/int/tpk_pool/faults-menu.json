@@ -1,0 +1,73 @@
+{
+  "max_count": 2,
+  "knobs": [
+    {
+      "name": "final_packets_held",
+      "class": "uut-state",
+      "applies_to": [
+        "L7-1"
+      ],
+      "fails": {
+        "L7-1": [
+          "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them"
+        ]
+      },
+      "mechanism": "both test packets are set SEND_NEVER after the overrides are cleared, so the channel is not downlinked",
+      "kind": "insert",
+      "ripples_to": {}
+    },
+    {
+      "name": "first_packet_also_held",
+      "class": "uut-state",
+      "applies_to": [
+        "L2-1"
+      ],
+      "fails": {
+        "L2-1": [
+          "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them"
+        ]
+      },
+      "mechanism": "packet 60 is also set SEND_NEVER, so no packet downlinks the channel",
+      "kind": "insert",
+      "ripples_to": {}
+    },
+    {
+      "name": "known_packet_requested",
+      "class": "stimulus",
+      "applies_to": [
+        "L6-1"
+      ],
+      "fails": {
+        "L6-1": [
+          "event tlmSend.PacketNotFound(packetId=999) count == 1",
+          "event cmdDisp.OpCodeError count == 1",
+          "event tlmSend.PacketSent count == 0"
+        ]
+      },
+      "mechanism": "SEND_PKT is sent for packet 60, which exists, so no refusal is produced",
+      "kind": "rewrite",
+      "ripples_to": {}
+    },
+    {
+      "name": "second_packet_also_held",
+      "class": "uut-state",
+      "applies_to": [
+        "L2-2"
+      ],
+      "fails": {
+        "L2-2": [
+          "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them"
+        ]
+      },
+      "mechanism": "packet 61 is also set SEND_NEVER, so no packet downlinks the channel",
+      "kind": "insert",
+      "ripples_to": {}
+    }
+  ],
+  "tests_covered": [
+    "L2-1",
+    "L2-2",
+    "L6-1",
+    "L7-1"
+  ]
+}

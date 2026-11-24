@@ -1,0 +1,28 @@
+{
+  "deployment": "Ref",
+  "dictionary": "uut-ref/TestDeploymentsProject/build-artifacts/Linux/Ref/dict/RefTopologyDictionary.json",
+  "serial": "devin-box",
+  "boot_event": "CdhCore.version.FrameworkVersion",
+  "vars": {
+    "zmq": "ipc:///tmp/fth-tpk-pool-in ipc:///tmp/fth-tpk-pool-out",
+    "port": "50000",
+    "venue": "uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/venue"
+  },
+  "flash": "{venue}/start-uut.sh {image}",
+  "dump": "{venue}/readback-uut.sh {image} {readback}",
+  "gds": "fprime-gds -n --dictionary {dictionary} --ip-address 127.0.0.1 --ip-port {port} --gui none --zmq-transport {zmq} --logs {logs}",
+  "recorder": "fprime-cli events --dictionary {dictionary} --zmq-transport {zmq} --logs {logs}",
+  "send": "fprime-cli command-send --dictionary {dictionary} --zmq-transport {zmq} --logs {logs} CdhCore.{command} --arguments {args}",
+  "timeouts": {
+    "flash_s": 30,
+    "gds_start_s": 8,
+    "recorder_start_s": 3,
+    "send_s": 60,
+    "command_s": 30
+  },
+  "provenance": {
+    "serial_re": "Serial# = (\\S+)",
+    "note": "native venue, no debugger: start-uut.sh prints the host name in the place of the debugger serial"
+  },
+  "notes": "Venue A: Ref on a Linux host, fprime-gds over TCP. Relative paths only: run from the campaign root, which holds `uut-ref/` (lestarch-autobot/fprime, branch tlm-packetizer-membership-pool-harness, built). `serial` is the bench host's name."
+}
