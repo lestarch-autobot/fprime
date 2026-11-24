@@ -80,8 +80,10 @@ Build-system usage, `fprime-util` subcommands, and settings are documented in
 
 Reusable procedures live in `.agents/skills/<skill-name>/SKILL.md` and follow the
 [Agent Skills specification](https://agentskills.io/specification). `.claude/skills/`
-and `.github/skills` are symlinks to them for tools that scan only those paths. Follow the
-relevant one instead of improvising:
+and `.github/skills` are symlinks to them for tools that scan only those paths. The
+symlinks work only in a local checkout with symlink support (on Windows,
+`core.symlinks=true`); GitHub URLs and API reads must use `.agents/skills/`.
+Follow the relevant one instead of improvising:
 
 - Building a component end to end: `fprime-component-development`, which
   sequences `fprime-component-requirements`,
