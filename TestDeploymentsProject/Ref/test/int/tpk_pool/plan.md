@@ -5,6 +5,7 @@
 - Venue-neutral by ruling (ledger 14): tests use only `tlmSend`, `cmdDisp` and `version` commands, events and channels. Run in both venues: fprime-zephyr-reference on bench hardware and Ref on a Linux host; one record per venue.
 - Test deployment delta, uncommitted to the UUT, same packet-set change in every venue: `cmdDisp.CommandsDispatched` is removed from the packet that holds it today (`Health` id 1 in fprime-zephyr-reference, `CDH` id 1 in Ref) and listed in exactly two new packets, `TpkA` id 60 and `TpkB` id 61, both in group 1. The channel has two memberships and no other.
 - Delta per venue, fprime-zephyr-reference @ 6444eb6: `tlmSend` is already `Svc.TlmPacketizer` (with `IGNORE_OMIT_LIST`); `MAX_PACKETIZER_PACKETS` 5 → 7; `MAX_PACKETIZER_CHANNELS` 40 unchanged; `MAX_PACKETIZER_MEMBERSHIPS` new = 31 (30 entries today − 1 + 2) and 30 channels listed, counted from the packet set; the build's sizing check confirms them at the first venue build.
+- Delta per venue, fprime-zephyr-reference @ 6444eb6, command dispatcher tick: the topology there leaves `CdhCore.Subtopology.cmdDispRun` unconnected, so `cmdDisp` never writes its telemetry; the test deployment adds the one connection `rateGroup1Hz.RateGroupMemberOut[6] -> CdhCore.Subtopology.cmdDispRun`, as Ref has on its 1 Hz rate group, and nothing else in the topology changes.
 - Delta per venue, Ref: `tlmSend` switched from `Svc.TlmChan` to `Svc.TlmPacketizer` with a `setPacketList` call given `IGNORE_OMIT_LIST` (build option `FPRIME_TLM_PACKETIZER_OMIT_LIST=OFF`), as the other venue does; `tlmSend.GroupConfigs` and `tlmSend.SectionEnabled` listed in packet `CDH`; 37 packets, 178 memberships (175 − 1 + 2 + 2) and 177 channels, under the defaults 50 and 200; counts confirmed from the build's sizing check. With the omit list counted the same packet set needs 202 channel slots (177 listed + 25 omitted).
 - Out of scope: the build-time sizing check (pytest in `cmake/test`, not a system test); rate logic and override persistence (unchanged).
 
@@ -33,7 +34,7 @@ Covers:    —
 Setup:     Image running, ground system attached.
 Procedure: MARK(10); VERSION(ALL); MARK(11).
 Window:    Marker(id=10) … Marker(id=11)
-Pass rule: complete: STD. all_of: event version.FrameworkVersion count >= 1.
+Pass rule: named checks declared in the integration test (test_L0_1).
 Evidence:  Version events equal to the manifest's describe strings.
 Planted faults:none
 
@@ -44,7 +45,7 @@ Covers:    —
 Setup:     As L0-1.
 Procedure: MARK(20); CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(21).
 Window:    Marker(id=20) … Marker(id=21)
-Pass rule: complete: STD. all_of: ABS; cmdDisp.CommandsDispatched has >= 1 sample in the window.
+Pass rule: named checks declared in the integration test (test_L0_2).
 Evidence:  A CommandsDispatched sample inside the window; no NoChan event.
 Planted faults:none
 
@@ -55,7 +56,7 @@ Covers:    TPK-001, TPK-003
 Setup:     L0-2 passed.
 Procedure: MARK(29); OVERRIDE_PACKET_SEND(REALTIME, 61, SEND_NEVER); wait 2 ticks; MARK(30); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(31); wait 2 ticks; CLEAR_PACKET_OVERRIDE(REALTIME, 61); MARK(32).
 Window:    S = Marker(id=29) … Marker(id=30); W = Marker(id=30) … Marker(id=31); T = Marker(id=31) … Marker(id=32)
-Pass rule: complete: S: STD; W: STD; T: STD. all_of: S: event tlmSend.PacketNotFound count == 0; W: ABS; cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them (the channel is listed only in packets 60 and 61; packet 61 is set SEND_NEVER two ticks before the start marker and released two ticks after the end marker, so every sample inside the window is downlinked by packet 60. The end marker is itself a dispatched command, so the held packet's pending sample carries a time after the window and its flush on release is excluded. A membership that is not written leaves packet 60 unchanged, it is not sent, and the check fails on sample count); T: event tlmSend.PacketNotFound count == 0.
+Pass rule: named checks declared in the integration test (test_L2_1).
 Evidence:  At least two rising CommandsDispatched samples, each step equal to the OpCodeDispatched rows archived between them.
 Planted faults:first_packet_also_held
 
@@ -66,7 +67,7 @@ Covers:    TPK-001, TPK-003
 Setup:     L2-1 run.
 Procedure: MARK(39); OVERRIDE_PACKET_SEND(REALTIME, 60, SEND_NEVER); wait 2 ticks; MARK(40); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(41); wait 2 ticks; CLEAR_PACKET_OVERRIDE(REALTIME, 60); MARK(42).
 Window:    S = Marker(id=39) … Marker(id=40); W = Marker(id=40) … Marker(id=41); T = Marker(id=41) … Marker(id=42)
-Pass rule: complete: S: STD; W: STD; T: STD. all_of: S: event tlmSend.PacketNotFound count == 0; W: ABS; cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them (the channel is listed only in packets 60 and 61; packet 60 is set SEND_NEVER two ticks before the start marker and released two ticks after the end marker, so every sample inside the window is downlinked by packet 61. The end marker is itself a dispatched command, so the held packet's pending sample carries a time after the window and its flush on release is excluded. A membership that is not written leaves packet 61 unchanged, it is not sent, and the check fails on sample count); T: event tlmSend.PacketNotFound count == 0.
+Pass rule: named checks declared in the integration test (test_L2_2).
 Evidence:  At least two rising CommandsDispatched samples, each step equal to the OpCodeDispatched rows archived between them.
 Planted faults:second_packet_also_held
 
@@ -77,7 +78,7 @@ Covers:    —
 Setup:     L2-2 run.
 Procedure: MARK(50); SEND_PKT(999, REALTIME); MARK(51).
 Window:    Marker(id=50) … Marker(id=51)
-Pass rule: complete: both markers present; commands_sent == count(event cmdDisp.OpCodeDispatched). all_of: event cmdDisp.OpCodeError count == 1 (SEND_PKT for an unknown id answers VALIDATION_ERROR, so this test does not use STD (which requires zero OpCodeError) and expects exactly one); event tlmSend.PacketNotFound(packetId=999) count == 1; event tlmSend.PacketSent count == 0; event tlmSend.NoChan count == 0.
+Pass rule: named checks declared in the integration test (test_L6_1).
 Evidence:  PacketNotFound(999) once, one OpCodeError, no PacketSent.
 Planted faults:known_packet_requested
 
@@ -88,7 +89,7 @@ Covers:    —
 Setup:     All earlier tests run.
 Procedure: MARK(59); CLEAR_PACKET_OVERRIDE(REALTIME, 60); CLEAR_PACKET_OVERRIDE(REALTIME, 61); wait 2 ticks; MARK(60); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(61).
 Window:    S = Marker(id=59) … Marker(id=60); W = Marker(id=60) … Marker(id=61)
-Pass rule: complete: S: STD; W: STD. all_of: S: event tlmSend.PacketNotFound count == 0; W: ABS; cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them.
+Pass rule: named checks declared in the integration test (test_L7_1).
 Evidence:  Rising CommandsDispatched samples that match the OpCodeDispatched rows the ground archive holds (a path independent of the packetizer's storage).
 Planted faults:final_packets_held
 
@@ -121,3 +122,4 @@ Generated from `planted_faults.py` planted fault declarations (`fth planted-faul
 6. 2026-11-24 designer, review round 1 — packets are sent by the rate logic, not SEND_PKT (SEND_PKT bypasses enable checks and logs PacketSent on acceptance); menu max_count 2 over four faulted tests; TPK-013 is UT only with no system test traced.
 7. 2026-11-24 designer, review round 2 — the hold-back and its release sit outside the L2 windows, two ticks clear of the markers.
 8. 2026-11-24 harness builder, venue A dry runs — the tooling's record integrity accepts no command outside a declared window, so the hold-back and release commands of L2-1 and L2-2 and the two clears of L7-1 are bracketed by setup (`S`) and teardown (`T`) windows that share an edge with the measurement window `W`; they are judged for completeness and for no `PacketNotFound` only. `W`, its markers, checks and planted faults are unchanged.
+9. 2026-11-24 approver ruling, venue A coverage campaign — a plan that keeps `complete`/`all_of` is judged by the tooling's engine and its audit builds no runner-versus-replay table, so the pass rules move, unchanged, to the named checks of the integration tests (`require` for the former `complete` entries, `check` for the former `all_of` entries; `test_L*.py` beside this plan). `amendment-4-equivalence.md` lists every old entry against its new call: 26 identical, 4 helper checks reworded in form only, none added, none dropped. Windows, markers, groups `STD` and `ABS`, rationale, planted faults and their `fails` sets, thresholds, coverage and not-covered entries are unchanged.

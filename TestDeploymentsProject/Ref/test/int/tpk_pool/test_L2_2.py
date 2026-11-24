@@ -1,7 +1,7 @@
-"""L2-2 — Channel value reaches its second packet (plan.json beside this file is the baseline; this is its stimulus).
+"""L2-2 — Channel value reaches its second packet (plan.json beside this file is the baseline; this is its stimulus and pass rule).
 
-The checks declared here are, verbatim, the plan's `complete` (require) and `all_of` (check) entries
-of L2-2; the plan stays the owner of the pass rule. Waits are pacing only; the checks are declared before the stimulus so that a wait that times out leaves a judged window.
+The named checks declared here are the pass rule of L2-2 (plan amendment 4: the plan entry carries none);
+`require` is a completeness precondition (UNVERIFIED), `check` a pass predicate (FAIL). Waits are pacing only; the checks are declared before the stimulus so that a wait that times out leaves a judged window.
 """
 import pytest
 
