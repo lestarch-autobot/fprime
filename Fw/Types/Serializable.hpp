@@ -101,12 +101,14 @@ class Serializable {
     //! \brief Default constructor
     //!
     //! Initializes a Serializable object with default values.
-    Serializable();
+    constexpr Serializable() {}
 
-    //! \brief Virtual destructor
+    //! \brief Destructor
     //!
-    //! Ensures proper cleanup of derived classes.
-    virtual ~Serializable();
+    //! Protected and non-virtual: a Serializable may not be destroyed through
+    //! a reference or pointer to this base class. Trivial, so that derived
+    //! types may be literal types.
+    ~Serializable() = default;
 };
 
 class SerialBufferBase {

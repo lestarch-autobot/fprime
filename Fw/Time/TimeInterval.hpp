@@ -17,7 +17,7 @@
 //!
 namespace Fw {
 
-class TimeInterval : public Serializable {
+class TimeInterval final : public Serializable {
   public:
     enum { SERIALIZED_SIZE = sizeof(U32) * 2 };
 

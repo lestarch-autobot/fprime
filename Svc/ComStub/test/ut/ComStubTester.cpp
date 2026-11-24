@@ -51,7 +51,6 @@ void ComStubTester ::test_basic() {
     this->test_initial();
     U8 storage[8];
     Fw::Buffer buffer(storage, sizeof(storage));
-    Fw::Success condition = Fw::Success::SUCCESS;
     ComCfg::FrameContext context;
     this->fill(buffer);
 

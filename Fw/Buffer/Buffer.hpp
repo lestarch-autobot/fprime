@@ -50,7 +50,7 @@ namespace Fw {
 //! reading the wrapped data whereas the standard serialize and deserialize methods treat the data as a pointer to
 //! prevent excessive copying.
 //!
-class Buffer : public Fw::Serializable {
+class Buffer final : public Fw::Serializable {
     friend class Fw::BufferTester;
 
   public:

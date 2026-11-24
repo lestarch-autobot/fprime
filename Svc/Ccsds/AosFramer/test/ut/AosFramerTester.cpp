@@ -63,7 +63,6 @@ void AosFramerTester ::testNominalFraming() {
     // Check that the dataOut handler was called with the correct data
     ASSERT_from_dataOut_SIZE(1);
     Fw::Buffer outBuffer = this->fromPortHistory_dataOut->at(0).data;
-    ComCfg::FrameContext outContext = this->fromPortHistory_dataOut->at(0).context;
     const FwSizeType expectedFrameSize = ComCfg::AosMaxFrameFixedSize;
     ASSERT_EQ(outBuffer.getSize(), expectedFrameSize);
     ASSERT_EQ(this->fromPortHistory_dataOut->at(0).context.get_vcId(), defaultContext.get_vcId());

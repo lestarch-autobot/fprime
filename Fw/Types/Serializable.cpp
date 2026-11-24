@@ -11,10 +11,6 @@
 
 namespace Fw {
 
-Serializable::Serializable() {}
-
-Serializable::~Serializable() {}
-
 // ----------------------------------------------------------------------
 #if FW_SERIALIZABLE_TO_STRING || FW_ENABLE_TEXT_LOGGING || BUILD_UT
 
