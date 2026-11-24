@@ -125,7 +125,8 @@ Projects may configure the framework types that the framework and components use
 
 This list is not exhaustive; see `default/config/FpConfig.fpp` for the complete set of configurable
 types (e.g. `FwDpPriorityType`, `FwTraceIdType`). Component configuration modules may add more, e.g.
-`FwTlmPacketizeOffsetType` in `Svc/TlmPacketizer/config/TlmPacketizerConfig/TlmPacketizerCfg.fpp`.
+`FwTlmPacketizeOffsetType`, `FwTlmPacketizePacketIndexType` and `FwTlmPacketizePoolIndexType` in
+`Svc/TlmPacketizer/config/TlmPacketizerConfig/TlmPacketizerCfg.fpp`.
 
 There is also a set of framework types that are used across F´ deployments and specifically interact with ground data
 systems. These GDS types have defaults based on configurable platform independent fixed-widths as shown below:

@@ -7,6 +7,14 @@
 @ projects which override FpConfig.fpp continue to build without adding it.
 type FwTlmPacketizeOffsetType = U16
 
+@ The type of a packet index stored in the membership pool.
+@ Must represent 0..MAX_PACKETIZER_PACKETS-1.
+type FwTlmPacketizePacketIndexType = U8
+
+@ The type of an index into the membership pool.
+@ Must represent 0..MAX_PACKETIZER_MEMBERSHIPS.
+type FwTlmPacketizePoolIndexType = U16
+
 module Svc {
     @ Configurable enum supporting multiple resampled telemetry sections
     @ Each section creates output indices for each telemetry group
