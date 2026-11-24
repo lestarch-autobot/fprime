@@ -8,7 +8,7 @@
 #ifndef PRMDB_TEST_UT_PRMDBTESTER_HPP_
 #define PRMDB_TEST_UT_PRMDBTESTER_HPP_
 
-#include <Os/Stub/test/File.hpp>
+#include <Os/test/ut/interceptors/FileTestInterceptor.hpp>
 #include <PrmDbGTestBase.hpp>
 #include <Svc/PrmDb/PrmDbImpl.hpp>
 #include <config/PrmDbImplTesterCfg.hpp>
@@ -68,15 +68,42 @@ class PrmDbTester : public PrmDbGTestBase {
     Os::File::Status m_testWriteStatus;
 
   public:
-    class PrmDbTestFile : public Os::Stub::File::Test::TestFileInterceptor {
+    //! Replaces every Os::File call with an in-memory file over the buffers set below; never calls `real`
+    class PrmDbTestFile : public Os::Test::FileTestInterceptor {
       public:
+        Status open(Os::FileInterface& real, const char* path, Mode mode, OverwriteType overwrite) override;
+        void close(Os::FileInterface& real) override;
+        Status size(Os::FileInterface& real, FwSizeType& size_result) override;
+        Status position(Os::FileInterface& real, FwSizeType& position_result) override;
+        Status preallocate(Os::FileInterface& real, FwSizeType offset, FwSizeType length) override;
+        Status seek(Os::FileInterface& real, FwSignedSizeType offset, SeekType seekType) override;
+        Status flush(Os::FileInterface& real) override;
         Status read(Os::FileInterface& real, U8* buffer, FwSizeType& size, WaitType wait) override;
-
         Status write(Os::FileInterface& real, const U8* buffer, FwSizeType& size, WaitType wait) override;
+
+        //! Set the status returned by every following call
+        void setNextStatus(Os::File::Status status);
+        //! Set the data returned by following read calls
+        void setReadResult(U8* buffer, FwSizeType size);
+        //! Set the buffer filled by following write calls
+        void setWriteResult(U8* buffer, FwSizeType size);
 
         // Tracks the current tester
         static void setTester(PrmDbTester* tester);
         static PrmDbTester* s_tester;
+
+        //! File pointer
+        FwSizeType pointer = 0;
+
+      private:
+        Status fakeRead(U8* buffer, FwSizeType& size);
+        Status fakeWrite(const U8* buffer, FwSizeType& size);
+
+        Os::File::Status m_nextStatus = Os::File::OP_OK;
+        U8* m_readResult = nullptr;
+        FwSizeType m_readResultSize = 0;
+        U8* m_writeResult = nullptr;
+        FwSizeType m_writeResultSize = 0;
     };
 
   private:

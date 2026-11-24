@@ -1,90 +1,138 @@
 // ======================================================================
 // \title Os/Stub/test/ut/StubFileSystemTests.cpp
-// \brief stub implementation for Os::FileSystemInterface testing
-// This ensures the delegation of function calls happens properly
+// \brief interface tests for Os::FileSystem: the wrapper calls its implementation as expected
+//
+// Runs on the selected Os::FileSystem with a recording test interceptor in place of the implementation's behavior.
 // ======================================================================
 #include <gtest/gtest.h>
 #include "Os/FileSystem.hpp"
-#include "Os/Stub/test/FileSystem.hpp"
-#include "Os/test/ut/filesystem/CommonTests.hpp"
-#include "Os/test/ut/filesystem/RulesHeaders.hpp"
+#include "Os/test/ut/interceptors/FileSystemTestInterceptor.hpp"
 
-// Wrapper under test: Os::FileSystemCommon on the implementation named here, not the selection in
-// config/OsSelection.hpp
-using FileSystemUnderTest = Os::FileSystemCommon<Os::Stub::FileSystem::Test::TestFileSystem>;
+namespace {
 
-using namespace Os::Stub::FileSystem::Test;
+//! Records the calls Os::FileSystem makes on its implementation; the real file system is never touched
+class Recorder : public Os::Test::FileSystemTestInterceptor {
+  public:
+    enum LastFn {
+        NONE_FN,
+        REMOVE_DIR_FN,
+        REMOVE_FILE_FN,
+        RENAME_FN,
+        GET_CWD_FN,
+        CHANGE_CWD_FN,
+        GET_FREESPACE_FN,
+        GET_PATH_TYPE_FN,
+        GET_HANDLE_FN
+    };
 
-// Basic file tests
+    Os::FileSystemHandle* getHandle(Os::FileSystemInterface& real) override {
+        this->lastCalled = GET_HANDLE_FN;
+        return real.getHandle();
+    }
+    Status _removeDirectory(Os::FileSystemInterface& real, const char* path) override {
+        this->lastCalled = REMOVE_DIR_FN;
+        return this->status_out;
+    }
+    Status _removeFile(Os::FileSystemInterface& real, const char* path) override {
+        this->lastCalled = REMOVE_FILE_FN;
+        return this->status_out;
+    }
+    Status _rename(Os::FileSystemInterface& real, const char* sourcePath, const char* destPath) override {
+        this->lastCalled = RENAME_FN;
+        return this->status_out;
+    }
+    Status _getFreeSpace(Os::FileSystemInterface& real,
+                         const char* path,
+                         FwSizeType& totalBytes,
+                         FwSizeType& freeBytes) override {
+        this->lastCalled = GET_FREESPACE_FN;
+        return this->status_out;
+    }
+    Status _getPathType(Os::FileSystemInterface& real, const char* path, PathType& pathType) override {
+        this->lastCalled = GET_PATH_TYPE_FN;
+        pathType = PathType::NOT_EXIST;
+        return this->status_out;
+    }
+    Status _getWorkingDirectory(Os::FileSystemInterface& real, char* path, FwSizeType bufferSize) override {
+        this->lastCalled = GET_CWD_FN;
+        return this->status_out;
+    }
+    Status _changeWorkingDirectory(Os::FileSystemInterface& real, const char* path) override {
+        this->lastCalled = CHANGE_CWD_FN;
+        return this->status_out;
+    }
+
+    LastFn lastCalled = NONE_FN;        //!< Last function called
+    Status status_out = Status::OP_OK;  //!< Status to return
+};
+
 class Interface : public ::testing::Test {
   public:
-    //! Setup function delegating to UT setUp function
-    void SetUp() override { StaticData::data = StaticData(); }
-
-    //! Setup function delegating to UT tearDown function
-    void TearDown() override { StaticData::data = StaticData(); }
+    Recorder recorder;  //!< Installed for the duration of each test
 };
+
+}  // namespace
 
 // Ensure that Os::FileSystem properly calls the implementation removeDirectory()
 TEST_F(Interface, RemoveDirectory) {
-    FileSystemUnderTest::removeDirectory("/does/not/matter");
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::REMOVE_DIR_FN);
-    ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
+    recorder.status_out = Os::FileSystem::Status::NOT_EMPTY;
+    ASSERT_EQ(Os::FileSystem::removeDirectory("/does/not/matter"), Os::FileSystem::Status::NOT_EMPTY);
+    ASSERT_EQ(recorder.lastCalled, Recorder::REMOVE_DIR_FN);
 }
 
 // Ensure that Os::FileSystem properly calls the implementation removeFile()
 TEST_F(Interface, RemoveFile) {
-    FileSystemUnderTest::removeFile("/does/not/matter");
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::REMOVE_FILE_FN);
-    ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
+    recorder.status_out = Os::FileSystem::Status::NO_PERMISSION;
+    ASSERT_EQ(Os::FileSystem::removeFile("/does/not/matter"), Os::FileSystem::Status::NO_PERMISSION);
+    ASSERT_EQ(recorder.lastCalled, Recorder::REMOVE_FILE_FN);
 }
 
-// Ensure that Os::FileSystem properly calls the implementation moveFile()
+// Ensure that Os::FileSystem properly calls the implementation rename()
 TEST_F(Interface, Rename) {
-    FileSystemUnderTest::rename("/does/not/matter", "/does/not/matter");
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::RENAME_FN);
-    ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
+    recorder.status_out = Os::FileSystem::Status::NO_PERMISSION;
+    ASSERT_EQ(Os::FileSystem::rename("/does/not/matter", "/does/not/matter"), Os::FileSystem::Status::NO_PERMISSION);
+    ASSERT_EQ(recorder.lastCalled, Recorder::RENAME_FN);
 }
 
-// Ensure that Os::FileSystem properly calls the implementation changeWorkingDirectory()
+// Ensure that Os::FileSystem properly calls the implementation getWorkingDirectory()
 TEST_F(Interface, GetWorkingDirectory) {
     char unused[1];
-    FileSystemUnderTest::getWorkingDirectory(unused, 1);
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_CWD_FN);
-    ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
+    recorder.status_out = Os::FileSystem::Status::NO_PERMISSION;
+    ASSERT_EQ(Os::FileSystem::getWorkingDirectory(unused, 1), Os::FileSystem::Status::NO_PERMISSION);
+    ASSERT_EQ(recorder.lastCalled, Recorder::GET_CWD_FN);
 }
 
 // Ensure that Os::FileSystem properly calls the implementation changeWorkingDirectory()
 TEST_F(Interface, ChangeWorkingDirectory) {
-    FileSystemUnderTest::changeWorkingDirectory("/does/not/matter");
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CHANGE_CWD_FN);
-    ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
+    recorder.status_out = Os::FileSystem::Status::NO_PERMISSION;
+    ASSERT_EQ(Os::FileSystem::changeWorkingDirectory("/does/not/matter"), Os::FileSystem::Status::NO_PERMISSION);
+    ASSERT_EQ(recorder.lastCalled, Recorder::CHANGE_CWD_FN);
 }
 
 // Ensure that Os::FileSystem properly calls the implementation getFreeSpace()
 TEST_F(Interface, GetFreeSpace) {
     FwSizeType totalBytes;
     FwSizeType freeBytes;
-    FileSystemUnderTest::getFreeSpace("/does/not/matter", totalBytes, freeBytes);
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_FREESPACE_FN);
-    ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
+    recorder.status_out = Os::FileSystem::Status::NO_PERMISSION;
+    ASSERT_EQ(Os::FileSystem::getFreeSpace("/does/not/matter", totalBytes, freeBytes),
+              Os::FileSystem::Status::NO_PERMISSION);
+    ASSERT_EQ(recorder.lastCalled, Recorder::GET_FREESPACE_FN);
 }
 
 // Ensure that Os::FileSystem properly calls the implementation getHandle()
 TEST_F(Interface, GetHandle) {
-    ASSERT_NE(FileSystemUnderTest::getSingleton().getHandle(), nullptr);
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_HANDLE_FN);
+    ASSERT_NE(Os::FileSystem::getSingleton().getHandle(), nullptr);
+    ASSERT_EQ(recorder.lastCalled, Recorder::GET_HANDLE_FN);
 }
 
 // Ensure that Os::FileSystem properly calls the implementation getPathType()
 TEST_F(Interface, GetPathType) {
-    Os::FileSystem::PathType pathType = FileSystemUnderTest::getPathType("/does/not/matter");
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_PATH_TYPE_FN);
+    Os::FileSystem::PathType pathType = Os::FileSystem::getPathType("/does/not/matter");
+    ASSERT_EQ(recorder.lastCalled, Recorder::GET_PATH_TYPE_FN);
     ASSERT_EQ(pathType, Os::FileSystem::PathType::NOT_EXIST);
 }
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    STest::Random::seed();
     return RUN_ALL_TESTS();
 }

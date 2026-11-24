@@ -31,10 +31,10 @@ This rule sets the file open status to `Os::File::OP_OK`, simulating a system st
 in which a file open call succeeds.
 
 **Precondition:**
-`Os::Stub::File::Test::StaticData::data.openStatus != Os::File::OP_OK`.
+`DpWriterTestFile::data.openStatus != Os::File::OP_OK`.
 
 **Action:**
-`Os::Stub::File::Test::StaticData::data.openStatus = Os::File::OP_OK`.
+`DpWriterTestFile::data.openStatus = Os::File::OP_OK`.
 
 **Test:**
 
@@ -50,10 +50,10 @@ This rule sets the file open status to an error value, simulating a system state
 in which a file open call fails.
 
 **Precondition:**
-`Os::Stub::File::Test::StaticData::data.openStatus == Os::File::OP_OK`.
+`DpWriterTestFile::data.openStatus == Os::File::OP_OK`.
 
 **Action:**
-Set `Os::Stub::File::Test::StaticData::data.openStatus` to a random
+Set `DpWriterTestFile::data.openStatus` to a random
 value other than `Os::File::OP_OK`.
 
 **Test:**
@@ -73,10 +73,10 @@ This rule sets the file open status to `Os::File::OP_OK`, simulating a system st
 in which a file write call succeeds.
 
 **Precondition:**
-`Os::Stub::File::Test::StaticData::data.writeStatus != Os::File::OP_OK`.
+`DpWriterTestFile::data.writeStatus != Os::File::OP_OK`.
 
 **Action:**
-`Os::Stub::File::Test::StaticData::data.writeStatus = Os::File::OP_OK`.
+`DpWriterTestFile::data.writeStatus = Os::File::OP_OK`.
 
 **Test:**
 
@@ -92,10 +92,10 @@ This rule sets the file write status to an error value, simulating a system stat
 in which a file write call fails.
 
 **Precondition:**
-`Os::Stub::File::Test::StaticData::data.writeStatus == Os::File::OP_OK`.
+`DpWriterTestFile::data.writeStatus == Os::File::OP_OK`.
 
 **Action:**
-Set `Os::Stub::File::Test::StaticData::data.writeStatus` to a random value
+Set `DpWriterTestFile::data.writeStatus` to a random value
 other than `Os::File::OP_OK`.
 
 **Test:**

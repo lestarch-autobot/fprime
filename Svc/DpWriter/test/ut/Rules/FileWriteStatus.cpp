@@ -10,7 +10,6 @@
 // ======================================================================
 
 #include "Svc/DpWriter/test/ut/Rules/FileWriteStatus.hpp"
-#include "Os/Stub/test/File.hpp"
 #include "Svc/DpWriter/test/ut/Rules/Testers.hpp"
 
 namespace Svc {
@@ -20,22 +19,22 @@ namespace Svc {
 // ----------------------------------------------------------------------
 
 bool TestState ::precondition__FileWriteStatus__OK() const {
-    const auto& fileData = Os::Stub::File::Test::StaticData::data;
+    const auto& fileData = DpWriterTestFile::data;
     return (fileData.writeStatus != Os::File::Status::OP_OK);
 }
 
 void TestState ::action__FileWriteStatus__OK() {
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     fileData.writeStatus = Os::File::Status::OP_OK;
 }
 
 bool TestState ::precondition__FileWriteStatus__Error() const {
-    const auto& fileData = Os::Stub::File::Test::StaticData::data;
+    const auto& fileData = DpWriterTestFile::data;
     return (fileData.writeStatus == Os::File::Status::OP_OK);
 }
 
 void TestState ::action__FileWriteStatus__Error() {
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     fileData.writeStatus = DpWriterTester::pickOsFileError();
 }
 

@@ -5,13 +5,37 @@
 // ======================================================================
 
 #include "DpWriterTester.hpp"
-#include "Os/Stub/test/File.hpp"
-
+#include <cstring>
 namespace Svc {
 
-//! Replaces every Os::File call with the tracking stub for the whole test program. One instance serves all testers:
-//! several exist at once (see Rules/Testers.cpp) and only one interceptor may be installed at a time.
-static Os::Stub::File::Test::TestFileInterceptor s_fileInterceptor;
+//! One instance serves all testers: several exist at once (see Rules/Testers.cpp) and only one interceptor may be
+//! installed at a time.
+DpWriterTestFile DpWriterTestFile::data;
+
+Os::File::Status DpWriterTestFile::open(Os::FileInterface& /*real*/,
+                                        const char* /*path*/,
+                                        Mode /*mode*/,
+                                        OverwriteType /*overwrite*/) {
+    this->pointer = 0;
+    return this->openStatus;
+}
+
+void DpWriterTestFile::close(Os::FileInterface& /*real*/) {}
+
+Os::File::Status DpWriterTestFile::write(Os::FileInterface& /*real*/,
+                                         const U8* buffer,
+                                         FwSizeType& size,
+                                         WaitType /*wait*/) {
+    if (this->writeResult != nullptr) {
+        FW_ASSERT(this->pointer <= this->writeResultSize);
+        size = FW_MIN(size, this->writeResultSize - this->pointer);
+        (void)::memcpy(this->writeResult + this->pointer, buffer, static_cast<size_t>(size));
+        this->pointer += size;
+    } else {
+        size = this->writeSizeResult;
+    }
+    return this->writeStatus;
+}
 
 // ----------------------------------------------------------------------
 // Construction and destruction
@@ -21,10 +45,11 @@ DpWriterTester ::DpWriterTester()
     : DpWriterGTestBase("DpWriterTester", DpWriterTester::MAX_HISTORY_SIZE), component("DpWriter") {
     this->initComponents();
     this->connectPorts();
-    Os::Stub::File::Test::StaticData::data.setNextStatus(Os::File::OP_OK);
-    Os::Stub::File::Test::StaticData::data.writeResult = this->abstractState.m_writeResultData;
-    Os::Stub::File::Test::StaticData::data.writeResultSize = sizeof(this->abstractState.m_writeResultData);
-    Os::Stub::File::Test::StaticData::data.pointer = 0;
+    DpWriterTestFile::data.openStatus = Os::File::OP_OK;
+    DpWriterTestFile::data.writeStatus = Os::File::OP_OK;
+    DpWriterTestFile::data.writeResult = this->abstractState.m_writeResultData;
+    DpWriterTestFile::data.writeResultSize = sizeof(this->abstractState.m_writeResultData);
+    DpWriterTestFile::data.pointer = 0;
 }
 
 DpWriterTester ::~DpWriterTester() {

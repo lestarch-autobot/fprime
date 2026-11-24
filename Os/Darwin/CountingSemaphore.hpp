@@ -2,10 +2,11 @@
 // \title Os/Darwin/CountingSemaphore.hpp
 // \brief Darwin definitions for Os::CountingSemaphore
 // ======================================================================
+// Included before the guard: the interface header may itself include this file through config/OsSelection.hpp
+#include <Os/Interfaces/CountingSemaphoreInterface.hpp>
 #ifndef OS_DARWIN_COUNTING_SEMAPHORE_HPP
 #define OS_DARWIN_COUNTING_SEMAPHORE_HPP
 #include <dispatch/dispatch.h>
-#include <Os/Interfaces/CountingSemaphoreInterface.hpp>
 
 namespace Os {
 namespace Darwin {

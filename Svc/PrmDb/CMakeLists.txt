@@ -21,8 +21,6 @@ register_fprime_ut(
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/PrmDbTestMain.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/PrmDbTester.cpp"
-  DEPENDS
-    Os_File_Test_Stub_Implementation
 )
 
 set (UT_TARGET_NAME "${FPRIME_CURRENT_MODULE}_ut_exe")

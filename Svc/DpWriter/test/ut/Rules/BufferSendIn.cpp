@@ -13,7 +13,6 @@
 #include <limits>
 #include <string>
 
-#include "Os/Stub/test/File.hpp"
 #include "STest/Pick/Pick.hpp"
 #include "Svc/DpWriter/test/ut/Rules/BufferSendIn.hpp"
 #include "Svc/DpWriter/test/ut/Rules/Testers.hpp"
@@ -26,7 +25,7 @@ namespace Svc {
 // ----------------------------------------------------------------------
 
 bool TestState ::precondition__BufferSendIn__OK() const {
-    const auto& fileData = Os::Stub::File::Test::StaticData::data;
+    const auto& fileData = DpWriterTestFile::data;
     bool result = true;
     result &= (fileData.openStatus == Os::File::Status::OP_OK);
     result &= (fileData.writeStatus == Os::File::Status::OP_OK);
@@ -40,7 +39,7 @@ void TestState ::action__BufferSendIn__OK() {
     // These are updated in the from_procBufferSendOut handler
     this->abstractState.m_procTypes = 0;
     // Reset the file pointer in the stub file implementation
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     fileData.pointer = 0;
     // Update m_NumBuffersReceived
     this->abstractState.m_NumBuffersReceived.value++;
@@ -82,7 +81,7 @@ void TestState ::action__BufferSendIn__OK() {
 }
 
 bool TestState ::precondition__BufferSendIn__OKProcShrink() const {
-    const auto& fileData = Os::Stub::File::Test::StaticData::data;
+    const auto& fileData = DpWriterTestFile::data;
     bool result = true;
     result &= (fileData.openStatus == Os::File::Status::OP_OK);
     result &= (fileData.writeStatus == Os::File::Status::OP_OK);
@@ -96,7 +95,7 @@ void TestState ::action__BufferSendIn__OKProcShrink() {
     // These are updated in the from_procBufferSendOut handler
     this->abstractState.m_procTypes = 0;
     // Reset the file pointer in the stub file implementation
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     fileData.pointer = 0;
     // Update m_NumBuffersReceived
     this->abstractState.m_NumBuffersReceived.value++;
@@ -156,7 +155,7 @@ void TestState ::action__BufferSendIn__InvalidBuffer() {
     // Clear the history
     this->clearHistory();
     // Reset the file pointer in the stub file implementation
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     fileData.pointer = 0;
     // Update m_NumBuffersReceived
     this->abstractState.m_NumBuffersReceived.value++;
@@ -190,7 +189,7 @@ void TestState ::action__BufferSendIn__BufferTooSmallForPacket() {
     // Clear the history
     this->clearHistory();
     // Reset the file pointer in the stub file implementation
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     fileData.pointer = 0;
     // Update m_NumBuffersReceived
     this->abstractState.m_NumBuffersReceived.value++;
@@ -229,7 +228,7 @@ void TestState ::action__BufferSendIn__InvalidHeaderHash() {
     // Clear the history
     this->clearHistory();
     // Reset the file pointer in the stub file implementation
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     fileData.pointer = 0;
     // Update m_NumBuffersReceived
     this->abstractState.m_NumBuffersReceived.value++;
@@ -275,7 +274,7 @@ void TestState ::action__BufferSendIn__InvalidHeader() {
     // Clear the history
     this->clearHistory();
     // Reset the file pointer in the stub file implementation
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     fileData.pointer = 0;
     // Update m_NumBuffersReceived
     this->abstractState.m_NumBuffersReceived.value++;
@@ -318,7 +317,7 @@ void TestState ::action__BufferSendIn__BufferTooSmallForData() {
     // Clear the history
     this->clearHistory();
     // Reset the file pointer in the stub file implementation
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     fileData.pointer = 0;
     // Update m_NumBuffersReceived
     this->abstractState.m_NumBuffersReceived.value++;
@@ -361,7 +360,7 @@ void TestState ::action__BufferSendIn__BufferTooSmallForData() {
 }
 
 bool TestState ::precondition__BufferSendIn__FileOpenError() const {
-    const auto& fileData = Os::Stub::File::Test::StaticData::data;
+    const auto& fileData = DpWriterTestFile::data;
     return (fileData.openStatus != Os::File::Status::OP_OK);
 }
 
@@ -372,7 +371,7 @@ void TestState ::action__BufferSendIn__FileOpenError() {
     // These are updated in the from_procBufferSendOut handler
     this->abstractState.m_procTypes = 0;
     // Reset the file pointer in the stub file implementation
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     fileData.pointer = 0;
     // Update m_NumBuffersReceived
     this->abstractState.m_NumBuffersReceived.value++;
@@ -410,7 +409,7 @@ void TestState ::action__BufferSendIn__FileOpenError() {
 }
 
 bool TestState ::precondition__BufferSendIn__FileWriteError() const {
-    const auto& fileData = Os::Stub::File::Test::StaticData::data;
+    const auto& fileData = DpWriterTestFile::data;
     bool result = true;
     result &= (fileData.openStatus == Os::File::Status::OP_OK);
     result &= (fileData.writeStatus != Os::File::Status::OP_OK);
@@ -434,7 +433,7 @@ void TestState ::action__BufferSendIn__FileWriteError() {
     // Get the file size
     const FwSizeType fileSize = container.getPacketSize();
     // Turn off file writing
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     U8* const savedWriteResult = fileData.writeResult;
     fileData.writeResult = nullptr;
     // Adjust size result of write
@@ -447,7 +446,7 @@ void TestState ::action__BufferSendIn__FileWriteError() {
         ASSERT_EVENTS_SIZE(1);
         Fw::FileNameString fileName;
         this->constructDpFileName(container.getId(), container.getTimeTag(), fileName);
-        const Os::File::Status writeStatus = Os::Stub::File::Test::StaticData::data.writeStatus;
+        const Os::File::Status writeStatus = DpWriterTestFile::data.writeStatus;
         ASSERT_EVENTS_FileWriteError(0, static_cast<U32>(writeStatus), static_cast<U32>(fileData.writeSizeResult),
                                      static_cast<U32>(fileSize), fileName.toChar());
         this->abstractState.m_fileWriteErrorEventCount++;
@@ -494,7 +493,7 @@ void TestState ::testFileNameFormatError() {
 }
 
 void TestState::testRoutingPorts() {
-    auto& fileData = Os::Stub::File::Test::StaticData::data;
+    auto& fileData = DpWriterTestFile::data;
     for (FwIndexType portNum = 0; portNum < DpWriterNumPorts; ++portNum) {
         this->clearHistory();
         this->abstractState.m_dpWrittenOutPortNumOpt.reset();

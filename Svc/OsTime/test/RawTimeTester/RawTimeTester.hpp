@@ -6,7 +6,7 @@
 #define SVC_OSTIME_TEST_UT_RAWTIMETESTER_HPP
 
 #include "Fw/Time/Time.hpp"
-#include "Os/Interfaces/Test/RawTimeTestInterceptor.hpp"
+#include "Os/test/ut/interceptors/RawTimeTestInterceptor.hpp"
 
 namespace Svc {
 

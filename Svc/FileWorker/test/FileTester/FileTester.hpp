@@ -5,7 +5,7 @@
 #ifndef SVC_FILEWORKER_TEST_UT_FILETESTER_HPP
 #define SVC_FILEWORKER_TEST_UT_FILETESTER_HPP
 
-#include "Os/Interfaces/Test/FileTestInterceptor.hpp"
+#include "Os/test/ut/interceptors/FileTestInterceptor.hpp"
 
 namespace Svc {
 
