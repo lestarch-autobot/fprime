@@ -1,9 +1,9 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtConsole.cpp
+// \title Os/test/ut/implementations/UtConsole.cpp
 // \brief TEST ONLY: UtConsole and ConsoleTestInterceptor default implementations
 // ======================================================================
+#include <Os/test/ut/implementations/UtConsole.hpp>
 #include <Os/test/ut/interceptors/ConsoleTestInterceptor.hpp>
-#include <Os/test/ut/interceptors/UtConsole.hpp>
 
 namespace Os {
 namespace Test {

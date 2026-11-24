@@ -1,9 +1,9 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtMemory.cpp
+// \title Os/test/ut/implementations/UtMemory.cpp
 // \brief TEST ONLY: UtMemory and MemoryTestInterceptor default implementations
 // ======================================================================
+#include <Os/test/ut/implementations/UtMemory.hpp>
 #include <Os/test/ut/interceptors/MemoryTestInterceptor.hpp>
-#include <Os/test/ut/interceptors/UtMemory.hpp>
 
 namespace Os {
 namespace Test {

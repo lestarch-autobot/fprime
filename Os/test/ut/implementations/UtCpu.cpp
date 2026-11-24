@@ -1,9 +1,9 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtCpu.cpp
+// \title Os/test/ut/implementations/UtCpu.cpp
 // \brief TEST ONLY: UtCpu and CpuTestInterceptor default implementations
 // ======================================================================
+#include <Os/test/ut/implementations/UtCpu.hpp>
 #include <Os/test/ut/interceptors/CpuTestInterceptor.hpp>
-#include <Os/test/ut/interceptors/UtCpu.hpp>
 
 namespace Os {
 namespace Test {

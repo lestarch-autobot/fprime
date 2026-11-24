@@ -1,9 +1,9 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtMutex.cpp
+// \title Os/test/ut/implementations/UtMutex.cpp
 // \brief TEST ONLY: UtMutex and MutexTestInterceptor default implementations
 // ======================================================================
+#include <Os/test/ut/implementations/UtMutex.hpp>
 #include <Os/test/ut/interceptors/MutexTestInterceptor.hpp>
-#include <Os/test/ut/interceptors/UtMutex.hpp>
 
 namespace Os {
 namespace Test {

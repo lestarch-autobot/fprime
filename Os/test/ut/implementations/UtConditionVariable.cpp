@@ -1,9 +1,9 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtConditionVariable.cpp
+// \title Os/test/ut/implementations/UtConditionVariable.cpp
 // \brief TEST ONLY: UtConditionVariable and ConditionVariableTestInterceptor default implementations
 // ======================================================================
+#include <Os/test/ut/implementations/UtConditionVariable.hpp>
 #include <Os/test/ut/interceptors/ConditionVariableTestInterceptor.hpp>
-#include <Os/test/ut/interceptors/UtConditionVariable.hpp>
 
 namespace Os {
 namespace Test {

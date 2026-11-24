@@ -27,15 +27,15 @@ function(add_named_os_module NAMES)
         list(APPEND SOURCE_INPUTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp")
         list(APPEND HEADER_INPUTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.hpp")
         # Unit test builds select the Os::Ut implementation of each service, which wraps the non-test selection and
-        # lets tests intercept its calls (see config/OsSelection.hpp and Os/test/ut/interceptors)
+        # lets tests intercept its calls (see config/OsSelection.hpp , Os/test/ut/implementations and Os/test/ut/interceptors)
         if (BUILD_TESTING)
             set(UT_NAME "${NAME}")
             if (NAME STREQUAL "Condition")
                 set(UT_NAME "ConditionVariable")
             endif()
-            list(APPEND SOURCE_INPUTS "${CMAKE_CURRENT_LIST_DIR}/test/ut/interceptors/Ut${UT_NAME}.cpp")
+            list(APPEND SOURCE_INPUTS "${CMAKE_CURRENT_LIST_DIR}/test/ut/implementations/Ut${UT_NAME}.cpp")
             list(APPEND HEADER_INPUTS
-                "${CMAKE_CURRENT_LIST_DIR}/test/ut/interceptors/Ut${UT_NAME}.hpp"
+                "${CMAKE_CURRENT_LIST_DIR}/test/ut/implementations/Ut${UT_NAME}.hpp"
                 "${CMAKE_CURRENT_LIST_DIR}/test/ut/interceptors/${UT_NAME}TestInterceptor.hpp"
             )
         endif()

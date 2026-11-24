@@ -135,7 +135,7 @@ F´ provides a default `default/config/OsSelection.hpp` selecting the in-tree im
 **Testing:**
 
 - A test of a specific implementation names its wrapper explicitly, e.g. `Os::MutexCommon<Os::Posix::Mutex::PosixMutex>`, independent of the selection.
-- In unit test builds (`BUILD_UT`) the default selection wraps every service in a test-only `Os::Ut::<Service>::Ut<Service>` implementation. Each holds the implementation a non-test build would select (`Os::Selected::<Service>`) and routes every call, and its construction and destruction, through a test-only interceptor ([`Os/test/ut/interceptors/`](../test/ut/interceptors)) when a test installs one; otherwise calls go straight to the selected implementation. At most one interceptor per service may exist at a time, and it must be installed before, and destroyed after, any thread using that service runs.
+- In unit test builds (`BUILD_UT`) the default selection wraps every service in a test-only `Os::Ut::<Service>::Ut<Service>` implementation ([`Os/test/ut/implementations/`](../test/ut/implementations)). Each holds the implementation a non-test build would select (`Os::Selected::<Service>`) and routes every call, and its construction and destruction, through a test-only interceptor ([`Os/test/ut/interceptors/`](../test/ut/interceptors)) when a test installs one; otherwise calls go straight to the selected implementation. At most one interceptor per service may exist at a time, and it must be installed before, and destroyed after, any thread using that service runs.
 - The interface tests (`Os/Stub/test/ut`) use such interceptors to check that each wrapper calls its implementation as expected.
 
 ## 6. OSAL Implementations
