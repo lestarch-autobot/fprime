@@ -69,3 +69,38 @@ fth run --unsealed --run-dir runs/one-1 --manifest manifest.json --plan $T/plan.
 fth run --replay-record runs/dry-1/record --run-dir runs/dry-1-replay --manifest manifest.json --plan $T/plan.json --bench $T/bench-ref.json --tests $T
 fth audit --run-dir runs/dry-1 --manifest manifest.json --plan $T/plan.json --bench $T/bench-ref.json --tests $T --unsealed
 ```
+
+## Mutation vectors
+
+`../../vectors/` holds the vector set of this venue: one clean record and one record per planted fault applied
+alone, as the dry runs made them (`vector.json`, `record/` with `record.sha256`, `sealed/faults.json`, `runner/`,
+`replay-verdicts.json`, `audit/`, the logs), the plan copy they were judged with (`plans/tpk-pool/`, hashes in
+`SOURCE.json`) and the manifest of those runs. `../../campaign/dry-runs.sh` makes the runs, replays each record
+(`fth run --replay-record`), builds the set (`../../campaign/mk-vectors.py`) and applies the vector rule:
+
+```sh
+python3 $T/venue/check-vectors.py $T/../../vectors     # one line per vector; exit 1 on a mismatch or an empty set
+```
+
+`fth vectors` (v0.1.29) cannot judge a plan whose pass rules live in the tests; `check-vectors.py` applies its rule
+(`fth.vectors.verdict_problems`, imported unmodified) to the replay verdicts.
+The campaign scripts sit outside this directory (`../../campaign/`) because they name the planted fault of each
+run, which the stimulus directory must not (`fth verify-plan` refuses it).
+
+## Notes for the reader of a record
+
+- **L0-1 and the image identity.** The test's check is `FrameworkVersion count >= 1`, as in the plan. That the
+  image carries the manifest's describe strings is judged by the tooling, not by this test: `fth manifest`
+  refuses an image without them and `fth audit` compares the dictionary versions with the manifest.
+- **Two packets, one sample.** `TpkA` (60) and `TpkB` (61) both carry `cmdDisp.CommandsDispatched`. With both
+  enabled (L0-2, L7-1) each change is downlinked twice with one time tag; the recorder writes the lines one after
+  the other and the tool's export collapses adjacent identical lines, so the window holds one sample per change.
+  The helper does not collapse equal samples: a second copy that is not adjacent (a held packet released later
+  with its old time tag, as in the teardown windows of L2-1 and L2-2) stays a second row, and in a judged
+  window it would be a step of 0 and FAIL. `test/kat` pins both.
+- **State a planted fault leaves behind.** A test's teardown clears only the test's own override.
+  `first_packet_also_held` leaves packet 60 held from the setup of L2-1 until the teardown of L2-2 (L2-2 holds
+  packet 60 itself). `second_packet_also_held` leaves packet 61 held from the setup of L2-2 through L6-1 until
+  the setup of L7-1. `final_packets_held` leaves both held at the end of the run. In plan order no other verdict
+  changes (L6-1 judges no packet flow), so `ripples_to` is empty; a single test run after a planted run starts
+  from a new image.

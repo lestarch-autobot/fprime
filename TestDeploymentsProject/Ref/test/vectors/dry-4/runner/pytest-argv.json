@@ -1,0 +1,23 @@
+[
+ "/home/ubuntu/work/venv/bin/python3.12",
+ "-P",
+ "-m",
+ "pytest",
+ "uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool",
+ "-p",
+ "fth.pytest_plugin",
+ "-q",
+ "--junitxml=runs/dry-4/runner/junit.xml",
+ "-o",
+ "junit_family=xunit1",
+ "--fth-plan=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/plan.json",
+ "--fth-run-dir=runs/dry-4",
+ "--fth-manifest=manifest.json",
+ "--fth-bench=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/bench-ref.json",
+ "--fth-phase=dev",
+ "--fth-plant=L6-1=known_packet_requested",
+ "--rootdir=/home/ubuntu/work/uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool",
+ "--confcutdir=/home/ubuntu/work/uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool",
+ "-c",
+ "/dev/null"
+]

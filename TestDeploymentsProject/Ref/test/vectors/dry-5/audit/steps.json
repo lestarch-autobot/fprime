@@ -1,0 +1,87 @@
+[
+ {
+  "name": "bench file resolved (serial comparison)",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "manifest verified (repos + file hashes)",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "record hashes verified",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "run-start markers (unsealed development run: manifest marker only)",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "flash provenance (serial, image sha, read-back sha)",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "re-export from raw equals record",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "record integrity (one START..END per window, no command outside a window, monotonic time, export counts, junit hashed, no duplicate test)",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "replayed tests stay blind to the draw (no faults/sealed/run-dir/reflection identifiers in any *.py)",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "replay of the test functions over the record (/home/ubuntu/work/uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool, sha256 773e47591831\u2026) \u2192 auditor/junit.xml, auditor/verdicts.json",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "no development plant (--fth-plant) in the record \u2014 a planted development run is never RfR",
+  "ok": false,
+  "reasons": [
+   "dev_plant present: {\"L7-1\": \"final_packets_held\"}"
+  ]
+ },
+ {
+  "name": "replay sent exactly the recorded commands (per test, in order; nothing left over at session end)",
+  "ok": false,
+  "reasons": [
+   "L7-1: recorded-not-sent ['CdhCore.tlmSend.OVERRIDE_PACKET_SEND', ['REALTIME', 60, 'SEND_NEVER']]",
+   "L7-1: recorded-not-sent ['CdhCore.tlmSend.OVERRIDE_PACKET_SEND', ['REALTIME', 61, 'SEND_NEVER']]"
+  ]
+ },
+ {
+  "name": "replay waits that timed out where the live stimulus did (record-derived; informational): none",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "runner junit (record/junit.xml, hashed) == replay, per test (verdict + failed + declared checks; auditor/diff-runner-replay.md)",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "runner/verdicts.json is what record/junit.xml yields",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "quick-look pages rendered (auditor/ql/)",
+  "ok": true,
+  "reasons": []
+ },
+ {
+  "name": "inputs/ packaged (self-contained: manifest, plan, menu, bench, checker(s), toolchain, image(s), dictionary) \u2014 5 files",
+  "ok": true,
+  "reasons": []
+ }
+]

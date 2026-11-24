@@ -1,0 +1,5 @@
+{
+  "kind": "clean",
+  "note": "venue A (Ref, Linux host), fth run --unsealed, fprime harness b93ae6f19, run dry-1",
+  "plan": "plans/tpk-pool/plan.json"
+}

@@ -1,0 +1,17 @@
+- OK: bench file resolved (serial comparison)
+- OK: manifest verified (repos + file hashes)
+- OK: record hashes verified
+- OK: run-start markers (unsealed development run: manifest marker only)
+- OK: flash provenance (serial, image sha, read-back sha)
+- OK: re-export from raw equals record
+- OK: record integrity (one START..END per window, no command outside a window, monotonic time, export counts, junit hashed, no duplicate test)
+- OK: replayed tests stay blind to the draw (no faults/sealed/run-dir/reflection identifiers in any *.py)
+- OK: replay of the test functions over the record (/home/ubuntu/work/uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool, sha256 773e47591831…) → auditor/junit.xml, auditor/verdicts.json
+- OK: no development plant (--fth-plant) in the record — a planted development run is never RfR
+- OK: replay sent exactly the recorded commands (per test, in order; nothing left over at session end)
+- OK: replay waits that timed out where the live stimulus did (record-derived; informational): none
+- OK: runner junit (record/junit.xml, hashed) == replay, per test (verdict + failed + declared checks; auditor/diff-runner-replay.md)
+- OK: runner/verdicts.json is what record/junit.xml yields
+- OK: quick-look pages rendered (auditor/ql/)
+- OK: inputs/ packaged (self-contained: manifest, plan, menu, bench, checker(s), toolchain, image(s), dictionary) — 5 files
+audit -> runs/dry-1/auditor/ (ok)

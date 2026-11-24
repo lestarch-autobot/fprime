@@ -1,0 +1,21 @@
+{
+  "events.jsonl": 115,
+  "channels.jsonl": 5314,
+  "commands.jsonl": 38,
+  "evidence.jsonl": 37,
+  "raw evidence": 37,
+  "raw": {
+    "event.log lines": 115,
+    "event.log after dedup": 115,
+    "channel.log lines": 10678,
+    "channel.log after dedup": 5314,
+    "boots": 1,
+    "command.log lines": 38,
+    "command.log after dedup": 38
+  },
+  "torn packets": {},
+  "clocks": {
+    "fsw": "FSW time (TB_PROC_TIME) of the row; t = epoch*1e6 + fsw orders across reboots",
+    "sent": "ground wall clock of the command sender (not comparable with fsw)"
+  }
+}

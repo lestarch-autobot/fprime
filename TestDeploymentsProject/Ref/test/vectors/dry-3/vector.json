@@ -1,0 +1,5 @@
+{
+  "kind": "single-knob",
+  "note": "venue A (Ref, Linux host), fth run --unsealed, fprime harness b93ae6f19, run dry-3, planted {'L2-2': 'second_packet_also_held'}",
+  "plan": "plans/tpk-pool/plan.json"
+}

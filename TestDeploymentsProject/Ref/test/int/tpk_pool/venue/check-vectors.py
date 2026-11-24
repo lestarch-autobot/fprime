@@ -9,7 +9,10 @@ from fth.plan import load_plan
 from fth.vectors import verdict_problems
 
 root = Path(sys.argv[1]); ok = True
-for vdir in sorted(p for p in root.iterdir() if (p / "record").is_dir()):
+vdirs = sorted(p for p in root.iterdir() if (p / "record").is_dir())
+if not vdirs:
+    sys.exit(f"no vector directory under {root}")
+for vdir in vdirs:
     plan = load_plan(root / json.loads((vdir / "vector.json").read_text())["plan"])
     bad = verdict_problems(plan, vdir, json.loads((vdir / "replay-verdicts.json").read_text())["tests"])
     ok &= not bad

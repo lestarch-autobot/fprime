@@ -1,0 +1,183 @@
+{
+  "uut": {
+    "path": "uut-ref",
+    "sha": "b93ae6f19c049b238806c698c265255c0adc368f",
+    "describe": "b93ae6f19",
+    "url": "https://github.com/lestarch-autobot/fprime",
+    "dirty": false
+  },
+  "harness": {
+    "path": "uut-ref",
+    "sha": "b93ae6f19c049b238806c698c265255c0adc368f",
+    "describe": "b93ae6f19",
+    "url": "https://github.com/lestarch-autobot/fprime",
+    "dirty": false
+  },
+  "repos": [
+    {
+      "name": "uut",
+      "path": "uut-ref",
+      "sha": "b93ae6f19c049b238806c698c265255c0adc368f",
+      "describe": "b93ae6f19",
+      "url": "https://github.com/lestarch-autobot/fprime",
+      "dirty": false
+    },
+    {
+      "name": "harness",
+      "path": "uut-ref",
+      "sha": "b93ae6f19c049b238806c698c265255c0adc368f",
+      "describe": "b93ae6f19",
+      "url": "https://github.com/lestarch-autobot/fprime",
+      "dirty": false
+    }
+  ],
+  "plan": {
+    "path": "uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/plan.json",
+    "sha256": "b185e14fbe8598214cdfe827327728f2b52b1b980bb2126a1cc3e30eb1931488",
+    "revision": "",
+    "tests": [
+      "L0-1",
+      "L0-2",
+      "L2-1",
+      "L2-2",
+      "L6-1",
+      "L7-1"
+    ],
+    "requirements": {
+      "TPK-001": [
+        "L2-1",
+        "L2-2"
+      ],
+      "TPK-003": [
+        "L2-1",
+        "L2-2"
+      ],
+      "TPK-013": []
+    },
+    "waived": {
+      "TPK-013": "UT only"
+    },
+    "final_state": {
+      "accepted_evidence": "L7-1 window",
+      "rationale": "The component has no stored state to dump; the check recomputes each CommandsDispatched step from the archived OpCodeDispatched events, a path that does not pass through the packetizer's channel storage."
+    },
+    "markers": {
+      "command": "cmdDisp.CMD_NO_OP_STRING",
+      "event": "cmdDisp.NoOpStringReceived",
+      "arg": "id"
+    }
+  },
+  "checkers": [
+    {
+      "owner": "builder",
+      "module": "fth.engine"
+    }
+  ],
+  "stimulus": {
+    "path": "uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool",
+    "repo": "uut",
+    "sha": "b93ae6f19c049b238806c698c265255c0adc368f",
+    "files": {
+      "planted_faults.py": "a209b0c1d6341689d75621544cd3f9f388e6e7af7a17daa266a4381dad5c3c00",
+      "test_L0_1.py": "0398b1809ca95a48e92a9857921dbde0af085586df3a54aa8b657c90f984f622",
+      "test_L0_2.py": "3eced18f4905e8385a22eb99ba96114cbb3296efc6f088274e627c002f9468f2",
+      "test_L2_1.py": "32328b62d43d9df937b2565072a1c049678716e37cbbaf370a38e35449338f94",
+      "test_L2_2.py": "61bde241a2585b9578f6e9085bdabfd8f2742437d37149fd54f48fc05fa90582",
+      "test_L6_1.py": "496a694ac844f1e223710e07cee7291c3cfe22b7731fae8252b2232569c4cb10",
+      "test_L7_1.py": "3ae1607708ba8db657b44bb6f8b2a3eaca7068f3c6182ae1d1de5aba63405076",
+      "venue/check-vectors.py": "3782020ad8873a8e1c71c95f344fb00e993fe15bc90b2f3b9615eadc66f0d059"
+    }
+  },
+  "images": [
+    {
+      "deployment": "Ref",
+      "path": "uut-ref/TestDeploymentsProject/build-artifacts/Linux/Ref/bin/Ref",
+      "sha256": "f6caa77a9f030ffe70f1573a8d92f90a2c689b28b1eca6c29623bc68571b8839",
+      "build_cmd": [],
+      "version_check": "all repo describe strings found in image"
+    }
+  ],
+  "menu": {
+    "path": "uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/faults-menu.json",
+    "sha256": "101bcbebb4cf5094c2b2a1f1ffb695d324b2f7da05e0491fa7796e481d68a089",
+    "content": {
+      "max_count": 2,
+      "knobs": [
+        {
+          "name": "final_packets_held",
+          "class": "uut-state",
+          "applies_to": [
+            "L7-1"
+          ],
+          "fails": {
+            "L7-1": [
+              "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch"
+            ]
+          },
+          "mechanism": "both test packets are set SEND_NEVER after the overrides are cleared, so the channel is not downlinked",
+          "kind": "insert",
+          "ripples_to": {}
+        },
+        {
+          "name": "first_packet_also_held",
+          "class": "uut-state",
+          "applies_to": [
+            "L2-1"
+          ],
+          "fails": {
+            "L2-1": [
+              "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch"
+            ]
+          },
+          "mechanism": "packet 60 is also set SEND_NEVER, so no packet downlinks the channel",
+          "kind": "insert",
+          "ripples_to": {}
+        },
+        {
+          "name": "known_packet_requested",
+          "class": "stimulus",
+          "applies_to": [
+            "L6-1"
+          ],
+          "fails": {
+            "L6-1": [
+              "event tlmSend.PacketNotFound(packetId=999) count == 1",
+              "event cmdDisp.OpCodeError count == 1",
+              "event tlmSend.PacketSent count == 0"
+            ]
+          },
+          "mechanism": "SEND_PKT is sent for packet 60, which exists, so no refusal is produced",
+          "kind": "rewrite",
+          "ripples_to": {}
+        },
+        {
+          "name": "second_packet_also_held",
+          "class": "uut-state",
+          "applies_to": [
+            "L2-2"
+          ],
+          "fails": {
+            "L2-2": [
+              "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch"
+            ]
+          },
+          "mechanism": "packet 61 is also set SEND_NEVER, so no packet downlinks the channel",
+          "kind": "insert",
+          "ripples_to": {}
+        }
+      ],
+      "tests_covered": [
+        "L2-1",
+        "L2-2",
+        "L6-1",
+        "L7-1"
+      ]
+    }
+  },
+  "bench": {
+    "path": "uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/bench-ref.json",
+    "sha256": "d6ff4e9ceb35b75fe8f91f3fa572b687b2964f91a7ee41cb32f93ce6de6572df"
+  },
+  "toolchain": {},
+  "no_version_check": ""
+}

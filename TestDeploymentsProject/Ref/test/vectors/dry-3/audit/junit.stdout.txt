@@ -1,0 +1,55 @@
+...F..                                                                   [100%]
+=================================== FAILURES ===================================
+__________________________________ test_L2_2 ___________________________________
+
+window = <function window.<locals>._window at 0x730bc411d1c0>
+send = <bound method Sender.send of <fth.pytest_plugin.Sender object at 0x730bc4367e60>>
+bench = <fth.pytest_plugin.Bench object at 0x730bc4336270>
+check = <function check.<locals>._check at 0x730bc411d440>
+require = <function require.<locals>._require at 0x730bc4107420>
+fth_plan = Plan(path=PosixPath('/home/ubuntu/work/uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/plan.json'), raw={'name': ... of the packetizer's storage).", 'knobs': ['final_packets_held']}, human_step='', run_in=('dev', 'rfr'))], warnings=[])
+
+    @pytest.mark.req("TPK-001", "TPK-003")
+    def test_L2_2(window, send, bench, check, require, fth_plan):
+        try:
+            with window(39, 40):  # S: setup
+                require("STD")
+                check("event tlmSend.PacketNotFound count == 0")
+                send("tlmSend.OVERRIDE_PACKET_SEND", ["REALTIME", 60, "SEND_NEVER"])
+                bench.wait(2.5)  # wait 2 ticks (1 s tick) with half a tick of margin
+            with window(40, 41):  # W: measurement
+                require("STD")
+                check("ABS")
+                check("cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch",
+                      lambda h: fth_plan.registry.helpers["channel_tracks_dispatch_count"](h, tick_s=1.0, min_samples=2, within_ticks=2))
+                send("cmdDisp.CMD_NO_OP", [])
+                bench.wait(3.5)  # wait 3 ticks
+                send("cmdDisp.CMD_NO_OP", [])
+                bench.wait(3.5)  # wait 3 ticks
+        finally:  # T: teardown — the override is cleared whatever the verdict of W, inside a judged window
+>           with window(41, 42):
+                 ^^^^^^^^^^^^^^
+
+/home/ubuntu/work/uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/test_L2_2.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/ubuntu/nisar-env/lib/python3.12/contextlib.py:144: in __exit__
+    next(self.gen)
+/home/ubuntu/work/fth/fth/pytest_plugin.py:1131: in _window
+    _judge(wc)
+/home/ubuntu/work/fth/fth/pytest_plugin.py:1159: in _judge
+    checks.raise_failures()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <fth.checks.TestChecks object at 0x730bc4249fd0>
+
+    def raise_failures(self) -> None:
+        if self.failed:
+            self.raised = True
+>           raise CheckFailures(self.failed)
+E           fth.checks.CheckFailures: check failed: cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch — seen 0 samples, need 2
+
+/home/ubuntu/work/fth/fth/checks.py:275: CheckFailures
+=========================== short test summary info ============================
+FAILED ../../home/ubuntu/work/uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/test_L2_2.py::test_L2_2
+1 failed, 5 passed in 0.11s
+

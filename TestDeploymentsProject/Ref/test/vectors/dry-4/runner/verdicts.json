@@ -1,0 +1,648 @@
+{
+  "run": "dry-4",
+  "record_sha256": "df13dc7d9f05edb4fee5a1547a753b8a335400e3355f271baefae394478bd986",
+  "checker": "fth.junit",
+  "plan": "TPK-POOL — Svc.TlmPacketizer membership pool (issue 6431)",
+  "junit_sha256": "69c6571cdb34d4b39bd431dc27b96da7955037374f1fee4e1fd19a19d2733bc5",
+  "tests": {
+    "L0-1": {
+      "verdict": "PASS",
+      "failed": [],
+      "checks": [
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L19, END L27",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:19-27"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=3, cmdDisp.OpCodeDispatched count=3",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:7-9"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event version.FrameworkVersion count >= 1",
+          "holds": true,
+          "seen": "count=1 (L23)",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:23-23"
+          ]
+        }
+      ],
+      "junit": "test_L0_1"
+    },
+    "L0-2": {
+      "verdict": "PASS",
+      "failed": [],
+      "checks": [
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L29, END L36",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:29-36"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=3, cmdDisp.OpCodeDispatched count=3",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:10-12"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.NoChan count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketNotFound count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "cmdDisp.CommandsDispatched has >= 1 sample in the window",
+          "holds": true,
+          "seen": "2 samples 10..11",
+          "unverified": false,
+          "refs": []
+        }
+      ],
+      "junit": "test_L0_2"
+    },
+    "L2-1": {
+      "verdict": "PASS",
+      "failed": [],
+      "checks": [
+        {
+          "window": "S",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L38, END L45",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:38-45"
+          ]
+        },
+        {
+          "window": "S",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=3, cmdDisp.OpCodeDispatched count=3",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:13-15"
+          ]
+        },
+        {
+          "window": "S",
+          "kind": "complete",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "S",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketNotFound count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L44, END L54",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:44-54"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=4, cmdDisp.OpCodeDispatched count=4",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:15-18"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.NoChan count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketNotFound count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch",
+          "holds": true,
+          "seen": "3 samples 15..17",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "T",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L53, END L60",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:53-60"
+          ]
+        },
+        {
+          "window": "T",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=3, cmdDisp.OpCodeDispatched count=3",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:18-20"
+          ]
+        },
+        {
+          "window": "T",
+          "kind": "complete",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "T",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketNotFound count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        }
+      ],
+      "junit": "test_L2_1"
+    },
+    "L2-2": {
+      "verdict": "PASS",
+      "failed": [],
+      "checks": [
+        {
+          "window": "S",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L62, END L69",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:62-69"
+          ]
+        },
+        {
+          "window": "S",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=3, cmdDisp.OpCodeDispatched count=3",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:21-23"
+          ]
+        },
+        {
+          "window": "S",
+          "kind": "complete",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "S",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketNotFound count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L68, END L78",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:68-78"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=4, cmdDisp.OpCodeDispatched count=4",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:23-26"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.NoChan count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketNotFound count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch",
+          "holds": true,
+          "seen": "3 samples 23..25",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "T",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L77, END L84",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:77-84"
+          ]
+        },
+        {
+          "window": "T",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=3, cmdDisp.OpCodeDispatched count=3",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:26-28"
+          ]
+        },
+        {
+          "window": "T",
+          "kind": "complete",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "T",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketNotFound count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        }
+      ],
+      "junit": "test_L2_2"
+    },
+    "L6-1": {
+      "verdict": "FAIL",
+      "failed": [
+        "event cmdDisp.OpCodeError count == 1",
+        "event tlmSend.PacketNotFound(packetId=999) count == 1",
+        "event tlmSend.PacketSent count == 0"
+      ],
+      "checks": [
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L86, END L93",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:86-93"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=3, cmdDisp.OpCodeDispatched count=3",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:29-31"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 1",
+          "holds": false,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketNotFound(packetId=999) count == 1",
+          "holds": false,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketSent count == 0",
+          "holds": false,
+          "seen": "count=1 (L90)",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:90-90"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.NoChan count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        }
+      ],
+      "junit": "test_L6_1",
+      "reason": "fth.checks.CheckFailures: check failed: event cmdDisp.OpCodeError count == 1 — seen count=0"
+    },
+    "L7-1": {
+      "verdict": "PASS",
+      "failed": [],
+      "checks": [
+        {
+          "window": "S",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L95, END L105",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:95-105"
+          ]
+        },
+        {
+          "window": "S",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=4, cmdDisp.OpCodeDispatched count=4",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:32-35"
+          ]
+        },
+        {
+          "window": "S",
+          "kind": "complete",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "S",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketNotFound count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "both markers present",
+          "holds": true,
+          "seen": "START L104, END L114",
+          "unverified": false,
+          "refs": [
+            "events.jsonl:104-114"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+          "holds": true,
+          "seen": "commands_sent=4, cmdDisp.OpCodeDispatched count=4",
+          "unverified": false,
+          "refs": [
+            "commands.jsonl:35-38"
+          ]
+        },
+        {
+          "window": "W",
+          "kind": "complete",
+          "group": "",
+          "check": "event cmdDisp.OpCodeError count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.NoChan count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "event tlmSend.PacketNotFound count == 0",
+          "holds": true,
+          "seen": "count=0",
+          "unverified": false,
+          "refs": []
+        },
+        {
+          "window": "W",
+          "kind": "check",
+          "group": "",
+          "check": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch",
+          "holds": true,
+          "seen": "3 samples 35..37",
+          "unverified": false,
+          "refs": []
+        }
+      ],
+      "junit": "test_L7_1"
+    }
+  },
+  "dev_plant": {
+    "L6-1": "known_packet_requested"
+  },
+  "unsealed": true
+}

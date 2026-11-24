@@ -1,0 +1,1 @@
+run dry-2-replay: record ca674faf -> runner/verdicts.json (pytest exit 1)
