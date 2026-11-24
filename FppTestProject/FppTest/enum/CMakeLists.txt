@@ -20,6 +20,7 @@ set(UT_MOD_DEPS
 )
 
 set(UT_SOURCE_FILES
+  "${CMAKE_CURRENT_LIST_DIR}/ConstexprTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/EnumToStringTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/IsValidTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/main.cpp"

@@ -39,7 +39,7 @@ ArgTy Sender::initTestCase(FwIndexType portNum, const TestDeploymentPort& portId
 
 void Sender::testNoArgs(const TestDeploymentPort& portId) {
     for (FwIndexType i = 0; i < 3; i++) {
-        auto args = initTestCase<Types::Empty>(i, portId);
+        (void)initTestCase<Types::Empty>(i, portId);
         noArgsOut_out(m_expectedPortNum);
         wait();
 
@@ -142,7 +142,7 @@ void Sender::testStructArgs(const TestDeploymentPort& portId) {
 
 void Sender::testNoArgsReturn(const TestDeploymentPort& portId) {
     for (FwIndexType i = 0; i < 2; i++) {
-        auto args = initTestCase<Types::Empty>(i, portId);
+        (void)initTestCase<Types::Empty>(i, portId);
         auto out = noArgsReturnOut_out(m_expectedPortNum);
         EXPECT_EQ(out, true);
         wait();
@@ -250,7 +250,7 @@ void Sender::replyIn_handler(FwIndexType portNum,
 }
 
 void Sender::testSerialToSerial(const TestDeploymentPort& portId) {
-    auto args = initTestCase<Types::PrimitiveTypes>(
+    (void)initTestCase<Types::PrimitiveTypes>(
         /* We expect this message will eventually reach index 2 Ï(serial) handler */ 2, portId);
 
     // Send serial data directly through serialOut at SERIAL index
