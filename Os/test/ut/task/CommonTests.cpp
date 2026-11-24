@@ -120,7 +120,7 @@ Tester* Tester::s_current_registry = nullptr;
 
 Tester::Tester() {
     Tester::s_current_registry = this;
-    Os::Task::registerTaskRegistry(this);
+    Os::Test::TaskUnderTest::registerTaskRegistry(this);
 }
 
 Tester* Tester::getCurrentRegistry() {
@@ -129,20 +129,20 @@ Tester* Tester::getCurrentRegistry() {
 }
 
 void Tester::invokeRoutines() {
-    for (Os::Task* task : this->m_all_tasks) {
+    for (Os::Test::TaskUnderTest* task : this->m_all_tasks) {
         if (task->isCooperative()) {
             task->invokeRoutine();
         }
     }
 }
 
-void Tester::addTask(Os::Task* task) {
+void Tester::addTask(Os::Test::TaskUnderTest* task) {
     this->m_last_task = task;
     this->m_all_tasks.push_back(task);
     ASSERT_GT(this->m_all_tasks.size(), 0) << "Where have all the tasks gone?";
 }
 
-void Tester::removeTask(Os::Task* task) {
+void Tester::removeTask(Os::Test::TaskUnderTest* task) {
     ASSERT_GT(this->m_all_tasks.size(), 0) << "Where have all the tasks gone?";
     this->m_last_task = nullptr;
     size_t i = 0;

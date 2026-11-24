@@ -6,14 +6,17 @@
 #include "Os/Console.hpp"
 #include "Os/Stub/test/Console.hpp"
 
+// Wrapper under test: Os::ConsoleCommon on the implementation named here, not the selection in config/OsSelection.hpp
+using ConsoleUnderTest = Os::ConsoleCommon<Os::Stub::Console::Test::TestConsole>;
+
 TEST(Interface, Construction) {
-    Os::Console console;
+    ConsoleUnderTest console;
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::CONSTRUCT_FN);
 }
 TEST(Interface, ConstructionCopy) {
-    Os::Console console;
+    ConsoleUnderTest console;
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::CONSTRUCT_FN);
-    Os::Console console2(console);
+    ConsoleUnderTest console2(console);
     ASSERT_EQ(const_cast<Os::Stub::Console::Test::TestConsole*>(Os::Stub::Console::Test::StaticData::data.copyObject)
                   ->getHandle(),
               console.getHandle());
@@ -21,8 +24,8 @@ TEST(Interface, ConstructionCopy) {
               Os::Stub::Console::Test::StaticData::CONSTRUCT_COPY_FN);
 }
 TEST(Interface, Copy) {
-    Os::Console console;
-    Os::Console console2;
+    ConsoleUnderTest console;
+    ConsoleUnderTest console2;
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::CONSTRUCT_FN);
     console2 = console;
     ASSERT_EQ(const_cast<Os::Stub::Console::Test::TestConsole*>(Os::Stub::Console::Test::StaticData::data.copyObject)
@@ -33,12 +36,12 @@ TEST(Interface, Copy) {
 }
 
 TEST(Interface, Destruction) {
-    delete (new Os::Console);
+    delete (new ConsoleUnderTest);
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::DESTRUCT_FN);
 }
 
 TEST(Interface, Write) {
-    Os::Console console;
+    ConsoleUnderTest console;
     const char* message = "hello";
     ASSERT_EQ(Os::Stub::Console::Test::StaticData::data.lastCalled, Os::Stub::Console::Test::StaticData::CONSTRUCT_FN);
     console.write(message, 6);

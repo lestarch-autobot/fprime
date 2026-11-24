@@ -10,17 +10,34 @@
 #include <Os/Queue.hpp>
 #include <Os/RawTime.hpp>
 #include <Os/Task.hpp>
+#include "Os/Stub/Console.hpp"
+#include "Os/Stub/Cpu.hpp"
+#include "Os/Stub/Directory.hpp"
+#include "Os/Stub/File.hpp"
+#include "Os/Stub/FileSystem.hpp"
+#include "Os/Stub/Memory.hpp"
+#include "Os/Stub/Queue.hpp"
+#include "Os/Stub/Task.hpp"
+// Wrappers under test: Os::<S>Common on the no-op stubs, not the selection in config/OsSelection.hpp
+using MemoryUnderTest = Os::MemoryCommon<Os::Stub::Memory::StubMemory>;
+using CpuUnderTest = Os::CpuCommon<Os::Stub::Cpu::StubCpu>;
+using DirectoryUnderTest = Os::DirectoryCommon<Os::Stub::Directory::StubDirectory>;
+using FileSystemUnderTest = Os::FileSystemCommon<Os::Stub::FileSystem::StubFileSystem>;
+using ConsoleUnderTest = Os::ConsoleCommon<Os::Stub::Console::StubConsole>;
+using QueueUnderTest = Os::QueueCommon<Os::Stub::Queue::StubQueue>;
+using TaskUnderTest = Os::TaskCommon<Os::Stub::Task::StubTask>;
+using FileUnderTest = Os::FileCommon<Os::Stub::File::StubFile>;
 
 TEST(Stub, File) {
-    Os::File _;
+    FileUnderTest _;
 }
 
 TEST(Stub, Task) {
-    Os::Task _;
+    TaskUnderTest _;
 }
 
 TEST(Stub, Queue) {
-    Os::Queue _;
+    QueueUnderTest _;
 }
 
 TEST(Stub, ConditionVariable) {
@@ -32,23 +49,23 @@ TEST(Stub, Mutex) {
 }
 
 TEST(Stub, Console) {
-    Os::Console _;
+    ConsoleUnderTest _;
 }
 
 TEST(Stub, FileSystem) {
-    Os::FileSystem::getSingleton();
+    FileSystemUnderTest::getSingleton();
 }
 
 TEST(Stub, Directory) {
-    Os::Directory _;
+    DirectoryUnderTest _;
 }
 
 TEST(Stub, Cpu) {
-    Os::Cpu::getSingleton();
+    CpuUnderTest::getSingleton();
 }
 
 TEST(Stub, Memory) {
-    Os::Memory::getSingleton();
+    MemoryUnderTest::getSingleton();
 }
 
 TEST(Stub, RawTime) {

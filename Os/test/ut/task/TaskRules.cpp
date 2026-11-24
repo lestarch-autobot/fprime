@@ -15,7 +15,7 @@ void wait_for_state_with_timeout(Os::Test::Task::TestTaskInfo& info,
     // Loop waiting for transition in preparation for join (with timeout)
     FwSizeType i = 0;
     for (i = 0; i < (delay_ms * 100); i++) {
-        Os::Task::delay(Fw::TimeInterval(0, 10));
+        Os::Test::TaskUnderTest::delay(Fw::TimeInterval(0, 10));
         if (info.stage() == stage) {
             break;
         }
@@ -50,7 +50,7 @@ void Os::Test::Task::Tester::Start::action(Os::Test::Task::Tester& state  //!< T
     // Poke the task into the MIDDLE state
     new_task->signal();
     wait_for_state_with_timeout(*new_task, TestTaskInfo::MIDDLE, STAGE_TIMEOUT_MS);
-    ASSERT_EQ(Os::Task::getNumTasks(), TestTaskInfo::s_task_count) << "Task count miss-match";
+    ASSERT_EQ(Os::Test::TaskUnderTest::getNumTasks(), TestTaskInfo::s_task_count) << "Task count miss-match";
 }
 
 // ------------------------------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ void Os::Test::Task::Tester::Join::action(Os::Test::Task::Tester& state  //!< Th
     // Make the other task move from MIDDLE state to end state and wait for JOINED state
     other_task->signal();
     wait_for_state_with_timeout(joiner_task, TestTaskInfo::END, STAGE_TIMEOUT_MS);
-    ASSERT_EQ(Os::Task::getNumTasks(), TestTaskInfo::s_task_count) << "Task count miss-match";
+    ASSERT_EQ(Os::Test::TaskUnderTest::getNumTasks(), TestTaskInfo::s_task_count) << "Task count miss-match";
 }
 
 // ------------------------------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ void Os::Test::Task::Tester::CheckState::action(Os::Test::Task::Tester& state  /
         task = state.m_tasks[random_index];
     }
     ASSERT_EQ(task->m_task.getState(), task->m_state) << "Task state progression not as expected.";
-    ASSERT_EQ(Os::Task::getNumTasks(), TestTaskInfo::s_task_count) << "Task count miss-match";
+    ASSERT_EQ(Os::Test::TaskUnderTest::getNumTasks(), TestTaskInfo::s_task_count) << "Task count miss-match";
 }
 
 // ------------------------------------------------------------------------------------------------------
@@ -139,13 +139,13 @@ void Os::Test::Task::Tester::Delay::action(Os::Test::Task::Tester& state  //!< T
     timeval start;
     timeval end;
     ASSERT_EQ(gettimeofday(&start, nullptr), 0) << "Failed to get time";
-    Os::Task::delay(delay);
+    Os::Test::TaskUnderTest::delay(delay);
     ASSERT_EQ(gettimeofday(&end, nullptr), 0) << "Failed to get time";
 
     U32 wall_clock_delay_micro = ((end.tv_sec - start.tv_sec) * 1000000) + (end.tv_usec - start.tv_usec);
     ASSERT_GE(wall_clock_delay_micro, delay_micro_seconds);
     ASSERT_LT(wall_clock_delay_micro, delay_micro_seconds + 100000) << "Delay not within 100ms";
-    ASSERT_EQ(Os::Task::getNumTasks(), TestTaskInfo::s_task_count) << "Task count miss-match";
+    ASSERT_EQ(Os::Test::TaskUnderTest::getNumTasks(), TestTaskInfo::s_task_count) << "Task count miss-match";
 }
 
 // ------------------------------------------------------------------------------------------------------
@@ -163,7 +163,7 @@ bool Os::Test::Task::Tester::CheckTaskCount::precondition(const Os::Test::Task::
 void Os::Test::Task::Tester::CheckTaskCount::action(Os::Test::Task::Tester& state  //!< The test state
 ) {
     FwSizeType count = TestTaskInfo::s_task_count;
-    ASSERT_EQ(Os::Task::getNumTasks(), count) << "Task count miss-match";
+    ASSERT_EQ(Os::Test::TaskUnderTest::getNumTasks(), count) << "Task count miss-match";
 }
 
 // ------------------------------------------------------------------------------------------------------
@@ -204,5 +204,5 @@ void Os::Test::Task::Tester::StartIllegalRoutine::action(Os::Test::Task::Tester&
     state.m_tasks.push_back(new_task);
 
     Fw::String name("StartRuleTask");
-    ASSERT_DEATH(new_task->start(nullptr), "Os/Task\\.cpp:") << "Failed to trap NULL routine";
+    ASSERT_DEATH(new_task->start(nullptr), "Os/Task\\.hpp:") << "Failed to trap NULL routine";
 }

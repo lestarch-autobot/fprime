@@ -11,6 +11,21 @@
 #include "STest/Scenario/RandomScenario.hpp"
 #include "STest/Scenario/Scenario.hpp"
 
+// Wrapper under test: the Os::Task selected in config/OsSelection.hpp, unless the test executable names another
+// implementation by defining OS_TEST_TASK_IMPLEMENTATION and OS_TEST_TASK_HEADER (see its CMakeLists.txt)
+#ifdef OS_TEST_TASK_IMPLEMENTATION
+#include OS_TEST_TASK_HEADER
+#endif
+namespace Os {
+namespace Test {
+#ifdef OS_TEST_TASK_IMPLEMENTATION
+using TaskUnderTest = Os::TaskCommon<OS_TEST_TASK_IMPLEMENTATION>;
+#else
+using TaskUnderTest = Os::Task;
+#endif
+}  // namespace Test
+}  // namespace Os
+
 namespace Os {
 namespace Test {
 namespace Task {
@@ -28,7 +43,7 @@ struct TestTaskInfo {
     Lifecycle m_stage = Lifecycle::UNSET;
     Os::Mutex m_lock;
     Os::Task::State m_state = Os::Task::State::NOT_STARTED;  //!< Shadow state of the task
-    Os::Task m_task;                                         //!< Task under test
+    Os::Test::TaskUnderTest m_task;                          //!< Task under test
     std::shared_ptr<TestTaskInfo> m_other = nullptr;
     bool m_signal = false;
 
@@ -56,14 +71,14 @@ struct TestTaskInfo {
     static void joining_task(void* argument);
 };
 
-struct Tester : public Os::TaskRegistry {
+struct Tester : public Os::TaskRegistryCommon<Os::Test::TaskUnderTest> {
   private:
     static constexpr U32 MAX_THREAD_COUNT = 100;
     static constexpr U32 MAX_DELAY_MICRO_SECONDS = 10000;
 
     std::vector<std::shared_ptr<TestTaskInfo>> m_tasks;
-    Os::Task* m_last_task = nullptr;
-    std::vector<Os::Task*> m_all_tasks;
+    Os::Test::TaskUnderTest* m_last_task = nullptr;
+    std::vector<Os::Test::TaskUnderTest*> m_all_tasks;
 
   public:
     //! Constructor
@@ -78,16 +93,16 @@ struct Tester : public Os::TaskRegistry {
 
     //! Add task to test registry
     //! \param task: task to add
-    void addTask(Os::Task* task) override;
+    void addTask(Os::Test::TaskUnderTest* task) override;
 
     //! Remove task to test registry
     //! \param task: task to add
-    void removeTask(Os::Task* task) override;
+    void removeTask(Os::Test::TaskUnderTest* task) override;
 
     static Tester* s_current_registry;
 
   public:
-    static void resetNumTasks() { Os::Task::s_numTasks = 0; }
+    static void resetNumTasks() { Os::Test::TaskUnderTest::s_numTasks = 0; }
 
 #include "TaskRules.hpp"
 };

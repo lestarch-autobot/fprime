@@ -31,23 +31,27 @@ register_fprime_ut(
     "${CMAKE_CURRENT_LIST_DIR}/ut/StubFileTests.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/../../test/ut/file/CommonTests.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/../../test/ut/file/FileRules.cpp"
-  CHOOSES_IMPLEMENTATIONS
-    Os_File_Test_Stub
   DEPENDS
+    Os_File_Test_Stub_Implementation
     Fw_Types
     Os
     Os_Test_File_SyntheticFileSystem
     STest
 )
+if (TARGET StubFileTest)
+    target_compile_definitions(StubFileTest PRIVATE
+        OS_TEST_FILE_HEADER="Os/Stub/test/File.hpp"
+        OS_TEST_FILE_IMPLEMENTATION=Os::Stub::File::Test::TestFile
+    )
+endif ()
 
 #### Console Stub Testing ####
 register_fprime_ut(
     StubConsoleTest
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/ut/StubConsoleTests.cpp"
-  CHOOSES_IMPLEMENTATIONS
-    Os_Console_Test_Stub
   DEPENDS
+    Os_Console_Test_Stub_Implementation
     Fw_Types
     STest
 )
@@ -58,9 +62,8 @@ register_fprime_ut(
     StubCpuTest
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/ut/StubCpuTests.cpp"
-  CHOOSES_IMPLEMENTATIONS
-    Os_Cpu_Test_Stub
   DEPENDS
+    Os_Cpu_Test_Stub_Implementation
     Fw_Types
     STest
 )
@@ -70,9 +73,8 @@ register_fprime_ut(
     StubMemoryTest
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/ut/StubMemoryTests.cpp"
-  CHOOSES_IMPLEMENTATIONS
-  Os_Memory_Test_Stub
   DEPENDS
+    Os_Memory_Test_Stub_Implementation
     Fw_Types
     STest
 )
@@ -84,13 +86,18 @@ register_fprime_ut(
     "${CMAKE_CURRENT_LIST_DIR}/ut/StubQueueTests.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/../../test/ut/queue/QueueRules.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/../../test/ut/queue/CommonTests.cpp"
-  CHOOSES_IMPLEMENTATIONS
-    Os_Queue_Test_Stub
   DEPENDS
+    Os_Queue_Test_Stub_Implementation
     Os
     Fw_Types
     STest
 )
+if (TARGET StubQueueTest)
+    target_compile_definitions(StubQueueTest PRIVATE
+        OS_TEST_QUEUE_HEADER="Os/Stub/test/Queue.hpp"
+        OS_TEST_QUEUE_IMPLEMENTATION=Os::Stub::Queue::Test::InjectableStlQueue
+    )
+endif ()
 if (TARGET StubQueueTest)
     target_include_directories(StubQueueTest PRIVATE "${CMAKE_CURRENT_LIST_DIR}/ut")
 endif ()
@@ -102,13 +109,18 @@ register_fprime_ut(
     "${CMAKE_CURRENT_LIST_DIR}/ut/StubTaskTests.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/../../test/ut/task/CommonTests.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/../../test/ut/task/TaskRules.cpp"
-  CHOOSES_IMPLEMENTATIONS
-    Os_Task_Test_Stub
   DEPENDS
+    Os_Task_Test_Stub_Implementation
     Fw_Types
     STest
     Os
 )
+if (TARGET StubTaskTest)
+    target_compile_definitions(StubTaskTest PRIVATE
+        OS_TEST_TASK_HEADER="Os/Stub/test/Task.hpp"
+        OS_TEST_TASK_IMPLEMENTATION=Os::Stub::Task::Test::TestTask
+    )
+endif ()
 
 #### Mutex Stub Testing ####
 register_fprime_ut(
@@ -129,9 +141,8 @@ register_fprime_ut(
     StubFileSystemTest
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/ut/StubFileSystemTests.cpp"
-  CHOOSES_IMPLEMENTATIONS
-    Os_File_Test_Stub
   DEPENDS
+    Os_File_Test_Stub_Implementation
     Fw_Types
     Fw_Time
     STest
@@ -142,9 +153,8 @@ register_fprime_ut(
     StubDirectoryTest
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/ut/StubDirectoryTests.cpp"
-  CHOOSES_IMPLEMENTATIONS
-    Os_File_Test_Stub
   DEPENDS
+    Os_File_Test_Stub_Implementation
     Fw_Types
     Fw_Time
     STest

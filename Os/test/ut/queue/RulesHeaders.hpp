@@ -17,13 +17,28 @@
 
 #include "QueueRulesDefinitions.hpp"
 
+// Wrapper under test: the Os::Queue selected in config/OsSelection.hpp, unless the test executable names another
+// implementation by defining OS_TEST_QUEUE_IMPLEMENTATION and OS_TEST_QUEUE_HEADER (see its CMakeLists.txt)
+#ifdef OS_TEST_QUEUE_IMPLEMENTATION
+#include OS_TEST_QUEUE_HEADER
+#endif
+namespace Os {
+namespace Test {
+#ifdef OS_TEST_QUEUE_IMPLEMENTATION
+using QueueUnderTest = Os::QueueCommon<OS_TEST_QUEUE_IMPLEMENTATION>;
+#else
+using QueueUnderTest = Os::Queue;
+#endif
+}  // namespace Test
+}  // namespace Os
+
 namespace Os {
 namespace Test {
 namespace Queue {
 
 constexpr FwSizeType DEPTH_BOUND = 100000;
 
-struct Tester : public Os::QueueRegistry {
+struct Tester : public Os::QueueRegistryCommon<Os::Test::QueueUnderTest> {
   public:
     //! Constructor
     Tester();
@@ -71,8 +86,8 @@ struct Tester : public Os::QueueRegistry {
         std::priority_queue<QueueMessage, std::vector<QueueMessage>, QueueMessageComparer> queue;
     };
     QueueState shadow;
-    Os::Queue queue;
-    std::vector<Os::Queue*> m_all_queues;
+    Os::Test::QueueUnderTest queue;
+    std::vector<Os::Test::QueueUnderTest*> m_all_queues;
 
     //! Shadow is created
     bool is_shadow_created() const {
@@ -121,7 +136,7 @@ struct Tester : public Os::QueueRegistry {
     void shadow_receive_unblock();
 
     //! Register a queue with the registry
-    void registerQueue(Os::Queue* q) override;
+    void registerQueue(Os::Test::QueueUnderTest* q) override;
 
   public:
 #include "QueueRules.hpp"

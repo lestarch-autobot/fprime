@@ -59,6 +59,8 @@ function(add_fprime_supplied_os_module NAMES SUFFIX)
 
     # Ensure expected files with expected filenames exist
     foreach (NAME IN LISTS NAMES)
+        # TODO: the service .cpp files only include their header (all definitions live in the .hpp). Remove them
+        # and this requirement when the Os CMake/config selection is reworked.
         if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp")
             message(FATAL_ERROR "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp does not exist.")
         endif()

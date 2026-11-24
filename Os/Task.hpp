@@ -29,7 +29,12 @@ struct Tester;
 namespace Os {
 
 // Forward declarations
-class TaskRegistry;
+template <typename T>
+class TaskCommon;
+template <typename K>
+class TaskRegistryCommon;
+//! Task registry for the Os::Task selected in config/OsSelection.hpp
+using TaskRegistry = TaskRegistryCommon<Task>;
 
 //! Task handle representation
 class TaskHandle {};
@@ -91,7 +96,16 @@ struct TaskUserInterface {
                   const FwTaskPriorityType priority = TASK_PRIORITY_DEFAULT,
                   const FwSizeType stackSize = TASK_DEFAULT,
                   const FwSizeType cpuAffinity = TASK_DEFAULT,
-                  const FwTaskIdType identifier = static_cast<FwTaskIdType>(TASK_DEFAULT));
+                  const FwTaskIdType identifier = static_cast<FwTaskIdType>(TASK_DEFAULT))
+            : m_name(name),
+              m_routine(routine),
+              m_routine_argument(routine_argument),
+              m_priority(priority),
+              m_stackSize(stackSize),
+              m_cpuAffinity(cpuAffinity),
+              m_identifier(identifier) {
+            FW_ASSERT(routine != nullptr);
+        }
 
       public:
         const Os::TaskString m_name;
@@ -269,7 +283,7 @@ class TaskCommon final : public TaskUserInterface {
 
     //! \brief register a task registry to track Threads
     //!
-    static void registerTaskRegistry(TaskRegistry* registry);
+    static void registerTaskRegistry(TaskRegistryCommon<TaskCommon>* registry);
 
     //! \brief get a reference to singleton
     //! \return reference to singleton
@@ -285,9 +299,9 @@ class TaskCommon final : public TaskUserInterface {
     static Status delay(const Fw::TimeInterval& interval);
 
   private:
-    static TaskRegistry* s_taskRegistry;  //!< Pointer to registered task registry
-    static FwSizeType s_numTasks;         //!< Stores the number of tasks created.
-    static Mutex s_taskMutex;             //!< Guards s_numTasks
+    static TaskRegistryCommon<TaskCommon>* s_taskRegistry;  //!< Pointer to registered task registry
+    static FwSizeType s_numTasks;                           //!< Stores the number of tasks created.
+    static Mutex s_taskMutex;                               //!< Guards s_numTasks
 
     TaskString m_name;  //!< Task object name
     TaskUserInterface::State m_state = TaskCommon::NOT_STARTED;
@@ -304,21 +318,25 @@ class TaskCommon final : public TaskUserInterface {
     T m_delegate;  //!< Delegate for the real implementation
 };
 
-class TaskRegistry {
+//! \brief task registry interface
+//!
+//! \tparam K: task type tracked by this registry. Os::TaskRegistry tracks Os::Task.
+template <typename K>
+class TaskRegistryCommon {
   public:
     //! \brief default task registry constructor
-    TaskRegistry() = default;
+    TaskRegistryCommon() = default;
     //! \brief default task registry constructor
-    virtual ~TaskRegistry() = default;
+    virtual ~TaskRegistryCommon() = default;
     //! \brief add supplied task to the registry
     //!
     //! \param task: pointer to task to register
-    virtual void addTask(Task* task) = 0;  //!< Add a task to the registry
+    virtual void addTask(K* task) = 0;  //!< Add a task to the registry
 
     //! \brief remove supplied task to the registry
     //!
     //! \param task: pointer to task to deregister
-    virtual void removeTask(Task* task) = 0;
+    virtual void removeTask(K* task) = 0;
 };
 }  // namespace Os
 
@@ -362,7 +380,7 @@ void TaskCommon<T>::TaskRoutineWrapper::invoke() {
 }
 
 template <typename T>
-TaskRegistry* TaskCommon<T>::s_taskRegistry = nullptr;
+TaskRegistryCommon<TaskCommon<T>>* TaskCommon<T>::s_taskRegistry = nullptr;
 template <typename T>
 FwSizeType TaskCommon<T>::s_numTasks = 0;
 template <typename T>
@@ -536,7 +554,7 @@ TaskCommon<T>& TaskCommon<T>::getSingleton() {
 }
 
 template <typename T>
-void TaskCommon<T>::registerTaskRegistry(TaskRegistry* registry) {
+void TaskCommon<T>::registerTaskRegistry(TaskRegistryCommon<TaskCommon<T>>* registry) {
     TaskCommon::s_taskRegistry = registry;
 }
 }  // namespace Os

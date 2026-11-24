@@ -41,15 +41,15 @@ register_fprime_ut(
     Fw_Time
     Os
     Os_Models
+    Os_Task_Stub_Implementation
+    Os_File_Stub_Implementation
+    Os_Console_Stub_Implementation
+    Os_Cpu_Stub_Implementation
+    Os_Memory_Stub_Implementation
+    Os_Queue_Stub_Implementation
   CHOOSES_IMPLEMENTATIONS
-    Os_Task_Stub
     Os_Mutex_Stub
-    Os_File_Stub
-    Os_Console_Stub
-    Os_Cpu_Stub
-    Os_Memory_Stub
     Os_RawTime_Stub
-    Os_CountingSemaphore_Stub
 )
 if (TARGET StubTest)
     target_compile_options(StubTest PRIVATE -Wno-conversion)

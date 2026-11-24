@@ -1074,7 +1074,7 @@ void Os::Test::FileTest::Tester::CopyAssignment::action(Os::Test::FileTest::Test
 ) {
     printf("--> Rule: %s \n", this->getName());
     state.assert_file_consistent();
-    Os::File temp = state.m_file;
+    Os::Test::FileUnderTest temp = state.m_file;
     state.assert_file_consistent();  // Prevents optimization
     state.m_file = temp;
     state.assert_file_consistent();
@@ -1098,9 +1098,9 @@ void Os::Test::FileTest::Tester::CopyConstruction::action(Os::Test::FileTest::Te
 ) {
     printf("--> Rule: %s \n", this->getName());
     state.assert_file_consistent();
-    Os::File temp(state.m_file);
-    state.assert_file_consistent();            // Interim check to ensure original file did not change
-    (void)new (&state.m_file) Os::File(temp);  // Copy-construct overtop of the original file
+    Os::Test::FileUnderTest temp(state.m_file);
+    state.assert_file_consistent();                           // Interim check to ensure original file did not change
+    (void)new (&state.m_file) Os::Test::FileUnderTest(temp);  // Copy-construct overtop of the original file
     state.assert_file_consistent();
 }
 

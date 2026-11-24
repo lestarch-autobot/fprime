@@ -4,10 +4,14 @@
 // This ensures the delegation of function calls happens properly
 // ======================================================================
 #include <gtest/gtest.h>
+#include "Os/Directory.hpp"
 #include "Os/FileSystem.hpp"
 #include "Os/Stub/test/Directory.hpp"
 #include "Os/test/ut/directory/CommonTests.hpp"
 #include "Os/test/ut/directory/RulesHeaders.hpp"
+
+// Wrapper under test: Os::DirectoryCommon on the implementation named here, not the selection in config/OsSelection.hpp
+using DirectoryUnderTest = Os::DirectoryCommon<Os::Stub::Directory::Test::TestDirectory>;
 
 using namespace Os::Stub::Directory::Test;
 
@@ -23,35 +27,35 @@ class Interface : public ::testing::Test {
 
 // Ensure that Os::Directory properly calls the implementation constructor
 TEST_F(Interface, Construction) {
-    Os::Directory directory;
+    DirectoryUnderTest directory;
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CONSTRUCT_FN);
 }
 
 // Ensure that Os::Directory properly calls the implementation destructor
 TEST_F(Interface, Destruction) {
-    delete (new Os::Directory);
+    delete (new DirectoryUnderTest);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::DESTRUCT_FN);
 }
 
 // Ensure that Os::Directory properly calls the implementation open()
 TEST_F(Interface, Open) {
-    Os::Directory directory;
-    directory.open("/does/not/matter", Os::Directory::OpenMode::CREATE_IF_MISSING);
+    DirectoryUnderTest directory;
+    directory.open("/does/not/matter", DirectoryUnderTest::OpenMode::CREATE_IF_MISSING);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::OPEN_FN);
 }
 
 // Ensure that Os::Directory properly calls the implementation rewind()
 TEST_F(Interface, Rewind) {
-    Os::Directory directory;
-    directory.open("/does/not/matter", Os::Directory::OpenMode::READ);
+    DirectoryUnderTest directory;
+    directory.open("/does/not/matter", DirectoryUnderTest::OpenMode::READ);
     directory.rewind();
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::REWIND_FN);
 }
 
 // Ensure that Os::Directory properly calls the implementation open()
 TEST_F(Interface, Read) {
-    Os::Directory directory;
-    directory.open("/does/not/matter", Os::Directory::OpenMode::READ);
+    DirectoryUnderTest directory;
+    directory.open("/does/not/matter", DirectoryUnderTest::OpenMode::READ);
     char buffer[4];
     directory.read(buffer, 4);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::READ_FN);
@@ -59,7 +63,7 @@ TEST_F(Interface, Read) {
 
 // Ensure that Os::Directory properly calls the implementation open()
 TEST_F(Interface, Close) {
-    Os::Directory directory;
+    DirectoryUnderTest directory;
     directory.close();
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CLOSE_FN);
 }

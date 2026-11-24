@@ -22,7 +22,7 @@ PriorityCompare const Tester::QueueMessageComparer::HELPER = PriorityCompare();
 
 Tester::Tester() {
 #if FW_QUEUE_REGISTRATION
-    Os::Queue::setRegistry(this);
+    Os::Test::QueueUnderTest::setRegistry(this);
 #endif
 }
 
@@ -117,7 +117,7 @@ void Tester::shadow_receive_unblock() {
     this->shadow.receive_block.priority = nullptr;
 }
 
-void Tester::registerQueue(Os::Queue* q) {
+void Tester::registerQueue(Os::Test::QueueUnderTest* q) {
     this->m_all_queues.push_back(q);
 }
 
@@ -126,7 +126,7 @@ void Tester::registerQueue(Os::Queue* q) {
 }  // namespace Os
 
 TEST(InterfaceUninitialized, SendPointer) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType messageSize = 200;
     const FwQueuePriorityType priority = 127;
@@ -138,7 +138,7 @@ TEST(InterfaceUninitialized, SendPointer) {
 }
 
 TEST(InterfaceUninitialized, SendBuffer) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType messageSize = 200;
     const FwQueuePriorityType priority = 127;
@@ -151,7 +151,7 @@ TEST(InterfaceUninitialized, SendBuffer) {
 }
 
 TEST(InterfaceUninitialized, ReceivePointer) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     FwSizeType size = 200;
     FwQueuePriorityType priority;
@@ -164,7 +164,7 @@ TEST(InterfaceUninitialized, ReceivePointer) {
 }
 
 TEST(InterfaceUninitialized, ReceiveBuffer) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     FwSizeType size = 200;
     FwQueuePriorityType priority;
@@ -177,21 +177,21 @@ TEST(InterfaceUninitialized, ReceiveBuffer) {
 }
 
 TEST(InterfaceInvalid, CreateInvalidDepth) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     ASSERT_DEATH_IF_SUPPORTED(queue.create(0, name, 0, 10), "Assert:.*Queue\\.hpp");
     queue.teardown();
 }
 
 TEST(InterfaceInvalid, CreateInvalidSize) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     ASSERT_DEATH_IF_SUPPORTED(queue.create(0, name, 10, 0), "Assert:.*Queue\\.hpp");
     queue.teardown();
 }
 
 TEST(InterfaceInvalid, SendPointerNull) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType messageSize = 200;
     const FwQueuePriorityType priority = 127;
@@ -201,7 +201,7 @@ TEST(InterfaceInvalid, SendPointerNull) {
 }
 
 TEST(InterfaceInvalid, SendInvalidEnum) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType messageSize = 200;
     const FwQueuePriorityType priority = 127;
@@ -212,7 +212,7 @@ TEST(InterfaceInvalid, SendInvalidEnum) {
 }
 
 TEST(InterfaceInvalid, ReceivePointerNull) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     FwSizeType size = 200;
     FwQueuePriorityType priority;
@@ -223,7 +223,7 @@ TEST(InterfaceInvalid, ReceivePointerNull) {
 }
 
 TEST(InterfaceInvalid, ReceiveInvalidEnum) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     FwSizeType size = 200;
     FwQueuePriorityType priority;
