@@ -100,8 +100,9 @@ def test_within_off_by_default_keeps_the_one_sample_check():
 
 # Two packets carrying the channel (TpkA and TpkB, both enabled in L0-2 and L7-1). Each change is downlinked once
 # per packet with one time tag; the recorder writes those lines one after the other, and the tool's export
-# collapses adjacent identical lines (`fth/export.py`, `dedup_adjacent`), so the window holds ONE sample per
-# change. The helper itself does not collapse equal samples: two equal rows are a step of 0 and FAIL.
+# collapses adjacent identical lines (`fth/export.py`, `dedup_adjacent`), so the window mostly holds ONE sample per
+# change. Copies that are not adjacent stay two rows; the helper drops a sample equal in time and value to the
+# one before it (plan amendment 7), and nothing else.
 RAW = {  # one line of each venue's recorder, value and time as placeholders
     "ref": "2026-11-24T21:58:{s:02d}.068465,(2(0)-17955575{s:02d}:68465),CdhCore.cmdDisp.CommandsDispatched,16777216,{v}",
     "pico2": "TB_NONE: {s}.290400s, context=0,(0(0)-{s}:290400),CdhCore.cmdDisp.CommandsDispatched,16777216,{v}",
@@ -143,10 +144,53 @@ def test_one_packet_arriving_apart_from_the_other_gives_two_equal_samples(tmp_pa
     assert [v for _, v in exported(tmp_path, lines)] == [5, 5]
 
 
-def test_fail_two_equal_samples_are_not_collapsed_by_the_helper():
-    # pins the rule: equal samples in a judged window are a step of 0, so a second copy of a sample FAILS
-    out = HELPER(ctx([(11.0, 5), (11.0, 5), (12.0, 6)], [10.5, 11.5, 12.5]))
+# Plan amendment 7. On Ref the channel is written on the rate-group thread while the packetizer's own thread sends
+# the packets: a write between its visits of packet 60 and packet 61 sends one copy in this tick and the other in
+# the next, with one time tag and value, a full pass apart in the recorder log.
+def test_split_copies_reach_the_helper_as_two_rows_and_pass(tmp_path):
+    lines = ([RAW["ref"].format(s=11, v=5)] * 2 + [OTHER["ref"].format(s=11)] + [RAW["ref"].format(s=11, v=5)] * 2
+             + [RAW["ref"].format(s=12, v=6)] * 4)
+    samples = exported(tmp_path, lines)
+    assert [v for _, v in samples] == [5, 5, 6]
+    t = samples[0][0]
+    assert verdict(HELPER(ctx(samples, [t - 0.5, t + 0.5, t + 1.5]))) is True
+
+
+def test_pass_split_copies_one_tick_apart_on_a_correct_unit():
+    # L0-2 (one sample asked) and L7-1 (two samples, one after each dispatch): each write arrives twice
+    assert verdict(HELPER(ctx([(10.9, 5), (10.9, 5)], [10.0, 10.5, 14.2]), min_samples=1)) is True
+    assert strict([(10.4, 4), (10.9, 5), (10.9, 5), (14.9, 6), (14.9, 6)]) is True
+    assert strict([(10.4, 4), (10.4, 4), (10.9, 5), (14.9, 6)]) is True
+
+
+def test_fail_equal_value_with_a_later_time_is_not_dropped():
+    # a second write of the same value is another sample: a step of 0, judged as before
+    out = HELPER(ctx([(11.0, 5), (12.0, 5), (13.0, 6)], [10.5, 11.5, 12.5]))
     assert out[0] is False and "5->5" in out[1]
+    assert strict([(10.4, 4), (10.9, 5), (11.9, 5), (14.9, 6)]) is False
+
+
+def test_fail_equal_time_with_another_value_is_not_dropped():
+    assert verdict(HELPER(ctx([(11.0, 5), (11.0, 6), (12.0, 7)], [10.5, 10.6, 11.5, 12.5]))) is True  # two writes, two steps
+    out = HELPER(ctx([(11.0, 5), (11.0, 4)], [10.5, 10.6]))
+    assert out[0] is False
+
+
+def test_fail_copy_that_does_not_follow_its_first_copy_is_not_dropped():
+    # only a sample equal to the one before it is dropped: the same row after a later sample is a fall
+    assert verdict(HELPER(ctx([(11.0, 5), (12.0, 6), (11.0, 5)], [10.5, 11.5, 12.5]))) is False
+
+
+def test_within_fail_lost_and_late_samples_still_fail_with_copies_present():
+    # second command's sample lost; first command's sample lost (merged step of 2); a sample more than 2 ticks late
+    assert strict([(10.4, 4), (10.4, 4), (10.9, 5), (10.9, 5)]) is False
+    assert strict([(10.4, 4), (10.4, 4), (14.9, 6), (14.9, 6)]) is False
+    assert strict([(10.4, 4), (10.9, 5), (10.9, 5), (16.3, 6), (16.3, 6)]) is False
+
+
+def test_fail_copies_do_not_count_as_samples():
+    # two copies of one write are one sample where two are needed
+    assert verdict(HELPER(ctx([(11.0, 5), (11.0, 5)], [10.0, 10.2, 11.3, 11.6]))) is False
 
 
 # The slack of one telemetry tick on either edge of a step (approved rule, pinned here as it is).

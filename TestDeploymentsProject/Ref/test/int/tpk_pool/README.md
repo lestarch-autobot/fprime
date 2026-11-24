@@ -30,6 +30,107 @@ The same plan and stimulus files are kept beside the Zephyr reference deployment
 (`lestarch-autobot/fprime-zephyr-reference`, same branch name, `FprimeZephyrReference/ReferenceDeployment/test/int/tpk_pool`);
 `diff -r` of the two directories shows only the venue files (`bench-*.json`, `venue/`).
 
+## Complete procedure (venue A, from a new machine)
+
+Needs: a Linux x86_64 host, `git`, Python 3 with `venv`, a C++ compiler with its `gcov`, CMake. Nothing here uses
+a bench other than the host itself. One directory, the campaign root, holds everything; every command is run
+from it unless a `cd` is shown. About 40 minutes.
+
+```sh
+mkdir tpk-campaign && cd tpk-campaign
+B=tlm-packetizer-membership-pool-harness
+git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref          # harness = image source
+git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref-cov      # same commit, coverage image
+git clone --recurse-submodules -b tlm-packetizer-membership-pool https://github.com/lestarch-autobot/fprime uut   # unit under test, for its unit tests
+git -C uut rev-parse HEAD                      # 14dc2e3077b1a5b108a067805abac48c1f765be9
+python3 -m venv venv && . venv/bin/activate
+pip install -r uut-ref/requirements.txt gcovr
+pip install git+https://github.com/lestarch-autobot/fprime-testing-harness@v0.1.29      # fth; commit fb09828
+T=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool
+```
+
+1. Build the three trees (the image carries `git describe` of its tree: build only a clean checkout).
+
+```sh
+(cd uut-ref/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF && fprime-util build -j4) 2>&1 | grep "needs MAX_PACKETIZER"
+(cd uut-ref-cov/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_C_FLAGS=--coverage -DCMAKE_EXE_LINKER_FLAGS=--coverage && fprime-util build -j4) > cov-build.log 2>&1
+(cd uut && fprime-util generate --ut) > ut-generate.log 2>&1
+```
+
+Expected from the first line (the sizing check of the unit under test):
+
+```text
+Packet set RefPackets needs MAX_PACKETIZER_MEMBERSHIPS >= 178
+Packet set RefPackets needs MAX_PACKETIZER_CHANNELS >= 177 (177 listed in packets; 25 omitted not counted, FPRIME_TLM_PACKETIZER_OMIT_LIST is OFF)
+```
+
+2. Bench file. `bench-ref.json` names the host in `serial` (`devin-box`); `start-uut.sh` prints `hostname` in the
+   place of a debugger serial and the audit compares the two. On a host with another name the audit's step
+   "bench file resolved (serial comparison)" fails: either run on a host of that name, or change `serial`,
+   commit, and rebuild (the file is pinned by the manifest and the commit is in the image's version string).
+   The image listens on TCP port 50000 of 127.0.0.1; the port must be free.
+
+3. Static checks, no bench.
+
+```sh
+fth verify-plan $T/plan.json --tests $T          # plan ok: ... 6 tests, 1 helpers, 4 planted faults, 1 waived requirements, 0 warnings
+fth verify-stimulus $T/plan.json --tests $T      # 6 lines MATCH, 0 FAIL
+pytest -q uut-ref/TestDeploymentsProject/Ref/test/kat      # 30 passed
+```
+
+4. The five dry runs, audit, replay, vector set and vector rule: one script. It makes `manifest.json`, starts the
+   image for each run (`venue/start-uut.sh`, read back with `venue/readback-uut.sh`) and stops it by its
+   recorded pid. The planted fault of each run is named only in `../../campaign/orchestrate-vectors.sh`
+   (dry-2 `L2-1=first_packet_also_held`, dry-3 `L2-2=second_packet_also_held`, dry-4 `L6-1=known_packet_requested`,
+   dry-5 `L7-1=final_packets_held`, each as `fth run --unsealed --plant <test>=<fault>`).
+
+```sh
+sh uut-ref/TestDeploymentsProject/Ref/test/campaign/dry-runs.sh 2>&1 | tee venue-a.out
+grep -a -h MATCH runs/dry-?/record/raw/flash.log           # 5 lines "MATCH: pid <n> runs uut-ref/..."
+```
+
+Expected in `venue-a.out` (`<V>` is the check name `cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2
+increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch`; record
+ids differ from run to run):
+
+```text
+manifest <id> -> manifest.json ...
+run dry-1: record <id> -> runner/verdicts.json (pytest exit 0)
+dry-1 rc=0
+  L0-1 PASS []          (and L0-2, L2-1, L2-2, L6-1, L7-1: PASS [])
+  audit rc=0 FAILED-lines=0 DIVERGENCE=0
+  replay equal
+run dry-2: record <id> -> runner/verdicts.json (pytest exit 1)
+dry-2 rc=0
+  L2-1 FAIL ['<V>']     (the five others PASS [])
+  audit rc=1 FAILED-lines=3 DIVERGENCE=0
+  replay equal
+dry-3: as dry-2 with L2-2 FAIL ['<V>']
+dry-4: L6-1 FAIL ['event cmdDisp.OpCodeError count == 1', 'event tlmSend.PacketNotFound(packetId=999) count == 1', 'event tlmSend.PacketSent count == 0']
+dry-5: as dry-2 with L7-1 FAIL ['<V>']
+vectors: 5 lines "ok", one per vector
+vector rule rc=0
+```
+
+   The audit of a planted run ends FAILED by the tool's design (`audit rc=1`, two failed steps: "no development
+   plant in the record" and "replay sent exactly the recorded commands"); its runner-versus-replay table must
+   still show no DIVERGENCE. Only the clean run's audit ends ok (`runs/dry-1/auditor/`, table
+   `diff-runner-replay.md`).
+
+5. Coverage and `fth dev-campaign` (uses `runs/dry-1` and `manifest.json` of step 4; give the `gcov` of the
+   compiler that built the trees if it is not the first `gcov` on the path):
+
+```sh
+sh uut-ref/TestDeploymentsProject/Ref/test/campaign/coverage.sh
+```
+
+Expected: `cov-1 rc=0`, some hundreds of `.gcda` files (315 here), last lines
+`dev-evidence -> dev-evidence (CLEAN)` and `dev-campaign rc=0`; in `dev-evidence/README.md` unit-test lines
+95.2 % (plan threshold 95) and system lines 56.7 % (threshold 50) with gcc 15.3.
+
+`coverage.sh` and the `mkdir` of `dry-runs.sh` were written for this procedure from the commands used for the
+committed evidence; the script as a whole had not been run when it was committed.
+
 ## Static checks (no bench)
 
 ```sh
@@ -75,15 +176,27 @@ fth audit --run-dir runs/dry-1 --manifest manifest.json --plan $T/plan.json --be
 `../../vectors/` holds the vector set of this venue: one clean record and one record per planted fault applied
 alone, as the dry runs made them (`vector.json`, `record/` with `record.sha256`, `sealed/faults.json`, `runner/`,
 `replay-verdicts.json`, `audit/`, the logs), the plan copy they were judged with (`plans/tpk-pool/`, hashes in
-`SOURCE.json`) and the manifest of those runs. `../../campaign/dry-runs.sh` makes the runs, replays each record
+`SOURCE.json`) and two manifests: `manifest-as-run.json`, the one the runs were made with, and `manifest.json`,
+made at this branch for the replay (same image entry; plan and stimulus hashes of this branch).
+`record.sha256` is the tool's list for the whole record and also names the `raw/` files, which are not
+committed (they are in the evidence bundle); `files.sha256` lists the files that are committed.
+`rejudge/` holds the verdicts of a replay of each record with the plan files of this branch (amendment 7):
+equal to `runner/verdicts.json` in every vector. `../../campaign/dry-runs.sh` makes the runs, replays each record
 (`fth run --replay-record`), builds the set (`../../campaign/mk-vectors.py`) and applies the vector rule:
 
 ```sh
-python3 $T/venue/check-vectors.py $T/../../vectors     # one line per vector; exit 1 on a mismatch or an empty set
+python3 $T/../../campaign/check-vectors.py $T/../../vectors     # one line per vector; exit 1 on a mismatch or an empty set
 ```
 
 `fth vectors` (v0.1.29) cannot judge a plan whose pass rules live in the tests; `check-vectors.py` applies its rule
 (`fth.vectors.verdict_problems`, imported unmodified) to the replay verdicts.
+To repeat the gate on the committed records (no bench; from a campaign root, tools installed as above):
+
+```sh
+V=$T/../../vectors
+for n in 1 2 3 4 5; do fth run --replay-record $V/dry-$n/record --run-dir replay/dry-$n --manifest $V/manifest.json --plan $T/plan.json --bench $T/bench-ref.json --tests $T; done
+for n in 1 2 3 4 5; do cmp replay/dry-$n/runner/verdicts.json $V/dry-$n/rejudge/verdicts.json && echo "dry-$n equal"; done
+```
 The campaign scripts sit outside this directory (`../../campaign/`) because they name the planted fault of each
 run, which the stimulus directory must not (`fth verify-plan` refuses it).
 
@@ -93,11 +206,12 @@ run, which the stimulus directory must not (`fth verify-plan` refuses it).
   image carries the manifest's describe strings is judged by the tooling, not by this test: `fth manifest`
   refuses an image without them and `fth audit` compares the dictionary versions with the manifest.
 - **Two packets, one sample.** `TpkA` (60) and `TpkB` (61) both carry `cmdDisp.CommandsDispatched`. With both
-  enabled (L0-2, L7-1) each change is downlinked twice with one time tag; the recorder writes the lines one after
-  the other and the tool's export collapses adjacent identical lines, so the window holds one sample per change.
-  The helper does not collapse equal samples: a second copy that is not adjacent (a held packet released later
-  with its old time tag, as in the teardown windows of L2-1 and L2-2) stays a second row, and in a judged
-  window it would be a step of 0 and FAIL. `test/kat` pins both.
+  enabled (L0-2, L7-1) each change is downlinked twice with one time tag. The tool's export collapses the two
+  copies when their recorder lines are adjacent. They need not be: on `Ref` the channel is written on the
+  rate-group thread while the packetizer sends on its own, so one copy can leave a tick after the other, and a
+  held packet released later carries its old time tag (teardown windows of L2-1 and L2-2). The helper therefore
+  drops a sample equal in time and value to the one before it (plan amendment 7) and nothing else: an equal
+  value with a later time is a step of 0 and FAIL. `test/kat` pins both.
 - **State a planted fault leaves behind.** A test's teardown clears only the test's own override.
   `first_packet_also_held` leaves packet 60 held from the setup of L2-1 until the teardown of L2-2 (L2-2 holds
   packet 60 itself). `second_packet_also_held` leaves packet 61 held from the setup of L2-2 through L6-1 until

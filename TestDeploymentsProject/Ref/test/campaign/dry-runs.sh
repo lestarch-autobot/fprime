@@ -2,7 +2,7 @@
 # Venue A full cycle, run from the campaign root: manifest, clean run, 4 planted runs, audit, replay, vector set, vector rule.
 T=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool
 I=uut-ref/TestDeploymentsProject/build-artifacts/Linux/Ref/bin/Ref
-rm -f /tmp/fth-tpk-pool-*
+mkdir -p runs; rm -f /tmp/fth-tpk-pool-*
 fth manifest --uut uut-ref --harness uut-ref --plan $T/plan.json --menu $T/faults-menu.json --bench $T/bench-ref.json --tests $T --image Ref=$I -o manifest.json 2>&1 | tail -1 | cut -c1-200
 fth run --unsealed --run-dir runs/dry-1 --manifest manifest.json --plan $T/plan.json --bench $T/bench-ref.json --tests $T > runs/dry-1.log 2>&1
 echo "dry-1 rc=$?" >> runs/dry-1.log; cp ref-uut/uut.out runs/dry-1.uut.out; $T/venue/stop-uut.sh; sleep 2
@@ -22,4 +22,4 @@ print('  replay', 'equal' if a.keys()==b.keys() and all((a[k]['verdict'],a[k]['f
 P
 done
 rm -rf vectors && python3 $T/../../campaign/mk-vectors.py runs $T vectors "venue A (Ref, Linux host), fth run --unsealed, fprime harness $(git -C uut-ref rev-parse --short=9 HEAD)" && cp manifest.json vectors/
-python3 $T/venue/check-vectors.py vectors; echo "vector rule rc=$?"
+python3 $T/../../campaign/check-vectors.py vectors; echo "vector rule rc=$?"

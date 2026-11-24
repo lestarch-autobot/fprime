@@ -12,8 +12,13 @@ def channel_tracks_dispatch_count(ctx, tick_s=1.0, min_samples=2, within_ticks=0
     """The channel's samples in the window rise, and each rise equals the number of OpCodeDispatched
     rows the archive holds between the two samples (one telemetry tick of slack on either edge).
     With `within_ticks` > 0, every dispatch at least that many ticks before the last one in the
-    window (the end marker's) also has a sample of its own within that many ticks after it."""
-    samples = ctx.window.channel(CH)
+    window (the end marker's) also has a sample of its own within that many ticks after it.
+    A sample equal in time and value to the one before it is a second copy of the same channel write
+    (both test packets carry the channel) and is not counted."""
+    samples = []
+    for s in ctx.window.channel(CH):  # one channel write may arrive in two packets: keep its first copy only
+        if not samples or (s.fsw, s.value) != (samples[-1].fsw, samples[-1].value):
+            samples.append(s)
     disp = [e.fsw for e in ctx.window.events("cmdDisp.OpCodeDispatched")]
     if len(disp) < min_samples:
         return None, f"only {len(disp)} dispatch rows in the window", [], True
