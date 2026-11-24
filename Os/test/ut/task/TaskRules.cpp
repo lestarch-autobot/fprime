@@ -211,5 +211,5 @@ void Os::Test::Task::Tester::StartIllegalRoutine::action(Os::Test::Task::Tester&
     state.m_tasks.push_back(new_task);
 
     Fw::String name("StartRuleTask");
-    ASSERT_DEATH(new_task->start(nullptr), "Os/Task\\.hpp:") << "Failed to trap NULL routine";
+    ASSERT_DEATH(new_task->start(nullptr), "Os/Interfaces/TaskUserInterface\\.hpp:") << "Failed to trap NULL routine";
 }

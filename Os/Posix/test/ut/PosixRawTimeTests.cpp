@@ -6,6 +6,7 @@
 #include "Fw/Types/String.hpp"
 #include "Os/Posix/RawTime.hpp"
 #include "Os/Posix/Task.hpp"
+#include "Os/Task.hpp"
 #include "Os/test/ut/rawtime/CommonTests.hpp"
 #include "Os/test/ut/rawtime/RulesHeaders.hpp"
 #include "STest/Pick/Pick.hpp"

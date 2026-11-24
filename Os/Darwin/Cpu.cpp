@@ -97,7 +97,7 @@ CpuInterface::Status DarwinCpu::_getCount(FwSizeType& cpu_count) {
     return Status::ERROR;
 }
 
-CpuInterface::Status DarwinCpu::_getTicks(Os::Cpu::Ticks& ticks, FwSizeType cpu_index) {
+CpuInterface::Status DarwinCpu::_getTicks(Os::CpuInterface::Ticks& ticks, FwSizeType cpu_index) {
     kern_return_t status = cpu_by_index(cpu_index, ticks.used, ticks.total);
     if (KERN_SUCCESS == status) {
         return Status::OP_OK;

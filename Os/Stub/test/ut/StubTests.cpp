@@ -21,7 +21,7 @@
 #include "Os/Stub/Queue.hpp"
 #include "Os/Stub/RawTime.hpp"
 #include "Os/Stub/Task.hpp"
-// Wrappers under test: Os::<S>Common on the no-op stubs, not the selection in config/OsSelection.hpp
+// Wrappers under test: Os::<S>Common on the no-op stubs, not the selection in config/<Service>Selection.hpp
 using MemoryUnderTest = Os::MemoryCommon<Os::Stub::Memory::StubMemory>;
 using CpuUnderTest = Os::CpuCommon<Os::Stub::Cpu::StubCpu>;
 using DirectoryUnderTest = Os::DirectoryCommon<Os::Stub::Directory::StubDirectory>;

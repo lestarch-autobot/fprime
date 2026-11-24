@@ -8,42 +8,30 @@
 #include <Fw/FPrimeBasicTypes.hpp>
 #include <Fw/Obj/ObjBase.hpp>
 #include <Fw/Types/Serializable.hpp>
+#include <Os/Interfaces/QueueUserInterface.hpp>
 #include <Os/Mutex.hpp>
 #include <Os/Os.hpp>
 #include <Os/QueueString.hpp>
 #include "Fw/Types/Assert.hpp"
-#include "config/OsSelection.hpp"  // defines the Os::Queue alias and OS_QUEUE_HEADER; do not remove
+#include "config/QueueSelection.hpp"
+#ifdef BUILD_UT
+#include <Os/test/ut/implementations/UtQueue.hpp>
+#endif
 namespace Os {
+
+template <typename T>
+class QueueCommon;
+
+#ifdef BUILD_UT
+//! \brief Os::Queue in unit test builds: wraps the implementation selected in config/QueueSelection.hpp in the
+//! test-only UtQueue, so that tests may intercept its calls
+using Queue = QueueCommon<Ut::Queue::UtQueue>;
+#else
+//! \brief Os::Queue: the common class on the implementation selected in config/QueueSelection.hpp
+using Queue = QueueCommon<Selected::Queue>;
+#endif
 // Forward declaration for registry
 class QueueRegistry;
-
-//! \brief QueueHandle parent class
-class QueueHandle {};
-
-//! \brief types and constants shared by users of Os::Queue and by its implementations
-struct QueueUserInterface {
-    //! \brief status returned from the queue send function
-    enum Status {
-        OP_OK,              //!<  message sent/received okay
-        ALREADY_CREATED,    //!<  creating an already created queue
-        EMPTY,              //!<  If non-blocking, all the messages have been drained.
-        UNINITIALIZED,      //!<  Queue wasn't initialized successfully
-        SIZE_MISMATCH,      //!<  attempted to send or receive with buffer too large, too small
-        SEND_ERROR,         //!<  message send error
-        RECEIVE_ERROR,      //!<  message receive error
-        INVALID_PRIORITY,   //!<  invalid priority requested
-        FULL,               //!<  Queue was full when attempting to send a message
-        NOT_SUPPORTED,      //!<  Queue feature is not supported
-        ALLOCATION_FAILED,  //!<  required memory could not be allocated
-        UNKNOWN_ERROR       //!<  Unexpected error; can't match with returns
-    };
-
-    //! \brief message type
-    enum BlockingType {
-        BLOCKING,    //!< Message will block until space is available
-        NONBLOCKING  //!< Message will return with status when space is unavailable
-    };
-};
 
 template <typename T>
 class QueueCommon final : public QueueUserInterface {
@@ -196,7 +184,7 @@ class QueueCommon final : public QueueUserInterface {
   private:
     static QueueRegistry* s_queueRegistry;  //!< Queue registry store
 
-    //! \brief register a queue of the type selected in config/OsSelection.hpp (Os::Queue)
+    //! \brief register a queue of the type selected in config/QueueSelection.hpp (Os::Queue)
     static void registerQueue(QueueRegistry& registry, Queue* queue);
     //! \brief queues of any other type are not tracked: the registry handles Os::Queue only
     static void registerQueue(QueueRegistry& registry, const void* queue);
@@ -228,13 +216,6 @@ class QueueRegistry {
     virtual void registerQueue(Queue* queue) = 0;  //!< method called by queue init() methods to register a new queue
 };
 }  // namespace Os
-// Validate that OS_QUEUE_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_QUEUE_HEADER
-#error "OS_QUEUE_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
-#include OS_QUEUE_HEADER
-
 namespace Os {
 
 template <typename T>

@@ -2,11 +2,10 @@
 // \title Os/Interfaces/QueueInterface.hpp
 // \brief pure-virtual interface implemented by Os::Queue implementations
 // ======================================================================
-// Included before the guard: Os/Queue.hpp includes the selected implementation, which includes this file
-#include <Os/Queue.hpp>
-
 #ifndef OS_INTERFACES_QUEUEINTERFACE_HPP_
 #define OS_INTERFACES_QUEUEINTERFACE_HPP_
+
+#include <Os/Interfaces/QueueUserInterface.hpp>
 
 namespace Os {
 

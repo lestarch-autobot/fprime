@@ -11,7 +11,7 @@ namespace Os {
 namespace Linux {
 namespace Memory {
 
-MemoryInterface::Status LinuxMemory::_getUsage(Os::Memory::Usage& memory_usage) {
+MemoryInterface::Status LinuxMemory::_getUsage(Os::MemoryInterface::Usage& memory_usage) {
     struct sysinfo info;
     // Only error in sysinfo call is invalid address
     const int sysinfoStatus = sysinfo(&info);

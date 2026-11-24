@@ -110,23 +110,25 @@ classDiagram
     FileUserInterface <|-- FileCommon~T~
     FileInterface <|--  PosixFile
     FileInterface <|--  FreeRTOSFile
-    FileCommon~T~ *-- PosixFile : T selected in config/OsSelection.hpp
+    FileCommon~T~ *-- PosixFile : T selected in config/FileSelection.hpp
 ```
 
 ### 5.2 Compile-Time Selection
 
 The implementation used by each service is selected at compile time:
 
-1. The configuration header `config/OsSelection.hpp` defines each `Os::<Service>` as an alias of `Os::<Service>Common<T>` for the selected implementation `T`, and defines an `OS_<SERVICE>_HEADER` macro naming the header that defines `T`.
-2. The wrapper holds `T` by value; there is no factory function and no handle storage.
+1. Each service has its own configuration header, `config/<Service>Selection.hpp`, which includes the header defining the selected implementation `T` and names it `Os::Selected::<Service>`.
+2. `Os/<Service>.hpp` includes that header and defines `Os::<Service>` as an alias of `Os::<Service>Common<Os::Selected::<Service>>`. The wrapper holds `T` by value; there is no factory function and no handle storage.
 3. Calls from the wrapper to the implementation are direct calls on a known type, which the compiler can devirtualize and inline.
 
-F´ provides a default `default/config/OsSelection.hpp` selecting the in-tree implementations. Projects and platforms override that header to select others; an override replaces the whole file and must define every alias and macro.
+F´ provides defaults (`default/config/Os/<Service>Selection.hpp`) selecting the in-tree implementations. Projects and platforms override the header of each service they change; the others keep their defaults.
+
+The types shared by users and implementations of a service (`<Service>Handle`, `<Service>UserInterface`) are defined in `Os/Interfaces/<Service>UserInterface.hpp`, which includes no other service header. `Os/Interfaces/<Service>Interface.hpp` and the implementation headers build on it, so none of them includes `Os/<Service>.hpp`.
 
 **Constraints:**
 
-- **One selection per build**: `Os::<Service>` is a different type for each selection, so every file in a build must see the same `config/OsSelection.hpp`.
-- **No circular dependencies**: the configuration header must not include Os OSAL headers; it forward-declares the implementations.
+- **One selection per build**: `Os::<Service>` is a different type for each selection, so every file in a build must see the same `config/<Service>Selection.hpp` headers.
+- **No circular dependencies**: an implementation header must not include the `Os/<Service>.hpp` of its own service. It may use other services (e.g. `Os::Generic::PriorityQueue` holds an `Os::Mutex`), provided their selected implementations do not depend back on it.
 - **Linking**: the alias changes only the C++ type. The module providing the implementation must still be in the link.
 - **Mutex and ConditionVariable** must be selected as a compatible pair: a condition variable implementation operates on the handle of the selected `Os::Mutex` (Posix casts it to its own handle type). `Os::ConditionVariableCommon` additionally requires that the same mutex is supplied on every call to `pend()`/`wait()`, returning `ERROR_DIFFERENT_MUTEX` otherwise.
 - **RawTime** implementations must be copyable and constructible from a `RawTimeSource`.
@@ -135,7 +137,7 @@ F´ provides a default `default/config/OsSelection.hpp` selecting the in-tree im
 **Testing:**
 
 - A test of a specific implementation names its wrapper explicitly, e.g. `Os::MutexCommon<Os::Posix::Mutex::PosixMutex>`, independent of the selection.
-- In unit test builds (`BUILD_UT`) the default selection wraps every service in a test-only `Os::Ut::<Service>::Ut<Service>` implementation ([`Os/test/ut/implementations/`](../test/ut/implementations)). Each holds the implementation a non-test build would select (`Os::Selected::<Service>`) and routes every call, and its construction and destruction, through a test-only interceptor ([`Os/test/ut/interceptors/`](../test/ut/interceptors)) when a test installs one; otherwise calls go straight to the selected implementation. At most one interceptor per service may exist at a time, and it must be installed before, and destroyed after, any thread using that service runs.
+- In unit test builds (`BUILD_UT`) each `Os/<Service>.hpp` wraps the selection in a test-only `Os::Ut::<Service>::Ut<Service>` implementation ([`Os/test/ut/implementations/`](../test/ut/implementations)). Each holds the implementation a non-test build would select (`Os::Selected::<Service>`) and routes every call, and its construction and destruction, through a test-only interceptor ([`Os/test/ut/interceptors/`](../test/ut/interceptors)) when a test installs one; otherwise calls go straight to the selected implementation. At most one interceptor per service may exist at a time, and it must be installed before, and destroyed after, any thread using that service runs.
 - The interface tests (`Os/Stub/test/ut`) use such interceptors to check that each wrapper calls its implementation as expected.
 
 ## 6. OSAL Implementations
@@ -149,7 +151,7 @@ The following OSAL implementations are available in the core F´ repository:
 
 Additional OSAL implementations are available through platform support packages. For more information, see [Supported Platforms](../../docs/user-manual/framework/supported-platforms.md) or search for a platform support package in the [fprime-community](https://github.com/fprime-community) GitHub organization.
 
-OSAL selection is made in `config/OsSelection.hpp` (see [Compile-Time Selection](#52-compile-time-selection)); the CMake build system brings the module of each selected implementation into the link.
+OSAL selection is made in the `config/<Service>Selection.hpp` headers (see [Compile-Time Selection](#52-compile-time-selection)); the CMake build system brings the module of each selected implementation into the link.
 
 ## 7. Resources
 

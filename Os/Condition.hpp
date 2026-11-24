@@ -5,37 +5,39 @@
 #ifndef OS_CONDITION_HPP_
 #define OS_CONDITION_HPP_
 
+#include <Os/Interfaces/ConditionVariableUserInterface.hpp>
 #include "Fw/Types/Assert.hpp"
 #include "Os/Mutex.hpp"
 #include "Os/Os.hpp"
-#include "config/OsSelection.hpp"  // defines the Os::ConditionVariable alias and OS_CONDITION_VARIABLE_HEADER; do not remove
+#include "config/ConditionVariableSelection.hpp"
+#ifdef BUILD_UT
+#include <Os/test/ut/implementations/UtConditionVariable.hpp>
+#endif
 
 namespace Os {
 
-//! \brief Condition variable handle parent
-class ConditionVariableHandle {};
+template <typename T>
+class ConditionVariableCommon;
 
-//! \brief types shared by Os::ConditionVariable users and implementations
-struct ConditionVariableUserInterface {
-    enum Status {
-        OP_OK,                  //!<  Operation was successful
-        ERROR_MUTEX_NOT_HELD,   //!< When trying to wait but we don't hold the mutex
-        ERROR_DIFFERENT_MUTEX,  //!< When trying to use a different mutex than expected mutex
-        ERROR_NOT_IMPLEMENTED,  //!< When trying to use a feature that isn't implemented
-        NOT_SUPPORTED,          //!< ConditionVariable does not support operation
-        ERROR_OTHER             //!< All other errors
-    };
-};
+#ifdef BUILD_UT
+//! \brief Os::ConditionVariable in unit test builds: wraps the implementation selected in
+//! config/ConditionVariableSelection.hpp in the test-only UtConditionVariable, so that tests may intercept its calls
+using ConditionVariable = ConditionVariableCommon<Ut::Mutex::UtConditionVariable>;
+#else
+//! \brief Os::ConditionVariable: the common class on the implementation selected in
+//! config/ConditionVariableSelection.hpp
+using ConditionVariable = ConditionVariableCommon<Selected::ConditionVariable>;
+#endif
 
 //! \brief Os::ConditionVariable wrapper around the implementation `T` selected at compile time
 //!
 //! Condition variables allow a program to block on a condition while atomically releasing an Os::Mutex and atomically
 //! reacquiring the mutex once the condition has been notified. Holds the implementation by value and forwards every
 //! operation to it. `Os::ConditionVariable` is this class instantiated on the implementation selected in
-//! config/OsSelection.hpp.
+//! config/ConditionVariableSelection.hpp.
 //!
 //! \warning the implementation operates on the handle of the selected Os::Mutex: the Os::Mutex and
-//! Os::ConditionVariable selections in config/OsSelection.hpp must be compatible.
+//! Os::ConditionVariable selections in config/ConditionVariableSelection.hpp must be compatible.
 template <typename T>
 class ConditionVariableCommon final : public ConditionVariableUserInterface {
   public:
@@ -93,13 +95,6 @@ class ConditionVariableCommon final : public ConditionVariableUserInterface {
 };
 
 }  // namespace Os
-
-// Validate that OS_CONDITION_VARIABLE_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_CONDITION_VARIABLE_HEADER
-#error "OS_CONDITION_VARIABLE_HEADER must be defined in config/OsSelection.hpp, paired with Os::Mutex"
-#endif
-
-#include OS_CONDITION_VARIABLE_HEADER
 
 namespace Os {
 

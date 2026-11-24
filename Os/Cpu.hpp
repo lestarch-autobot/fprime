@@ -2,23 +2,30 @@
 // \title Os/Cpu.hpp
 // \brief common function definitions for Os::Cpu
 // ======================================================================
+#include <Os/Interfaces/CpuUserInterface.hpp>
 #include "Fw/Types/Assert.hpp"
 #include "Os/Os.hpp"
-#include "config/OsSelection.hpp"  // defines the Os::Cpu alias and OS_CPU_HEADER; do not remove
+#include "config/CpuSelection.hpp"
+#ifdef BUILD_UT
+#include <Os/test/ut/implementations/UtCpu.hpp>
+#endif
 
 #ifndef OS_CPU_HPP_
 #define OS_CPU_HPP_
 
 namespace Os {
 
-//! \brief Cpu variable handle parent
-class CpuHandle {};
+template <typename T>
+class CpuCommon;
 
-//! \brief types and constants shared by users of Os::Cpu and by its implementations
-struct CpuUserInterface {
-    using Status = Os::Generic::Status;
-    using Ticks = Os::Generic::UsedTotal;
-};
+#ifdef BUILD_UT
+//! \brief Os::Cpu in unit test builds: wraps the implementation selected in config/CpuSelection.hpp in the test-only
+//! UtCpu, so that tests may intercept its calls
+using Cpu = CpuCommon<Ut::Cpu::UtCpu>;
+#else
+//! \brief Os::Cpu: the common class on the implementation selected in config/CpuSelection.hpp
+using Cpu = CpuCommon<Selected::Cpu>;
+#endif
 
 //! \brief cpu implementation
 template <typename T>
@@ -113,13 +120,6 @@ class CpuCommon final : public CpuUserInterface {
 };
 
 }  // namespace Os
-// Validate that OS_CPU_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_CPU_HEADER
-#error "OS_CPU_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
-#include OS_CPU_HEADER
-
 namespace Os {
 
 template <typename T>

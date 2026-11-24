@@ -2,23 +2,30 @@
 // \title Os/Memory.hpp
 // \brief common function definitions for Os::Memory
 // ======================================================================
+#include <Os/Interfaces/MemoryUserInterface.hpp>
 #include "Fw/Types/Assert.hpp"
 #include "Os/Os.hpp"
-#include "config/OsSelection.hpp"  // defines the Os::Memory alias and OS_MEMORY_HEADER; do not remove
+#include "config/MemorySelection.hpp"
+#ifdef BUILD_UT
+#include <Os/test/ut/implementations/UtMemory.hpp>
+#endif
 
 #ifndef OS_MEMORY_HPP_
 #define OS_MEMORY_HPP_
 
 namespace Os {
 
-//! \brief Memory variable handle parent
-class MemoryHandle {};
+template <typename T>
+class MemoryCommon;
 
-//! \brief types and constants shared by users of Os::Memory and by its implementations
-struct MemoryUserInterface {
-    using Status = Os::Generic::Status;
-    using Usage = Os::Generic::UsedTotal;
-};
+#ifdef BUILD_UT
+//! \brief Os::Memory in unit test builds: wraps the implementation selected in config/MemorySelection.hpp in the
+//! test-only UtMemory, so that tests may intercept its calls
+using Memory = MemoryCommon<Ut::Memory::UtMemory>;
+#else
+//! \brief Os::Memory: the common class on the implementation selected in config/MemorySelection.hpp
+using Memory = MemoryCommon<Selected::Memory>;
+#endif
 
 //! \brief memory implementation
 template <typename T>
@@ -85,13 +92,6 @@ class MemoryCommon final : public MemoryUserInterface {
 };
 
 }  // namespace Os
-// Validate that OS_MEMORY_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_MEMORY_HEADER
-#error "OS_MEMORY_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
-#include OS_MEMORY_HEADER
-
 namespace Os {
 
 template <typename T>

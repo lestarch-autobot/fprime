@@ -2,15 +2,11 @@
 // \title Os/test/ut/implementations/UtDirectory.hpp
 // \brief TEST ONLY: Os::Directory implementation selected in unit test builds
 // ======================================================================
-// Included before the guard: Os/Directory.hpp includes this file, and may be reached from the interface header
-#include <Os/Interfaces/DirectoryInterface.hpp>
 #ifndef OS_TEST_UT_IMPLEMENTATIONS_UTDIRECTORY_HPP_
 #define OS_TEST_UT_IMPLEMENTATIONS_UTDIRECTORY_HPP_
 
-#ifndef OS_SELECTED_DIRECTORY_HEADER
-#error "OS_SELECTED_DIRECTORY_HEADER must be defined in config/OsSelection.hpp"
-#endif
-#include OS_SELECTED_DIRECTORY_HEADER
+#include <Os/Interfaces/DirectoryInterface.hpp>
+#include "config/DirectorySelection.hpp"
 
 namespace Os {
 namespace Ut {

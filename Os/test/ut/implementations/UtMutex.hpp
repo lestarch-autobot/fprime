@@ -2,15 +2,11 @@
 // \title Os/test/ut/implementations/UtMutex.hpp
 // \brief TEST ONLY: Os::Mutex implementation selected in unit test builds
 // ======================================================================
-// Included before the guard: Os/Mutex.hpp includes this file, and may be reached from the interface header
-#include <Os/Interfaces/MutexInterface.hpp>
 #ifndef OS_TEST_UT_IMPLEMENTATIONS_UTMUTEX_HPP_
 #define OS_TEST_UT_IMPLEMENTATIONS_UTMUTEX_HPP_
 
-#ifndef OS_SELECTED_MUTEX_HEADER
-#error "OS_SELECTED_MUTEX_HEADER must be defined in config/OsSelection.hpp"
-#endif
-#include OS_SELECTED_MUTEX_HEADER
+#include <Os/Interfaces/MutexInterface.hpp>
+#include "config/MutexSelection.hpp"
 
 namespace Os {
 namespace Ut {

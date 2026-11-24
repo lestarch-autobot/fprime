@@ -11,7 +11,7 @@
 #include "STest/Scenario/RandomScenario.hpp"
 #include "STest/Scenario/Scenario.hpp"
 
-// Wrapper under test: the Os::Task selected in config/OsSelection.hpp, unless the test executable names another
+// Wrapper under test: the Os::Task selected in config/TaskSelection.hpp, unless the test executable names another
 // implementation by defining OS_TEST_TASK_IMPLEMENTATION and OS_TEST_TASK_HEADER (see its CMakeLists.txt)
 #ifdef OS_TEST_TASK_IMPLEMENTATION
 #include OS_TEST_TASK_HEADER

@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include "Fw/Types/String.hpp"
 #include "Os/Posix/Task.hpp"
+#include "Os/Task.hpp"
 #include "Os/test/ut/mutex/CommonTests.hpp"
 #include "Os/test/ut/mutex/RulesHeaders.hpp"
 #include "STest/Pick/Pick.hpp"

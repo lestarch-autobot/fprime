@@ -2,15 +2,11 @@
 // \title Os/test/ut/implementations/UtFileSystem.hpp
 // \brief TEST ONLY: Os::FileSystem implementation selected in unit test builds
 // ======================================================================
-// Included before the guard: Os/FileSystem.hpp includes this file, and may be reached from the interface header
-#include <Os/Interfaces/FileSystemInterface.hpp>
 #ifndef OS_TEST_UT_IMPLEMENTATIONS_UTFILESYSTEM_HPP_
 #define OS_TEST_UT_IMPLEMENTATIONS_UTFILESYSTEM_HPP_
 
-#ifndef OS_SELECTED_FILE_SYSTEM_HEADER
-#error "OS_SELECTED_FILE_SYSTEM_HEADER must be defined in config/OsSelection.hpp"
-#endif
-#include OS_SELECTED_FILE_SYSTEM_HEADER
+#include <Os/Interfaces/FileSystemInterface.hpp>
+#include "config/FileSystemSelection.hpp"
 
 namespace Os {
 namespace Ut {

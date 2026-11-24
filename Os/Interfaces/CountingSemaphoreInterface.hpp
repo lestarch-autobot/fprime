@@ -2,11 +2,10 @@
 // \title Os/Interfaces/CountingSemaphoreInterface.hpp
 // \brief pure-virtual interface implemented by Os::CountingSemaphore implementations
 // ======================================================================
-// Included before the guard: Os/CountingSemaphore.hpp includes the selected implementation, which includes this file
-#include <Os/CountingSemaphore.hpp>
-
 #ifndef OS_INTERFACES_COUNTINGSEMAPHOREINTERFACE_HPP_
 #define OS_INTERFACES_COUNTINGSEMAPHOREINTERFACE_HPP_
+
+#include <Os/Interfaces/CountingSemaphoreUserInterface.hpp>
 
 namespace Os {
 

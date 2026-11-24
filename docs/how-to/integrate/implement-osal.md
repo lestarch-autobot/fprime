@@ -17,7 +17,7 @@ Before starting, you should have:
 
 ## Overview
 
-The OSAL uses a wrapper pattern to decouple F´ application code from platform-specific OS calls. Each OSAL _service_ (Mutex, File, Task, etc.) has three layers: an **interface class** defining the contract, a **wrapper class** (e.g., `Os::Mutex`) that application code uses, and a **platform-specific implementation** that the wrapper holds by value and forwards to. The implementation is selected at compile time in `config/OsSelection.hpp`. Before proceeding, read the [OSAL Software Design Document](../../../Os/docs/sdd.md) — in particular the [delegate pattern](../../../Os/docs/sdd.md#51-delegate-pattern) and [implementation architecture](../../../Os/docs/sdd.md#5-implementation-architecture) sections — as this guide assumes familiarity with those concepts.
+The OSAL uses a wrapper pattern to decouple F´ application code from platform-specific OS calls. Each OSAL _service_ (Mutex, File, Task, etc.) has three layers: an **interface class** defining the contract, a **wrapper class** (e.g., `Os::Mutex`) that application code uses, and a **platform-specific implementation** that the wrapper holds by value and forwards to. The implementation is selected at compile time in the service's `config/<Service>Selection.hpp`. Before proceeding, read the [OSAL Software Design Document](../../../Os/docs/sdd.md) — in particular the [delegate pattern](../../../Os/docs/sdd.md#51-delegate-pattern) and [implementation architecture](../../../Os/docs/sdd.md#5-implementation-architecture) sections — as this guide assumes familiarity with those concepts.
 
 This guide walks through implementing an OSAL for a hypothetical OS called **"MyOs"**, and walks through the implementation of the `Os::Mutex` service as the example. The same process applies for all other OSAL services. Reference implementations are linked in the [Additional Resources](#additional-resources) section below.
 
@@ -157,45 +157,26 @@ MutexHandle* MyOsMutex::getHandle() {
 
 ## Step 3 — Select the Implementation
 
-Every OSAL service is selected at compile time. `Os::Mutex` is an alias of `Os::MutexCommon<T>`, a wrapper template that holds the implementation `T` by value and forwards each call to it directly: no virtual dispatch, no factory function, and no handle storage. The alias and the header defining `T` are set in the configuration header `config/OsSelection.hpp`.
+Every OSAL service is selected at compile time. `Os::Mutex` is an alias of `Os::MutexCommon<T>`, a wrapper template that holds the implementation `T` by value and forwards each call to it directly: no virtual dispatch, no factory function, and no handle storage. The implementation `T` of each service is chosen in that service's own configuration header, e.g. `config/MutexSelection.hpp` for Mutex.
 
-F´'s default `default/config/OsSelection.hpp` selects the in-tree Posix, Linux, Darwin and Generic implementations. To select yours, override that header. An override replaces the whole file, so it must define every `Os::Selected::<Service>` alias and `OS_SELECTED_*_HEADER` macro, not just the service being changed: start from a copy of the default.
+A selection header does two things: it includes the header defining the implementation, and names the implementation `Os::Selected::<Service>`. `Os/Mutex.hpp` then defines `Os::Mutex` as `Os::MutexCommon<Os::Selected::Mutex>`. F´'s defaults (`default/config/Os/<Service>Selection.hpp`) select the in-tree Posix, Linux, Darwin and Generic implementations. To select yours, override the header of each service you implement; the other services keep their defaults.
 
-**Step 1:** In your project's (or platform's) config directory, create `OsSelection.hpp` from a copy of the default and change the Mutex entries:
+**Step 1:** In your project's (or platform's) config directory, create `MutexSelection.hpp`:
 
 ```c++
-// my-project/config-overrides/OsSelection.hpp
-#ifndef CONFIG_OSSELECTION_HPP
-#define CONFIG_OSSELECTION_HPP
+// my-project/config-overrides/MutexSelection.hpp
+#ifndef CONFIG_MUTEXSELECTION_HPP
+#define CONFIG_MUTEXSELECTION_HPP
 
-// Do not include any Os OSAL headers here (circular dependency); forward-declare only.
+#include <FprimeMyOs/Os/Mutex.hpp>
+
 namespace Os {
-
-template <typename T>
-class MutexCommon;
-// ... the other Os::<Service>Common templates, as in the default
-
-namespace MyOs {
-namespace Mutex {
-class MyOsMutex;
-}
-}  // namespace MyOs
-
 namespace Selected {
 using Mutex = MyOs::Mutex::MyOsMutex;
-// ... every other Os::Selected::<Service> alias, as in the default
 }  // namespace Selected
-
 }  // namespace Os
 
-// Header defining the implementation; included by Os/Mutex.hpp after it defines Os::MutexCommon
-#define OS_SELECTED_MUTEX_HEADER <FprimeMyOs/Os/Mutex.hpp>
-// ... every other OS_SELECTED_*_HEADER macro, as in the default
-
-// ... the remainder of the default, unchanged: it derives the Os::<Service> aliases
-//     (e.g. Os::Mutex = Os::MutexCommon<Os::Selected::Mutex>) and the OS_*_HEADER macros
-
-#endif  // CONFIG_OSSELECTION_HPP
+#endif  // CONFIG_MUTEXSELECTION_HPP
 ```
 
 **Step 2:** Register the config header in the `config-overrides/CMakeLists.txt` (see [Configuration Modules](../../user-manual/build-system/configuration.md#overriding-configuration-in-a-project)):
@@ -204,7 +185,7 @@ using Mutex = MyOs::Mutex::MyOsMutex;
 register_fprime_config(
     # ... project config name & other options 
     CONFIGURATION_OVERRIDES
-+        "${CMAKE_CURRENT_LIST_DIR}/OsSelection.hpp"
++        "${CMAKE_CURRENT_LIST_DIR}/MutexSelection.hpp"
         # ... other project override config headers
     INTERFACE
 )
@@ -212,12 +193,12 @@ register_fprime_config(
 
 ### Important Constraints
 
-- **One Selection per Build**: every file in a build must see the same `config/OsSelection.hpp`; `Os::Mutex` is a different type for each selection.
-- **No Circular Dependencies**: the config header must not include Os OSAL headers; forward-declare only.
+- **One Selection per Build**: every file in a build must see the same `config/<Service>Selection.hpp` headers; `Os::Mutex` is a different type for each selection.
+- **No Circular Dependencies**: an implementation header must not include the `Os/<Service>.hpp` of its own service; it includes `Os/Interfaces/<Service>Interface.hpp`. It may include other services (e.g. a queue holding an `Os::Mutex`) as long as their selected implementations do not depend back on it.
 - **The Implementation Must Be Linked**: the alias changes only the C++ type. The module providing the implementation must still be in the link (see Step 7).
-- **Paired Services**: a ConditionVariable implementation operates on the handle of the selected `Os::Mutex`, so the two must be selected as a compatible pair (see the default header).
+- **Paired Services**: a ConditionVariable implementation operates on the handle of the selected `Os::Mutex`, so the two must be selected as a compatible pair (see the default `MutexSelection.hpp`).
 - **RawTime**: the implementation must be copyable and constructible from a `RawTimeSource`.
-- **Unit Test Builds**: under `BUILD_UT` the bottom of the default header wraps every selection in a test-only `Os::Ut::<Service>::Ut<Service>` implementation so that unit tests can intercept calls (see `Os/test/ut/implementations/` and `Os/test/ut/interceptors/`). Keep that part of the default in an override if the unit tests of F´ components are to be run against it.
+- **Unit Test Builds**: under `BUILD_UT` each `Os/<Service>.hpp` wraps the selection in a test-only `Os::Ut::<Service>::Ut<Service>` implementation so that unit tests can intercept calls (see `Os/test/ut/implementations/` and `Os/test/ut/interceptors/`). A selection header needs nothing for this.
 
 ---
 
@@ -267,7 +248,7 @@ The process described above for `Os::Mutex` is the same for every OSAL module. F
 
 1. Create `<Module>.hpp` with a handle struct and implementation class inheriting from the interface.
 2. Create `<Module>.cpp` implementing the virtual methods using your OS's native APIs.
-3. Select it in `config/OsSelection.hpp`.
+3. Select it in `config/<Module>Selection.hpp`.
 4. Register with `register_os_implementation` in `CMakeLists.txt`.
 
 > [!NOTE]
@@ -298,7 +279,7 @@ Refer to each interface header in `Os/Interfaces/` for the full method signature
 
 Some guidance is available in the [Porting Guide](porting-guide.md), and a full How-To will soon follow on how to port F Prime to a new platform.
 
-The bottom line is that to use your new OSAL implementation, you need to select it in `config/OsSelection.hpp` (Step 3) and add the `Os_<Module>_<Suffix>` target to the `CHOOSES_IMPLEMENTATIONS` list in your platform CMake files. Examples are available:
+The bottom line is that to use your new OSAL implementation, you need to select it in `config/<Module>Selection.hpp` (Step 3) and add the `Os_<Module>_<Suffix>` target to the `CHOOSES_IMPLEMENTATIONS` list in your platform CMake files. Examples are available:
 
 - [F Prime Zephyr Support Package](https://github.com/fprime-community/fprime-zephyr/tree/main/cmake/platform)
 - [F Prime VxWorks Support Package](https://github.com/fprime-community/fprime-vxworks/tree/devel/cmake/platform)

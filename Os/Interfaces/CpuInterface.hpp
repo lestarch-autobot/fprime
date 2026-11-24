@@ -2,11 +2,10 @@
 // \title Os/Interfaces/CpuInterface.hpp
 // \brief pure-virtual interface implemented by Os::Cpu implementations
 // ======================================================================
-// Included before the guard: Os/Cpu.hpp includes the selected implementation, which includes this file
-#include <Os/Cpu.hpp>
-
 #ifndef OS_INTERFACES_CPUINTERFACE_HPP_
 #define OS_INTERFACES_CPUINTERFACE_HPP_
+
+#include <Os/Interfaces/CpuUserInterface.hpp>
 
 namespace Os {
 

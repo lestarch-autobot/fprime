@@ -2,11 +2,10 @@
 // \title Os/Interfaces/FileInterface.hpp
 // \brief pure-virtual interface implemented by Os::File implementations
 // ======================================================================
-// Included before the guard: Os/File.hpp includes the selected implementation, which includes this file
-#include <Os/File.hpp>
-
 #ifndef OS_INTERFACES_FILEINTERFACE_HPP_
 #define OS_INTERFACES_FILEINTERFACE_HPP_
+
+#include <Os/Interfaces/FileUserInterface.hpp>
 
 namespace Os {
 

@@ -2,11 +2,10 @@
 // \title Os/Interfaces/TaskInterface.hpp
 // \brief pure-virtual interface implemented by Os::Task implementations
 // ======================================================================
-// Included before the guard: Os/Task.hpp includes the selected implementation, which includes this file
-#include <Os/Task.hpp>
-
 #ifndef OS_INTERFACES_TASKINTERFACE_HPP_
 #define OS_INTERFACES_TASKINTERFACE_HPP_
+
+#include <Os/Interfaces/TaskUserInterface.hpp>
 
 namespace Os {
 

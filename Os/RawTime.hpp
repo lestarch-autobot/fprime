@@ -8,33 +8,33 @@
 #include <Fw/FPrimeBasicTypes.hpp>
 #include <Fw/Time/TimeInterval.hpp>
 #include <Fw/Types/Serializable.hpp>
+#include <Os/Interfaces/RawTimeUserInterface.hpp>
 #include <Os/Os.hpp>
 #include <limits>
-#include "config/OsSelection.hpp"  // defines the Os::RawTime alias and OS_RAW_TIME_HEADER; do not remove
+#include "config/RawTimeSelection.hpp"
+#ifdef BUILD_UT
+#include <Os/test/ut/implementations/UtRawTime.hpp>
+#endif
 #include "config/RawTimeSource.hpp"
 
 namespace Os {
 
-struct RawTimeHandle {};
+template <typename T>
+class RawTimeCommon;
 
-//! \brief types shared by Os::RawTime users and implementations
-struct RawTimeUserInterface {
-    // Serialization size for RawTime objects, configured in config/FpConfig.h
-    static const FwSizeType SERIALIZED_SIZE = FW_RAW_TIME_SERIALIZATION_MAX_SIZE;
-
-    enum Status {
-        OP_OK,           //!< Operation was successful
-        OP_OVERFLOW,     //!< Operation result caused an overflow
-        INVALID_PARAMS,  //!< Parameters invalid for current platform
-        NOT_SUPPORTED,   //!< RawTime does not support operation
-        OTHER_ERROR      //!< All other errors
-    };
-};
+#ifdef BUILD_UT
+//! \brief Os::RawTime in unit test builds: wraps the implementation selected in config/RawTimeSelection.hpp in the
+//! test-only UtRawTime, so that tests may intercept its calls
+using RawTime = RawTimeCommon<Ut::RawTime::UtRawTime>;
+#else
+//! \brief Os::RawTime: the common class on the implementation selected in config/RawTimeSelection.hpp
+using RawTime = RawTimeCommon<Selected::RawTime>;
+#endif
 
 //! \brief Os::RawTime wrapper around the implementation `T` selected at compile time
 //!
 //! Holds the implementation by value and forwards every operation to it. `Os::RawTime` is this class instantiated on
-//! the implementation selected in config/OsSelection.hpp. `T` must be copyable and constructible from a
+//! the implementation selected in config/RawTimeSelection.hpp. `T` must be copyable and constructible from a
 //! `RawTimeSource`.
 template <typename T>
 class RawTimeCommon final : public RawTimeUserInterface, public Fw::Serializable {
@@ -121,13 +121,6 @@ class RawTimeCommon final : public RawTimeUserInterface, public Fw::Serializable
 };
 
 }  // namespace Os
-
-// Validate that OS_RAW_TIME_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_RAW_TIME_HEADER
-#error "OS_RAW_TIME_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
-#include OS_RAW_TIME_HEADER
 
 namespace Os {
 

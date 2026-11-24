@@ -11,36 +11,26 @@
 #include <Fw/FPrimeBasicTypes.hpp>
 #include <Fw/Types/Assert.hpp>
 #include <Fw/Types/String.hpp>
+#include <Os/Interfaces/DirectoryUserInterface.hpp>
 #include <Os/Os.hpp>
-#include "config/OsSelection.hpp"  // defines the Os::Directory alias and OS_DIRECTORY_HEADER; do not remove
+#include "config/DirectorySelection.hpp"
+#ifdef BUILD_UT
+#include <Os/test/ut/implementations/UtDirectory.hpp>
+#endif
 
 namespace Os {
 
-struct DirectoryHandle {};
+template <typename T>
+class DirectoryCommon;
 
-//! \brief types and constants shared by users of Os::Directory and by its implementations
-struct DirectoryUserInterface {
-    enum Status {
-        OP_OK,           //!<  Operation was successful
-        DOESNT_EXIST,    //!<  Directory doesn't exist
-        NO_PERMISSION,   //!<  No permission to read directory
-        NOT_OPENED,      //!<  Directory hasn't been opened yet
-        NOT_DIR,         //!<  Path is not a directory
-        NO_MORE_FILES,   //!<  Directory stream has no more files
-        FILE_LIMIT,      //!<  Directory has more files than can be read
-        BAD_DESCRIPTOR,  //!<  Directory stream descriptor is invalid
-        ALREADY_EXISTS,  //!<  Directory already exists
-        NOT_SUPPORTED,   //!<  Operation is not supported by the current implementation
-        OTHER_ERROR,     //!<  A catch-all for other errors. Have to look in implementation-specific code
-    };
-
-    enum OpenMode {
-        READ,               //!<  Error if directory doesn't exist
-        CREATE_IF_MISSING,  //!<  Create directory if it doesn't exist
-        CREATE_EXCLUSIVE,   //!<  Create directory and error if it already exists
-        MAX_OPEN_MODE       //!<  Maximum value of OpenMode
-    };
-};
+#ifdef BUILD_UT
+//! \brief Os::Directory in unit test builds: wraps the implementation selected in config/DirectorySelection.hpp in the
+//! test-only UtDirectory, so that tests may intercept its calls
+using Directory = DirectoryCommon<Ut::Directory::UtDirectory>;
+#else
+//! \brief Os::Directory: the common class on the implementation selected in config/DirectorySelection.hpp
+using Directory = DirectoryCommon<Selected::Directory>;
+#endif
 
 //! \brief Directory class
 //!
@@ -163,13 +153,6 @@ class DirectoryCommon final : public DirectoryUserInterface {
 };
 
 }  // namespace Os
-
-// Validate that OS_DIRECTORY_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_DIRECTORY_HEADER
-#error "OS_DIRECTORY_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
-#include OS_DIRECTORY_HEADER
 
 namespace Os {
 

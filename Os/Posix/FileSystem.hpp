@@ -2,10 +2,9 @@
 // \title Os/Posix/FileSystem.hpp
 // \brief Posix FileSystem definitions for Os::FileSystem
 // ======================================================================
-// Included before the guard: the interface header may itself include this file through config/OsSelection.hpp
-#include <Os/Interfaces/FileSystemInterface.hpp>
 #ifndef OS_POSIX_FILESYSTEM_HPP
 #define OS_POSIX_FILESYSTEM_HPP
+#include <Os/Interfaces/FileSystemInterface.hpp>
 
 namespace Os {
 namespace Posix {
