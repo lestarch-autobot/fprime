@@ -15,6 +15,7 @@ if (NOT TARGET Svc_WasmSequencer)
 endif()
 
 # Add subdirectories for the Ref project specific components
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/config/")
 add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/PingReceiver/")
 add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/RecvBuffApp/")
 add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/SendBuffApp/")

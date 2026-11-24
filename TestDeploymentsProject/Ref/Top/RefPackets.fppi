@@ -1,8 +1,6 @@
 telemetry packets RefPackets {
 
   packet CDH id 1 group 1 {
-    CdhCore.cmdDisp.CommandsDispatched
-
     FileHandling.fileUplink.FilesReceived
     FileHandling.fileUplink.FilesReceivedFailed
     FileHandling.fileUplink.PacketsReceived
@@ -23,8 +21,8 @@ telemetry packets RefPackets {
     ComCcsds.commsBufferManager.TotalBuffs
     ComCcsds.commsBufferManager.CurrBuffs
     ComCcsds.commsBufferManager.HiBuffs
-    #CdhCore.tlmSend.GroupConfigs
-    #CdhCore.tlmSend.SectionEnabled
+    CdhCore.tlmSend.GroupConfigs
+    CdhCore.tlmSend.SectionEnabled
 
     rateGroup1Comp.RgMaxTime
     rateGroup2Comp.RgMaxTime
@@ -301,6 +299,14 @@ telemetry packets RefPackets {
     #DpCompression.dpZLibCompressorBufferManager.NoBuffs
     #DpCompression.dpZLibCompressorBufferManager.EmptyBuffs
   #}
+
+  packet TpkA id 60 group 1 {
+    CdhCore.cmdDisp.CommandsDispatched
+  }
+
+  packet TpkB id 61 group 1 {
+    CdhCore.cmdDisp.CommandsDispatched
+  }
 
 } omit {
   CdhCore.cmdDisp.CommandErrors
