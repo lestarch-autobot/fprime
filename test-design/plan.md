@@ -4,8 +4,8 @@
 - UUT: `Svc.TlmPacketizer`; SHA in the manifest.
 - Venue-neutral by ruling (ledger 14): tests use only `tlmSend`, `cmdDisp` and `version` commands, events and channels. Run in both venues: fprime-zephyr-reference on bench hardware and Ref on a Linux host; one record per venue.
 - Test deployment delta, uncommitted to the UUT, same packet-set change in every venue: `cmdDisp.CommandsDispatched` is removed from the packet that holds it today (`Health` id 1 in fprime-zephyr-reference, `CDH` id 1 in Ref) and listed in exactly two new packets, `TpkA` id 60 and `TpkB` id 61, both in group 1. The channel has two memberships and no other.
-- Delta per venue, fprime-zephyr-reference @ 6444eb6: `tlmSend` is already `Svc.TlmPacketizer` (with `IGNORE_OMIT_LIST`); `MAX_PACKETIZER_PACKETS` 5 → 7; `MAX_PACKETIZER_CHANNELS` 40 unchanged; `MAX_PACKETIZER_MEMBERSHIPS` new = 26 (25 entries today − 1 + 2), confirmed from the build's sizing check.
-- Delta per venue, Ref: `tlmSend` switched from `Svc.TlmChan` to `Svc.TlmPacketizer` with a `setPacketList` call; 37 packets and 172 memberships (171 − 1 + 2), under the defaults 50 and 200; counts confirmed from the build's sizing check.
+- Delta per venue, fprime-zephyr-reference @ 6444eb6: `tlmSend` is already `Svc.TlmPacketizer` (with `IGNORE_OMIT_LIST`); `MAX_PACKETIZER_PACKETS` 5 → 7; `MAX_PACKETIZER_CHANNELS` 40 unchanged; `MAX_PACKETIZER_MEMBERSHIPS` new = 31 (30 entries today − 1 + 2) and 30 channels listed, counted from the packet set; the build's sizing check confirms them at the first venue build.
+- Delta per venue, Ref: `tlmSend` switched from `Svc.TlmChan` to `Svc.TlmPacketizer` with a `setPacketList` call given `IGNORE_OMIT_LIST` (build option `FPRIME_TLM_PACKETIZER_OMIT_LIST=OFF`), as the other venue does; `tlmSend.GroupConfigs` and `tlmSend.SectionEnabled` listed in packet `CDH`; 37 packets, 178 memberships (175 − 1 + 2 + 2) and 177 channels, under the defaults 50 and 200; counts confirmed from the build's sizing check. With the omit list counted the same packet set needs 202 channel slots (177 listed + 25 omitted).
 - Out of scope: the build-time sizing check (pytest in `cmake/test`, not a system test); rate logic and override persistence (unchanged).
 
 ## 1 Entry gates
@@ -33,7 +33,7 @@ Covers:    —
 Setup:     Image running, ground system attached.
 Procedure: MARK(10); VERSION(ALL); MARK(11).
 Window:    Marker(id=10) … Marker(id=11)
-Pass rule: complete: STD.
+Pass rule: complete: STD. all_of: event version.FrameworkVersion count >= 1.
 Evidence:  Version events equal to the manifest's describe strings.
 Planted faults:none
 
