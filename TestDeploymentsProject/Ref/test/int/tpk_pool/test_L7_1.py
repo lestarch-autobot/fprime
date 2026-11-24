@@ -18,6 +18,6 @@ def test_L7_1(window, send, bench, check, require, fth_plan):
         check("cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
               lambda h: fth_plan.registry.helpers["channel_tracks_dispatch_count"](h, tick_s=1.0, min_samples=2))
         send("cmdDisp.CMD_NO_OP", [])
-        bench.wait_samples("cmdDisp.CommandsDispatched", 1)
+        bench.wait(2.5)  # wait 2 ticks
         send("cmdDisp.CMD_NO_OP", [])
-        bench.wait_samples("cmdDisp.CommandsDispatched", 1)
+        bench.wait(2.5)  # wait 2 ticks
