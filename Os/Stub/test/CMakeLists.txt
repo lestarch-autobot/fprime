@@ -14,17 +14,6 @@ add_compile_options(
     -Wno-conversion
 )
 
-# Test support for Os::File: an interceptor answering every Os::File call from injectable static data
-register_fprime_module(Os_Stub_Test_File
-  SOURCES
-    "${CMAKE_CURRENT_LIST_DIR}/File.cpp"
-  HEADERS
-    "${CMAKE_CURRENT_LIST_DIR}/File.hpp"
-  DEPENDS
-    Fw_Types
-    Os
-)
-
 #### File Stub Testing ####
 register_fprime_ut(
     StubFileTest
@@ -33,7 +22,6 @@ register_fprime_ut(
     "${CMAKE_CURRENT_LIST_DIR}/../../test/ut/file/CommonTests.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/../../test/ut/file/FileRules.cpp"
   DEPENDS
-    Os_Stub_Test_File
     Fw_Types
     Os
     Os_Test_File_SyntheticFileSystem
@@ -111,6 +99,18 @@ register_fprime_ut(
   DEPENDS
     Os
     Fw_Types
+    STest
+)
+
+#### CountingSemaphore Interface Testing ####
+register_fprime_ut(
+    StubCountingSemaphoreTest
+  SOURCES
+    "${CMAKE_CURRENT_LIST_DIR}/ut/StubCountingSemaphoreTests.cpp"
+  DEPENDS
+    Os
+    Fw_Types
+    Fw_Time
     STest
 )
 

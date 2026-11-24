@@ -12,7 +12,6 @@
 #include <limits>
 #include <string>
 
-#include "Os/Stub/test/File.hpp"
 #include "STest/Pick/Pick.hpp"
 #include "Svc/DpCompressProc/test/ut/Rules/ProcRequest.hpp"
 #include "Svc/DpCompressProc/test/ut/Rules/Testers.hpp"

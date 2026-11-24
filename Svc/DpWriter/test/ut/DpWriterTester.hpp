@@ -7,11 +7,36 @@
 #ifndef Svc_DpWriterTester_HPP
 #define Svc_DpWriterTester_HPP
 
+#include "Os/test/ut/interceptors/FileTestInterceptor.hpp"
 #include "Svc/DpWriter/DpWriter.hpp"
 #include "Svc/DpWriter/DpWriterGTestBase.hpp"
 #include "Svc/DpWriter/test/ut/AbstractState.hpp"
 
 namespace Svc {
+
+//! Replaces the Os::File calls DpWriter makes (open, write, close) with injectable results; never calls `real`
+class DpWriterTestFile : public Os::Test::FileTestInterceptor {
+  public:
+    Status open(Os::FileInterface& real, const char* path, Mode mode, OverwriteType overwrite) override;
+    void close(Os::FileInterface& real) override;
+    Status write(Os::FileInterface& real, const U8* buffer, FwSizeType& size, WaitType wait) override;
+
+    //! The one instance, installed for the whole test program
+    static DpWriterTestFile data;
+
+    //! File pointer
+    FwSizeType pointer = 0;
+    //! Status to return from open
+    Os::File::Status openStatus = Os::File::Status::OP_OK;
+    //! Status to return from write
+    Os::File::Status writeStatus = Os::File::Status::OP_OK;
+    //! Buffer filled by write calls; when null, write reports writeSizeResult bytes written
+    U8* writeResult = nullptr;
+    //! Size of the writeResult buffer
+    FwSizeType writeResultSize = 0;
+    //! Size reported by write when writeResult is null
+    FwSizeType writeSizeResult = 0;
+};
 
 class DpWriterTester : public DpWriterGTestBase {
   public:

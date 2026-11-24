@@ -9,7 +9,6 @@
 #include <Fw/Com/ComBuffer.hpp>
 #include <Fw/Com/ComPacket.hpp>
 #include <Fw/Test/UnitTest.hpp>
-#include <Os/Stub/test/File.hpp>
 #include <Svc/PrmDb/test/ut/PrmDbTester.hpp>
 #include <cstdio>
 #include "Utils/Hash/Hash.hpp"
@@ -113,8 +112,8 @@ void PrmDbTester::runNominalPopulate() {
 }
 
 void PrmDbTester::runNominalSaveFile() {
-    Os::Stub::File::Test::StaticData::setWriteResult(m_io_data, sizeof m_io_data);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setWriteResult(m_io_data, sizeof m_io_data);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
     // fill with data
     this->runNominalPopulate();
     // save the data
@@ -141,8 +140,8 @@ void PrmDbTester::runNominalLoadFile() {
     // Preconditions to populate the write file
     this->runNominalSaveFile();
 
-    Os::Stub::File::Test::StaticData::setReadResult(m_io_data, Os::Stub::File::Test::StaticData::data.pointer);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setReadResult(m_io_data, m_fileInterceptor.pointer);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
 
     // save the data
     this->clearEvents();
@@ -347,7 +346,7 @@ void PrmDbTester::runFileReadError() {
 
     this->clearEvents();
     // Loop through all size errors testing each
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
     this->m_errorType = FILE_SIZE_ERROR;
 
     FwSizeType za = 0;
@@ -475,8 +474,8 @@ void PrmDbTester::runFileWriteError() {
     // File open error
     this->clearEvents();
     // register interceptor
-    Os::Stub::File::Test::StaticData::setWriteResult(m_io_data, sizeof m_io_data);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::DOESNT_EXIST);
+    m_fileInterceptor.setWriteResult(m_io_data, sizeof m_io_data);
+    m_fileInterceptor.setNextStatus(Os::File::DOESNT_EXIST);
     // dispatch command
     this->sendCmd_PRM_SAVE_FILE(0, 12);
     Fw::QueuedComponentBase::MsgDispatchStatus stat = this->m_impl.doDispatch();
@@ -496,7 +495,7 @@ void PrmDbTester::runFileWriteError() {
     FwSizeType zb = 0;
 
     // Loop through all size errors testing each
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
     this->m_errorType = FILE_SIZE_ERROR;
     for (FwSizeType i = 0; i < 4; i++) {
         clearEvents();
@@ -921,8 +920,8 @@ void PrmDbTester::runPrmFileLoadNominal() {
     EXPECT_EQ(testVal2, activeVal2Update);
 
     // Send PRM_LOAD_FILE command with merge=true to merge with active database
-    Os::Stub::File::Test::StaticData::setReadResult(m_io_data, Os::Stub::File::Test::StaticData::data.pointer);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setReadResult(m_io_data, m_fileInterceptor.pointer);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
     this->clearEvents();
     this->clearHistory();
     this->sendCmd_PRM_LOAD_FILE(0, 10, file, PrmDb_Merge::MERGE);
@@ -1067,8 +1066,8 @@ void PrmDbTester::runPrmFileLoadWithErrors() {
 
     // Send PRM_LOAD_FILE command with merge=true to merge with active database
     // but with a file open error
-    Os::Stub::File::Test::StaticData::setReadResult(m_io_data, Os::Stub::File::Test::StaticData::data.pointer);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::DOESNT_EXIST);
+    m_fileInterceptor.setReadResult(m_io_data, m_fileInterceptor.pointer);
+    m_fileInterceptor.setNextStatus(Os::File::DOESNT_EXIST);
     this->clearEvents();
     this->clearHistory();
     this->sendCmd_PRM_LOAD_FILE(0, 10, file, PrmDb_Merge::MERGE);
@@ -1130,7 +1129,7 @@ void PrmDbTester::runPrmFileLoadEmptyFileName() {
     // A subsequent load with a valid path is still accepted (reaches file I/O)
     this->clearEvents();
     this->clearHistory();
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::DOESNT_EXIST);
+    m_fileInterceptor.setNextStatus(Os::File::DOESNT_EXIST);
     this->sendCmd_PRM_LOAD_FILE(0, 11, Fw::String("/prm/good.prm"), PrmDb_Merge::RESET);
     dispatchStatus = this->m_impl.doDispatch();
     EXPECT_EQ(dispatchStatus, Fw::QueuedComponentBase::MSG_DISPATCH_OK);
@@ -1140,7 +1139,7 @@ void PrmDbTester::runPrmFileLoadEmptyFileName() {
     ASSERT_EVENTS_PrmFileReadError_SIZE(1);
     ASSERT_EVENTS_PrmFileReadError(0, PrmDb_PrmReadError::OPEN, 0, Os::File::DOESNT_EXIST);
     EXPECT_EQ(this->m_impl.m_state, PrmDbFileLoadState::IDLE);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
 }
 
 void PrmDbTester::runPrmFileLoadSandboxViolation() {
@@ -1195,7 +1194,7 @@ void PrmDbTester::runPrmFileLoadSandboxViolation() {
     // 2. A path inside the sandbox passes containment and reaches file I/O
     this->clearEvents();
     this->clearHistory();
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::DOESNT_EXIST);
+    m_fileInterceptor.setNextStatus(Os::File::DOESNT_EXIST);
     this->sendCmd_PRM_LOAD_FILE(0, 11, Fw::String("/prm/good.prm"), PrmDb_Merge::RESET);
     dispatchStatus = this->m_impl.doDispatch();
     EXPECT_EQ(dispatchStatus, Fw::QueuedComponentBase::MSG_DISPATCH_OK);
@@ -1204,7 +1203,7 @@ void PrmDbTester::runPrmFileLoadSandboxViolation() {
     ASSERT_CMD_RESPONSE(0, PrmDbImpl::OPCODE_PRM_LOAD_FILE, 11, Fw::CmdResponse::EXECUTION_ERROR);
     ASSERT_EVENTS_PrmFileReadError_SIZE(1);
     ASSERT_EVENTS_PrmFileReadError(0, PrmDb_PrmReadError::OPEN, 0, Os::File::DOESNT_EXIST);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
 }
 
 void PrmDbTester::runPrmFileLoadIllegal() {
@@ -1353,7 +1352,7 @@ void PrmDbTester::runPrmFileLoadIllegal() {
 
     this->clearEvents();
     this->clearHistory();
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::DOESNT_EXIST);
+    m_fileInterceptor.setNextStatus(Os::File::DOESNT_EXIST);
     this->sendCmd_PRM_LOAD_FILE(0, 17, Fw::String("/prm/missing.prm"), PrmDb_Merge::RESET);
     dispatchStatus = this->m_impl.doDispatch();
     EXPECT_EQ(dispatchStatus, Fw::QueuedComponentBase::MSG_DISPATCH_OK);
@@ -1362,7 +1361,7 @@ void PrmDbTester::runPrmFileLoadIllegal() {
     ASSERT_EVENTS_PrmFileReadError(0, PrmDb_PrmReadError::OPEN, 0, Os::File::DOESNT_EXIST);
     ASSERT_EVENTS_PrmDbFileLoadFailed_SIZE(1);
     EXPECT_EQ(this->m_impl.m_state, PrmDbFileLoadState::IDLE);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
 
     // 3.1 Attempt PRM_COMMIT_STAGED in IDLE state
     this->clearEvents();
@@ -1443,8 +1442,8 @@ void PrmDbTester::runShorterSaveDoesNotCorrupt() {
     }
     ASSERT_EVENTS_PrmIdAdded_SIZE(3);
 
-    Os::Stub::File::Test::StaticData::setWriteResult(m_io_data, sizeof m_io_data);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setWriteResult(m_io_data, sizeof m_io_data);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
     this->clearEvents();
     this->clearHistory();
     this->sendCmd_PRM_SAVE_FILE(0, 12);
@@ -1457,7 +1456,7 @@ void PrmDbTester::runShorterSaveDoesNotCorrupt() {
     ASSERT_EVENTS_PrmFileSaveComplete(0, 3);
 
     // Record how many bytes the 3-parameter save produced.
-    const FwSizeType longWriteSize = Os::Stub::File::Test::StaticData::data.pointer;
+    const FwSizeType longWriteSize = m_fileInterceptor.pointer;
     ASSERT_GT(longWriteSize, static_cast<FwSizeType>(0));
 
     // -------------------------------------------------------------------
@@ -1478,8 +1477,8 @@ void PrmDbTester::runShorterSaveDoesNotCorrupt() {
     ASSERT_EVENTS_PrmIdAdded_SIZE(1);
 
     // Reset the write pointer but leave the buffer contents intact.
-    Os::Stub::File::Test::StaticData::setWriteResult(m_io_data, sizeof m_io_data);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setWriteResult(m_io_data, sizeof m_io_data);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
     this->clearEvents();
     this->clearHistory();
     this->sendCmd_PRM_SAVE_FILE(0, 13);
@@ -1491,7 +1490,7 @@ void PrmDbTester::runShorterSaveDoesNotCorrupt() {
     ASSERT_EVENTS_PrmFileSaveComplete_SIZE(1);
     ASSERT_EVENTS_PrmFileSaveComplete(0, 1);
 
-    const FwSizeType shortWriteSize = Os::Stub::File::Test::StaticData::data.pointer;
+    const FwSizeType shortWriteSize = m_fileInterceptor.pointer;
 
     // Confirm the precondition: the second save must be strictly smaller.
     // If this fires, the test is misconfigured — the two saves must differ
@@ -1512,8 +1511,8 @@ void PrmDbTester::runShorterSaveDoesNotCorrupt() {
     // the header value, and PrmFileBadCrc would fire instead.
     // -------------------------------------------------------------------
     this->m_impl.clearDb(PrmDbType::DB_ACTIVE);
-    Os::Stub::File::Test::StaticData::setReadResult(m_io_data, shortWriteSize);
-    Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
+    m_fileInterceptor.setReadResult(m_io_data, shortWriteSize);
+    m_fileInterceptor.setNextStatus(Os::File::OP_OK);
     this->clearEvents();
 
     this->m_impl.readParamFile();
@@ -1540,6 +1539,75 @@ void PrmDbTester::runShorterSaveDoesNotCorrupt() {
 
 PrmDbTester* PrmDbTester::PrmDbTestFile::s_tester = nullptr;
 
+void PrmDbTester::PrmDbTestFile::setNextStatus(Os::File::Status status) {
+    this->m_nextStatus = status;
+}
+
+void PrmDbTester::PrmDbTestFile::setReadResult(U8* buffer, FwSizeType size) {
+    this->m_readResult = buffer;
+    this->m_readResultSize = size;
+}
+
+void PrmDbTester::PrmDbTestFile::setWriteResult(U8* buffer, FwSizeType size) {
+    this->m_writeResult = buffer;
+    this->m_writeResultSize = size;
+}
+
+Os::File::Status PrmDbTester::PrmDbTestFile::open(Os::FileInterface& /*real*/,
+                                                  const char* /*path*/,
+                                                  Mode /*mode*/,
+                                                  OverwriteType /*overwrite*/) {
+    this->pointer = 0;
+    return this->m_nextStatus;
+}
+
+void PrmDbTester::PrmDbTestFile::close(Os::FileInterface& /*real*/) {}
+
+Os::File::Status PrmDbTester::PrmDbTestFile::size(Os::FileInterface& /*real*/, FwSizeType& size_result) {
+    size_result = this->m_readResultSize;
+    return this->m_nextStatus;
+}
+
+Os::File::Status PrmDbTester::PrmDbTestFile::position(Os::FileInterface& /*real*/, FwSizeType& position_result) {
+    position_result = this->pointer;
+    return this->m_nextStatus;
+}
+
+Os::File::Status PrmDbTester::PrmDbTestFile::preallocate(Os::FileInterface& /*real*/,
+                                                         FwSizeType /*offset*/,
+                                                         FwSizeType /*length*/) {
+    return this->m_nextStatus;
+}
+
+Os::File::Status PrmDbTester::PrmDbTestFile::seek(Os::FileInterface& /*real*/,
+                                                  FwSignedSizeType offset,
+                                                  SeekType /*seekType*/) {
+    this->pointer = static_cast<FwSizeType>(offset);
+    return this->m_nextStatus;
+}
+
+Os::File::Status PrmDbTester::PrmDbTestFile::flush(Os::FileInterface& /*real*/) {
+    return this->m_nextStatus;
+}
+
+Os::File::Status PrmDbTester::PrmDbTestFile::fakeRead(U8* buffer, FwSizeType& size) {
+    FW_ASSERT(this->m_readResult != nullptr);
+    FW_ASSERT(this->pointer <= this->m_readResultSize);
+    size = FW_MIN(size, this->m_readResultSize - this->pointer);
+    (void)::memcpy(buffer, this->m_readResult + this->pointer, static_cast<size_t>(size));
+    this->pointer += size;
+    return this->m_nextStatus;
+}
+
+Os::File::Status PrmDbTester::PrmDbTestFile::fakeWrite(const U8* buffer, FwSizeType& size) {
+    FW_ASSERT(this->m_writeResult != nullptr);
+    FW_ASSERT(this->pointer <= this->m_writeResultSize);
+    size = FW_MIN(size, this->m_writeResultSize - this->pointer);
+    (void)::memcpy(this->m_writeResult + this->pointer, buffer, static_cast<size_t>(size));
+    this->pointer += size;
+    return this->m_nextStatus;
+}
+
 void PrmDbTester::PrmDbTestFile::setTester(Svc::PrmDbTester* tester) {
     ASSERT_NE(tester, nullptr);
     s_tester = tester;
@@ -1550,7 +1618,7 @@ Os::File::Status PrmDbTester::PrmDbTestFile::read(Os::FileInterface& real,
                                                   FwSizeType& size,
                                                   Os::File::WaitType wait) {
     EXPECT_NE(s_tester, nullptr);
-    Os::File::Status status = this->Os::Stub::File::Test::TestFileInterceptor::read(real, buffer, size, wait);
+    Os::File::Status status = this->fakeRead(buffer, size);
     if (s_tester->m_waits == 0) {
         switch (s_tester->m_errorType) {
             case FILE_STATUS_ERROR:
@@ -1578,7 +1646,7 @@ Os::File::Status PrmDbTester::PrmDbTestFile::write(Os::FileInterface& real,
                                                    FwSizeType& size,
                                                    Os::File::WaitType wait) {
     EXPECT_NE(s_tester, nullptr);
-    Os::File::Status status = this->Os::Stub::File::Test::TestFileInterceptor::write(real, buffer, size, wait);
+    Os::File::Status status = this->fakeWrite(buffer, size);
     if (s_tester->m_waits == 0) {
         switch (s_tester->m_errorType) {
             case FILE_STATUS_ERROR:
