@@ -14,13 +14,8 @@
 #include "Fw/Types/Assert.hpp"
 #include "config/OsSelection.hpp"  // defines the Os::Queue alias and OS_QUEUE_HEADER; do not remove
 namespace Os {
-// Forward declarations for registry
-template <typename T>
-class QueueCommon;
-template <typename Q>
-class QueueRegistryCommon;
-//! Queue registry for the Os::Queue selected in config/OsSelection.hpp
-using QueueRegistry = QueueRegistryCommon<Queue>;
+// Forward declaration for registry
+class QueueRegistry;
 
 //! \brief QueueHandle parent class
 class QueueHandle {};
@@ -196,10 +191,15 @@ class QueueCommon final : public QueueUserInterface {
     //! \brief set QueueRegistry for tracking queues
     //!
     //! \param registry: registry to set
-    static void setRegistry(QueueRegistryCommon<QueueCommon>* registry);
+    static void setRegistry(QueueRegistry* registry);
 
   private:
-    static QueueRegistryCommon<QueueCommon>* s_queueRegistry;  //!< Queue registry store
+    static QueueRegistry* s_queueRegistry;  //!< Queue registry store
+
+    //! \brief register a queue of the type selected in config/OsSelection.hpp (Os::Queue)
+    static void registerQueue(QueueRegistry& registry, Queue* queue);
+    //! \brief queues of any other type are not tracked: the registry handles Os::Queue only
+    static void registerQueue(QueueRegistry& registry, const void* queue);
 #endif
 
     // This section is used to store the implementation-defined file handle. To Os::File and fprime, this type is
@@ -213,22 +213,19 @@ class QueueCommon final : public QueueUserInterface {
 //!
 //! The QueueRegistry is used to track queues in the system. There is intended to be a single, global, queue registry
 //! across the system. It is used to track queues and will receive a callback on the creation of each queue.
-//!
-//! \tparam Q: queue type tracked by this registry. Os::QueueRegistry tracks Os::Queue.
-template <typename Q>
-class QueueRegistryCommon {
+class QueueRegistry {
   public:
     //! Default QueueRegistry
-    QueueRegistryCommon() = default;
+    QueueRegistry() = default;
     //! Default ~QueueRegistry
-    virtual ~QueueRegistryCommon() = default;
+    virtual ~QueueRegistry() = default;
 
     //! \brief queue registry callback
     //!
     //! Register the queue with this queue registry. Must be implemented by QueueRegistry implementations.
     //!
     //! \param queue: queue being registered
-    virtual void registerQueue(Q* queue) = 0;  //!< method called by queue init() methods to register a new queue
+    virtual void registerQueue(Queue* queue) = 0;  //!< method called by queue init() methods to register a new queue
 };
 }  // namespace Os
 // Validate that OS_QUEUE_HEADER was defined by config/OsSelection.hpp
@@ -244,7 +241,7 @@ template <typename T>
 FwSizeType QueueCommon<T>::s_queueCount = 0;
 #if FW_QUEUE_REGISTRATION
 template <typename T>
-QueueRegistryCommon<QueueCommon<T>>* QueueCommon<T>::s_queueRegistry = nullptr;
+QueueRegistry* QueueCommon<T>::s_queueRegistry = nullptr;
 #endif
 
 template <typename T>
@@ -273,7 +270,7 @@ QueueUserInterface::Status QueueCommon<T>::create(FwEnumStoreType id,
         QueueCommon::s_queueCount++;
 #if FW_QUEUE_REGISTRATION
         if (QueueCommon::s_queueRegistry != nullptr) {
-            QueueCommon::s_queueRegistry->registerQueue(this);
+            QueueCommon::registerQueue(*QueueCommon::s_queueRegistry, this);
         }
 #endif
     }
@@ -389,7 +386,15 @@ Os::Mutex& QueueCommon<T>::getStaticMutex() {
 
 #if FW_QUEUE_REGISTRATION
 template <typename T>
-void QueueCommon<T>::setRegistry(QueueRegistryCommon<QueueCommon<T>>* registry) {
+void QueueCommon<T>::registerQueue(QueueRegistry& registry, Queue* queue) {
+    registry.registerQueue(queue);
+}
+
+template <typename T>
+void QueueCommon<T>::registerQueue(QueueRegistry& registry, const void* queue) {}
+
+template <typename T>
+void QueueCommon<T>::setRegistry(QueueRegistry* registry) {
     ScopeLock lock(QueueCommon::getStaticMutex());
     QueueCommon::s_queueRegistry = registry;
 }

@@ -5,6 +5,7 @@
 #include "Os/test/ut/queue/CommonTests.hpp"
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <type_traits>
 #include "Fw/Types/String.hpp"
 #include "Os/Queue.hpp"
 #include "Os/test/ConcurrentRule.hpp"
@@ -117,7 +118,7 @@ void Tester::shadow_receive_unblock() {
     this->shadow.receive_block.priority = nullptr;
 }
 
-void Tester::registerQueue(Os::Test::QueueUnderTest* q) {
+void Tester::registerQueue(Os::Queue* q) {
     this->m_all_queues.push_back(q);
 }
 
@@ -241,7 +242,12 @@ TEST(BasicRules, Create) {
     // Repetitive create
     create_rule.action(tester);
 #if FW_QUEUE_REGISTRATION
-    EXPECT_GT(tester.m_all_queues.size(), 0) << "No queues were registered.";
+    // Only queues of the selected Os::Queue type are tracked by the registry
+    if (std::is_same<Os::Test::QueueUnderTest, Os::Queue>::value) {
+        EXPECT_GT(tester.m_all_queues.size(), 0) << "No queues were registered.";
+    } else {
+        EXPECT_EQ(tester.m_all_queues.size(), 0) << "Queue of a non-selected type was registered.";
+    }
 #endif
 }
 

@@ -1,6 +1,7 @@
 
 
 #include <sys/time.h>
+#include <type_traits>
 #include "Fw/Types/String.hpp"
 #include "RulesHeaders.hpp"
 #include "STest/Pick/Pick.hpp"
@@ -46,7 +47,13 @@ void Os::Test::Task::Tester::Start::action(Os::Test::Task::Tester& state  //!< T
 
     Fw::String name("StartRuleTask");
     new_task->start(&TestTaskInfo::standard_task);
-    ASSERT_EQ(state.m_last_task, &new_task->m_task) << "New task not registered";
+    // Only tasks of the selected Os::Task type are tracked by the registry
+    if (std::is_same<Os::Test::TaskUnderTest, Os::Task>::value) {
+        ASSERT_EQ(static_cast<const void*>(state.m_last_task), static_cast<const void*>(&new_task->m_task))
+            << "New task not registered";
+    } else {
+        ASSERT_EQ(state.m_last_task, nullptr) << "Task of a non-selected type was registered";
+    }
     // Poke the task into the MIDDLE state
     new_task->signal();
     wait_for_state_with_timeout(*new_task, TestTaskInfo::MIDDLE, STAGE_TIMEOUT_MS);

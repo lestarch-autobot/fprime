@@ -71,14 +71,14 @@ struct TestTaskInfo {
     static void joining_task(void* argument);
 };
 
-struct Tester : public Os::TaskRegistryCommon<Os::Test::TaskUnderTest> {
+struct Tester : public Os::TaskRegistry {
   private:
     static constexpr U32 MAX_THREAD_COUNT = 100;
     static constexpr U32 MAX_DELAY_MICRO_SECONDS = 10000;
 
     std::vector<std::shared_ptr<TestTaskInfo>> m_tasks;
-    Os::Test::TaskUnderTest* m_last_task = nullptr;
-    std::vector<Os::Test::TaskUnderTest*> m_all_tasks;
+    Os::Task* m_last_task = nullptr;
+    std::vector<Os::Task*> m_all_tasks;
 
   public:
     //! Constructor
@@ -93,13 +93,16 @@ struct Tester : public Os::TaskRegistryCommon<Os::Test::TaskUnderTest> {
 
     //! Add task to test registry
     //! \param task: task to add
-    void addTask(Os::Test::TaskUnderTest* task) override;
+    void addTask(Os::Task* task) override;
 
     //! Remove task to test registry
     //! \param task: task to add
-    void removeTask(Os::Test::TaskUnderTest* task) override;
+    void removeTask(Os::Task* task) override;
 
     static Tester* s_current_registry;
+
+    //! Tasks started by the tester. Tracked here, not through the registry, as the registry only handles Os::Task
+    std::vector<Os::Test::TaskUnderTest*> m_started_tasks;
 
   public:
     static void resetNumTasks() { Os::Test::TaskUnderTest::s_numTasks = 0; }

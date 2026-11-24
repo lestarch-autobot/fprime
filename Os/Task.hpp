@@ -29,12 +29,7 @@ struct Tester;
 namespace Os {
 
 // Forward declarations
-template <typename T>
-class TaskCommon;
-template <typename K>
-class TaskRegistryCommon;
-//! Task registry for the Os::Task selected in config/OsSelection.hpp
-using TaskRegistry = TaskRegistryCommon<Task>;
+class TaskRegistry;
 
 //! Task handle representation
 class TaskHandle {};
@@ -283,7 +278,7 @@ class TaskCommon final : public TaskUserInterface {
 
     //! \brief register a task registry to track Threads
     //!
-    static void registerTaskRegistry(TaskRegistryCommon<TaskCommon>* registry);
+    static void registerTaskRegistry(TaskRegistry* registry);
 
     //! \brief get a reference to singleton
     //! \return reference to singleton
@@ -299,9 +294,9 @@ class TaskCommon final : public TaskUserInterface {
     static Status delay(const Fw::TimeInterval& interval);
 
   private:
-    static TaskRegistryCommon<TaskCommon>* s_taskRegistry;  //!< Pointer to registered task registry
-    static FwSizeType s_numTasks;                           //!< Stores the number of tasks created.
-    static Mutex s_taskMutex;                               //!< Guards s_numTasks
+    static TaskRegistry* s_taskRegistry;  //!< Pointer to registered task registry
+    static FwSizeType s_numTasks;         //!< Stores the number of tasks created.
+    static Mutex s_taskMutex;             //!< Guards s_numTasks
 
     TaskString m_name;  //!< Task object name
     TaskUserInterface::State m_state = TaskCommon::NOT_STARTED;
@@ -311,6 +306,17 @@ class TaskCommon final : public TaskUserInterface {
 
     bool m_registered = false;  //!< Was this task registered
 
+    //! \brief add a task of the type selected in config/OsSelection.hpp (Os::Task)
+    //! \return true: the task was added
+    static bool addToRegistry(TaskRegistry& registry, Task* task);
+    //! \brief tasks of any other type are not tracked: the registry handles Os::Task only
+    //! \return false: the task was not added
+    static bool addToRegistry(TaskRegistry& registry, const void* task);
+    //! \brief remove a task of the type selected in config/OsSelection.hpp (Os::Task)
+    static void removeFromRegistry(TaskRegistry& registry, Task* task);
+    //! \brief tasks of any other type are never added, so there is nothing to remove
+    static void removeFromRegistry(TaskRegistry& registry, const void* task);
+
     // This section is used to store the implementation-defined file handle. To Os::File and fprime, this type is
     // opaque and thus normal allocation cannot be done. Instead, we allow the implementor to store then handle in
     // the byte-array here and set `handle` to that address for storage.
@@ -318,25 +324,21 @@ class TaskCommon final : public TaskUserInterface {
     T m_delegate;  //!< Delegate for the real implementation
 };
 
-//! \brief task registry interface
-//!
-//! \tparam K: task type tracked by this registry. Os::TaskRegistry tracks Os::Task.
-template <typename K>
-class TaskRegistryCommon {
+class TaskRegistry {
   public:
     //! \brief default task registry constructor
-    TaskRegistryCommon() = default;
+    TaskRegistry() = default;
     //! \brief default task registry constructor
-    virtual ~TaskRegistryCommon() = default;
+    virtual ~TaskRegistry() = default;
     //! \brief add supplied task to the registry
     //!
     //! \param task: pointer to task to register
-    virtual void addTask(K* task) = 0;  //!< Add a task to the registry
+    virtual void addTask(Task* task) = 0;  //!< Add a task to the registry
 
     //! \brief remove supplied task to the registry
     //!
     //! \param task: pointer to task to deregister
-    virtual void removeTask(K* task) = 0;
+    virtual void removeTask(Task* task) = 0;
 };
 }  // namespace Os
 
@@ -380,7 +382,7 @@ void TaskCommon<T>::TaskRoutineWrapper::invoke() {
 }
 
 template <typename T>
-TaskRegistryCommon<TaskCommon<T>>* TaskCommon<T>::s_taskRegistry = nullptr;
+TaskRegistry* TaskCommon<T>::s_taskRegistry = nullptr;
 template <typename T>
 FwSizeType TaskCommon<T>::s_numTasks = 0;
 template <typename T>
@@ -393,7 +395,7 @@ template <typename T>
 TaskCommon<T>::~TaskCommon() {
     // If a registry has been registered and the task has been started then remove task from the registry
     if ((TaskCommon::s_taskRegistry != nullptr) && this->m_registered) {
-        TaskCommon::s_taskRegistry->removeTask(this);
+        TaskCommon::removeFromRegistry(*TaskCommon::s_taskRegistry, this);
     }
 }
 
@@ -453,8 +455,7 @@ typename TaskCommon<T>::Status TaskCommon<T>::start(const TaskCommon<T>::Argumen
 
         // If a registry has been registered, register task to it
         if (TaskCommon::s_taskRegistry) {
-            TaskCommon::s_taskRegistry->addTask(this);
-            this->m_registered = true;
+            this->m_registered = TaskCommon::addToRegistry(*TaskCommon::s_taskRegistry, this);
         }
     }
     return status;
@@ -554,7 +555,26 @@ TaskCommon<T>& TaskCommon<T>::getSingleton() {
 }
 
 template <typename T>
-void TaskCommon<T>::registerTaskRegistry(TaskRegistryCommon<TaskCommon<T>>* registry) {
+bool TaskCommon<T>::addToRegistry(TaskRegistry& registry, Task* task) {
+    registry.addTask(task);
+    return true;
+}
+
+template <typename T>
+bool TaskCommon<T>::addToRegistry(TaskRegistry& registry, const void* task) {
+    return false;
+}
+
+template <typename T>
+void TaskCommon<T>::removeFromRegistry(TaskRegistry& registry, Task* task) {
+    registry.removeTask(task);
+}
+
+template <typename T>
+void TaskCommon<T>::removeFromRegistry(TaskRegistry& registry, const void* task) {}
+
+template <typename T>
+void TaskCommon<T>::registerTaskRegistry(TaskRegistry* registry) {
     TaskCommon::s_taskRegistry = registry;
 }
 }  // namespace Os

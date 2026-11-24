@@ -23,11 +23,11 @@ class Interface : public ::testing::Test {
     void TearDown() override { StaticData::data = StaticData(); }
 };
 
-struct QuickRegistry : Os::TaskRegistryCommon<Os::Test::TaskUnderTest> {
-    void addTask(Os::Test::TaskUnderTest* task) override { this->m_task = task; }
+struct QuickRegistry : Os::TaskRegistry {
+    void addTask(Os::Task* task) override { this->m_task = task; }
 
-    void removeTask(Os::Test::TaskUnderTest* task) override { this->m_task = nullptr; }
-    Os::Test::TaskUnderTest* m_task = nullptr;
+    void removeTask(Os::Task* task) override { this->m_task = nullptr; }
+    Os::Task* m_task = nullptr;
 };
 
 // Ensure that Os::Task properly calls the implementation constructor
@@ -108,8 +108,8 @@ TEST_F(Interface, Delay) {
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::DELAY_FN);
 }
 
-// Ensure that Os::Task properly calls the registry removal function
-TEST_F(Interface, RegistryRemove) {
+// Ensure that a task that is not of the selected Os::Task type is never handed to the registry
+TEST_F(Interface, RegistryRefusesUnselected) {
     QuickRegistry registry;
     Os::Test::TaskUnderTest::registerTaskRegistry(&registry);
     Os::Test::TaskUnderTest* task = new Os::Test::TaskUnderTest;
@@ -117,9 +117,10 @@ TEST_F(Interface, RegistryRemove) {
     Os::Task::Arguments arguments(Fw::String("Task"), &testMethod, nullptr);
     ASSERT_EQ(task->start(arguments), StaticData::data.startStatus);
     Os::Test::Task::Tester::resetNumTasks();  // Reset task count for rules-based testing
-    ASSERT_EQ(registry.m_task, task);
+    ASSERT_EQ(registry.m_task, nullptr);
     delete task;
     ASSERT_EQ(registry.m_task, nullptr);
+    Os::Test::TaskUnderTest::registerTaskRegistry(nullptr);
 }
 
 int main(int argc, char** argv) {
