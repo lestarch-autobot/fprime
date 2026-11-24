@@ -34,7 +34,7 @@ review purposes.
 ## 1. The rules
 
 Rules are grouped by theme. Numbers are stable and may be cited in
-PR comments and in other agent files.
+PR comments and in agent skills.
 
 ### A. Memory & lifetime
 

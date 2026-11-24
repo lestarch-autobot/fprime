@@ -8,8 +8,9 @@
 #
 # Adding a new reviewer agent in the future is a matter of adding a
 # new entry here with `role: reviewer`, a `lens_kind`, a
-# `review_group`, plus the agent file. No code changes elsewhere are
-# required.
+# `review_group`, plus the `agent-<name>` skill, its `.claude/skills`
+# symlink and the regenerated agent files (see `agent-skill-authoring`
+# sections 0 and 2). No code changes elsewhere are required.
 #
 # Review groups (`review_group`) — session packing
 # ------------------------------------------------
@@ -98,9 +99,9 @@ agents:
     notes: >
       Single human entry point for the batch (full-codebase) review.
       Partitions the repository into review units per
-      `_shared/skills/repo-partitioning.skill.md`, drives every
+      `.github/agents/_shared/skills/repo-partitioning.skill.md`, drives every
       `role: reviewer` entry over every unit under the batch
-      contract (`_shared/review-contract-batch.md`), and maintains
+      contract (`.github/agents/_shared/review-contract-batch.md`), and maintains
       the resumable ledger and diffable finding artifacts in a
       results repository. Not part of the PR review flow.
 

@@ -22,7 +22,8 @@ follow; the details live in the documents linked below.
 | `default/config/` | Default compile-time configuration headers and `AcConstants.fpp`; projects override these to tune a deployment. |
 | `TestDeploymentsProject/Ref/` | The `Ref` reference deployment, used to exercise the framework end to end. |
 | `FppTestProject/` | Validation suite for FPP-generated code. |
-| `.agents/skills/` | Reusable agent procedures; the `agent-<name>` skills are the agent definitions. |
+| `.agents/skills/` | Reusable agent procedures; the `agent-<name>` skills that carry agent `metadata` are the agent definitions. |
+| `.agents/tools/` | The generator and layout check for the agent files and skill symlinks; CI runs both. |
 | `.github/agents/`, `.claude/agents/` | Generated per-tool agent files, plus the shared review contracts in `.github/agents/_shared/`. |
 
 For a narrative tour of the tree, see

@@ -4,11 +4,11 @@ This file is the **single source of truth** for how every F Prime PR
 review agent (reviewer or aggregator) behaves on the GitHub side.
 Every agent that participates in the multi-agent review flow — the
 orchestrator plus every `role: reviewer` or `role: aggregator` entry in
-`_shared/agent-registry.yml` — opens its body with "Apply the review
-contract in `_shared/review-contract.md`." and follows the rules
+`.github/agents/_shared/agent-registry.yml` — opens its body with "Apply the review
+contract in `.github/agents/_shared/review-contract.md`." and follows the rules
 below.
 
-If a per-agent file in the multi-agent flow disagrees with this
+If a agent skill in the multi-agent flow disagrees with this
 contract, the contract wins.
 
 ---
@@ -781,7 +781,7 @@ posted:
   prohibition on analyzing code or opening new threads. The aggregator
   remains separately invocable for debugging.
 - Lenses never merge, share, or trade findings inside a shared
-  session. Each lens applies its own agent file and reaches its own
+  session. Each lens applies its own agent skill and reaches its own
   conclusions; Priority 1 (§8) binds each lens individually. Sharing a
   session saves startup cost, not review work.
 
@@ -836,7 +836,7 @@ de-duplication and re-review state, which the lens follows through
 
 On **run ≥ 2** this narrowing does not apply: re-review needs §6, §6a,
 §7 and §11 in full, and a lens that skipped them would repost,
-mis-resolve, or re-escalate. Each lens reads its own agent file in
+mis-resolve, or re-escalate. Each lens reads its own agent skill in
 full, always; of the skills that file references, it reads the ones
 whose subject matter the diff actually touches.
 
@@ -871,7 +871,7 @@ explicitly:
    scope of the lens every changed or newly reachable `FW_ASSERT`,
    bound, index or array write, every ground- or hardware-settable
    value the PR introduces or re-routes, every documented claim the
-   diff could falsify, and every checklist rule the lens's agent file
+   diff could falsify, and every checklist rule the lens's agent skill
    enumerates. This is the ledger.
 2. **Disposition** each ledger row as exactly one of `finding` (with
    the tag), `clean` (one clause why), or `out of scope` (the lens

@@ -134,7 +134,7 @@ duplicates; one term per thing.
 
 ## 3. Tags and scoping
 
-Review-contract tags (`_shared/review-contract.md` §1), a concrete
+Review-contract tags (`.github/agents/_shared/review-contract.md` §1), a concrete
 rewrite with every finding:
 
 | Class | Tag |

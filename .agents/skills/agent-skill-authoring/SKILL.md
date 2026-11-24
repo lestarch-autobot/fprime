@@ -34,6 +34,9 @@ the skill needs (scripts, templates) goes beside its `SKILL.md`.
 Cursor, Gemini CLI, and Devin scan it directly. Claude Code scans only
 `.claude/skills/`, so every skill also needs a symlink there
 (`ln -s ../../.agents/skills/<skill-name> .claude/skills/<skill-name>`).
+CI runs `python3 .agents/tools/check_skill_layout.py`; run it after
+adding a skill. `.claude/agents/` and `.github/agents/` (outside
+`_shared/`) hold only generated files; keep personal agents elsewhere.
 `.github/skills` is a symlink kept for older references in a local
 checkout; it does not resolve in GitHub URLs or API reads. Never add
 files through it. Cite a skill by its full path
@@ -76,7 +79,7 @@ Checklist for a new rule:
   not the rule text.
 - Multiple code examples showing the same point.
 
-## 2. Updating agent files (e.g., agent-fprime-code-review)
+## 2. Updating agent skills (e.g., agent-fprime-code-review)
 
 An agent is a skill named `agent-<name>`. Its frontmatter is `name`, a
 double-quoted one-line `description`, and a `metadata` block with
@@ -87,8 +90,8 @@ changing its frontmatter, run
 `python3 .agents/tools/generate_agent_wrappers.py` and commit the
 regenerated Copilot and Claude Code files; CI fails when they are stale.
 
-Agent files reference the skill as the source of truth. When adding
-a rule to a skill, update the agent file with **minimal additions**:
+Agent skills reference the rule skill as the source of truth. When adding
+a rule to a skill, update the agent skill with **minimal additions**:
 
 - **Scope range**: bump "CPP-1 through CPP-N" to the new max.
 - **Finding-class list**: add one line for the new finding class.
@@ -97,8 +100,8 @@ a rule to a skill, update the agent file with **minimal additions**:
 - **Triage rules of thumb**: append a short clause to the relevant
   cluster bullet. Mirror the skill's §3 hint verbatim or shorter.
 
-**Do not** re-explain the rule in the agent file. The skill is the
-source of truth; the agent file is a lookup index.
+**Do not** re-explain the rule in the agent skill. The rule skill is the
+source of truth; the agent skill is a lookup index.
 
 ## 3. Updating the registry (agent-registry.yml)
 

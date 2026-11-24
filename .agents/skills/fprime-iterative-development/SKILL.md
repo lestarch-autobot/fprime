@@ -63,8 +63,9 @@ environment/hardware access). Do not spin in place or guess.
    to GitHub** — no PR reviews, inline comments, issue comments,
    statuses, or labels. All findings go to local files only (e.g.
    `review-iter-N/<agent>.md`):
-   - Read the orchestrator, `_shared/agent-registry.yml`,
-     `_shared/review-contract.md`, and each reviewer agent file fresh
+   - Read the orchestrator, `.github/agents/_shared/agent-registry.yml`,
+     `.github/agents/_shared/review-contract.md`, and each reviewer's
+     `agent-<short_name>` skill fresh
      from `nasa/fprime` `devel`.
    - Run every `role: reviewer` agent from the registry against the
      local diff (`git diff <base>...HEAD`). Every reviewer kickoff

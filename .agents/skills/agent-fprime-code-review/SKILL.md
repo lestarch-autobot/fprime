@@ -26,7 +26,7 @@ hidden metadata.
 The C/C++ design rules this agent enforces live in
 `.agents/skills/fprime-cpp-design/SKILL.md`. That skill is the
 single source of truth for the rule set (CPP-1 through CPP-37) and
-the finding-class vocabulary; this agent file specifies how the
+the finding-class vocabulary; this agent skill specifies how the
 multi-agent flow applies it on a PR.
 
 ---

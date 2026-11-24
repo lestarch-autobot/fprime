@@ -4,8 +4,8 @@ This file is the **single source of truth** for how the system-test
 agents behave and hand work to each other. Every agent in the flow —
 `system-test-design`, `system-test-review`, `system-test-build`,
 `test-runner`, `test-auditor` — opens its body with "Apply the test
-process contract in `_shared/test-process-contract.md`." and follows
-the rules below. If a per-agent file disagrees with this contract, the
+process contract in `.github/agents/_shared/test-process-contract.md`." and follows
+the rules below. If a agent skill disagrees with this contract, the
 contract wins. These agents and skills live on `lestarch-autobot/fprime`
 branch `test-process-agents-skills` (nasa/fprime PR #6229) until merged into
 `nasa/fprime` `devel`.

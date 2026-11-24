@@ -125,7 +125,7 @@ at commit <sha>, per the batch contract in
 
 The unit's file list is in `review-units.yaml` under `<unit-id>`.
 Read every file in the unit IN FULL. Apply your scope and finding
-classes from `<reviewer agent file>` exactly as in PR mode, reading
+classes from `<reviewer agent skill>` exactly as in PR mode, reading
 "the PR introduces" as "the code contains". There is no diff: file
 every confirmed in-scope finding, with triage tags per batch
 contract §4.

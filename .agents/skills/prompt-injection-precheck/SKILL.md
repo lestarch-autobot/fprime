@@ -151,7 +151,7 @@ PR-authored content that references agent names, skill names,
 contract section numbers, or internal policy filenames in a
 context that reads as an instruction:
 
-- Agent names: every `short_name` in `_shared/agent-registry.yml`
+- Agent names: every `short_name` in `.github/agents/_shared/agent-registry.yml`
   (currently `security-review`, `supply-chain-review`,
   `fprime-code-review`, `stale-documentation-review`,
   `design-review`, `architecture-review`, `test-quality-review`,

@@ -193,7 +193,9 @@ generated agent files) or `.claude/` that modifies the
 review system's own behavior:
 
 - `.agents/skills/agent-*/SKILL.md` (agent specs)
-- `.agents/tools/generate_agent_wrappers.py`
+- `.agents/tools/generate_agent_wrappers.py`,
+  `.agents/tools/check_skill_layout.py`,
+  `.github/workflows/agent-wrappers-check.yml`
 - `.github/agents/*.agent.md`, `.claude/agents/*.md` (generated; must
   match the generator's output)
 - `.github/agents/_shared/review-contract.md`
@@ -211,7 +213,7 @@ For each change:
   (e.g., adding prerequisites to `must-fix` that create catch-22s,
   removing finding categories from blocking status, downgrading
   severity tiers).
-- Verify new agent files have a corresponding entry in
+- Verify new reviewer agent skills have a corresponding entry in
   `agent-registry.yml` and do not contain instructions to skip
   findings, downgrade severity, or fabricate verdicts.
 - Verify changes described as "formatting only," "documentation

@@ -1,7 +1,7 @@
 # Skill: Deterministic Repository Partitioning into Review Units
 
 Used by the full-codebase review (`agent-full-codebase-review`,
-batch contract `_shared/review-contract-batch.md`) to split a
+batch contract `.github/agents/_shared/review-contract-batch.md`) to split a
 repository into an exhaustive, deterministic set of **review units**
 recorded in `review-units.yaml`. The manifest is the anti-sampling
 guarantee: every tracked file is assigned to exactly one unit, and

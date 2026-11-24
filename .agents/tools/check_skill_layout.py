@@ -3,7 +3,8 @@
 
 `.agents/skills/` holds the skills. Claude Code reads only `.claude/skills/`,
 so each skill needs a symlink there, and `.github/skills` is a symlink kept
-for older references. Standard library only.
+for older references. Also checks that every agent registry entry points at
+its `agent-<short_name>` skill. Standard library only.
 """
 
 import os
@@ -15,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SKILLS = ROOT / ".agents" / "skills"
 CLAUDE = ROOT / ".claude" / "skills"
 LEGACY = ROOT / ".github" / "skills"
+REGISTRY = ROOT / ".github" / "agents" / "_shared" / "agent-registry.yml"
 
 
 def main():
@@ -25,19 +27,28 @@ def main():
         if not skill_file.is_file():
             problems.append(f"{name}: no SKILL.md")
             continue
-        declared = re.search(
-            r"^name: (\S+)$", skill_file.read_text(encoding="utf-8"), re.M
-        )
+        text = skill_file.read_text(encoding="utf-8")
+        front = text.split("\n---", 1)[0] if text.startswith("---\n") else ""
+        declared = re.search(r"^name: (\S+)$", front, re.M)
         if not declared or declared.group(1) != name:
             problems.append(f"{name}: frontmatter `name` must equal the directory name")
         link = CLAUDE / name
         target = f"../../.agents/skills/{name}"
         if not link.is_symlink() or os.readlink(link) != target:
             problems.append(f".claude/skills/{name}: must be a symlink to {target}")
-    extra = sorted(p.name for p in CLAUDE.iterdir() if p.name not in names)
+    present = CLAUDE.iterdir() if CLAUDE.is_dir() else []
+    extra = sorted(p.name for p in present if p.name not in names)
     problems.extend(f".claude/skills/{name}: no such skill" for name in extra)
     if not LEGACY.is_symlink() or os.readlink(LEGACY) != "../.agents/skills":
         problems.append(".github/skills: must be a symlink to ../.agents/skills")
+    registry = REGISTRY.read_text(encoding="utf-8")
+    entries = re.findall(r"^\s+short_name: (\S+)\n(?:.*\n)*?\s+path: (\S+)$", registry, re.M)
+    if len(entries) != len(re.findall(r"^\s+short_name: ", registry, re.M)):
+        problems.append("agent-registry.yml: every entry needs a `path`")
+    for short_name, path in entries:
+        expected = f".agents/skills/agent-{short_name}/SKILL.md"
+        if path != expected or not (ROOT / path).is_file():
+            problems.append(f"agent-registry.yml: {short_name}: path must be {expected}")
     for problem in problems:
         print(problem, file=sys.stderr)
     if not problems:

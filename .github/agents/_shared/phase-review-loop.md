@@ -19,7 +19,7 @@ orchestrating agent loops them.
 | Design | The `.fpp` model, the `docs/sdd.md` draft (`fprime-component-design-fpp` Step 5), any new port definitions — as a design-only diff | `agent-design-review` (categories 1, 3, 4, 6, 7, 9; categories 2, 5, 8 need an implementation and are n/a); `agent-architecture-review` (whole model); `agent-design-principles-review` | The approved requirements table and the request |
 | Test design | The system test plan and `faults-menu.json` (`fprime-system-test-design` §2–§4) and the unit-test list (`fprime-component-unit-test`, "Test list", in `docs/sdd.md`) — written from the approved requirements, SDD and FPP model; normally no implementation exists yet — where one does, `fprime-system-test-design` §1 code-read-last applies | `agent-system-test-review` Mode A | The approved requirements table, SDD and FPP model, and the request |
 
-Reviewer agent files are read fresh from `nasa/fprime` `devel`, not
+Reviewer agent skills are read fresh from `nasa/fprime` `devel`, not
 from the branch being worked on; a reviewer not yet on `devel` is read
 from the commit that introduces it, named in the record. Reviewers read the
 artifact and the
@@ -76,10 +76,10 @@ per step 2, then one close by the author. Review k is the k-th such review.
 
 1. **Draft** the artifact per the phase skill.
 2. **Review** — start one separate session per reviewer (child
-   session or subagent); the kickoff is the reviewer agent file, the
+   session or subagent); the kickoff is the reviewer agent skill, the
    artifact, the intent input, the preamble above where it applies,
    `review rounds: N — this bound supersedes any round cap in your
-   agent file`, and "LOCAL REVIEW ONLY — DO NOT POST TO GITHUB; write
+   agent skill`, and "LOCAL REVIEW ONLY — DO NOT POST TO GITHUB; write
    findings to a file". Reuse each session across rounds so it
    carries its open-finding list. A reviewer whose latest record is
    all-pass is re-run only if its scope was touched by a close.
@@ -134,7 +134,7 @@ after it (`test-process-contract.md` §2, "never weaken a test").
 ## Record and gate
 
 Keep one `review-<phase>-<reviewer>-round-N.md` per reviewer per
-review (or the name the reviewer's own agent file fixes), outside the
+review (or the name the reviewer's own agent skill fixes), outside the
 component tree or attached, with a running disagreement log. At the
 human gate hand the human one document — the SDD, whose section the
 phase produced — and a review summary of at most ten lines: routed
