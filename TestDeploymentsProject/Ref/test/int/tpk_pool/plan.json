@@ -161,6 +161,7 @@
    ],
    "setup": "L0-2 passed.",
    "procedure": [
+    "MARK(29)",
     "OVERRIDE_PACKET_SEND(REALTIME, 61, SEND_NEVER)",
     "wait 2 ticks",
     "MARK(30)",
@@ -170,30 +171,59 @@
     "wait 1 CommandsDispatched sample",
     "MARK(31)",
     "wait 2 ticks",
-    "CLEAR_PACKET_OVERRIDE(REALTIME, 61)"
+    "CLEAR_PACKET_OVERRIDE(REALTIME, 61)",
+    "MARK(32)"
    ],
    "windows": [
+    {
+     "name": "S",
+     "start_id": 29,
+     "end_id": 30,
+     "reset": false
+    },
     {
      "name": "W",
      "start_id": 30,
      "end_id": 31,
      "reset": false
-    }
-   ],
-   "complete": [
-    "STD"
-   ],
-   "all_of": [
-    "ABS",
+    },
     {
-     "helper": "channel_tracks_dispatch_count",
-     "text": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
-     "args": {
-      "tick_s": 1.0,
-      "min_samples": 2
-     }
+     "name": "T",
+     "start_id": 31,
+     "end_id": 32,
+     "reset": false
     }
    ],
+   "complete": {
+    "S": [
+     "STD"
+    ],
+    "W": [
+     "STD"
+    ],
+    "T": [
+     "STD"
+    ]
+   },
+   "all_of": {
+    "S": [
+     "event tlmSend.PacketNotFound count == 0"
+    ],
+    "W": [
+     "ABS",
+     {
+      "helper": "channel_tracks_dispatch_count",
+      "text": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
+      "args": {
+       "tick_s": 1.0,
+       "min_samples": 2
+      }
+     }
+    ],
+    "T": [
+     "event tlmSend.PacketNotFound count == 0"
+    ]
+   },
    "metrics": [],
    "rationale": [
     {
@@ -216,6 +246,7 @@
    ],
    "setup": "L2-1 run.",
    "procedure": [
+    "MARK(39)",
     "OVERRIDE_PACKET_SEND(REALTIME, 60, SEND_NEVER)",
     "wait 2 ticks",
     "MARK(40)",
@@ -225,30 +256,59 @@
     "wait 1 CommandsDispatched sample",
     "MARK(41)",
     "wait 2 ticks",
-    "CLEAR_PACKET_OVERRIDE(REALTIME, 60)"
+    "CLEAR_PACKET_OVERRIDE(REALTIME, 60)",
+    "MARK(42)"
    ],
    "windows": [
+    {
+     "name": "S",
+     "start_id": 39,
+     "end_id": 40,
+     "reset": false
+    },
     {
      "name": "W",
      "start_id": 40,
      "end_id": 41,
      "reset": false
-    }
-   ],
-   "complete": [
-    "STD"
-   ],
-   "all_of": [
-    "ABS",
+    },
     {
-     "helper": "channel_tracks_dispatch_count",
-     "text": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
-     "args": {
-      "tick_s": 1.0,
-      "min_samples": 2
-     }
+     "name": "T",
+     "start_id": 41,
+     "end_id": 42,
+     "reset": false
     }
    ],
+   "complete": {
+    "S": [
+     "STD"
+    ],
+    "W": [
+     "STD"
+    ],
+    "T": [
+     "STD"
+    ]
+   },
+   "all_of": {
+    "S": [
+     "event tlmSend.PacketNotFound count == 0"
+    ],
+    "W": [
+     "ABS",
+     {
+      "helper": "channel_tracks_dispatch_count",
+      "text": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
+      "args": {
+       "tick_s": 1.0,
+       "min_samples": 2
+      }
+     }
+    ],
+    "T": [
+     "event tlmSend.PacketNotFound count == 0"
+    ]
+   },
    "metrics": [],
    "rationale": [
     {
@@ -309,6 +369,7 @@
    "covers": [],
    "setup": "All earlier tests run.",
    "procedure": [
+    "MARK(59)",
     "CLEAR_PACKET_OVERRIDE(REALTIME, 60)",
     "CLEAR_PACKET_OVERRIDE(REALTIME, 61)",
     "wait 2 ticks",
@@ -321,26 +382,42 @@
    ],
    "windows": [
     {
+     "name": "S",
+     "start_id": 59,
+     "end_id": 60,
+     "reset": false
+    },
+    {
      "name": "W",
      "start_id": 60,
      "end_id": 61,
      "reset": false
     }
    ],
-   "complete": [
-    "STD"
-   ],
-   "all_of": [
-    "ABS",
-    {
-     "helper": "channel_tracks_dispatch_count",
-     "text": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
-     "args": {
-      "tick_s": 1.0,
-      "min_samples": 2
+   "complete": {
+    "S": [
+     "STD"
+    ],
+    "W": [
+     "STD"
+    ]
+   },
+   "all_of": {
+    "S": [
+     "event tlmSend.PacketNotFound count == 0"
+    ],
+    "W": [
+     "ABS",
+     {
+      "helper": "channel_tracks_dispatch_count",
+      "text": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
+      "args": {
+       "tick_s": 1.0,
+       "min_samples": 2
+      }
      }
-    }
-   ],
+    ]
+   },
    "metrics": [],
    "rationale": [],
    "evidence": "Rising CommandsDispatched samples that match the OpCodeDispatched rows the ground archive holds (a path independent of the packetizer's storage).",
@@ -367,7 +444,8 @@
   "4. 2026-11-23 designer — test-deployment delta of the scope section (two test packets, the channel moved into them, sizing constants per venue); for the approver at gate 1.",
   "5. 2026-11-23 designer — system coverage threshold provisionally 50 % lines; for gate 1.",
   "6. 2026-11-24 designer, review round 1 — packets are sent by the rate logic, not SEND_PKT (SEND_PKT bypasses enable checks and logs PacketSent on acceptance); menu max_count 2 over four faulted tests; TPK-013 is UT only with no system test traced.",
-  "7. 2026-11-24 designer, review round 2 — the hold-back and its release sit outside the L2 windows, two ticks clear of the markers."
+  "7. 2026-11-24 designer, review round 2 — the hold-back and its release sit outside the L2 windows, two ticks clear of the markers.",
+  "8. 2026-11-24 harness builder, venue A dry runs — the tooling's record integrity accepts no command outside a declared window, so the hold-back and release commands of L2-1 and L2-2 and the two clears of L7-1 are bracketed by setup (`S`) and teardown (`T`) windows that share an edge with the measurement window `W`; they are judged for completeness and for no `PacketNotFound` only. `W`, its markers, checks and planted faults are unchanged."
  ],
  "image_version": {
   "policy": "required"

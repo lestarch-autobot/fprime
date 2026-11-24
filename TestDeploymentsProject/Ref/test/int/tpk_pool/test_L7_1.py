@@ -6,10 +6,13 @@ of L7-1; the plan stays the owner of the pass rule. Waits are pacing only; the c
 
 
 def test_L7_1(window, send, bench, check, require, fth_plan):
-    send("tlmSend.CLEAR_PACKET_OVERRIDE", ["REALTIME", 60])
-    send("tlmSend.CLEAR_PACKET_OVERRIDE", ["REALTIME", 61])
-    bench.wait(2.5)  # wait 2 ticks (1 s tick) with half a tick of margin
-    with window(60, 61):
+    with window(59, 60):  # S: setup
+        require("STD")
+        check("event tlmSend.PacketNotFound count == 0")
+        send("tlmSend.CLEAR_PACKET_OVERRIDE", ["REALTIME", 60])
+        send("tlmSend.CLEAR_PACKET_OVERRIDE", ["REALTIME", 61])
+        bench.wait(2.5)  # wait 2 ticks (1 s tick) with half a tick of margin
+    with window(60, 61):  # W: measurement
         require("STD")
         check("ABS")
         check("cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
