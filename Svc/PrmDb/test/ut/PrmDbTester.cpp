@@ -9,12 +9,9 @@
 #include <Fw/Com/ComBuffer.hpp>
 #include <Fw/Com/ComPacket.hpp>
 #include <Fw/Test/UnitTest.hpp>
-#include <Os/Delegate.hpp>
 #include <Os/Stub/test/File.hpp>
 #include <Svc/PrmDb/test/ut/PrmDbTester.hpp>
 #include <cstdio>
-#include "Os/Stub/Directory.hpp"
-#include "Os/Stub/FileSystem.hpp"
 #include "Utils/Hash/Hash.hpp"
 
 namespace Svc {
@@ -1548,9 +1545,12 @@ void PrmDbTester::PrmDbTestFile::setTester(Svc::PrmDbTester* tester) {
     s_tester = tester;
 }
 
-Os::File::Status PrmDbTester::PrmDbTestFile::read(U8* buffer, FwSizeType& size, Os::File::WaitType wait) {
+Os::File::Status PrmDbTester::PrmDbTestFile::read(Os::FileInterface& real,
+                                                  U8* buffer,
+                                                  FwSizeType& size,
+                                                  Os::File::WaitType wait) {
     EXPECT_NE(s_tester, nullptr);
-    Os::File::Status status = this->Os::Stub::File::Test::TestFile::read(buffer, size, wait);
+    Os::File::Status status = this->Os::Stub::File::Test::TestFileInterceptor::read(real, buffer, size, wait);
     if (s_tester->m_waits == 0) {
         switch (s_tester->m_errorType) {
             case FILE_STATUS_ERROR:
@@ -1573,9 +1573,12 @@ Os::File::Status PrmDbTester::PrmDbTestFile::read(U8* buffer, FwSizeType& size, 
     return status;
 }
 
-Os::File::Status PrmDbTester::PrmDbTestFile::write(const U8* buffer, FwSizeType& size, Os::File::WaitType wait) {
+Os::File::Status PrmDbTester::PrmDbTestFile::write(Os::FileInterface& real,
+                                                   const U8* buffer,
+                                                   FwSizeType& size,
+                                                   Os::File::WaitType wait) {
     EXPECT_NE(s_tester, nullptr);
-    Os::File::Status status = this->Os::Stub::File::Test::TestFile::write(buffer, size, wait);
+    Os::File::Status status = this->Os::Stub::File::Test::TestFileInterceptor::write(real, buffer, size, wait);
     if (s_tester->m_waits == 0) {
         switch (s_tester->m_errorType) {
             case FILE_STATUS_ERROR:
@@ -1606,33 +1609,3 @@ void PrmDbTester ::from_pingOut_handler(const FwIndexType portNum, U32 key) {
 }
 
 } /* namespace Svc */
-
-namespace Os {
-
-//! \brief get a delegate for FileInterface that intercepts calls for parameter database testing
-//! \param aligned_new_memory: aligned memory to fill
-//! \param to_copy: pointer to copy-constructor input
-//! \return: pointer to delegate
-FileInterface* FileInterface::getDelegate(FileHandleStorage& aligned_placement_new_memory,
-                                          const FileInterface* to_copy) {
-    return Os::Delegate::makeDelegate<FileInterface, Svc::PrmDbTester::PrmDbTestFile>(aligned_placement_new_memory,
-                                                                                      to_copy);
-}
-
-//! \brief get a delegate for FileSystemInterface that intercepts calls for stub fileSystem usage
-//! \param aligned_new_memory: aligned memory to fill
-//! \param to_copy: pointer to copy-constructor input
-//! \return: pointer to delegate
-FileSystemInterface* FileSystemInterface::getDelegate(FileSystemHandleStorage& aligned_placement_new_memory) {
-    return Os::Delegate::makeDelegate<FileSystemInterface, Os::Stub::FileSystem::StubFileSystem>(
-        aligned_placement_new_memory);
-}
-
-//! \brief get a delegate for DirectoryInterface that intercepts calls for stub Directory usage
-//! \param aligned_new_memory: aligned memory to fill
-//! \return: pointer to delegate
-DirectoryInterface* DirectoryInterface::getDelegate(DirectoryHandleStorage& aligned_placement_new_memory) {
-    return Os::Delegate::makeDelegate<DirectoryInterface, Os::Stub::Directory::StubDirectory>(
-        aligned_placement_new_memory);
-}
-}  // namespace Os

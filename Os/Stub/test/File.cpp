@@ -140,6 +140,48 @@ FileHandle* TestFile::getHandle() {
     return &this->m_handle;
 }
 
+FileInterface::Status TestFileInterceptor::open(FileInterface& /*real*/,
+                                                const char* path,
+                                                Mode mode,
+                                                OverwriteType overwrite) {
+    return this->m_stub.open(path, mode, overwrite);
+}
+
+void TestFileInterceptor::close(FileInterface& /*real*/) {
+    this->m_stub.close();
+}
+
+FileInterface::Status TestFileInterceptor::size(FileInterface& /*real*/, FwSizeType& size_result) {
+    return this->m_stub.size(size_result);
+}
+
+FileInterface::Status TestFileInterceptor::position(FileInterface& /*real*/, FwSizeType& position_result) {
+    return this->m_stub.position(position_result);
+}
+
+FileInterface::Status TestFileInterceptor::preallocate(FileInterface& /*real*/, FwSizeType offset, FwSizeType length) {
+    return this->m_stub.preallocate(offset, length);
+}
+
+FileInterface::Status TestFileInterceptor::seek(FileInterface& /*real*/, FwSignedSizeType offset, SeekType seekType) {
+    return this->m_stub.seek(offset, seekType);
+}
+
+FileInterface::Status TestFileInterceptor::flush(FileInterface& /*real*/) {
+    return this->m_stub.flush();
+}
+
+FileInterface::Status TestFileInterceptor::read(FileInterface& /*real*/, U8* buffer, FwSizeType& size, WaitType wait) {
+    return this->m_stub.read(buffer, size, wait);
+}
+
+FileInterface::Status TestFileInterceptor::write(FileInterface& /*real*/,
+                                                 const U8* buffer,
+                                                 FwSizeType& size,
+                                                 WaitType wait) {
+    return this->m_stub.write(buffer, size, wait);
+}
+
 }  // namespace Test
 }  // namespace File
 }  // namespace Stub

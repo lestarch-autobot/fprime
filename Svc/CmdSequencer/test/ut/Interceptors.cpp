@@ -10,16 +10,20 @@
 // ======================================================================
 
 #include "CmdSequencerTester.hpp"
-#include "Os/Stub/test/File.hpp"
 #include "gtest/gtest.h"
 
 namespace Svc {
 
-CmdSequencerTester::Interceptor* CmdSequencerTester::Interceptor::PosixFileInterceptor::s_current_interceptor = nullptr;
 CmdSequencerTester::Interceptor::Interceptor()
-    : enabled(EnableType::NONE), errorType(ErrorType::NONE), waitCount(0), size(0), fileStatus(Os::File::OP_OK) {
-    CmdSequencerTester::Interceptor::PosixFileInterceptor::s_current_interceptor = this;
-}
+    : enabled(EnableType::NONE),
+      errorType(ErrorType::NONE),
+      waitCount(0),
+      size(0),
+      fileStatus(Os::File::OP_OK),
+      fileInterceptor(*this) {}
+
+CmdSequencerTester::Interceptor::FileInterceptor::FileInterceptor(Interceptor& interceptor)
+    : m_interceptor(interceptor) {}
 
 void CmdSequencerTester::Interceptor::enable(EnableType::t enableType) {
     this->enabled = enableType;
@@ -29,39 +33,37 @@ void CmdSequencerTester::Interceptor::disable() {
     this->enabled = EnableType::t::NONE;
 }
 
-Os::FileInterface::Status CmdSequencerTester::Interceptor::PosixFileInterceptor::open(const char* path,
-                                                                                      Mode mode,
-                                                                                      OverwriteType overwrite) {
-    if ((s_current_interceptor != nullptr) && (s_current_interceptor->enabled == EnableType::t::OPEN)) {
-        return s_current_interceptor->fileStatus;
+Os::File::Status CmdSequencerTester::Interceptor::FileInterceptor::open(Os::FileInterface& real,
+                                                                        const char* path,
+                                                                        Mode mode,
+                                                                        OverwriteType overwrite) {
+    if (this->m_interceptor.enabled == EnableType::t::OPEN) {
+        return this->m_interceptor.fileStatus;
     }
-    return this->Os::Posix::File::PosixFile::open(path, mode, overwrite);
+    return real.open(path, mode, overwrite);
 }
 
-Os::File::Status CmdSequencerTester::Interceptor::PosixFileInterceptor::read(U8* buffer,
-                                                                             FwSizeType& requestSize,
-                                                                             Os::File::WaitType waitType) {
-    (void)waitType;
-    Os::File::Status status = this->Os::Posix::File::PosixFile::read(buffer, requestSize, waitType);
-    if (s_current_interceptor == nullptr) {
-        return status;
-    } else if ((s_current_interceptor->enabled == EnableType::READ) &&
-               (s_current_interceptor->errorType != ErrorType::NONE)) {
-        if (s_current_interceptor->waitCount > 0) {
+Os::File::Status CmdSequencerTester::Interceptor::FileInterceptor::read(Os::FileInterface& real,
+                                                                        U8* buffer,
+                                                                        FwSizeType& requestSize,
+                                                                        Os::File::WaitType waitType) {
+    Os::File::Status status = real.read(buffer, requestSize, waitType);
+    if ((this->m_interceptor.enabled == EnableType::READ) && (this->m_interceptor.errorType != ErrorType::NONE)) {
+        if (this->m_interceptor.waitCount > 0) {
             // Not time to inject an error yet: decrement wait count
-            --s_current_interceptor->waitCount;
+            --this->m_interceptor.waitCount;
         } else {
             // Time to inject an error: check test scenario
-            switch (s_current_interceptor->errorType) {
+            switch (this->m_interceptor.errorType) {
                 case ErrorType::READ:
-                    status = s_current_interceptor->fileStatus;
+                    status = this->m_interceptor.fileStatus;
                     break;
                 case ErrorType::SIZE:
-                    requestSize = s_current_interceptor->size;
+                    requestSize = this->m_interceptor.size;
                     status = Os::File::OP_OK;
                     break;
                 case ErrorType::DATA:
-                    memcpy(buffer, s_current_interceptor->data, s_current_interceptor->size);
+                    memcpy(buffer, this->m_interceptor.data, this->m_interceptor.size);
                     status = Os::File::OP_OK;
                     break;
                 default:

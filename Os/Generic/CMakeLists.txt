@@ -34,7 +34,6 @@ register_fprime_ut(
     Fw_Time
     Os
     STest
-    Os_Generic_PriorityMemQueue_Implementation
   CHOOSES_IMPLEMENTATIONS
     Os_Generic_PriorityMemQueue
 )

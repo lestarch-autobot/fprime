@@ -147,6 +147,10 @@ register_fprime_module(
 
 add_named_os_module(Console Fw_Logger)
 add_named_os_module("File;FileSystem;Directory" Utils_Hash Fw_DataStructures)
+# Unit test builds select Os::Ut::File::UtFile, which wraps the non-test selection (see config/OsSelection.hpp)
+if (BUILD_TESTING)
+    target_sources(Os_File PRIVATE "${CMAKE_CURRENT_LIST_DIR}/Ut/File.cpp")
+endif()
 add_named_os_module(Task ${CMAKE_THREAD_LIBS_INIT})
 # Os/Task.hpp includes the implementation header selected in config/OsSelection.hpp. The Posix
 # implementation header needs the constants autocoded by Os_Posix_Models, thus users of the Os
