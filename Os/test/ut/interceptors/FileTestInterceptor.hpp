@@ -1,12 +1,12 @@
 // ======================================================================
-// \title Os/Interfaces/Test/FileTestInterceptor.hpp
+// \title Os/test/ut/interceptors/FileTestInterceptor.hpp
 // \brief TEST ONLY: interface used by unit tests to intercept Os::File calls
 //
 // This interface is for unit testing only. It works with Os::Ut::File::UtFile, the Os::File implementation selected
 // in unit test builds (BUILD_UT), and has no effect in any other build. Do not use it in flight code.
 // ======================================================================
-#ifndef OS_INTERFACES_TEST_FILETESTINTERCEPTOR_HPP_
-#define OS_INTERFACES_TEST_FILETESTINTERCEPTOR_HPP_
+#ifndef OS_TEST_UT_INTERCEPTORS_FILETESTINTERCEPTOR_HPP_
+#define OS_TEST_UT_INTERCEPTORS_FILETESTINTERCEPTOR_HPP_
 
 #include <Os/Interfaces/FileInterface.hpp>
 
@@ -81,4 +81,4 @@ class FileTestInterceptor : public FileUserInterface {
 }  // namespace Test
 }  // namespace Os
 
-#endif  // OS_INTERFACES_TEST_FILETESTINTERCEPTOR_HPP_
+#endif  // OS_TEST_UT_INTERCEPTORS_FILETESTINTERCEPTOR_HPP_

@@ -1,5 +1,5 @@
 // ======================================================================
-// \title Os/Ut/RawTime.hpp
+// \title Os/test/ut/interceptors/UtRawTime.hpp
 // \brief TEST ONLY: Os::RawTime implementation selected in unit test builds
 //
 // Wraps the implementation selected for non-test builds and routes calls through the installed
@@ -7,8 +7,8 @@
 // ======================================================================
 #include <Os/Interfaces/RawTimeInterface.hpp>
 
-#ifndef OS_UT_RAWTIME_HPP_
-#define OS_UT_RAWTIME_HPP_
+#ifndef OS_TEST_UT_INTERCEPTORS_UTRAWTIME_HPP_
+#define OS_TEST_UT_INTERCEPTORS_UTRAWTIME_HPP_
 
 #ifndef OS_UT_REAL_RAW_TIME_HEADER
 #error "OS_UT_REAL_RAW_TIME_HEADER must be defined in config/OsSelection.hpp"
@@ -45,4 +45,4 @@ class UtRawTime : public RawTimeInterface {
 }  // namespace Ut
 }  // namespace Os
 
-#endif  // OS_UT_RAWTIME_HPP_
+#endif  // OS_TEST_UT_INTERCEPTORS_UTRAWTIME_HPP_

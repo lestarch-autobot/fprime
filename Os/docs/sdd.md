@@ -134,8 +134,8 @@ F´ provides a default `default/config/OsSelection.hpp` selecting the in-tree im
 
 **Testing:**
 
-- A test of a specific implementation names its wrapper explicitly, e.g. `Os::MutexCommon<Os::Stub::Mutex::Test::TestMutex>`, independent of the selection.
-- In unit test builds (`BUILD_UT`) the default selection wraps File and RawTime in `Os::Ut::File::UtFile` and `Os::Ut::RawTime::UtRawTime`. These hold the implementation a non-test build would select and route each call through a test-only interceptor ([`Os/Interfaces/Test/`](../Interfaces/Test)) when a test installs one.
+- A test of a specific implementation names its wrapper explicitly, e.g. `Os::MutexCommon<Os::Posix::Mutex::PosixMutex>`, independent of the selection.
+- In unit test builds (`BUILD_UT`) the default selection wraps File, RawTime and Mutex in `Os::Ut::File::UtFile`, `Os::Ut::RawTime::UtRawTime` and `Os::Ut::Mutex::UtMutex`. These hold the implementation a non-test build would select and route each call through a test-only interceptor ([`Os/test/ut/interceptors/`](../test/ut/interceptors)) when a test installs one.
 
 ## 6. OSAL Implementations
 

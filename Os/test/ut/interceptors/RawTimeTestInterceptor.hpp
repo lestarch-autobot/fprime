@@ -1,12 +1,12 @@
 // ======================================================================
-// \title Os/Interfaces/Test/RawTimeTestInterceptor.hpp
+// \title Os/test/ut/interceptors/RawTimeTestInterceptor.hpp
 // \brief TEST ONLY: interface used by unit tests to intercept Os::RawTime calls
 //
 // This interface is for unit testing only. It works with Os::Ut::RawTime::UtRawTime, the Os::RawTime implementation
 // selected in unit test builds (BUILD_UT), and has no effect in any other build. Do not use it in flight code.
 // ======================================================================
-#ifndef OS_INTERFACES_TEST_RAWTIMETESTINTERCEPTOR_HPP_
-#define OS_INTERFACES_TEST_RAWTIMETESTINTERCEPTOR_HPP_
+#ifndef OS_TEST_UT_INTERCEPTORS_RAWTIMETESTINTERCEPTOR_HPP_
+#define OS_TEST_UT_INTERCEPTORS_RAWTIMETESTINTERCEPTOR_HPP_
 
 #include <Os/Interfaces/RawTimeInterface.hpp>
 
@@ -62,4 +62,4 @@ class RawTimeTestInterceptor : public RawTimeUserInterface {
 }  // namespace Test
 }  // namespace Os
 
-#endif  // OS_INTERFACES_TEST_RAWTIMETESTINTERCEPTOR_HPP_
+#endif  // OS_TEST_UT_INTERCEPTORS_RAWTIMETESTINTERCEPTOR_HPP_

@@ -1,10 +1,10 @@
 // ======================================================================
-// \title Os/Ut/RawTime.cpp
+// \title Os/test/ut/interceptors/UtRawTime.cpp
 // \brief TEST ONLY: Os::RawTime implementation selected in unit test builds
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
-#include <Os/Interfaces/Test/RawTimeTestInterceptor.hpp>
-#include <Os/Ut/RawTime.hpp>
+#include <Os/test/ut/interceptors/RawTimeTestInterceptor.hpp>
+#include <Os/test/ut/interceptors/UtRawTime.hpp>
 
 namespace Os {
 namespace Test {

@@ -1,6 +1,6 @@
 #include <string.h>
 #include <Os/Interfaces/FileInterface.hpp>
-#include <Os/Interfaces/Test/FileTestInterceptor.hpp>
+#include <Os/test/ut/interceptors/FileTestInterceptor.hpp>
 
 #ifndef OS_STUB_FILE_TEST_HPP
 #define OS_STUB_FILE_TEST_HPP

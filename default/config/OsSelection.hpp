@@ -35,9 +35,9 @@
 // must still be in the link (via CHOOSES_IMPLEMENTATIONS for an in-tree
 // implementation, or DEPENDS for a project module).
 //
-// Unit test builds (BUILD_UT) wrap the File and RawTime selections in
-// Os::Ut::File::UtFile and Os::Ut::RawTime::UtRawTime so that tests may
-// intercept calls (see Os/Interfaces/Test).
+// Unit test builds (BUILD_UT) wrap the File, RawTime and Mutex selections in
+// Os::Ut::File::UtFile, Os::Ut::RawTime::UtRawTime and Os::Ut::Mutex::UtMutex
+// so that tests may intercept calls (see Os/test/ut/interceptors).
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
 #define CONFIG_OSSELECTION_HPP
@@ -114,7 +114,18 @@ using File = FileCommon<Posix::File::PosixFile>;
 using FileSystem = FileSystemCommon<Posix::FileSystem::PosixFileSystem>;
 using Directory = DirectoryCommon<Posix::Directory::PosixDirectory>;
 using Queue = QueueCommon<Generic::PriorityQueue>;
+#ifdef BUILD_UT
+// Unit test builds wrap the selection in UtMutex so that tests may intercept mutex calls
+namespace Ut {
+namespace Mutex {
+class UtMutex;
+using RealMutex = Posix::Mutex::PosixMutex;
+}  // namespace Mutex
+}  // namespace Ut
+using Mutex = MutexCommon<Ut::Mutex::UtMutex>;
+#else
 using Mutex = MutexCommon<Posix::Mutex::PosixMutex>;
+#endif
 using ConditionVariable = ConditionVariableCommon<Posix::Mutex::PosixConditionVariable>;
 #ifdef BUILD_UT
 // Unit test builds wrap the selection in UtRawTime so that tests may intercept raw time calls
@@ -170,7 +181,7 @@ using Memory = MemoryCommon<Darwin::Memory::DarwinMemory>;
 #define OS_CONSOLE_HEADER <Os/Posix/Console.hpp>
 #define OS_TASK_HEADER <Os/Posix/Task.hpp>
 #ifdef BUILD_UT
-#define OS_FILE_HEADER <Os/Ut/File.hpp>
+#define OS_FILE_HEADER <Os/test/ut/interceptors/UtFile.hpp>
 #define OS_UT_REAL_FILE_HEADER <Os/Posix/File.hpp>
 #else
 #define OS_FILE_HEADER <Os/Posix/File.hpp>
@@ -189,12 +200,17 @@ using Memory = MemoryCommon<Darwin::Memory::DarwinMemory>;
 #endif
 
 #ifdef BUILD_UT
-#define OS_RAW_TIME_HEADER <Os/Ut/RawTime.hpp>
+#define OS_RAW_TIME_HEADER <Os/test/ut/interceptors/UtRawTime.hpp>
 #define OS_UT_REAL_RAW_TIME_HEADER <Os/Posix/RawTime.hpp>
 #else
 #define OS_RAW_TIME_HEADER <Os/Posix/RawTime.hpp>
 #endif
+#ifdef BUILD_UT
+#define OS_MUTEX_HEADER <Os/test/ut/interceptors/UtMutex.hpp>
+#define OS_UT_REAL_MUTEX_HEADER <Os/Posix/Mutex.hpp>
+#else
 #define OS_MUTEX_HEADER <Os/Posix/Mutex.hpp>
+#endif
 #define OS_CONDITION_VARIABLE_HEADER <Os/Posix/ConditionVariable.hpp>
 
 #endif  // CONFIG_OSSELECTION_HPP

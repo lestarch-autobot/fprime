@@ -1,10 +1,10 @@
 // ======================================================================
-// \title Os/Ut/File.cpp
+// \title Os/test/ut/interceptors/UtFile.cpp
 // \brief TEST ONLY: Os::File implementation selected in unit test builds
 // ======================================================================
 #include <Fw/Types/Assert.hpp>
-#include <Os/Interfaces/Test/FileTestInterceptor.hpp>
-#include <Os/Ut/File.hpp>
+#include <Os/test/ut/interceptors/FileTestInterceptor.hpp>
+#include <Os/test/ut/interceptors/UtFile.hpp>
 
 namespace Os {
 namespace Test {

@@ -1,10 +1,10 @@
 // ======================================================================
-// \title Os/Ut/File.hpp
+// \title Os/test/ut/interceptors/UtFile.hpp
 // \brief TEST ONLY: Os::File implementation selected in unit test builds
 // ======================================================================
 #include <Os/Interfaces/FileInterface.hpp>
-#ifndef OS_UT_FILE_HPP_
-#define OS_UT_FILE_HPP_
+#ifndef OS_TEST_UT_INTERCEPTORS_UTFILE_HPP_
+#define OS_TEST_UT_INTERCEPTORS_UTFILE_HPP_
 
 // Validate that OS_UT_REAL_FILE_HEADER was defined by config/OsSelection.hpp
 #ifndef OS_UT_REAL_FILE_HEADER
@@ -47,4 +47,4 @@ class UtFile : public FileInterface {
 }  // namespace Ut
 }  // namespace Os
 
-#endif  // OS_UT_FILE_HPP_
+#endif  // OS_TEST_UT_INTERCEPTORS_UTFILE_HPP_

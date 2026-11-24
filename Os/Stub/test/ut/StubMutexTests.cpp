@@ -1,82 +1,134 @@
 // ======================================================================
 // \title Os/Stub/test/ut/StubMutexTests.cpp
-// \brief stub implementation for Os::MutexInterface testing
+// \brief interface tests for Os::Mutex using a test interceptor
 // This ensures the delegation of function calls happens properly
 // ======================================================================
 #include <gtest/gtest.h>
-#include "Os/Stub/test/Mutex.hpp"
-#include "Os/test/ut/mutex/CommonTests.hpp"
-#include "Os/test/ut/mutex/RulesHeaders.hpp"
+#include "Os/Mutex.hpp"
+#include "Os/test/ut/interceptors/MutexTestInterceptor.hpp"
+#include "STest/Random/Random.hpp"
 
-using namespace Os::Stub::Mutex::Test;
-
-// Os::Mutex wrapper instantiated on the test stub, independent of the selection in config/OsSelection.hpp
-using MutexUnderTest = Os::MutexCommon<TestMutex>;
-
-// Basic file tests
-class Interface : public ::testing::Test {
+//! Interceptor recording the last call made on any Os::Mutex and returning injected results, never calling `real`
+class RecordingInterceptor : public Os::Test::MutexTestInterceptor {
   public:
-    //! Setup function delegating to UT setUp function
-    void SetUp() override { StaticData::data = StaticData(); }
+    //! Enumeration of last function called
+    enum LastFn { NONE_FN, CONSTRUCT_FN, DESTRUCT_FN, TAKE_FN, RELEASE_FN, GET_HANDLE_FN };
 
-    //! Setup function delegating to UT tearDown function
-    void TearDown() override { StaticData::data = StaticData(); }
+    void constructed(Os::MutexInterface& real) override {
+        this->lastCalled = CONSTRUCT_FN;
+        this->lastReal = &real;
+    }
+
+    void destructed(Os::MutexInterface& real) override {
+        this->lastCalled = DESTRUCT_FN;
+        this->lastReal = &real;
+    }
+
+    Os::MutexHandle* getHandle(Os::MutexInterface& real) override {
+        this->lastCalled = GET_HANDLE_FN;
+        this->lastReal = &real;
+        return this->handle;
+    }
+
+    Status take(Os::MutexInterface& real) override {
+        this->lastCalled = TAKE_FN;
+        this->lastReal = &real;
+        return this->takeStatus;
+    }
+
+    Status release(Os::MutexInterface& real) override {
+        this->lastCalled = RELEASE_FN;
+        this->lastReal = &real;
+        return this->releaseStatus;
+    }
+
+    LastFn lastCalled = NONE_FN;             //!< Last function called
+    Os::MutexInterface* lastReal = nullptr;  //!< Real implementation passed to the last call
+    Os::MutexHandle* handle = nullptr;       //!< Handle to return from getHandle
+    Status takeStatus = Status::OP_OK;       //!< Status to return from take
+    Status releaseStatus = Status::OP_OK;    //!< Status to return from release
 };
 
-// Ensure that Os::Mutex properly calls the implementation constructor
+// Interface tests: the interceptor lives for the duration of each test
+class Interface : public ::testing::Test {
+  public:
+    RecordingInterceptor interceptor;
+};
+
+// Ensure that Os::Mutex properly constructs its implementation
 TEST_F(Interface, Construction) {
-    MutexUnderTest mutex;
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CONSTRUCT_FN);
+    Os::Mutex mutex;
+    ASSERT_EQ(interceptor.lastCalled, RecordingInterceptor::CONSTRUCT_FN);
+    ASSERT_NE(interceptor.lastReal, nullptr);
 }
 
-// Ensure that Os::Mutex properly calls the implementation destructor
+// Ensure that Os::Mutex properly destroys its implementation
 TEST_F(Interface, Destruction) {
-    delete (new MutexUnderTest);
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::DESTRUCT_FN);
+    delete (new Os::Mutex);
+    ASSERT_EQ(interceptor.lastCalled, RecordingInterceptor::DESTRUCT_FN);
 }
 
 // Ensure that Os::Mutex properly calls the implementation take()
 TEST_F(Interface, Take) {
-    MutexUnderTest mutex;
-    StaticData::data.takeStatus = Os::Mutex::Status::ERROR_OTHER;
-    ASSERT_EQ(mutex.take(), StaticData::data.takeStatus);
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::TAKE_FN);
+    Os::Mutex mutex;
+    interceptor.takeStatus = Os::Mutex::Status::ERROR_OTHER;
+    ASSERT_EQ(mutex.take(), interceptor.takeStatus);
+    ASSERT_EQ(interceptor.lastCalled, RecordingInterceptor::TAKE_FN);
 }
 
 // Ensure that Os::Mutex properly calls the implementation release()
 TEST_F(Interface, Release) {
-    MutexUnderTest mutex;
-    StaticData::data.releaseStatus = Os::Mutex::Status::ERROR_OTHER;
-    ASSERT_EQ(mutex.release(), StaticData::data.releaseStatus);
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::RELEASE_FN);
+    Os::Mutex mutex;
+    interceptor.releaseStatus = Os::Mutex::Status::ERROR_OTHER;
+    ASSERT_EQ(mutex.release(), interceptor.releaseStatus);
+    ASSERT_EQ(interceptor.lastCalled, RecordingInterceptor::RELEASE_FN);
 }
 
-// Ensure that Os::Mutex properly calls the implementation lock()
+// Ensure that Os::Mutex properly calls the implementation take() from lock()
 TEST_F(Interface, Lock) {
-    MutexUnderTest mutex;
+    Os::Mutex mutex;
     mutex.lock();
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::TAKE_FN);
+    ASSERT_EQ(interceptor.lastCalled, RecordingInterceptor::TAKE_FN);
 }
 
-// Ensure that Os::Mutex properly calls the implementation unLock()
+// Ensure that Os::Mutex properly calls the implementation release() from unLock()
 TEST_F(Interface, UnLock) {
-    MutexUnderTest mutex;
+    Os::Mutex mutex;
     mutex.unLock();
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::RELEASE_FN);
+    ASSERT_EQ(interceptor.lastCalled, RecordingInterceptor::RELEASE_FN);
 }
 
-// Ensure that Os::Mutex properly calls the implementation unlock()
+// Ensure that Os::Mutex properly calls the implementation release() from unlock()
 TEST_F(Interface, UnlockAlias) {
-    MutexUnderTest mutex;
+    Os::Mutex mutex;
     mutex.unlock();
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::RELEASE_FN);
+    ASSERT_EQ(interceptor.lastCalled, RecordingInterceptor::RELEASE_FN);
 }
 
 // Ensure that Os::Mutex properly calls the implementation getHandle()
 TEST_F(Interface, GetHandle) {
-    MutexUnderTest mutex;
-    ASSERT_EQ(mutex.getHandle(), nullptr);
-    ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_HANDLE_FN);
+    Os::Mutex mutex;
+    Os::MutexHandle handle;
+    interceptor.handle = &handle;
+    ASSERT_EQ(mutex.getHandle(), &handle);
+    ASSERT_EQ(interceptor.lastCalled, RecordingInterceptor::GET_HANDLE_FN);
+}
+
+// Ensure that calls pass through to the real implementation once the interceptor is removed
+TEST(PassThrough, NoInterceptor) {
+    Os::Mutex mutex;
+    ASSERT_EQ(mutex.take(), Os::Mutex::Status::OP_OK);
+    ASSERT_EQ(mutex.release(), Os::Mutex::Status::OP_OK);
+    ASSERT_NE(mutex.getHandle(), nullptr);
+}
+
+// Ensure that functions the interceptor does not override pass through to the real implementation
+TEST(PassThrough, DefaultInterceptor) {
+    Os::Test::MutexTestInterceptor interceptor;
+    Os::Mutex mutex;
+    ASSERT_EQ(mutex.take(), Os::Mutex::Status::OP_OK);
+    ASSERT_EQ(mutex.release(), Os::Mutex::Status::OP_OK);
+    ASSERT_NE(mutex.getHandle(), nullptr);
 }
 
 int main(int argc, char** argv) {

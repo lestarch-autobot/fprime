@@ -17,7 +17,6 @@ add_compile_options(
 register_os_implementation("File;FileSystem;Directory" Test_Stub)
 register_os_implementation(Console Test_Stub)
 register_os_implementation(Task Test_Stub)
-register_os_implementation("Mutex;ConditionVariable" Test_Stub)
 register_os_implementation(Cpu Test_Stub)
 register_os_implementation(Memory Test_Stub)
 register_os_implementation(Queue Test_Stub)
@@ -122,24 +121,16 @@ if (TARGET StubTaskTest)
     )
 endif ()
 
-#### Mutex Stub Testing ####
+#### Mutex Interface Testing ####
 register_fprime_ut(
     StubMutexTest
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/ut/StubMutexTests.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/../../test/ut/mutex/CommonTests.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/../../test/ut/mutex/MutexRules.cpp"
   DEPENDS
-    Os_Mutex_Test_Stub_Implementation
+    Os
     Fw_Types
     STest
 )
-if (TARGET StubMutexTest)
-    target_compile_definitions(StubMutexTest PRIVATE
-        OS_TEST_MUTEX_HEADER="Os/Stub/test/Mutex.hpp"
-        OS_TEST_MUTEX_IMPLEMENTATION=Os::Stub::Mutex::Test::TestMutex
-    )
-endif ()
 
 #### FileSystem Stub Testing ####
 register_fprime_ut(
@@ -170,8 +161,9 @@ register_fprime_ut(
     StubConditionVariableTest
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/ut/StubConditionTests.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/ConditionVariable.cpp"
   DEPENDS
-    Os_Mutex_Test_Stub_Implementation
+    Os
     Fw_Types
     Fw_Time
     STest

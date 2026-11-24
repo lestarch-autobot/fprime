@@ -14,7 +14,7 @@
 
 #include "CmdSequencerGTestBase.hpp"
 #include "Fw/Types/MallocAllocator.hpp"
-#include "Os/Interfaces/Test/FileTestInterceptor.hpp"
+#include "Os/test/ut/interceptors/FileTestInterceptor.hpp"
 #include "Svc/CmdSequencer/CmdSequencerImpl.hpp"
 #include "Svc/CmdSequencer/formats/AMPCSSequence.hpp"
 #include "Svc/CmdSequencer/test/ut/SequenceFiles/SequenceFiles.hpp"

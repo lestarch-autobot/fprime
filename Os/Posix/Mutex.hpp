@@ -2,10 +2,11 @@
 // \title Os/Posix/Mutex.hpp
 // \brief Posix definitions for Os::Mutex
 // ======================================================================
+// Included before the guard: Os/Mutex.hpp includes the selected implementation, which may include this file
+#include <Os/Interfaces/MutexInterface.hpp>
 #ifndef OS_POSIX_MUTEX_HPP
 #define OS_POSIX_MUTEX_HPP
 #include <pthread.h>
-#include <Os/Interfaces/MutexInterface.hpp>
 
 namespace Os {
 namespace Posix {

@@ -7,11 +7,6 @@
 #define __RULES_HEADERS__
 #include <gtest/gtest.h>
 #include "Os/Mutex.hpp"
-// A test of a specific implementation names it by defining OS_TEST_MUTEX_IMPLEMENTATION and OS_TEST_MUTEX_HEADER
-// (see its CMakeLists.txt); otherwise the selected Os::Mutex is tested
-#ifdef OS_TEST_MUTEX_IMPLEMENTATION
-#include OS_TEST_MUTEX_HEADER
-#endif
 #include "STest/Rule/Rule.hpp"
 #include "STest/Scenario/BoundedScenario.hpp"
 #include "STest/Scenario/RandomScenario.hpp"
@@ -19,11 +14,7 @@
 
 namespace Os {
 namespace Test {
-#ifdef OS_TEST_MUTEX_IMPLEMENTATION
-using MutexUnderTest = Os::MutexCommon<OS_TEST_MUTEX_IMPLEMENTATION>;
-#else
 using MutexUnderTest = Os::Mutex;
-#endif
 namespace Mutex {
 
 struct Tester {

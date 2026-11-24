@@ -212,7 +212,7 @@ register_fprime_config(
 - **The Implementation Must Be Linked**: the alias changes only the C++ type. The module providing the implementation must still be in the link (see Step 7).
 - **Paired Services**: a ConditionVariable implementation operates on the handle of the selected `Os::Mutex`, so the two must be selected as a compatible pair (see the default header).
 - **RawTime**: the implementation must be copyable and constructible from a `RawTimeSource`.
-- **Unit Test Builds**: under `BUILD_UT` the default wraps the File and RawTime selections in `Os::Ut::File::UtFile` and `Os::Ut::RawTime::UtRawTime` so that unit tests can intercept calls (see `Os/Interfaces/Test/`). Keep that structure in an override if the unit tests of F´ components are to be run against it.
+- **Unit Test Builds**: under `BUILD_UT` the default wraps the File, RawTime and Mutex selections in `Os::Ut::File::UtFile`, `Os::Ut::RawTime::UtRawTime` and `Os::Ut::Mutex::UtMutex` so that unit tests can intercept calls (see `Os/test/ut/interceptors/`). Keep that structure in an override if the unit tests of F´ components are to be run against it.
 
 ---
 
