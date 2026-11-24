@@ -104,12 +104,6 @@
      "reset": false
     }
    ],
-   "complete": [
-    "STD"
-   ],
-   "all_of": [
-    "event version.FrameworkVersion count >= 1"
-   ],
    "metrics": [],
    "rationale": [],
    "evidence": "Version events equal to the manifest's describe strings."
@@ -132,20 +126,6 @@
      "start_id": 20,
      "end_id": 21,
      "reset": false
-    }
-   ],
-   "complete": [
-    "STD"
-   ],
-   "all_of": [
-    "ABS",
-    {
-     "helper": "channel_tracks_dispatch_count",
-     "text": "cmdDisp.CommandsDispatched has >= 1 sample in the window",
-     "args": {
-      "tick_s": 1.0,
-      "min_samples": 1
-     }
     }
    ],
    "metrics": [],
@@ -195,36 +175,6 @@
      "reset": false
     }
    ],
-   "complete": {
-    "S": [
-     "STD"
-    ],
-    "W": [
-     "STD"
-    ],
-    "T": [
-     "STD"
-    ]
-   },
-   "all_of": {
-    "S": [
-     "event tlmSend.PacketNotFound count == 0"
-    ],
-    "W": [
-     "ABS",
-     {
-      "helper": "channel_tracks_dispatch_count",
-      "text": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
-      "args": {
-       "tick_s": 1.0,
-       "min_samples": 2
-      }
-     }
-    ],
-    "T": [
-     "event tlmSend.PacketNotFound count == 0"
-    ]
-   },
    "metrics": [],
    "rationale": [
     {
@@ -280,36 +230,6 @@
      "reset": false
     }
    ],
-   "complete": {
-    "S": [
-     "STD"
-    ],
-    "W": [
-     "STD"
-    ],
-    "T": [
-     "STD"
-    ]
-   },
-   "all_of": {
-    "S": [
-     "event tlmSend.PacketNotFound count == 0"
-    ],
-    "W": [
-     "ABS",
-     {
-      "helper": "channel_tracks_dispatch_count",
-      "text": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
-      "args": {
-       "tick_s": 1.0,
-       "min_samples": 2
-      }
-     }
-    ],
-    "T": [
-     "event tlmSend.PacketNotFound count == 0"
-    ]
-   },
    "metrics": [],
    "rationale": [
     {
@@ -340,16 +260,6 @@
      "end_id": 51,
      "reset": false
     }
-   ],
-   "complete": [
-    "both markers present",
-    "commands_sent == count(event cmdDisp.OpCodeDispatched)"
-   ],
-   "all_of": [
-    "event cmdDisp.OpCodeError count == 1",
-    "event tlmSend.PacketNotFound(packetId=999) count == 1",
-    "event tlmSend.PacketSent count == 0",
-    "event tlmSend.NoChan count == 0"
    ],
    "metrics": [],
    "rationale": [
@@ -395,30 +305,6 @@
      "reset": false
     }
    ],
-   "complete": {
-    "S": [
-     "STD"
-    ],
-    "W": [
-     "STD"
-    ]
-   },
-   "all_of": {
-    "S": [
-     "event tlmSend.PacketNotFound count == 0"
-    ],
-    "W": [
-     "ABS",
-     {
-      "helper": "channel_tracks_dispatch_count",
-      "text": "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
-      "args": {
-       "tick_s": 1.0,
-       "min_samples": 2
-      }
-     }
-    ]
-   },
    "metrics": [],
    "rationale": [],
    "evidence": "Rising CommandsDispatched samples that match the OpCodeDispatched rows the ground archive holds (a path independent of the packetizer's storage).",
@@ -446,7 +332,8 @@
   "5. 2026-11-23 designer — system coverage threshold provisionally 50 % lines; for gate 1.",
   "6. 2026-11-24 designer, review round 1 — packets are sent by the rate logic, not SEND_PKT (SEND_PKT bypasses enable checks and logs PacketSent on acceptance); menu max_count 2 over four faulted tests; TPK-013 is UT only with no system test traced.",
   "7. 2026-11-24 designer, review round 2 — the hold-back and its release sit outside the L2 windows, two ticks clear of the markers.",
-  "8. 2026-11-24 harness builder, venue A dry runs — the tooling's record integrity accepts no command outside a declared window, so the hold-back and release commands of L2-1 and L2-2 and the two clears of L7-1 are bracketed by setup (`S`) and teardown (`T`) windows that share an edge with the measurement window `W`; they are judged for completeness and for no `PacketNotFound` only. `W`, its markers, checks and planted faults are unchanged."
+  "8. 2026-11-24 harness builder, venue A dry runs — the tooling's record integrity accepts no command outside a declared window, so the hold-back and release commands of L2-1 and L2-2 and the two clears of L7-1 are bracketed by setup (`S`) and teardown (`T`) windows that share an edge with the measurement window `W`; they are judged for completeness and for no `PacketNotFound` only. `W`, its markers, checks and planted faults are unchanged.",
+  "9. 2026-11-24 approver ruling, venue A coverage campaign — a plan that keeps `complete`/`all_of` is judged by the tooling's engine and its audit builds no runner-versus-replay table, so the pass rules move, unchanged, to the named checks of the integration tests (`require` for the former `complete` entries, `check` for the former `all_of` entries; `test_L*.py` beside this plan). `amendment-4-equivalence.md` lists every old entry against its new call: 26 identical, 4 helper checks reworded in form only, none added, none dropped. Windows, markers, groups `STD` and `ABS`, rationale, planted faults and their `fails` sets, thresholds, coverage and not-covered entries are unchanged."
  ],
  "image_version": {
   "policy": "required"
