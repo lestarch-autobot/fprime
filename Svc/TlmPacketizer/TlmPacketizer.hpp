@@ -48,6 +48,11 @@ class TlmPacketizer final : public TlmPacketizerComponentBase, public Fw::ParamE
     TlmPacketizer(const char* const compName /*!< The component name*/
     );
 
+    //! Configure the packets. Must complete before the component's ports are invoked.
+    //!
+    //! The channel entries summed over all packets of packetList (the memberships) must not exceed
+    //! MAX_PACKETIZER_MEMBERSHIPS; this is asserted, with the number needed as the first assert argument.
+    //! A channel listed more than once, in one packet or in several, is written at every listing.
     void setPacketList(
         const TlmPacketizerPacketList& packetList,   // channels to packetize
         const Svc::TlmPacketizerPacket& ignoreList,  // channels to ignore (i.e. no warning event if not packetized)
@@ -221,9 +226,11 @@ class TlmPacketizer final : public TlmPacketizerComponentBase, public Fw::ParamE
         FwChanIdType id;                    //!< telemetry id stored in slot
         FwSizeType channelSize;             //!< max serialized size of the channel in bytes
         FwTlmPacketizePoolIndexType first;  //!< index in m_memberships of the channel's first membership
-        FwTlmPacketizePoolIndexType count;  //!< number of memberships of the channel; 0 for an omitted channel
-        bool ignored;                       //!< ignored channel id
-        bool hasValue;                      //!< if the entry has received a value at least once
+        //! number of memberships of the channel; 0 for an omitted channel. While setPacketList fills the pool it
+        //! is the channel's fill cursor, and ends at the number of memberships again
+        FwTlmPacketizePoolIndexType count;
+        bool ignored;   //!< ignored channel id
+        bool hasValue;  //!< if the entry has received a value at least once
     };
 
     //! One listing of a channel in a packet

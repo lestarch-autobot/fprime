@@ -1936,7 +1936,8 @@ void TlmPacketizerTester::duplicateChannelIdMatchingSizeTest() {
 
 void TlmPacketizerTester::channelInMaxPacketsTest() {
     this->stockConfiguration();
-    // One channel present in every one of MAX_PACKETIZER_PACKETS packets sets every packetOffset slot of its entry
+    // One channel present in every one of MAX_PACKETIZER_PACKETS packets takes MAX_PACKETIZER_PACKETS memberships, one
+    // per packet
     TlmPacketizerChannelEntry sharedList[] = {{10, 4}};
     TlmPacketizerPacket packets[MAX_PACKETIZER_PACKETS]{};
     TlmPacketizerPacketList maxPacketList{};
@@ -2047,7 +2048,7 @@ FwSizeType TlmPacketizerTester::membershipsInUse() const {
 
 void TlmPacketizerTester::membershipCapacityExactTest() {
     this->stockConfiguration();
-    SizedPacketList sized;
+    SizedPacketList sized{};
     fillSizedPacketList(sized, MAX_PACKETIZER_MEMBERSHIPS, MAX_PACKETIZER_CHANNELS);
     this->component.setPacketList(sized.list, IGNORE_OMIT_LIST, 1);
     ASSERT_EQ(this->membershipsInUse(), MAX_PACKETIZER_MEMBERSHIPS);
@@ -2069,7 +2070,7 @@ void TlmPacketizerTester::membershipCapacityExactTest() {
 
 void TlmPacketizerTester::membershipOverflowTest() {
     this->stockConfiguration();
-    SizedPacketList sized;
+    SizedPacketList sized{};
     fillSizedPacketList(sized, MAX_PACKETIZER_MEMBERSHIPS + 1, MAX_PACKETIZER_CHANNELS);
     // The assert reports the total needed first, then the capacity
     ASSERT_DEATH_IF_SUPPORTED(this->component.setPacketList(sized.list, IGNORE_OMIT_LIST, 1),
@@ -2083,7 +2084,7 @@ void TlmPacketizerTester::omittedChannelsUseNoPoolEntryTest() {
     constexpr FwSizeType NUM_OMITTED = 2;
     static_assert(MAX_PACKETIZER_CHANNELS > NUM_OMITTED, "test needs channel slots for the omitted channels");
     constexpr FwSizeType NUM_USED = MAX_PACKETIZER_CHANNELS - NUM_OMITTED;
-    SizedPacketList sized;
+    SizedPacketList sized{};
     fillSizedPacketList(sized, MAX_PACKETIZER_MEMBERSHIPS, NUM_USED);
     TlmPacketizerChannelEntry omittedList[NUM_OMITTED] = {{static_cast<FwChanIdType>(NUM_USED + 1), 0},
                                                           {static_cast<FwChanIdType>(NUM_USED + 2), 0}};
@@ -2220,29 +2221,48 @@ void TlmPacketizerTester::ignoreOmitListTest() {
     // packetList lists six distinct channels; the omit list adds two
     this->component.setPacketList(packetList, ignore, 2);
     ASSERT_EQ(this->component.m_numChannels, 8U);
+    ASSERT_EQ(this->membershipsInUse(), 7U);
 
     // Without the omit list the omitted channels take no slot and are reported as unknown
     this->component.setPacketList(packetList, IGNORE_OMIT_LIST, 2);
     ASSERT_EQ(this->component.m_numChannels, 6U);
+    // The pool is rebuilt by the second call: the packets' seven channel entries, each written where listed
+    ASSERT_EQ(this->membershipsInUse(), 7U);
     Fw::Time ts;
     Fw::TlmBuffer buff;
     ASSERT_EQ(Fw::FW_SERIALIZE_OK, buff.serializeFrom(static_cast<U32>(20)));
     this->invoke_to_TlmRecv(0, 25, ts, buff);
     ASSERT_EVENTS_NoChan_SIZE(1);
     ASSERT_EVENTS_NoChan(0, 25);
+
+    // Channel 22 is the last entry of the second packet, after channels of 4, 8 and 2 bytes
+    constexpr FwSizeType HEADER =
+        sizeof(FwPacketDescriptorType) + Fw::Time::SERIALIZED_SIZE + sizeof(FwTlmPacketizeIdType);
+    buff.resetSer();
+    ASSERT_EQ(Fw::FW_SERIALIZE_OK, buff.serializeFrom(static_cast<U8>(0x77)));
+    this->invoke_to_TlmRecv(0, 22, ts, buff);
+    this->invoke_to_Run(0, 0);
+    this->component.doDispatch();
+    ASSERT_from_PktSend_SIZE(Svc::TelemetrySection::NUM_SECTIONS);
+    const Fw::ComBuffer& sent = this->fromPortHistory_PktSend->at(0).data;
+    ASSERT_EQ(sent.getSize(), HEADER + 15);
+    ASSERT_EQ(sent.getBuffAddr()[HEADER + 14], 0x77);
 }
 
 void TlmPacketizerTester::portsBeforeSetPacketListAssertTest() {
     Fw::Time ts;
     Fw::TlmBuffer buff;
-    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_TlmRecv(0, 10, ts, buff), "TlmPacketizer\\.cpp");
-    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_TlmGet(0, 10, ts, buff), "TlmPacketizer\\.cpp");
+    // The configured check reports no arguments, so its message ends at the file and line; this keeps the
+    // asserts of the file that report arguments from satisfying the check
+    const std::string notConfigured = "TlmPacketizer\\.cpp:[0-9]+\"\n";
+    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_TlmRecv(0, 10, ts, buff), notConfigured);
+    ASSERT_DEATH_IF_SUPPORTED(this->invoke_to_TlmGet(0, 10, ts, buff), notConfigured);
     ASSERT_DEATH_IF_SUPPORTED(
         {
             this->invoke_to_Run(0, 0);
             this->component.doDispatch();
         },
-        "TlmPacketizer\\.cpp");
+        notConfigured);
 }
 
 void TlmPacketizerTester::oversizedPacketTest() {

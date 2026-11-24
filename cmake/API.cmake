@@ -736,7 +736,8 @@ endmacro(register_fprime_build_autocoder)
 #
 # Registers a dictionary checker owned by the current module. A dictionary checker is a Python script that reads a
 # deployment's topology dictionary and generates a C++ source file, typically of `static_assert`s on the module's
-# configuration. The `dictionary_check` target runs the checker for every deployment that depends on the owning module
+# configuration. The dictionary check stage (`cmake/target/dictionary_check.cmake`, which adds no build target of its
+# own) runs the checker as part of building every deployment that depends on the owning module
 # and compiles the generated file into that deployment, so a deployment whose dictionary violates the check fails to
 # build. See: [Targets](../../../user-manual/build-system/cmake-targets.md).
 #

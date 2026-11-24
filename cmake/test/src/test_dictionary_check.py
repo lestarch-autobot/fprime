@@ -118,6 +118,39 @@ def test_script_null_members_and_omitted(tmp_path):
     assert "static constexpr FwSizeType CHANNELS = 0;" in text
 
 
+def test_script_name_starting_with_digit(tmp_path):
+    """A packet set name that is not a C++ identifier gets a namespace that is one"""
+    output = tmp_path / "out.cpp"
+    result = run_script(write_dictionary(tmp_path, packet_set(name="1.Set")), output)
+    assert result.returncode == 0, result.stderr
+    text = output.read_text()
+    assert "namespace _1_Set {" in text
+    assert '"Packet set 1.Set needs MAX_PACKETIZER_MEMBERSHIPS >= 0"' in text
+
+
+def test_script_escapes_name_in_string_literal(tmp_path):
+    """Quotes, backslashes and control characters of a packet set name cannot leave the string literal"""
+    output = tmp_path / "out.cpp"
+    name = 'a"b\\c\nd'
+    result = run_script(write_dictionary(tmp_path, packet_set(name=name)), output)
+    assert result.returncode == 0, result.stderr
+    text = output.read_text()
+    assert '"Packet set a\\"b\\\\c\\012d needs MAX_PACKETIZER_MEMBERSHIPS >= 0"' in text
+    assert "namespace a_b_c_d {" in text
+    # One line per source line: the name added no line break
+    assert len(text.splitlines()) == 16
+
+
+def test_script_output_mode(tmp_path):
+    """The generated file gets the mode of a newly created file, not that of the private temporary file"""
+    output = tmp_path / "out.cpp"
+    plain = tmp_path / "plain"
+    plain.write_text("")
+    result = run_script(write_dictionary(tmp_path, packet_set()), output)
+    assert result.returncode == 0, result.stderr
+    assert output.stat().st_mode == plain.stat().st_mode
+
+
 PACKET = {"name": "P", "id": 1, "group": 1, "members": ["a.One"]}
 
 
@@ -148,6 +181,11 @@ PACKET = {"name": "P", "id": 1, "group": 1, "members": ["a.One"]}
             {"telemetryPacketSets": [{"name": "Set"}, {"name": "Set"}]},
             [],
             "packet set name Set is not unique",
+        ),
+        (
+            {"telemetryPacketSets": [{"name": "A-B"}, {"name": "A_B"}]},
+            [],
+            "packet set name A_B is not unique",
         ),
         (packet_set(), ["-D", f"{OMIT_LIST}=MAYBE"], "must be ON or OFF"),
         (packet_set(), ["-D", "OTHER=ON"], "unknown definition OTHER=ON"),

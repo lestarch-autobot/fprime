@@ -116,6 +116,8 @@ void TlmPacketizer::setPacketList(const TlmPacketizerPacketList& packetList,
             TlmEntry& entry = this->m_channels[entryIndex];
             entry.ignored = false;
             entry.channelSize = channelSize;
+            // Cannot wrap unnoticed: a wrap needs more entries than FwTlmPacketizePoolIndexType represents, which
+            // is more than MAX_PACKETIZER_MEMBERSHIPS (static_assert above), so the total check below fires
             entry.count++;
             totalMemberships++;
 
@@ -150,8 +152,8 @@ void TlmPacketizer::setPacketList(const TlmPacketizerPacketList& packetList,
     FW_ASSERT(totalMemberships <= MAX_PACKETIZER_MEMBERSHIPS, static_cast<FwAssertArgType>(totalMemberships),
               static_cast<FwAssertArgType>(MAX_PACKETIZER_MEMBERSHIPS));
 
-    // Pass 2: prefix sum of the counts gives each channel the start of its range in the pool. The counts are
-    // reset to serve as the fill cursors of pass 3.
+    // Pass 2: prefix sum of the counts gives each channel the start of its range in the pool. Each count is
+    // reset here and reused as the channel's fill cursor in pass 3, which counts it back up to its pass 1 value.
     FwSizeType runningMemberships = 0;
     for (FwSizeType entryIndex = 0; entryIndex < this->m_numChannels; entryIndex++) {
         TlmEntry& entry = this->m_channels[entryIndex];
@@ -247,6 +249,8 @@ void TlmPacketizer ::TlmRecv_handler(const FwIndexType portNum,
     const FwSizeType first = entry.first;
     for (FwSizeType index = first; index < first + entry.count; index++) {
         const Membership& membership = this->m_memberships[index];
+        FW_ASSERT(membership.packet < this->m_numPackets, static_cast<FwAssertArgType>(membership.packet),
+                  static_cast<FwAssertArgType>(this->m_numPackets));
         BufferEntry& fillBuffer = this->m_fillBuffers[membership.packet];
         // get destination address
         Os::ScopeLock lock(this->m_lock);
@@ -310,6 +314,8 @@ Fw::TlmValid TlmPacketizer ::TlmGet_handler(FwIndexType portNum,  //!< The port 
 
     if (entry.count > 0) {
         const Membership& membership = this->m_memberships[entry.first];
+        FW_ASSERT(membership.packet < this->m_numPackets, static_cast<FwAssertArgType>(membership.packet),
+                  static_cast<FwAssertArgType>(this->m_numPackets));
         const BufferEntry& fillBuffer = this->m_fillBuffers[membership.packet];
         // copy chan val into the tlm buf
         Os::ScopeLock lock(this->m_lock);
