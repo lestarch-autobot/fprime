@@ -1,0 +1,279 @@
+{
+ "name": "TPK-POOL — Svc.TlmPacketizer membership pool (issue 6431)",
+ "uut": "Svc.TlmPacketizer (nasa/fprime, branch tlm-packetizer-membership-pool)",
+ "deployment": "Any deployment whose telemetry sender `tlmSend` is Svc.TlmPacketizer and whose packet set holds the three test packets of §0; venue named in the manifest and bench.json, not here",
+ "markers": {
+  "command": "cmdDisp.CMD_NO_OP_STRING",
+  "event": "cmdDisp.NoOpStringReceived",
+  "arg": "id"
+ },
+ "event_patterns": {
+  "cmdDisp.NoOpStringReceived": "Received a NO-OP string=(?P<id>\\d+)$",
+  "tlmSend.PacketSent": "Sent packet ID (?P<packetId>\\d+)$",
+  "tlmSend.PacketNotFound": "Could not find packet ID (?P<packetId>\\d+)$",
+  "tlmSend.NoChan": "Telemetry ID (?P<Id>0x[0-9a-fA-F]+) not packetized$"
+ },
+ "packets": {
+  "TpkA": [
+   "cmdDisp.CommandsDispatched"
+  ]
+ },
+ "std_complete": [
+  "both markers present",
+  "commands_sent == count(event cmdDisp.OpCodeDispatched)",
+  "event cmdDisp.OpCodeError count == 0"
+ ],
+ "abs": {
+  "ABS": [
+   "event tlmSend.NoChan count == 0",
+   "event tlmSend.PacketNotFound count == 0"
+  ]
+ },
+ "helpers_module": "planted_faults.py",
+ "helpers": [],
+ "coverage": {
+  "ut": {
+   "lines_min": 95
+  },
+  "system": {
+   "lines_min": 50
+  },
+  "not_covered_ack": [
+   "setPacketList overflow, packet-count and size-mismatch asserts: reaching them needs a different image (UT death tests cover them)",
+   "per-packet override reload, mirror-allocation failure, oversized-channel paths: unchanged by this issue, covered by the existing unit tests"
+  ],
+  "rationale": "System threshold lowered from 75 to 50: the change is an internal storage layout; most of the component (override persistence, rate logic) is outside this plan and already unit-tested. UT 95 because every assert branch is forced on the host."
+ },
+ "scope": [
+  "- UUT: `Svc.TlmPacketizer`; SHA in the manifest.",
+  "- Venue-neutral by ruling (ledger 14): tests use only `tlmSend`, `cmdDisp` and `version` commands, events and channels. Venues for the runs: fprime-zephyr-reference on bench hardware (prime), Ref on a Linux host (fallback); both recorded per run.",
+  "- Test deployment delta (same in every venue, uncommitted to the UUT): `tlmSend` is `Svc.TlmPacketizer`; packet set adds `TpkA` id 60 and `TpkB` id 61, each holding `cmdDisp.CommandsDispatched` (one channel, two memberships), and `TpkC` id 62 holding only `cmdDisp.CommandsDropped`; all three in group 1.",
+  "- Out of scope: the build-time sizing check (pytest in `cmake/test`, not a system test); rate logic and override persistence (unchanged)."
+ ],
+ "entry_gates": [
+  "- L0: desk-checked; bench confirmation pending.",
+  "- Stage-1 close: `fprime-util check` on `Svc/TlmPacketizer` passes with every unit-test row of the SDD implemented.",
+  "- Marker round-trip: `CMD_NO_OP_STRING(\"<n>\")` returns `NoOpStringReceived` byte-exact through the archive.",
+  "- Image built from the manifest SHAs; dictionary from that build."
+ ],
+ "levels": [
+  "L0 provenance/feasibility · L2 functional · L6 negative controls · L7 final state. L3 (reset), L4 (endurance) and L5 (fault paths) have no test: the change has no persistent state, no timing requirement, and its only fault path is a boot assert that needs a different image."
+ ],
+ "requirements": {
+  "TPK-001": {
+   "tests": [
+    "L2-1",
+    "L2-2"
+   ],
+   "verification": "L2-1, L2-2 + UT",
+   "note": "Unit Test, System test"
+  },
+  "TPK-003": {
+   "tests": [
+    "L2-1",
+    "L2-2"
+   ],
+   "verification": "L2-1, L2-2 + UT",
+   "note": "Unit Test, System test"
+  },
+  "TPK-013": {
+   "tests": [
+    "L0-2"
+   ],
+   "verification": "UT only",
+   "note": "Accept side seen at L0-2 (the image boots and sends with a two-membership channel); the assert side needs an image that overflows the pool, which is a different build, so it is a unit death test. No second planted-fault-disjoint system test is possible."
+  }
+ },
+ "tests": [
+  {
+   "id": "L0-1",
+   "title": "Image identity",
+   "purpose": "Shows the running image is the one built from the manifest's commits.",
+   "covers": [],
+   "setup": "Image running, ground system attached.",
+   "procedure": [
+    "MARK(10)",
+    "VERSION(ALL)",
+    "MARK(11)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 10,
+     "end_id": 11,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [],
+   "evidence": "Version events equal to the manifest's describe strings."
+  },
+  {
+   "id": "L0-2",
+   "title": "Packet list accepted at boot",
+   "purpose": "Shows a packet list with a channel in two packets is accepted and packets flow.",
+   "covers": [
+    "TPK-013"
+   ],
+   "setup": "As L0-1.",
+   "procedure": [
+    "MARK(20)",
+    "bracket (2 TpkA samples)",
+    "MARK(21)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 20,
+     "end_id": 21,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [],
+   "evidence": "TpkA samples inside the window; no NoChan event."
+  },
+  {
+   "id": "L2-1",
+   "title": "Channel value reaches its first packet",
+   "purpose": "Shows a channel update is stored in, and downlinked by, the first packet that lists it.",
+   "covers": [
+    "TPK-001",
+    "TPK-003"
+   ],
+   "setup": "L0-2 passed.",
+   "procedure": [
+    "MARK(30)",
+    "OVERRIDE_PACKET_SEND(REALTIME, 61, DISABLED)",
+    "SEND_PKT(60, REALTIME)",
+    "CLEAR_PACKET_OVERRIDE(REALTIME, 61)",
+    "MARK(31)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 30,
+     "end_id": 31,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "cmdDisp.CommandsDispatched samples >= 1 after tlmSend.PacketSent(packetId=60)",
+     "text": "TpkB is held back for the window, so a CommandsDispatched sample after PacketSent(60) can only come from TpkA"
+    }
+   ],
+   "knobs": [
+    "send_other_packet"
+   ],
+   "evidence": "PacketSent(60) once, then a CommandsDispatched sample whose value counts the window's commands."
+  },
+  {
+   "id": "L2-2",
+   "title": "Channel value reaches its second packet",
+   "purpose": "Shows the same channel update is also stored in the second packet that lists it.",
+   "covers": [
+    "TPK-001",
+    "TPK-003"
+   ],
+   "setup": "L2-1 run.",
+   "procedure": [
+    "MARK(40)",
+    "OVERRIDE_PACKET_SEND(REALTIME, 60, DISABLED)",
+    "SEND_PKT(61, REALTIME)",
+    "CLEAR_PACKET_OVERRIDE(REALTIME, 60)",
+    "MARK(41)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 40,
+     "end_id": 41,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [
+    {
+     "pred": "cmdDisp.CommandsDispatched samples >= 1 after tlmSend.PacketSent(packetId=61)",
+     "text": "TpkA is held back for the window, so the sample can only come from TpkB, the channel's second membership"
+    }
+   ],
+   "knobs": [
+    "second_packet_left_disabled"
+   ],
+   "evidence": "PacketSent(61) once, then a CommandsDispatched sample equal to the dispatcher's own count."
+  },
+  {
+   "id": "L6-1",
+   "title": "Unknown packet is refused",
+   "purpose": "Shows a send request for an unknown packet is reported and sends nothing.",
+   "covers": [],
+   "setup": "L2-2 run.",
+   "procedure": [
+    "MARK(50)",
+    "SEND_PKT(999, REALTIME)",
+    "MARK(51)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 50,
+     "end_id": 51,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [],
+   "evidence": "PacketNotFound(999) once; no PacketSent."
+  },
+  {
+   "id": "L7-1",
+   "title": "Final state",
+   "purpose": "Leaves both test packets enabled and shows each still carries the channel.",
+   "covers": [],
+   "setup": "All earlier tests run.",
+   "procedure": [
+    "MARK(60)",
+    "ENABLE_SECTION(REALTIME, ENABLED)",
+    "CLEAR_PACKET_OVERRIDE(REALTIME, 60)",
+    "CLEAR_PACKET_OVERRIDE(REALTIME, 61)",
+    "SEND_PKT(60, REALTIME)",
+    "SEND_PKT(61, REALTIME)",
+    "MARK(61)"
+   ],
+   "windows": [
+    {
+     "name": "W",
+     "start_id": 60,
+     "end_id": 61,
+     "reset": false
+    }
+   ],
+   "metrics": [],
+   "rationale": [],
+   "evidence": "PacketSent(60) and PacketSent(61); the last CommandsDispatched sample equals the count of OpCodeDispatched events the ground archive holds since boot (independent of the packetizer)."
+  }
+ ],
+ "final_state": {
+  "accepted_evidence": "L7-1 window",
+  "rationale": "The component has no stored state to dump; the auditor recomputes the expected CommandsDispatched value from the archived OpCodeDispatched events, a path that does not pass through the packetizer's channel storage."
+ },
+ "not_covered": [
+  "- TPK-013 assert side, and every other setPacketList assert: needs a different image; unit death tests.",
+  "- Memory saved by the pool: not observable through commands or telemetry; shown by the SDD sizing table and the build's map file (inspection).",
+  "- The build-time sizing check: verified by pytest in `cmake/test` and a compile-failure fixture, not on a bench.",
+  "- TPK-002, 004..012: unchanged behavior, existing unit tests; no system test added by this issue."
+ ],
+ "decision_log": [
+  "1. 2026-11-23 approver — venue: fprime-zephyr-reference on bench hardware, fallback Ref on a Linux host (ledger 12).",
+  "2. 2026-11-23 approver — tests run in both venues; the venue is a run artifact and stays out of the SDD (ledger 14).",
+  "3. 2026-11-23 designer — marker = `cmdDisp.CMD_NO_OP_STRING`; no tester component is added.",
+  "4. 2026-11-23 designer — test packets TpkA/TpkB/TpkC are added to the test deployment only; for the approver at gate 1.",
+  "5. 2026-11-23 designer — system coverage threshold 50 % lines (see coverage.rationale); for the design review and gate 1."
+ ],
+ "image_version": {
+  "policy": "required"
+ }
+}

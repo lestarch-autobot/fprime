@@ -1,0 +1,40 @@
+{
+  "max_count": 2,
+  "knobs": [
+    {
+      "name": "second_packet_left_disabled",
+      "class": "uut-state",
+      "applies_to": [
+        "L2-2"
+      ],
+      "fails": {
+        "L2-2": [
+          "event tlmSend.PacketSent(packetId=61) count == 1",
+          "cmdDisp.CommandsDispatched samples >= 1 after tlmSend.PacketSent(packetId=61)"
+        ]
+      },
+      "mechanism": "the realtime section is disabled before SEND_PKT, so the UUT holds the packet back",
+      "kind": "insert",
+      "ripples_to": {}
+    },
+    {
+      "name": "send_other_packet",
+      "class": "stimulus",
+      "applies_to": [
+        "L2-1"
+      ],
+      "fails": {
+        "L2-1": [
+          "cmdDisp.CommandsDispatched samples >= 1 after tlmSend.PacketSent(packetId=60)"
+        ]
+      },
+      "mechanism": "SEND_PKT is sent for a packet that does not hold the channel (id 62)",
+      "kind": "rewrite",
+      "ripples_to": {}
+    }
+  ],
+  "tests_covered": [
+    "L2-1",
+    "L2-2"
+  ]
+}
