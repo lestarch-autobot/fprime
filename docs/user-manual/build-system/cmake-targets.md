@@ -48,6 +48,40 @@ builds everything. Projects restore that behavior with `FPRIME_EXCLUDE_LIBRARIES
 (`default_cmake_options` in `settings.ini`, a `set()` before `find_package(FPrime)`/`add_subdirectory`, or `-D`).
 
 
+### `dictionary_check`
+
+The dictionary check stage ([cmake/target/dictionary_check.cmake](https://github.com/nasa/fprime/tree/devel/cmake/target/dictionary_check.cmake))
+checks a deployment's topology dictionary against the configuration of the modules it uses, so that a mismatch fails
+the deployment's build instead of surfacing at run time. It defines no target of its own: the checks run as part of
+building the deployment.
+
+A module that owns a check registers a checker script from its `CMakeLists.txt`:
+
+```cmake
+register_fprime_dictionary_check("${CMAKE_CURRENT_LIST_DIR}/tools/my_check.py" VARIABLES MY_CHECK_SETTING)
+```
+
+For every deployment that depends on the registering module, and for each `<Deployment>TopologyDictionary.json` of that
+deployment, the stage runs the script and compiles the C++ source file it generates into the deployment:
+
+```bash
+<python> <script> <Deployment>TopologyDictionary.json -o <Deployment><CheckerName>.cpp [-D <variable>=<value>]...
+```
+
+| Item | Contract |
+| --- | --- |
+| `<CheckerName>` | The script's file name without extension, converted from snake_case to CamelCase (`my_check.py` gives `MyCheck`). |
+| Output | A C++ source file, typically of `static_assert`s on the module's configuration constants. The message of a failed assertion is what the integrator sees, so it names the constant to change and the value needed. |
+| Exit code | `0` when the output was written. Non-zero when the dictionary cannot be checked: the script prints a one-line diagnostic to standard error and writes no output, and the build fails. |
+| `-D <variable>=<value>` | Passed for each CMake variable named under `VARIABLES` that is defined when the deployment is registered, with its value at that point. A deployment sets such a variable in its own `CMakeLists.txt` before `register_fprime_deployment`. The script supplies the default for a variable that is not passed. |
+| Applicability | A deployment that does not depend on the registering module is not checked. |
+| Ordering | A checker must be registered before the deployments it applies to are registered. Framework modules are registered before a project's deployments. |
+
+`Svc/TlmPacketizer` registers `tools/tlm_packetizer_sizing.py`, which checks the telemetry packet sets against
+`MAX_PACKETIZER_MEMBERSHIPS` and `MAX_PACKETIZER_CHANNELS`; see the
+[TlmPacketizer SDD](https://github.com/nasa/fprime/blob/devel/Svc/TlmPacketizer/docs/sdd.md).
+
+
 ## Adding Custom Targets
 
 See the [Customization Guide](cmake-customization.md) for a description of adding custom targets.

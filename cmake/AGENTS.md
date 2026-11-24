@@ -24,6 +24,7 @@ function:
 | `add_fprime_subdirectory` | Add a directory to the build (use instead of `add_subdirectory`). |
 | `register_fprime_implementation`, `register_os_implementation` | Provide an implementation for an abstract interface (used heavily by `Os/`). |
 | `register_fprime_target`, `register_fprime_ut_target`, `register_fprime_build_autocoder` | Add a custom build stage or autocoder. |
+| `register_fprime_dictionary_check` | Register a script that checks each dependent deployment's topology dictionary at build time. |
 
 When changing the API, update its inline documentation and
 `docs/user-manual/build-system/cmake-api.md` together.
@@ -37,7 +38,7 @@ When changing the API, update its inline documentation and
 | `options.cmake` | All `FPRIME_*` build options and paths (`FPRIME_ENABLE_*`, sanitizers, `BUILD_TESTING`, framework and library locations). Look here before adding a new option. |
 | `module.cmake`, `global_interface.cmake`, `flags.cmake`, `utilities.cmake` | Internals: how modules, interfaces, and compile flags are assembled. |
 | `settings.cmake`, `settings/` | Parsing of a project's `settings.ini`. |
-| `target/` | Build targets and stages: `build`, `ut`, `install`, `dictionary`, `sbom`, `version`, plus `sub-build/` and `tools/`. |
+| `target/` | Build targets and stages: `build`, `ut`, `install`, `dictionary`, `dictionary_check`, `sbom`, `version`, plus `sub-build/` and `tools/`. |
 | `autocoder/` | FPP autocoder integration: `fpp.cmake`, `fpp_ut.cmake`, `autocoder.cmake`, and helper `scripts/`. |
 | `platform/` | Platform definitions (`Linux.cmake`, `Darwin.cmake`, `unix/`) plus `platform.cmake.template` for a new platform. |
 | `toolchain/` | Cross-compilation toolchains (`arm-*-linux`, `aarch64-*`, `raspberrypi`) plus `toolchain.cmake.template`. |

@@ -36,6 +36,28 @@ function(dictionary_installable_files DICTIONARY_OUTPUTS OUTPUT_VAR)
 endfunction(dictionary_installable_files)
 
 ####
+# Function `dictionary_dependencies_with_dictionaries`:
+#
+# Selects, from a list of dependencies, those that supply dictionaries: the dependencies that have a module-level
+# dictionary target. Their dictionary files are in their `FPRIME_DICTIONARIES` property.
+#
+# - **DEPENDENCIES:** list of dependencies to search
+# - **TARGET:** name of the dictionary target
+# - **OUTPUT_VAR:** variable to set with the dependencies that supply dictionaries
+####
+function(dictionary_dependencies_with_dictionaries DEPENDENCIES TARGET OUTPUT_VAR)
+    set(WITH_DICTIONARIES)
+    foreach(DEPENDENCY IN LISTS DEPENDENCIES)
+        if (TARGET "${DEPENDENCY}_${TARGET}")
+            get_target_property(DICTIONARY_FILES "${DEPENDENCY}" FPRIME_DICTIONARIES)
+            fprime_cmake_ASSERT("No dictionary files defined for ${DEPENDENCY}" DICTIONARY_FILES)
+            list(APPEND WITH_DICTIONARIES "${DEPENDENCY}")
+        endif()
+    endforeach()
+    set(${OUTPUT_VAR} "${WITH_DICTIONARIES}" PARENT_SCOPE)
+endfunction(dictionary_dependencies_with_dictionaries)
+
+####
 # Function `dictionary_add_deployment_target`:
 #
 # Creates a deployment-level dictionary target. Currently empty implementation.
@@ -56,6 +78,7 @@ function(dictionary_add_deployment_target MODULE TARGET SOURCES DEPENDENCIES FUL
     set(DICTIONARY_TARGETS)
     dictionary_installable_files("${AUTOCODER_GENERATED_OTHER}" INSTALLABLE_DICTIONARIES)
     if(INSTALLABLE_DICTIONARIES)
+        append_list_property("${INSTALLABLE_DICTIONARIES}" TARGET "${MODULE}" PROPERTY FPRIME_DICTIONARIES)
         install(FILES ${INSTALLABLE_DICTIONARIES} DESTINATION ${TOOLCHAIN_NAME}/${MODULE}/dict COMPONENT "${MODULE}_${TARGET}")
         list(APPEND INSTALL_COMMANDS COMMAND "${CMAKE_COMMAND}"
             -DCMAKE_INSTALL_COMPONENT=${MODULE}_${TARGET}
@@ -66,19 +89,17 @@ function(dictionary_add_deployment_target MODULE TARGET SOURCES DEPENDENCIES FUL
     endif()
 
     # Loop through all recursive dependencies and find dictionary targets
-    foreach(DEPENDENCY IN LISTS DEPENDENCIES)
-        if (TARGET "${DEPENDENCY}_${TARGET}")
-            get_target_property(DICTIONARY_FILES "${DEPENDENCY}" FPRIME_DICTIONARIES)
-            fprime_cmake_ASSERT("No dictionary files defined for ${DEPENDENCY}" DICTIONARY_FILES)
-            install(FILES ${DICTIONARY_FILES} DESTINATION ${TOOLCHAIN_NAME}/${MODULE}/dict COMPONENT "${MODULE}_${DEPENDENCY}_${TARGET}")
-            list(APPEND INSTALL_COMMANDS COMMAND "${CMAKE_COMMAND}"
-                -DCMAKE_INSTALL_COMPONENT=${MODULE}_${DEPENDENCY}_${TARGET}
-                -DFPRIME_INSTALL_DEST=${FPRIME_INSTALL_DEST}
-                -DFPRIME_BUILD_DIR=${CMAKE_BINARY_DIR}
-                -P ${FPRIME_FRAMEWORK_PATH}/cmake/target/fprime_install.cmake)
-            list(APPEND INSTALL_INPUTS ${DICTIONARY_FILES})
-            list(APPEND DICTIONARY_TARGETS "${DEPENDENCY}_${TARGET}")
-        endif()
+    dictionary_dependencies_with_dictionaries("${DEPENDENCIES}" "${TARGET}" DICTIONARY_DEPENDENCIES)
+    foreach(DEPENDENCY IN LISTS DICTIONARY_DEPENDENCIES)
+        get_target_property(DICTIONARY_FILES "${DEPENDENCY}" FPRIME_DICTIONARIES)
+        install(FILES ${DICTIONARY_FILES} DESTINATION ${TOOLCHAIN_NAME}/${MODULE}/dict COMPONENT "${MODULE}_${DEPENDENCY}_${TARGET}")
+        list(APPEND INSTALL_COMMANDS COMMAND "${CMAKE_COMMAND}"
+            -DCMAKE_INSTALL_COMPONENT=${MODULE}_${DEPENDENCY}_${TARGET}
+            -DFPRIME_INSTALL_DEST=${FPRIME_INSTALL_DEST}
+            -DFPRIME_BUILD_DIR=${CMAKE_BINARY_DIR}
+            -P ${FPRIME_FRAMEWORK_PATH}/cmake/target/fprime_install.cmake)
+        list(APPEND INSTALL_INPUTS ${DICTIONARY_FILES})
+        list(APPEND DICTIONARY_TARGETS "${DEPENDENCY}_${TARGET}")
     endforeach()
 
     if (INSTALL_COMMANDS)

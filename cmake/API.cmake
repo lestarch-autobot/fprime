@@ -732,6 +732,50 @@ macro(register_fprime_build_autocoder TARGET_FILE_PATH TO_PREPEND)
 endmacro(register_fprime_build_autocoder)
 
 ####
+# Function `register_fprime_dictionary_check`:
+#
+# Registers a dictionary checker owned by the current module. A dictionary checker is a Python script that reads a
+# deployment's topology dictionary and generates a C++ source file, typically of `static_assert`s on the module's
+# configuration. The `dictionary_check` target runs the checker for every deployment that depends on the owning module
+# and compiles the generated file into that deployment, so a deployment whose dictionary violates the check fails to
+# build. See: [Targets](../../../user-manual/build-system/cmake-targets.md).
+#
+# The script is invoked as `<script> <dictionary> -o <output> [-D <variable>=<value>]...` and must exit non-zero
+# without writing the output when the dictionary cannot be checked. Each variable named under VARIABLES that is
+# defined when a deployment is registered is passed to the script with its value at that point; the script supplies
+# the default for a variable that is not passed.
+#
+# A checker must be registered before the deployments it applies to are registered.
+#
+# Example:
+# ```
+# register_fprime_dictionary_check("${CMAKE_CURRENT_LIST_DIR}/tools/my_check.py" VARIABLES MY_CHECK_SETTING)
+# ```
+#
+# **SCRIPT**: path to the checker script
+# **VARIABLES**: (optional) names of CMake variables passed to the script
+####
+function(register_fprime_dictionary_check SCRIPT)
+    cmake_parse_arguments(CHECK "" "" "VARIABLES" ${ARGN})
+    if (CHECK_UNPARSED_ARGUMENTS)
+        fprime_cmake_fatal_error("register_fprime_dictionary_check: unknown arguments: ${CHECK_UNPARSED_ARGUMENTS}")
+    endif()
+    get_filename_component(SCRIPT "${SCRIPT}" ABSOLUTE)
+    if (NOT EXISTS "${SCRIPT}" OR IS_DIRECTORY "${SCRIPT}")
+        fprime_cmake_fatal_error("register_fprime_dictionary_check: script does not exist: ${SCRIPT}")
+    endif()
+    if (NOT DEFINED FPRIME_CURRENT_MODULE)
+        fprime_cmake_fatal_error("register_fprime_dictionary_check: must be called from a module's CMakeLists.txt")
+    endif()
+    # Parallel lists: each element must stay free of ';', so the variable names are joined with ','. A leading ','
+    # keeps the element non-empty, since CMake drops empty list elements
+    string(REPLACE ";" "," CHECK_VARIABLES ",${CHECK_VARIABLES}")
+    set_property(GLOBAL APPEND PROPERTY FPRIME_DICTIONARY_CHECK_MODULES "${FPRIME_CURRENT_MODULE}")
+    set_property(GLOBAL APPEND PROPERTY FPRIME_DICTIONARY_CHECK_SCRIPTS "${SCRIPT}")
+    set_property(GLOBAL APPEND PROPERTY FPRIME_DICTIONARY_CHECK_VARIABLES "${CHECK_VARIABLES}")
+endfunction(register_fprime_dictionary_check)
+
+####
 # Function `create_implementation_interface`:
 #
 # Helper function to create implementation interface library once and only once to ensure it exists.
