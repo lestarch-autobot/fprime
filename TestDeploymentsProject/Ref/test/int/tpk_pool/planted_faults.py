@@ -2,15 +2,17 @@
 from fth.registry import helper, planted_fault
 
 CH = "cmdDisp.CommandsDispatched"
-VALUE = "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them"
+VALUE = "cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch"
 NOTFOUND = "event tlmSend.PacketNotFound(packetId=999) count == 1"
 OPERR = "event cmdDisp.OpCodeError count == 1"
 
 
 @helper("channel_tracks_dispatch_count")
-def channel_tracks_dispatch_count(ctx, tick_s=1.0, min_samples=2):
+def channel_tracks_dispatch_count(ctx, tick_s=1.0, min_samples=2, within_ticks=0):
     """The channel's samples in the window rise, and each rise equals the number of OpCodeDispatched
-    rows the archive holds between the two samples (one telemetry tick of slack on either edge)."""
+    rows the archive holds between the two samples (one telemetry tick of slack on either edge).
+    With `within_ticks` > 0, every dispatch at least that many ticks before the last one in the
+    window (the end marker's) also has a sample of its own within that many ticks after it."""
     samples = ctx.window.channel(CH)
     disp = [e.fsw for e in ctx.window.events("cmdDisp.OpCodeDispatched")]
     if len(disp) < min_samples:
@@ -23,6 +25,12 @@ def channel_tracks_dispatch_count(ctx, tick_s=1.0, min_samples=2):
         hi = sum(1 for t in disp if a.fsw - tick_s < t <= b.fsw)
         if step < 1 or not lo <= step <= hi:
             return False, f"step {a.value}->{b.value} outside [{max(lo, 1)}, {hi}]"
+    if within_ticks:
+        bound = within_ticks * tick_s
+        end = max(disp)
+        for t in disp:
+            if t <= end - bound and not any(t <= s.fsw <= t + bound for s in samples):
+                return False, f"no sample within {within_ticks} ticks after the dispatch at {t}"
     return True, f"{len(samples)} samples {samples[0].value}..{samples[-1].value}"
 
 

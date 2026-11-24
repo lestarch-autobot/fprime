@@ -53,3 +53,46 @@ def test_fail_step_smaller_than_the_dispatches():
 def test_not_judgeable_without_dispatch_rows():
     out = HELPER(ctx([(11.0, 5), (12.0, 7)], [10.0]))
     assert out[0] is None and out[3] is True
+
+
+# The rule `within_ticks` (plan amendment 6): every dispatch at least that many ticks before the last one in the
+# window has a sample of its own within that many ticks after it. Window of L2-1, L2-2, L7-1 with three-tick waits:
+# START marker 10.0 -> sample 10.9 = 5; NO_OP 10.5 (same tick), then NO_OP 14.2 -> sample 14.9; END marker 17.8.
+NORMAL = [10.0, 10.5, 14.2, 17.8]
+
+
+def strict(samples, dispatches=NORMAL):
+    return verdict(HELPER(ctx(samples, dispatches), tick_s=1.0, min_samples=2, within_ticks=2))
+
+
+def test_within_pass_three_samples_one_per_command():
+    assert strict([(10.4, 4), (10.9, 5), (14.9, 6)]) is True
+
+
+def test_within_fail_sample_of_the_second_command_lost():
+    # the count is still two and the one step is right: only the new rule sees it
+    assert verdict(HELPER(ctx([(10.4, 4), (10.9, 5)], NORMAL))) is True
+    assert strict([(10.4, 4), (10.9, 5)]) is False
+
+
+def test_within_fail_sample_of_the_first_command_lost_merged_step_of_two():
+    assert verdict(HELPER(ctx([(10.4, 4), (14.9, 6)], NORMAL))) is True
+    assert strict([(10.4, 4), (14.9, 6)]) is False
+
+
+def test_within_fail_sample_written_more_than_two_ticks_late():
+    assert verdict(HELPER(ctx([(10.4, 4), (10.9, 5), (16.3, 6)], NORMAL))) is True
+    assert strict([(10.4, 4), (10.9, 5), (16.3, 6)]) is False
+
+
+def test_within_pass_sample_exactly_two_ticks_after_the_dispatch():
+    assert strict([(10.4, 4), (10.9, 5), (16.2, 6)]) is True
+
+
+def test_within_end_marker_dispatch_needs_no_sample():
+    # nothing after 17.8 and nothing within two ticks before it: the last dispatch is exempt
+    assert strict([(10.4, 4), (10.9, 5), (14.9, 6)], [10.0, 10.5, 14.2, 17.8]) is True
+
+
+def test_within_off_by_default_keeps_the_one_sample_check():
+    assert verdict(HELPER(ctx([(10.9, 5)], [10.0, 10.5, 14.2]), min_samples=1)) is True
