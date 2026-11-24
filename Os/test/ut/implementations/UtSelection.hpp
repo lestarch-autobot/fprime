@@ -1,5 +1,5 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtSelection.hpp
+// \title Os/test/ut/implementations/UtSelection.hpp
 // \brief TEST ONLY: selects the intercepting Os implementations in unit test builds
 //
 // Included by config/OsSelection.hpp in unit test builds (BUILD_UT) after it defines the Os::Selected::<Service>
@@ -8,8 +8,8 @@
 //
 // As with config/OsSelection.hpp, this header MUST NOT include any Os OSAL headers.
 // ======================================================================
-#ifndef OS_TEST_UT_INTERCEPTORS_UTSELECTION_HPP_
-#define OS_TEST_UT_INTERCEPTORS_UTSELECTION_HPP_
+#ifndef OS_TEST_UT_IMPLEMENTATIONS_UTSELECTION_HPP_
+#define OS_TEST_UT_IMPLEMENTATIONS_UTSELECTION_HPP_
 
 namespace Os {
 
@@ -65,17 +65,17 @@ using RawTime = RawTimeCommon<Ut::RawTime::UtRawTime>;
 
 }  // namespace Os
 
-#define OS_CONSOLE_HEADER <Os/test/ut/interceptors/UtConsole.hpp>
-#define OS_COUNTING_SEMAPHORE_HEADER <Os/test/ut/interceptors/UtCountingSemaphore.hpp>
-#define OS_CPU_HEADER <Os/test/ut/interceptors/UtCpu.hpp>
-#define OS_MEMORY_HEADER <Os/test/ut/interceptors/UtMemory.hpp>
-#define OS_DIRECTORY_HEADER <Os/test/ut/interceptors/UtDirectory.hpp>
-#define OS_FILE_SYSTEM_HEADER <Os/test/ut/interceptors/UtFileSystem.hpp>
-#define OS_CONDITION_VARIABLE_HEADER <Os/test/ut/interceptors/UtConditionVariable.hpp>
-#define OS_MUTEX_HEADER <Os/test/ut/interceptors/UtMutex.hpp>
-#define OS_QUEUE_HEADER <Os/test/ut/interceptors/UtQueue.hpp>
-#define OS_TASK_HEADER <Os/test/ut/interceptors/UtTask.hpp>
-#define OS_FILE_HEADER <Os/test/ut/interceptors/UtFile.hpp>
-#define OS_RAW_TIME_HEADER <Os/test/ut/interceptors/UtRawTime.hpp>
+#define OS_CONSOLE_HEADER <Os/test/ut/implementations/UtConsole.hpp>
+#define OS_COUNTING_SEMAPHORE_HEADER <Os/test/ut/implementations/UtCountingSemaphore.hpp>
+#define OS_CPU_HEADER <Os/test/ut/implementations/UtCpu.hpp>
+#define OS_MEMORY_HEADER <Os/test/ut/implementations/UtMemory.hpp>
+#define OS_DIRECTORY_HEADER <Os/test/ut/implementations/UtDirectory.hpp>
+#define OS_FILE_SYSTEM_HEADER <Os/test/ut/implementations/UtFileSystem.hpp>
+#define OS_CONDITION_VARIABLE_HEADER <Os/test/ut/implementations/UtConditionVariable.hpp>
+#define OS_MUTEX_HEADER <Os/test/ut/implementations/UtMutex.hpp>
+#define OS_QUEUE_HEADER <Os/test/ut/implementations/UtQueue.hpp>
+#define OS_TASK_HEADER <Os/test/ut/implementations/UtTask.hpp>
+#define OS_FILE_HEADER <Os/test/ut/implementations/UtFile.hpp>
+#define OS_RAW_TIME_HEADER <Os/test/ut/implementations/UtRawTime.hpp>
 
-#endif  // OS_TEST_UT_INTERCEPTORS_UTSELECTION_HPP_
+#endif  // OS_TEST_UT_IMPLEMENTATIONS_UTSELECTION_HPP_

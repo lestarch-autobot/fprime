@@ -1,11 +1,11 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtCpu.hpp
+// \title Os/test/ut/implementations/UtCpu.hpp
 // \brief TEST ONLY: Os::Cpu implementation selected in unit test builds
 // ======================================================================
 // Included before the guard: Os/Cpu.hpp includes this file, and may be reached from the interface header
 #include <Os/Interfaces/CpuInterface.hpp>
-#ifndef OS_TEST_UT_INTERCEPTORS_UTCPU_HPP_
-#define OS_TEST_UT_INTERCEPTORS_UTCPU_HPP_
+#ifndef OS_TEST_UT_IMPLEMENTATIONS_UTCPU_HPP_
+#define OS_TEST_UT_IMPLEMENTATIONS_UTCPU_HPP_
 
 #ifndef OS_SELECTED_CPU_HEADER
 #error "OS_SELECTED_CPU_HEADER must be defined in config/OsSelection.hpp"
@@ -40,4 +40,4 @@ class UtCpu : public CpuInterface {
 }  // namespace Ut
 }  // namespace Os
 
-#endif  // OS_TEST_UT_INTERCEPTORS_UTCPU_HPP_
+#endif  // OS_TEST_UT_IMPLEMENTATIONS_UTCPU_HPP_

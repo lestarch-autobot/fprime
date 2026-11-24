@@ -42,7 +42,7 @@
 //
 // Unit test builds (BUILD_UT) wrap every selection in a test-only
 // Os::Ut::<Service>::Ut<Service> implementation so that tests may intercept
-// calls (see Os/test/ut/interceptors). Os::Selected::<Service> always names the
+// calls (see Os/test/ut/implementations and Os/test/ut/interceptors). Os::Selected::<Service> always names the
 // implementation selected here.
 // ======================================================================
 #ifndef CONFIG_OSSELECTION_HPP
@@ -180,7 +180,7 @@ using Memory = Darwin::Memory::DarwinMemory;
 // Os::<Service> aliases and OS_<SERVICE>_HEADER macros derived from the selection above
 #ifdef BUILD_UT
 // Unit test builds wrap each selection in a test-only implementation so that tests may intercept calls
-#include <Os/test/ut/interceptors/UtSelection.hpp>
+#include <Os/test/ut/implementations/UtSelection.hpp>
 #else
 namespace Os {
 using Console = ConsoleCommon<Selected::Console>;

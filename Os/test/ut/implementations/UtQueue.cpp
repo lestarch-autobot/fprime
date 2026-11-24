@@ -1,9 +1,9 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtQueue.cpp
+// \title Os/test/ut/implementations/UtQueue.cpp
 // \brief TEST ONLY: UtQueue and QueueTestInterceptor default implementations
 // ======================================================================
+#include <Os/test/ut/implementations/UtQueue.hpp>
 #include <Os/test/ut/interceptors/QueueTestInterceptor.hpp>
-#include <Os/test/ut/interceptors/UtQueue.hpp>
 
 namespace Os {
 namespace Test {

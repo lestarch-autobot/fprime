@@ -1,9 +1,9 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtTask.cpp
+// \title Os/test/ut/implementations/UtTask.cpp
 // \brief TEST ONLY: UtTask and TaskTestInterceptor default implementations
 // ======================================================================
+#include <Os/test/ut/implementations/UtTask.hpp>
 #include <Os/test/ut/interceptors/TaskTestInterceptor.hpp>
-#include <Os/test/ut/interceptors/UtTask.hpp>
 
 namespace Os {
 namespace Test {

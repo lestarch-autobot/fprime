@@ -1,9 +1,9 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtDirectory.cpp
+// \title Os/test/ut/implementations/UtDirectory.cpp
 // \brief TEST ONLY: UtDirectory and DirectoryTestInterceptor default implementations
 // ======================================================================
+#include <Os/test/ut/implementations/UtDirectory.hpp>
 #include <Os/test/ut/interceptors/DirectoryTestInterceptor.hpp>
-#include <Os/test/ut/interceptors/UtDirectory.hpp>
 
 namespace Os {
 namespace Test {

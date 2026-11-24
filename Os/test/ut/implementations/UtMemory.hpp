@@ -1,11 +1,11 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtMemory.hpp
+// \title Os/test/ut/implementations/UtMemory.hpp
 // \brief TEST ONLY: Os::Memory implementation selected in unit test builds
 // ======================================================================
 // Included before the guard: Os/Memory.hpp includes this file, and may be reached from the interface header
 #include <Os/Interfaces/MemoryInterface.hpp>
-#ifndef OS_TEST_UT_INTERCEPTORS_UTMEMORY_HPP_
-#define OS_TEST_UT_INTERCEPTORS_UTMEMORY_HPP_
+#ifndef OS_TEST_UT_IMPLEMENTATIONS_UTMEMORY_HPP_
+#define OS_TEST_UT_IMPLEMENTATIONS_UTMEMORY_HPP_
 
 #ifndef OS_SELECTED_MEMORY_HEADER
 #error "OS_SELECTED_MEMORY_HEADER must be defined in config/OsSelection.hpp"
@@ -39,4 +39,4 @@ class UtMemory : public MemoryInterface {
 }  // namespace Ut
 }  // namespace Os
 
-#endif  // OS_TEST_UT_INTERCEPTORS_UTMEMORY_HPP_
+#endif  // OS_TEST_UT_IMPLEMENTATIONS_UTMEMORY_HPP_

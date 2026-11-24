@@ -1,9 +1,9 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtCountingSemaphore.cpp
+// \title Os/test/ut/implementations/UtCountingSemaphore.cpp
 // \brief TEST ONLY: UtCountingSemaphore and CountingSemaphoreTestInterceptor default implementations
 // ======================================================================
+#include <Os/test/ut/implementations/UtCountingSemaphore.hpp>
 #include <Os/test/ut/interceptors/CountingSemaphoreTestInterceptor.hpp>
-#include <Os/test/ut/interceptors/UtCountingSemaphore.hpp>
 
 namespace Os {
 namespace Test {

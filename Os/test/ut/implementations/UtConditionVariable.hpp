@@ -1,11 +1,11 @@
 // ======================================================================
-// \title Os/test/ut/interceptors/UtConditionVariable.hpp
+// \title Os/test/ut/implementations/UtConditionVariable.hpp
 // \brief TEST ONLY: Os::ConditionVariable implementation selected in unit test builds
 // ======================================================================
 // Included before the guard: Os/Condition.hpp includes this file, and may be reached from the interface header
 #include <Os/Interfaces/ConditionVariableInterface.hpp>
-#ifndef OS_TEST_UT_INTERCEPTORS_UTCONDITIONVARIABLE_HPP_
-#define OS_TEST_UT_INTERCEPTORS_UTCONDITIONVARIABLE_HPP_
+#ifndef OS_TEST_UT_IMPLEMENTATIONS_UTCONDITIONVARIABLE_HPP_
+#define OS_TEST_UT_IMPLEMENTATIONS_UTCONDITIONVARIABLE_HPP_
 
 #ifndef OS_SELECTED_CONDITION_VARIABLE_HEADER
 #error "OS_SELECTED_CONDITION_VARIABLE_HEADER must be defined in config/OsSelection.hpp"
@@ -41,4 +41,4 @@ class UtConditionVariable : public ConditionVariableInterface {
 }  // namespace Ut
 }  // namespace Os
 
-#endif  // OS_TEST_UT_INTERCEPTORS_UTCONDITIONVARIABLE_HPP_
+#endif  // OS_TEST_UT_IMPLEMENTATIONS_UTCONDITIONVARIABLE_HPP_
