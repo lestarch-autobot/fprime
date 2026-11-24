@@ -2,7 +2,7 @@
 // \title Os/Stub/Console.hpp
 // \brief stub implementation for Os::Console, header and test definitions
 // ======================================================================
-#include <Os/Console.hpp>
+#include <Os/Interfaces/ConsoleInterface.hpp>
 #include <cstdio>
 #ifndef OS_Stub_Console_HPP
 #define OS_Stub_Console_HPP

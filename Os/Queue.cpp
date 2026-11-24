@@ -23,18 +23,18 @@ template <typename T>
 QueueCommon<T>::~QueueCommon() {}
 
 template <typename T>
-QueueInterface::Status QueueCommon<T>::create(FwEnumStoreType id,
-                                              const Fw::ConstStringBase& name,
-                                              FwSizeType depth,
-                                              FwSizeType messageSize) {
+QueueUserInterface::Status QueueCommon<T>::create(FwEnumStoreType id,
+                                                  const Fw::ConstStringBase& name,
+                                                  FwSizeType depth,
+                                                  FwSizeType messageSize) {
     FW_ASSERT(depth > 0);
     FW_ASSERT(messageSize > 0);
     // Check for previous creation call
     if (this->m_depth > 0 || this->m_size > 0) {
-        return QueueInterface::Status::ALREADY_CREATED;
+        return QueueUserInterface::Status::ALREADY_CREATED;
     }
-    QueueInterface::Status status = this->m_delegate.create(id, name, depth, messageSize);
-    if (status == QueueInterface::Status::OP_OK) {
+    QueueUserInterface::Status status = this->m_delegate.create(id, name, depth, messageSize);
+    if (status == QueueUserInterface::Status::OP_OK) {
         this->m_name = name;
         this->m_depth = depth;
         this->m_size = messageSize;
@@ -55,36 +55,36 @@ void QueueCommon<T>::teardown() {
 }
 
 template <typename T>
-QueueInterface::Status QueueCommon<T>::send(const U8* buffer,
-                                            FwSizeType size,
-                                            FwQueuePriorityType priority,
-                                            QueueInterface::BlockingType blockType) {
+QueueUserInterface::Status QueueCommon<T>::send(const U8* buffer,
+                                                FwSizeType size,
+                                                FwQueuePriorityType priority,
+                                                QueueUserInterface::BlockingType blockType) {
     FW_ASSERT(buffer != nullptr);
     // Check if initialized
     if (this->m_depth == 0 || this->m_size == 0) {
-        return QueueInterface::Status::UNINITIALIZED;
+        return QueueUserInterface::Status::UNINITIALIZED;
     }
     // Check size before proceeding
     else if (size > this->getMessageSize()) {
-        return QueueInterface::Status::SIZE_MISMATCH;
+        return QueueUserInterface::Status::SIZE_MISMATCH;
     }
     return this->m_delegate.send(buffer, size, priority, blockType);
 }
 
 template <typename T>
-QueueInterface::Status QueueCommon<T>::receive(U8* destination,
-                                               FwSizeType capacity,
-                                               QueueInterface::BlockingType blockType,
-                                               FwSizeType& actualSize,
-                                               FwQueuePriorityType& priority) {
+QueueUserInterface::Status QueueCommon<T>::receive(U8* destination,
+                                                   FwSizeType capacity,
+                                                   QueueUserInterface::BlockingType blockType,
+                                                   FwSizeType& actualSize,
+                                                   FwQueuePriorityType& priority) {
     FW_ASSERT(destination != nullptr);
     // Check if initialized
     if (this->m_depth == 0 || this->m_size == 0) {
-        return QueueInterface::Status::UNINITIALIZED;
+        return QueueUserInterface::Status::UNINITIALIZED;
     }
     // Check capacity before proceeding
     else if (capacity < this->getMessageSize()) {
-        return QueueInterface::Status::SIZE_MISMATCH;
+        return QueueUserInterface::Status::SIZE_MISMATCH;
     }
     return this->m_delegate.receive(destination, capacity, blockType, actualSize, priority);
 }
@@ -105,25 +105,25 @@ QueueHandle* QueueCommon<T>::getHandle() {
 }
 
 template <typename T>
-QueueInterface::Status QueueCommon<T>::send(const Fw::LinearBufferBase& message,
-                                            FwQueuePriorityType priority,
-                                            QueueInterface::BlockingType blockType) {
+QueueUserInterface::Status QueueCommon<T>::send(const Fw::LinearBufferBase& message,
+                                                FwQueuePriorityType priority,
+                                                QueueUserInterface::BlockingType blockType) {
     return this->send(message.getBuffAddr(), message.getSize(), priority, blockType);
 }
 
 template <typename T>
-QueueInterface::Status QueueCommon<T>::receive(Fw::LinearBufferBase& destination,
-                                               QueueInterface::BlockingType blockType,
-                                               FwQueuePriorityType& priority) {
+QueueUserInterface::Status QueueCommon<T>::receive(Fw::LinearBufferBase& destination,
+                                                   QueueUserInterface::BlockingType blockType,
+                                                   FwQueuePriorityType& priority) {
     FwSizeType actualSize = 0;
     destination.resetSer();  // Reset the buffer
-    QueueInterface::Status status =
+    QueueUserInterface::Status status =
         this->receive(destination.getBuffAddrSer(), destination.getCapacity(), blockType, actualSize, priority);
-    if (status == QueueInterface::Status::OP_OK) {
+    if (status == QueueUserInterface::Status::OP_OK) {
         Fw::SerializeStatus serializeStatus =
             destination.setBuffLen(static_cast<Fw::Serializable::SizeType>(actualSize));
         if (serializeStatus != Fw::SerializeStatus::FW_SERIALIZE_OK) {
-            status = QueueInterface::Status::SIZE_MISMATCH;
+            status = QueueUserInterface::Status::SIZE_MISMATCH;
         }
     }
     return status;

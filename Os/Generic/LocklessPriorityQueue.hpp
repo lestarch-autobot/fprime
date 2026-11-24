@@ -5,11 +5,11 @@
 #ifndef OS_GENERIC_LOCKLESSPRIORITYQUEUE_HPP
 #define OS_GENERIC_LOCKLESSPRIORITYQUEUE_HPP
 
+#include <Os/Interfaces/QueueInterface.hpp>
 #include <atomic>
 #include <limits>
 #include <type_traits>
 #include "Fw/FPrimeBasicTypes.hpp"
-#include "Os/Queue.hpp"
 #include "config/LocklessQueueCfg.hpp"
 
 namespace Os {

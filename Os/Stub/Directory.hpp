@@ -5,7 +5,7 @@
 #ifndef OS_STUB_DIRECTORY_HPP
 #define OS_STUB_DIRECTORY_HPP
 
-#include "Os/Directory.hpp"
+#include <Os/Interfaces/DirectoryInterface.hpp>
 namespace Os {
 namespace Stub {
 namespace Directory {

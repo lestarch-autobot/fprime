@@ -5,7 +5,7 @@
 #ifndef OS_POSIX_FILESYSTEM_HPP
 #define OS_POSIX_FILESYSTEM_HPP
 
-#include "Os/FileSystem.hpp"
+#include <Os/Interfaces/FileSystemInterface.hpp>
 
 namespace Os {
 namespace Posix {

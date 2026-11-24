@@ -5,7 +5,7 @@
 #ifndef OS_POSIX_COUNTING_SEMAPHORE_HPP
 #define OS_POSIX_COUNTING_SEMAPHORE_HPP
 #include <semaphore.h>
-#include <Os/CountingSemaphore.hpp>
+#include <Os/Interfaces/CountingSemaphoreInterface.hpp>
 
 namespace Os {
 namespace Posix {

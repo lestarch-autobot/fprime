@@ -4,7 +4,7 @@
 // ======================================================================
 #ifndef OS_STUB_QUEUE_HPP
 #define OS_STUB_QUEUE_HPP
-#include "Os/Queue.hpp"
+#include <Os/Interfaces/QueueInterface.hpp>
 
 namespace Os {
 namespace Stub {

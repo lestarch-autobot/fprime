@@ -1,11 +1,11 @@
 
 #ifndef OS_STUB_TEST_QUEUE_HPP
 #define OS_STUB_TEST_QUEUE_HPP
+#include <Os/Interfaces/QueueInterface.hpp>
 #include <cassert>
 #include <deque>
 #include <limits>
 #include <queue>
-#include "Os/Queue.hpp"
 
 namespace Os {
 namespace Stub {

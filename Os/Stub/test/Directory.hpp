@@ -5,7 +5,7 @@
 #ifndef OS_STUB_Directory_TEST_HPP
 #define OS_STUB_Directory_TEST_HPP
 
-#include "Os/Directory.hpp"
+#include <Os/Interfaces/DirectoryInterface.hpp>
 
 namespace Os {
 namespace Stub {

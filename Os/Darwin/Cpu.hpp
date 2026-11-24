@@ -2,7 +2,7 @@
 // \title Os/Darwin/Cpu.hpp
 // \brief Darwin implementation for Os::Cpu, header and test definitions
 // ======================================================================
-#include <Os/Cpu.hpp>
+#include <Os/Interfaces/CpuInterface.hpp>
 #ifndef OS_Darwin_Cpu_HPP
 #define OS_Darwin_Cpu_HPP
 

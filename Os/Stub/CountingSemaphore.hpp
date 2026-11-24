@@ -4,7 +4,7 @@
 // ======================================================================
 #ifndef OS_STUB_COUNTING_SEMAPHORE_HPP
 #define OS_STUB_COUNTING_SEMAPHORE_HPP
-#include <Os/CountingSemaphore.hpp>
+#include <Os/Interfaces/CountingSemaphoreInterface.hpp>
 
 namespace Os {
 namespace Stub {

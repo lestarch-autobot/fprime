@@ -1,4 +1,4 @@
-#include "Os/Task.hpp"
+#include <Os/Interfaces/TaskInterface.hpp>
 
 #ifndef OS_STUB_TASK_TEST_HPP
 #define OS_STUB_TASK_TEST_HPP

@@ -8,7 +8,7 @@
 
 namespace Os {
 template <typename T>
-ConsoleCommon<T>::ConsoleCommon() : ConsoleInterface(), Fw::Logger(), m_delegate() {}
+ConsoleCommon<T>::ConsoleCommon() : ConsoleUserInterface(), Fw::Logger(), m_delegate() {}
 
 template <typename T>
 ConsoleCommon<T>::~ConsoleCommon() {}

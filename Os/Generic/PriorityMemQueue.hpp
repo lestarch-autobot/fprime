@@ -11,11 +11,11 @@
 #ifndef OS_GENERIC_PRIORITYMEMQUEUE_HPP
 #define OS_GENERIC_PRIORITYMEMQUEUE_HPP
 
+#include <Os/Interfaces/QueueInterface.hpp>
 #include <atomic>
 #include "Fw/Types/MemAllocator.hpp"
 #include "Os/CountingSemaphore.hpp"
 #include "Os/Generic/Types/AtomicQueue.hpp"
-#include "Os/Queue.hpp"
 
 namespace Os {
 namespace Generic {

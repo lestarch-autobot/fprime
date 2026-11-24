@@ -2,7 +2,7 @@
 // \title Os/Darwin/Memory.hpp
 // \brief Darwin implementation for Os::Memory, header and test definitions
 // ======================================================================
-#include <Os/Memory.hpp>
+#include <Os/Interfaces/MemoryInterface.hpp>
 #ifndef OS_Darwin_Memory_HPP
 #define OS_Darwin_Memory_HPP
 

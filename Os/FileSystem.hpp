@@ -16,8 +16,8 @@ namespace Os {
 
 struct FileSystemHandle {};
 
-class FileSystemInterface {
-  public:
+//! \brief types and constants shared by users of Os::FileSystem and by its implementations
+struct FileSystemUserInterface {
     // Size of file chunks to use for file system operations (e.g. copyFile)
     static constexpr FwSizeType FILE_SYSTEM_FILE_CHUNK_SIZE = FW_FILE_CHUNK_SIZE;  //!< Size of file system chunk
 
@@ -47,75 +47,7 @@ class FileSystemInterface {
         OTHER,      //!< Path is not a file or directory, e.g. a socket
         NOT_EXIST,  //!< Path does not exist
     };
-
-    //! \brief default constructor
-    FileSystemInterface() = default;
-
-    //! \brief default virtual destructor
-    virtual ~FileSystemInterface() = default;
-
-    //! \brief copy constructor is forbidden
-    FileSystemInterface(const FileSystemInterface& other) = delete;
-
-    //! \brief assignment operator is forbidden
-    FileSystemInterface& operator=(const FileSystemInterface& other) = delete;  // NO_CODESONAR (cpp:S3657)
-
-    //! \brief return the underlying FileSystem handle (implementation specific)
-    //! \return internal FileSystem handle representation
-    virtual FileSystemHandle* getHandle() = 0;
-
-    // ------------------------------------------------------------------
-    // FileSystem operations to be implemented by an OSAL implementation
-    // ------------------------------------------------------------------
-    // These functions are to be overridden in each OS implementation
-    // See an example in in Os/Posix/FileSystem.hpp
-
-    //! \brief Remove a directory at the specified path
-    //! \param path The path of the directory to remove
-    //! \return Status of the operation
-    virtual Status _removeDirectory(const char* path) = 0;
-
-    //! \brief Remove a file at the specified path
-    //! \param path The path of the file to remove
-    //! \return Status of the operation
-    virtual Status _removeFile(const char* path) = 0;
-
-    //! \brief Rename (or move) a file from source to destination
-    //! \param sourcePath The path of the source file
-    //! \param destPath The path of the destination file
-    //! \return Status of the operation
-    virtual Status _rename(const char* sourcePath, const char* destPath) = 0;
-
-    //! \brief Get filesystem free and total space in bytes on the filesystem containing the specified path
-    //! \param path The path on the filesystem to query
-    //! \param totalBytes Reference to store the total bytes on the filesystem
-    //! \param freeBytes Reference to store the free bytes on the filesystem
-    //! \return Status of the operation
-    virtual Status _getFreeSpace(const char* path, FwSizeType& totalBytes, FwSizeType& freeBytes) = 0;
-
-    //! \brief Get the type of the path (file, directory, etc.)
-    //!
-    //! It is invalid to pass `nullptr` as the path.
-    //!
-    //! \param path The path to check
-    //! \param pathType Reference to store the path type
-    //! \return Status of the operation
-    virtual Status _getPathType(const char* path, PathType& pathType) = 0;
-
-    //! \brief Get the current working directory
-    //! \param path Buffer to store the current working directory path
-    //! \param bufferSize Size of the buffer
-    //! \return Status of the operation
-    virtual Status _getWorkingDirectory(char* path, FwSizeType bufferSize) = 0;
-
-    //! \brief Change the current working directory to the specified path
-    //! \param path The path of the new working directory
-    //! \return Status of the operation
-    virtual Status _changeWorkingDirectory(const char* path) = 0;
 };
-
-//! \brief interface presented to users of Os::FileSystem, an alias of Os::FileSystemInterface
-using FileSystemUserInterface = FileSystemInterface;
 
 //! \brief FileSystem class
 //!
@@ -127,11 +59,11 @@ class FileSystemCommon final : public FileSystemUserInterface {
   private:
     FileSystemCommon();  //!<  Constructor (private because singleton pattern)
   public:
-    ~FileSystemCommon() final;  //!<  Destructor
+    ~FileSystemCommon();  //!<  Destructor
 
     //! \brief return the underlying FileSystem handle (implementation specific)
     //! \return internal FileSystem handle representation
-    FileSystemHandle* getHandle() override;
+    FileSystemHandle* getHandle();
 
     // ------------------------------------------------------------
     // Implementation-specific FileSystem member functions
@@ -143,7 +75,7 @@ class FileSystemCommon final : public FileSystemUserInterface {
     //!
     //! \param path The path of the directory to remove
     //! \return Status of the operation
-    Status _removeDirectory(const char* path) override;
+    Status _removeDirectory(const char* path);
 
     //! \brief Remove a file at the specified path
     //!
@@ -151,7 +83,7 @@ class FileSystemCommon final : public FileSystemUserInterface {
     //!
     //! \param path The path of the file to remove
     //! \return Status of the operation
-    Status _removeFile(const char* path) override;
+    Status _removeFile(const char* path);
 
     //! \brief Rename a file from source to destination
     //!
@@ -163,7 +95,7 @@ class FileSystemCommon final : public FileSystemUserInterface {
     //! \param sourcePath The path of the source file
     //! \param destPath The path of the destination file
     //! \return Status of the operation
-    Status _rename(const char* sourcePath, const char* destPath) override;
+    Status _rename(const char* sourcePath, const char* destPath);
 
     //! \brief Get filesystem free and total space in bytes on the filesystem containing the specified path
     //!
@@ -173,7 +105,7 @@ class FileSystemCommon final : public FileSystemUserInterface {
     //! \param totalBytes Reference to store the total bytes on the filesystem
     //! \param freeBytes Reference to store the free bytes on the filesystem
     //! \return Status of the operation
-    Status _getFreeSpace(const char* path, FwSizeType& totalBytes, FwSizeType& freeBytes) override;
+    Status _getFreeSpace(const char* path, FwSizeType& totalBytes, FwSizeType& freeBytes);
 
     //! \brief Get the current working directory
     //!
@@ -186,7 +118,7 @@ class FileSystemCommon final : public FileSystemUserInterface {
     //! \param path Buffer to store the current working directory path
     //! \param bufferSize Size of the buffer
     //! \return Status of the operation
-    Status _getWorkingDirectory(char* path, FwSizeType bufferSize) override;
+    Status _getWorkingDirectory(char* path, FwSizeType bufferSize);
 
     //! \brief Change the current working directory to the specified path
     //!
@@ -194,7 +126,7 @@ class FileSystemCommon final : public FileSystemUserInterface {
     //!
     //! \param path The path of the new working directory
     //! \return Status of the operation
-    Status _changeWorkingDirectory(const char* path) override;
+    Status _changeWorkingDirectory(const char* path);
 
     //! \brief Get the type of the path (file, directory, etc.)
     //!
@@ -203,7 +135,7 @@ class FileSystemCommon final : public FileSystemUserInterface {
     //! \param path The path to check
     //! \param pathType Reference to store the path type
     //! \return Status of the operation
-    Status _getPathType(const char* path, PathType& pathType) override;
+    Status _getPathType(const char* path, PathType& pathType);
 
     // ------------------------------------------------------------
     // Implementation-specific FileSystem static functions

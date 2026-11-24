@@ -15,35 +15,8 @@ namespace Os {
 //! \brief Base class for storing implementation specific handle information
 struct ConsoleHandle {};
 
-// \brief Interface defining the properties of the console
-class ConsoleInterface {
-  public:
-    //! \brief Default constructor
-    ConsoleInterface() = default;
-
-    //! \brief Default destructor
-    virtual ~ConsoleInterface() = default;
-
-    //! \brief write message to console
-    //!
-    //! Write a message to the console with a bounded size.
-    //!
-    //! \param message: raw message to write
-    //! \param size: size of the message to write to the console
-    virtual void writeMessage(const CHAR* message, const FwSizeType size) = 0;
-
-    //! \brief returns the raw console handle
-    //!
-    //! Gets the raw console handle from the implementation. Note: users must include the implementation specific
-    //! header to make any real use of this handle. Otherwise it will be as an opaque type.
-    //!
-    //! \return raw console handle
-    //!
-    virtual ConsoleHandle* getHandle() = 0;
-};
-
-//! \brief interface presented to users of Os::Console, an alias of Os::ConsoleInterface
-using ConsoleUserInterface = ConsoleInterface;
+//! \brief types and constants shared by users of Os::Console and by its implementations
+struct ConsoleUserInterface {};
 
 template <typename T>
 class ConsoleCommon : public ConsoleUserInterface, public Fw::Logger {
@@ -67,14 +40,14 @@ class ConsoleCommon : public ConsoleUserInterface, public Fw::Logger {
     //!
     //! \param message: raw message to write
     //! \param size: size of the message to write to the console
-    void writeMessage(const CHAR* message, const FwSizeType size) override;
+    void writeMessage(const CHAR* message, const FwSizeType size);
 
     //! \brief write message to console
     //!
     //! Write a message to the console as stored as a ConstStringBase type
     //!
     //! \param message: raw message to write (ConstStringBase)
-    void writeMessage(const Fw::ConstStringBase& message) override;
+    void writeMessage(const Fw::ConstStringBase& message);
 
     //! \brief returns the raw console handle
     //!
@@ -83,7 +56,7 @@ class ConsoleCommon : public ConsoleUserInterface, public Fw::Logger {
     //!
     //! \return raw console handle
     //!
-    ConsoleHandle* getHandle() override;
+    ConsoleHandle* getHandle();
 
     //! \brief write message to console
     //!

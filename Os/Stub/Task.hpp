@@ -2,7 +2,7 @@
 // \title Os/Stub/Task.hpp
 // \brief stub definitions for Os::Task
 // ======================================================================
-#include "Os/Task.hpp"
+#include <Os/Interfaces/TaskInterface.hpp>
 
 #ifndef OS_STUB_TASK_HPP
 #define OS_STUB_TASK_HPP

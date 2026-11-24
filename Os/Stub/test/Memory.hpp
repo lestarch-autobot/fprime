@@ -2,7 +2,7 @@
 // \title Os/Stub/test/Memory.hpp
 // \brief test stub implementation for Os::Memory, header and test definitions
 // ======================================================================
-#include <Os/Memory.hpp>
+#include <Os/Interfaces/MemoryInterface.hpp>
 #include <cstdio>
 #ifndef OS_Stub_Test_Memory_HPP
 #define OS_Stub_Test_Memory_HPP

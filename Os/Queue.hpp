@@ -19,14 +19,8 @@ class QueueRegistry;
 //! \brief QueueHandle parent class
 class QueueHandle {};
 
-//! \brief base queue interface
-//!
-//! Queues are used internally to fprime in order to support the messaging between components. The
-//! QueueInterface is used to abstract away from the standard OS-based queue, allowing F prime support
-//! multiple OSes in a consistent way.
-//!
-class QueueInterface {
-  public:
+//! \brief types and constants shared by users of Os::Queue and by its implementations
+struct QueueUserInterface {
     //! \brief status returned from the queue send function
     enum Status {
         OP_OK,              //!<  message sent/received okay
@@ -48,102 +42,7 @@ class QueueInterface {
         BLOCKING,    //!< Message will block until space is available
         NONBLOCKING  //!< Message will return with status when space is unavailable
     };
-
-    //! \brief default queue interface constructor
-    QueueInterface() = default;
-
-    //! \brief default queue destructor
-    virtual ~QueueInterface() = default;
-
-    //! \brief copy constructor is forbidden
-    QueueInterface(const QueueInterface& other) = delete;
-
-    //! \brief copy constructor is forbidden
-    QueueInterface(const QueueInterface* other) = delete;
-
-    //! \brief assignment operator is forbidden
-    virtual QueueInterface& operator=(const QueueInterface& other) = delete;  // NO_CODESONAR (cpp:S3657)
-
-    //! \brief create queue storage
-    //!
-    //! Creates a queue ensuring sufficient storage to hold `depth` messages of `messageSize` size each. Resource
-    //! allocation is dependent on the underlying implementation and users should assume that resource allocation is
-    //! possible.
-    //!
-    //! \param id: identifier for the queue, used for memory allocation
-    //! \param name: name of queue
-    //! \param depth: depth of queue in number of messages
-    //! \param messageSize: size of an individual message
-    //! \return: status of the creation
-    virtual Status create(FwEnumStoreType id,
-                          const Fw::ConstStringBase& name,
-                          FwSizeType depth,
-                          FwSizeType messageSize) = 0;
-
-    //! \brief teardown the queue
-    //!
-    //! Allow for queues to deallocate resources as part of system shutdown. This delegates to the underlying queue
-    //! implementation.
-    virtual void teardown() = 0;
-
-    //! \brief send a message into the queue
-    //!
-    //! Send a message into the queue, providing the message data, size, priority, and blocking type. When
-    //! `blockType` is set to BLOCKING, this call will block on queue full. Otherwise, this will return an error
-    //! status on queue full.
-    //!
-    //! It is invalid to send a null buffer.
-    //! This method will block if the queue is full and blockType is set to BLOCKING
-    //!
-    //! \param buffer: message data
-    //! \param size: size of message data
-    //! \param priority: priority of the message
-    //! \param blockType: BLOCKING to block for space or NONBLOCKING to return error when queue is full
-    //! \return: status of the send
-    virtual Status send(const U8* buffer, FwSizeType size, FwQueuePriorityType priority, BlockingType blockType) = 0;
-
-    //! \brief receive a message from the queue
-    //!
-    //! Receive a message from the queue, providing the message destination, capacity, priority, and blocking type.
-    //! When `blockType` is set to BLOCKING, this call will block on queue empty. Otherwise, this will return an
-    //! error status on queue empty. Actual size received and priority of message is set on success status.
-    //!
-    //! It is invalid to send a null buffer.
-    //! This method will block if the queue is empty and blockType is set to BLOCKING
-    //!
-    //! \param destination: destination for message data
-    //! \param capacity: maximum size of message data
-    //! \param blockType: BLOCKING to wait for message or NONBLOCKING to return error when queue is empty
-    //! \param actualSize: (output) actual size of message read
-    //! \param priority: (output) priority of message read
-    //! \return: status of the send
-    virtual Status receive(U8* destination,
-                           FwSizeType capacity,
-                           BlockingType blockType,
-                           FwSizeType& actualSize,
-                           FwQueuePriorityType& priority) = 0;
-
-    //! \brief get number of messages available
-    //!
-    //! Returns the number of messages currently available in the queue.
-    //!
-    //! \return number of messages available
-    virtual FwSizeType getMessagesAvailable() const = 0;
-
-    //! \brief get maximum messages stored at any given time
-    //!
-    //! Returns the maximum number of messages in this queue at any given time. This is the high-water mark for this
-    //! queue.
-    //! \return queue message high-water mark
-    virtual FwSizeType getMessageHighWaterMark() const = 0;
-
-    //! \brief return the underlying queue handle (implementation specific)
-    //! \return internal task handle representation
-    virtual QueueHandle* getHandle() = 0;
 };
-
-//! \brief interface presented to users of Os::Queue, an alias of Os::QueueInterface
-using QueueUserInterface = QueueInterface;
 
 template <typename T>
 class QueueCommon final : public QueueUserInterface {
@@ -161,7 +60,7 @@ class QueueCommon final : public QueueUserInterface {
     QueueCommon(const QueueCommon* other) = delete;
 
     //! \brief assignment operator is forbidden
-    QueueInterface& operator=(const QueueInterface& other) override = delete;
+    QueueCommon& operator=(const QueueCommon& other) = delete;
 
     //! \brief create queue storage through delegate
     //!
@@ -173,17 +72,14 @@ class QueueCommon final : public QueueUserInterface {
     //! \param depth: depth of queue in number of messages
     //! \param messageSize: size of an individual message
     //! \return: status of the creation
-    Status create(FwEnumStoreType id,
-                  const Fw::ConstStringBase& name,
-                  FwSizeType depth,
-                  FwSizeType messageSize) override;
+    Status create(FwEnumStoreType id, const Fw::ConstStringBase& name, FwSizeType depth, FwSizeType messageSize);
 
     //! \brief teardown the queue
     //!
     //! Allow for queues to deallocate resources as part of system shutdown. This delegates to the underlying queue
     //! implementation.
     //! implementation.
-    void teardown() override;
+    void teardown();
 
     //! \brief send a message into the queue through delegate
     //!
@@ -199,7 +95,7 @@ class QueueCommon final : public QueueUserInterface {
     //! \param priority: priority of the message
     //! \param blockType: BLOCKING to block for space or NONBLOCKING to return error when queue is full
     //! \return: status of the send
-    Status send(const U8* buffer, FwSizeType size, FwQueuePriorityType priority, BlockingType blockType) override;
+    Status send(const U8* buffer, FwSizeType size, FwQueuePriorityType priority, BlockingType blockType);
 
     //! \brief receive a message from the queue through delegate
     //!
@@ -221,7 +117,7 @@ class QueueCommon final : public QueueUserInterface {
                    FwSizeType capacity,
                    BlockingType blockType,
                    FwSizeType& actualSize,
-                   FwQueuePriorityType& priority) override;
+                   FwQueuePriorityType& priority);
 
     //! \brief get number of messages available
     //!
@@ -229,22 +125,22 @@ class QueueCommon final : public QueueUserInterface {
     //! implementation.
     //!
     //! \return number of messages available
-    FwSizeType getMessagesAvailable() const override;
+    FwSizeType getMessagesAvailable() const;
 
     //! \brief get maximum messages stored at any given time through delegate
     //!
     //! Returns the maximum number of messages in this queue at any given time. This is the high-water mark for
     //! this queue.
     //! \return queue message high-water mark
-    FwSizeType getMessageHighWaterMark() const override;
+    FwSizeType getMessageHighWaterMark() const;
 
     //! \brief return the underlying queue handle (implementation specific). Delegates to implementation.
     //! \return internal task handle representation
-    QueueHandle* getHandle() override;
+    QueueHandle* getHandle();
 
     //! \brief send a message to a queue
     //!
-    //! Send a message to a queue with the given priority and block type. See: QueueInterface::send
+    //! Send a message to a queue with the given priority and block type. See: QueueUserInterface::send
     //!
     //! \warning This method will block if the queue is full and blockType is set to BLOCKING
     //!
@@ -256,8 +152,8 @@ class QueueCommon final : public QueueUserInterface {
 
     //! \brief receive a message from a queue
     //!
-    //! Receive a message from a queue with the given block type. See: QueueInterface::receive. Note: this will entirely
-    //! overwrite the buffer.
+    //! Receive a message from a queue with the given block type. See: QueueUserInterface::receive. Note: this will
+    //! entirely overwrite the buffer.
     //!
     //! \warning This method will block if the queue is full and blockType is set to BLOCKING
     //!
