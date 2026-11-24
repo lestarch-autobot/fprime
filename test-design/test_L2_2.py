@@ -17,12 +17,12 @@ def test_L2_2(window, send, bench, check, require, fth_plan):
         with window(40, 41):  # W: measurement
             require("STD")
             check("ABS")
-            check("cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them",
-                  lambda h: fth_plan.registry.helpers["channel_tracks_dispatch_count"](h, tick_s=1.0, min_samples=2))
+            check("cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch",
+                  lambda h: fth_plan.registry.helpers["channel_tracks_dispatch_count"](h, tick_s=1.0, min_samples=2, within_ticks=2))
             send("cmdDisp.CMD_NO_OP", [])
-            bench.wait(2.5)  # wait 2 ticks
+            bench.wait(3.5)  # wait 3 ticks
             send("cmdDisp.CMD_NO_OP", [])
-            bench.wait(2.5)  # wait 2 ticks
+            bench.wait(3.5)  # wait 3 ticks
     finally:  # T: teardown — the override is cleared whatever the verdict of W, inside a judged window
         with window(41, 42):
             require("STD")
