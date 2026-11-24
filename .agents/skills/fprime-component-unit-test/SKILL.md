@@ -1,0 +1,94 @@
+---
+name: fprime-component-unit-test
+description: >-
+  Unit testing phase of F Prime component development. Provides
+  lifecycle context, goals, and decision criteria for the unit testing
+  phase. Defers to fprime-unit-testing for implementation details.
+  Trigger when writing the unit-test list in the test-design phase,
+  when implementation is ready for testing, or when following TDD
+  (tests before implementation). Keywords: F Prime, unit test,
+  GTest, TesterBase, GTestBase, Tester, fprime-util check, STest,
+  rule-based testing.
+---
+
+# Skill: F Prime Component Unit Testing
+
+Unit tests verify each component requirement in isolation using the
+autocoded test harness. This skill provides lifecycle context and
+goals; for scaffolding, assertion macros, code patterns, and the full
+implementation procedure, see `fprime-unit-testing` and the
+[unit testing guide](https://github.com/nasa/fprime/blob/devel/docs/user-manual/overview/unit-testing.md).
+
+---
+
+## Goals
+
+- **Verify all requirements** with unit tests if possible.
+- **Verify all interfaces**: ports, events, telemetry, commands.
+- **Prefer rule-based testing** where possible — it provides broader
+  coverage than traditional tests. See
+  `fprime-unit-testing` §3 for criteria and constructs, and
+  the [rules-based testing guide](https://github.com/nasa/fprime/blob/devel/docs/how-to/rule-based-testing.md)
+  for the full walkthrough.
+- **Target 95% code coverage.**
+- You should be able to do most of this without user input, since
+  requirements and the FPP model are already defined. However, **ask
+  the user for help** with predicting edge cases you may have missed
+  or for clarification on expected behavior.
+
+---
+
+## Test list
+
+The unit-test list is written in the test-design phase (before any
+implementation; `agent-fprime-development` §2 phase 3) from the
+approved requirements and FPP model, lives in the component's
+`docs/sdd.md` under a "Unit-test list" heading, and is reviewed with
+the system test plan (`.github/agents/_shared/phase-review-loop.md`).
+Adding this section does not reopen the design phase; any other SDD
+edit found necessary does (`phase-review-loop.md`, reopen). One row
+per requirement whose verification method is a unit test:
+
+| Test | Description | Requirements |
+|---|---|---|
+
+(the same three-column table as the system tests in SDD §Tests: name,
+one sentence of ≤ 15 words on what the test proves, REQ-IDs). Add rows
+for every interface element (port, command, event, telemetry channel,
+parameter) not already exercised, and for the failure paths the
+requirements name. Stimulus and asserted values belong in the test
+code and the plan, not in the SDD row. The test suite implements the list; a test with
+no row, or a row with no test, is a gap recorded in the SDD.
+
+---
+
+## Process
+
+Follow `fprime-unit-testing` for the step-by-step procedure:
+scaffold → implement → register → run. That skill covers Tester
+class structure, TestMain layout, CMakeLists registration, assertion
+macros, helper functions, and rules-based testing.
+
+Key decisions within the lifecycle:
+
+1. **Traditional vs. rule-based**: Use the criteria table in
+   `fprime-unit-testing` §3. Default to rule-based for
+   components with multiple ports or stateful behavior.
+2. **TDD**: Implement the test list before the component (tests before
+   implementation); see
+   [TDD guide](https://github.com/nasa/fprime/blob/devel/docs/how-to/test-driven-development.md).
+   The FPP model is sufficient to write tests — implementation is not
+   required.
+3. **Coverage**: Run `fprime-util check --coverage` and review
+   `*_gcov.txt`. Target 95%.
+
+---
+
+## Anti-Patterns
+
+- Testing only happy paths — off-nominal coverage is critical
+- Forgetting `doDispatch()` for async commands/ports
+- Asserting only on count (`SIZE`) without checking values
+- Modifying component internals directly (test through the
+  interface only)
+- Guessing expected values — derive from requirements

@@ -1,0 +1,136 @@
+---
+name: fprime-iterative-development
+description: Use when an F Prime development task should be driven to convergence through repeated local test-and-review iterations — running unit, integration, and manual GDS tests plus the full multi-agent review locally, and fixing findings until tests pass and findings trend to zero. Requires explicit user approval before use. Keywords: F Prime, iterative development, iteration loop, local review, convergence.
+---
+
+# Skill: F Prime iterative development loop
+
+Develop a feature or component through the standard phase-gated
+process, then converge it in a local test-and-review loop: run unit
+tests, integration tests, and manual GDS tests, run the full
+multi-agent review **locally only**, fix what they surface, and repeat
+until tests pass and findings trend to zero.
+
+---
+
+## 0. Approval gate — required before use
+
+This skill runs a long, resource-intensive loop and a full multi-agent
+review. **Never begin it on your own initiative.** Before executing:
+
+1. Present the user a short plan: the development scope, the test
+   commands to be run, the manual-test approach, the review setup,
+   and the iteration exit criteria (§3).
+2. Obtain the user's **explicit approval to run this skill**. A
+   general request to "develop X" is not approval to iterate; ask.
+3. Do not start Phase 1 (§1) until that approval is given.
+
+## 1. Phase 1 — development (ask-heavy)
+
+Follow `.agents/skills/agent-fprime-development/SKILL.md`, which classifies
+the task and sequences the development skills with their phase gates
+(requirements and FPP-design approval before implementation). This is
+the phase to ask questions — front-load every question you can
+anticipate so the iteration loop does not need to block on the user.
+
+Implement the feature, its unit tests (`test/ut/`), and its
+integration tests (`test/int/`) per those skills. Before entering the
+loop, send the user a brief recap of the loop plan and any final
+questions; proceed unless a gating question is unanswered.
+
+## 2. Phase 2 — iteration loop (autonomous)
+
+Prefer autonomy, but ask the user whenever forward progress cannot be
+made without input (ambiguous or contradictory requirements surfaced
+by a finding, a fix that would change the approved design or
+interface, a test failure whose expected behavior is unclear, missing
+environment/hardware access). Do not spin in place or guess.
+
+1. **Run unit tests**:
+   ```bash
+   fprime-util generate --ut && fprime-util build --ut -j"$(nproc)"
+   (cd build-fprime-automatic-native-ut && ctest -j"$(nproc)")
+   ```
+2. **Run integration tests**: build the relevant deployment, launch
+   it with the GDS (`fprime-gds`), and run the `test/int/` pytest
+   suite against it.
+3. **Manually test the feature**: exercise it end to end via the GDS
+   (send commands, verify events / telemetry / data products) as an
+   operator would. Record observations.
+4. **Run the multi-agent review LOCALLY ONLY** — the same pipeline as
+   `.agents/skills/agent-review-orchestrator/SKILL.md`, with one critical
+   change: **no reviewer, aggregator, or subagent may post anything
+   to GitHub** — no PR reviews, inline comments, issue comments,
+   statuses, or labels. All findings go to local files only (e.g.
+   `review-iter-N/<agent>.md`):
+   - Read the orchestrator, `.github/agents/_shared/agent-registry.yml`,
+     `.github/agents/_shared/review-contract.md`, and each reviewer's
+     `agent-<short_name>` skill fresh
+     from `nasa/fprime` `devel`.
+   - Run every `role: reviewer` agent from the registry against the
+     local diff (`git diff <base>...HEAD`). Every reviewer kickoff
+     prompt MUST state in capital letters: LOCAL REVIEW ONLY — DO NOT
+     POST TO GITHUB; write findings to the local output file.
+   - Aggregate the findings locally per `agent-review-summary`
+     into `review-iter-N/summary.md`.
+5. **Triage and fix**: classify each finding (fix / false positive /
+   acknowledged nit / accepted as designed / future work), fix test
+   failures and valid findings, and record the finding count for the
+   iteration.
+6. **Keep the ledger** (`docs/review-ledger.md` in the repository
+   under review, or beside `review-iter-N/` when nothing may be
+   committed): one row per finding dispositioned *accepted as
+   designed* or *future work* — `finding key | first raised (iteration,
+   agent) | disposition | reason (one sentence) | who ruled`. Every
+   reviewer kickoff from the next iteration on names the ledger and
+   says: do not re-raise a ledger row unless new evidence is cited.
+   Attach the ledger with every review summary; the human reads it
+   before the findings.
+7. **Loop**: return to step 1.
+
+### Adversarial children
+
+When the work is a test harness, a plan, a checker or any artifact
+whose failure mode is "passes by construction", add adversaries to the
+review. Each is a separate context with the artifact's **inputs**, not
+its implementation, and a brief that names what it must break:
+
+| Child | Reads | Delivers |
+|---|---|---|
+| Independent checker author | plan text, replay API | a checker written from the plan alone; byte-for-byte diff against the engine on every vector (`fprime-test-oracle` §3) |
+| Planted fault-fixture breaker | fault menu, fixture API | faults files and draws that should be refused (unknown test, stale sha, extra key, by-name leak) and the exit code each produced |
+| Replay-fidelity reviewer | raw archive, exporter output | row-count and dedup diffs between `raw/` and the export; any sample lost or duplicated |
+| QL cold reader | rendered quick-look pages only | what a human who did not run the test would conclude, and where the page misleads |
+
+Their findings enter the same triage and the same ledger; a finding
+they could not reproduce is recorded as held (`*_held`), not dropped.
+
+## 3. Exit criteria
+
+Stop iterating when:
+
+- all tests pass AND findings trend to zero (no new high/medium
+  findings; remaining findings are acknowledged nits or false
+  positives) — success; or
+- finding counts plateau across two consecutive iterations —
+  summarize the residual findings for the user; or
+- 5 iterations complete — report status and ask how to proceed.
+
+Deliverables: the implementation and tests (delivered per the user's
+PR workflow; the PR description may summarize the final local review
+outcome, but never post the raw review as PR comments/reviews), plus
+the final iteration's `review-iter-N/` artifacts (per-agent findings
+and summary) and the ledger shared with the user.
+
+## Forbidden actions
+
+- Never run this skill without the explicit approval required by §0.
+- **Never post review results to GitHub** — no PR reviews, inline
+  comments, issue comments, commit statuses, or labels from the local
+  review pipeline. Validation: zero comments/reviews/statuses created
+  by this run on any PR or commit.
+- Never skip the requirements/design approval gates of
+  `agent-fprime-development`.
+- Never modify or weaken tests to make them pass.
+- Do not give reviewer subagents a token with write scope; grant read
+  access only when needed for context.

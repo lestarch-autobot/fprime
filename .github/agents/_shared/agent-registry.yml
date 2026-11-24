@@ -8,8 +8,9 @@
 #
 # Adding a new reviewer agent in the future is a matter of adding a
 # new entry here with `role: reviewer`, a `lens_kind`, a
-# `review_group`, plus the agent file. No code changes elsewhere are
-# required.
+# `review_group`, plus the `agent-<name>` skill, its `.claude/skills`
+# symlink and the regenerated agent files (see `agent-skill-authoring`
+# sections 0 and 2). No code changes elsewhere are required.
 #
 # Review groups (`review_group`) — session packing
 # ------------------------------------------------
@@ -34,7 +35,7 @@
 #      of their recall when sharing a session, the loss growing with
 #      diff size. A checklist lens always runs alone.
 #
-# Rules the orchestrator enforces (see review-orchestrator.agent.md
+# Rules the orchestrator enforces (see agent-review-orchestrator
 # §Session assembly, review contract §13):
 #
 #   1. Every `role: reviewer` entry carries `lens_kind` and
@@ -56,7 +57,7 @@
 #      lenses.
 #   4. An optional `routing_skip_when` predicate lets the
 #      orchestrator skip a lens on a PR that touches nothing in its
-#      scope (review-orchestrator.agent.md §Routing). Predicates are
+#      scope (agent-review-orchestrator §Routing). Predicates are
 #      evaluated against the changed-file list only, are conservative
 #      by construction, and default to absent — a lens without one
 #      always runs, and no predicate may be written for a safety
@@ -79,7 +80,7 @@ agents:
   - name: F Prime PR Review Orchestrator
     short_name: review-orchestrator
     role: orchestrator
-    path: .github/agents/review-orchestrator.agent.md
+    path: .agents/skills/agent-review-orchestrator/SKILL.md
     invocable_by_humans: true
     notes: >
       Single human entry point. Packs the `role: reviewer` lenses
@@ -93,14 +94,14 @@ agents:
   - name: F Prime Full-Codebase Review Orchestrator
     short_name: full-codebase-review
     role: batch-orchestrator
-    path: .github/agents/full-codebase-review.agent.md
+    path: .agents/skills/agent-full-codebase-review/SKILL.md
     invocable_by_humans: true
     notes: >
       Single human entry point for the batch (full-codebase) review.
       Partitions the repository into review units per
-      `_shared/skills/repo-partitioning.skill.md`, drives every
+      `.github/agents/_shared/skills/repo-partitioning.skill.md`, drives every
       `role: reviewer` entry over every unit under the batch
-      contract (`_shared/review-contract-batch.md`), and maintains
+      contract (`.github/agents/_shared/review-contract-batch.md`), and maintains
       the resumable ledger and diffable finding artifacts in a
       results repository. Not part of the PR review flow.
 
@@ -110,7 +111,7 @@ agents:
     role: reviewer
     lens_kind: judgement
     review_group: security
-    path: .github/agents/security-review.agent.md
+    path: .agents/skills/agent-security-review/SKILL.md
     invocable_by_humans: true
     contributes_to_ci_safety: true
     scope_summary: >
@@ -125,7 +126,7 @@ agents:
     role: reviewer
     lens_kind: checklist
     review_group: supply-chain
-    path: .github/agents/supply-chain-review.agent.md
+    path: .agents/skills/agent-supply-chain-review/SKILL.md
     invocable_by_humans: true
     contributes_to_ci_safety: true
     scope_summary: >
@@ -144,11 +145,11 @@ agents:
     routing_skip_when: >
       The PR's changed-file list contains no C or C++ source or
       header file.
-    path: .github/agents/fprime-code-review.agent.md
+    path: .agents/skills/agent-fprime-code-review/SKILL.md
     invocable_by_humans: true
     scope_summary: >
       C/C++ design-rule conformance (CPP-1 through CPP-37 in
-      `.github/skills/fprime-cpp-design/SKILL.md`): no dynamic memory
+      `.agents/skills/fprime-cpp-design/SKILL.md`): no dynamic memory
       post-init, Fw::Buffer ownership, FW_ASSERT scope, C++14
       language subset, F Prime type idioms (Fw::String,
       Fw/DataStructures, FPP modeled types on ground-facing
@@ -161,7 +162,7 @@ agents:
     role: reviewer
     lens_kind: checklist
     review_group: stale-documentation
-    path: .github/agents/stale-documentation-review.agent.md
+    path: .agents/skills/agent-stale-documentation-review/SKILL.md
     invocable_by_humans: true
     scope_summary: >
       Eight categories: component SDDs (`*/docs/sdd.md`), user manual
@@ -178,7 +179,7 @@ agents:
     role: reviewer
     lens_kind: judgement
     review_group: system
-    path: .github/agents/design-review.agent.md
+    path: .agents/skills/agent-design-review/SKILL.md
     invocable_by_humans: true
     scope_summary: >
       Nine design categories — design-vs-intent mismatch,
@@ -200,7 +201,7 @@ agents:
     routing_skip_when: >
       The PR's changed-file list contains no `.fpp` model, no
       topology or deployment file, and no component source or header.
-    path: .github/agents/architecture-review.agent.md
+    path: .agents/skills/agent-architecture-review/SKILL.md
     invocable_by_humans: true
     scope_summary: >
       Seven categories: sync port on async component, async port on
@@ -220,7 +221,7 @@ agents:
     routing_skip_when: >
       The PR's changed-file list contains no test file and no C/C++,
       Python, or `.fpp` source whose behavior a test could cover.
-    path: .github/agents/test-quality-review.agent.md
+    path: .agents/skills/agent-test-quality-review/SKILL.md
     invocable_by_humans: true
     scope_summary: >
       Ten test categories: missing tests for newly-added FPP
@@ -243,7 +244,7 @@ agents:
     routing_skip_when: >
       The PR's changed-file list contains no executable source of any
       kind (C/C++, Python, CMake, shell).
-    path: .github/agents/correctness-review.agent.md
+    path: .agents/skills/agent-correctness-review/SKILL.md
     invocable_by_humans: true
     scope_summary: >
       General functional correctness. Twelve named categories —
@@ -268,7 +269,7 @@ agents:
     role: reviewer
     lens_kind: judgement
     review_group: system
-    path: .github/agents/operational-consequences-review.agent.md
+    path: .agents/skills/agent-operational-consequences-review/SKILL.md
     invocable_by_humans: true
     scope_summary: >
       Operational consequences of documented behavior on a flight
@@ -299,7 +300,7 @@ agents:
     routing_skip_when: >
       The PR's changed-file list contains no executable source of any
       kind (C/C++, Python, CMake, shell).
-    path: .github/agents/maintainability-review.agent.md
+    path: .agents/skills/agent-maintainability-review/SKILL.md
     invocable_by_humans: true
     scope_summary: >
       Eleven categories: unclear / misleading naming, oversized or
@@ -317,7 +318,7 @@ agents:
   - name: F Prime PR Review Summary Aggregator
     short_name: review-summary
     role: aggregator
-    path: .github/agents/review-summary.agent.md
+    path: .agents/skills/agent-review-summary/SKILL.md
     invocable_by_humans: true
     notes: >
       Consumes per-agent hidden metadata and inline comments on the
@@ -329,7 +330,7 @@ agents:
       table, and the severity-reconciliation promotion log
       (contract 14). The orchestrator executes this role itself once
       the reviewer sessions have settled, rather than spawning a
-      further session for it (review-orchestrator.agent.md
+      further session for it (agent-review-orchestrator
       Aggregation); this file remains the source of truth for what
       the summary contains either way, and the agent stays
       separately invocable for debugging.

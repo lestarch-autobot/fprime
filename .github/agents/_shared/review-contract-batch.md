@@ -6,7 +6,7 @@ from the working tree, rather than a PR diff. It changes ONLY how
 reviewers receive their input and where findings land. Reviewer
 scopes, finding classes, triage taxonomy, the zero-trust principle,
 and the low-confidence rubric are unchanged and continue to be
-governed by `review-contract.md` and each agent file.
+governed by `review-contract.md` and each agent skill.
 
 Where `review-contract.md` and this addendum conflict **in batch
 mode**, this addendum wins. In PR mode this file does not apply.
@@ -155,7 +155,7 @@ After all reviewers complete a unit, the unit aggregator pass writes
 
 - The per-reviewer results table (reviewer, counts by tag, verdict,
   or `ERROR: <reason>` for a failed reviewer — no silent fallback,
-  mirroring `review-summary.agent.md`).
+  mirroring `agent-review-summary`).
 - Unit verdict: `Go` iff every reviewer completed AND every
   reviewer's verdict is `Go`. A failed / missing reviewer forces the
   unit to `No-Go` — a unit is never marked complete with a reviewer

@@ -1,0 +1,28 @@
+name: Agent Wrappers Check
+
+on:
+  push:
+    branches: [ devel, release/** ]
+  pull_request:
+    branches: [ devel, release/** ]
+    paths:
+      - '.agents/**'
+      - '.claude/**'
+      - '.github/agents/**'
+      - '.github/skills'
+      - '.github/workflows/agent-wrappers-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Generated agent files match the agent skills
+        run: python3 .agents/tools/generate_agent_wrappers.py --check
+      - name: Skill symlinks are complete
+        run: python3 .agents/tools/check_skill_layout.py

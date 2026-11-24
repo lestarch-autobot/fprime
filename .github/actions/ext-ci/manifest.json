@@ -6,7 +6,9 @@
     "**.md",
     ".github/actions/spelling/**",
     ".github/ISSUE_TEMPLATE/**",
-    ".github/agents/**"
+    ".github/agents/**",
+    ".agents/**",
+    ".claude/**"
   ],
   "repos": [
     {

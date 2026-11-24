@@ -22,7 +22,9 @@ follow; the details live in the documents linked below.
 | `default/config/` | Default compile-time configuration headers and `AcConstants.fpp`; projects override these to tune a deployment. |
 | `TestDeploymentsProject/Ref/` | The `Ref` reference deployment, used to exercise the framework end to end. |
 | `FppTestProject/` | Validation suite for FPP-generated code. |
-| `.github/agents/`, `.github/skills/` | Agent definitions and reusable agent procedures. |
+| `.agents/skills/` | Reusable agent procedures; the `agent-<name>` skills that carry agent `metadata` are the agent definitions. |
+| `.agents/tools/` | The generator and layout check for the agent files and skill symlinks; CI runs both. |
+| `.github/agents/`, `.claude/agents/` | Generated per-tool agent files, plus the shared review contracts in `.github/agents/_shared/`. |
 
 For a narrative tour of the tree, see
 [`docs/user-manual/overview/source-tree.md`](docs/user-manual/overview/source-tree.md).
@@ -72,15 +74,18 @@ Build-system usage, `fprime-util` subcommands, and settings are documented in
 - Flight code must be deterministic and bounded: no unbounded loops, no
   unbounded buffers, explicit handling of every error return.
 - The authoritative C/C++ rules are in
-  [`.github/skills/fprime-cpp-design/SKILL.md`](.github/skills/fprime-cpp-design/SKILL.md);
+  [`.agents/skills/fprime-cpp-design/SKILL.md`](.agents/skills/fprime-cpp-design/SKILL.md);
   JPL-level design expectations are in
-  [`.github/skills/jpl-design-principles/SKILL.md`](.github/skills/jpl-design-principles/SKILL.md).
+  [`.agents/skills/jpl-design-principles/SKILL.md`](.agents/skills/jpl-design-principles/SKILL.md).
 
 ## Procedures (skills)
 
-Reusable procedures live in `.github/skills/<skill-name>/SKILL.md` and follow the
-[Agent Skills specification](https://agentskills.io/specification). Follow the
-relevant one instead of improvising:
+Reusable procedures live in `.agents/skills/<skill-name>/SKILL.md` and follow the
+[Agent Skills specification](https://agentskills.io/specification). `.claude/skills/`
+and `.github/skills` are symlinks to them for tools that scan only those paths. The
+symlinks work only in a local checkout with symlink support (on Windows,
+`core.symlinks=true`); GitHub URLs and API reads must use `.agents/skills/`.
+Follow the relevant one instead of improvising:
 
 - Building a component end to end: `fprime-component-development`, which
   sequences `fprime-component-requirements`,
@@ -112,19 +117,23 @@ relevant one instead of improvising:
   `fprime-run-for-record` (seal, run, audit, unseal).
 - Deriving generated C++ names or wiring from the `.fpp` without reading autocode: `fprime-fpp-navigation`.
 
-Pull-request review is performed by the multi-agent flow in
-[`.github/agents/`](.github/agents/), entered through
-`review-orchestrator.agent.md`. Development work (components,
+Agents are skills named `agent-<name>`, each meant to run in its own
+session. GitHub Copilot and Claude Code start them through the generated
+files in `.github/agents/` and `.claude/agents/`; in any other tool, load
+the skill at the start of a fresh session.
+
+Pull-request review is performed by the multi-agent flow entered through
+`agent-review-orchestrator`. Development work (components,
 topologies, build system) is entered through
-`fprime-development.agent.md`, which sequences the skills above. A
+`agent-fprime-development`, which sequences the skills above. A
 requirements set is reviewed before design through
-`requirements-review.agent.md`, an FPP design and a test design
+`agent-requirements-review`, an FPP design and a test design
 through the reviewers named in
 `.github/agents/_shared/phase-review-loop.md`. System testing of an
-existing unit is entered through `system-test-design.agent.md`
-(plan), `system-test-build.agent.md` (harness), and
-`test-runner.agent.md` / `test-auditor.agent.md` (run-for-record),
-with `system-test-review.agent.md` as the adversarial reviewer; all five
+existing unit is entered through `agent-system-test-design`
+(plan), `agent-system-test-build` (harness), and
+`agent-test-runner` / `agent-test-auditor` (run-for-record),
+with `agent-system-test-review` as the adversarial reviewer; all five
 follow `.github/agents/_shared/test-process-contract.md`.
 
 ## Contributing

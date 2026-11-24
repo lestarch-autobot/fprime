@@ -108,7 +108,7 @@ When opening a Pull Request, please fill in the given template, and link to any 
 **Contributions using generative AI**
 
 Generative AI is welcome in F´ contributions under the [AI usage guidelines](./AI_POLICY.md). Submissions produced with
-AI must follow the F´ AI development skills in [`.github/skills/`](./.github/skills/), entered through
+AI must follow the F´ AI development skills in [`.agents/skills/`](./.agents/skills/), entered through
 [`AGENTS.md`](./AGENTS.md), which encode the project's conventions for developing, testing, and maintaining F´ code. AI
 agents opening a pull request must complete the AI checklist in the pull request template and sign the description with
 `IAMAI`.

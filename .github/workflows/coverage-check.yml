@@ -29,6 +29,8 @@ on:
       - '.github/actions/spelling/**'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/agents/**'
+      - '.agents/**'
+      - '.claude/**'
 
 permissions:
   contents: read
