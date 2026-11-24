@@ -17,6 +17,21 @@
 
 #include "QueueRulesDefinitions.hpp"
 
+// Wrapper under test: the Os::Queue selected in config/OsSelection.hpp, unless the test executable names another
+// implementation by defining OS_TEST_QUEUE_IMPLEMENTATION and OS_TEST_QUEUE_HEADER (see its CMakeLists.txt)
+#ifdef OS_TEST_QUEUE_IMPLEMENTATION
+#include OS_TEST_QUEUE_HEADER
+#endif
+namespace Os {
+namespace Test {
+#ifdef OS_TEST_QUEUE_IMPLEMENTATION
+using QueueUnderTest = Os::QueueCommon<OS_TEST_QUEUE_IMPLEMENTATION>;
+#else
+using QueueUnderTest = Os::Queue;
+#endif
+}  // namespace Test
+}  // namespace Os
+
 namespace Os {
 namespace Test {
 namespace Queue {
@@ -71,7 +86,7 @@ struct Tester : public Os::QueueRegistry {
         std::priority_queue<QueueMessage, std::vector<QueueMessage>, QueueMessageComparer> queue;
     };
     QueueState shadow;
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     std::vector<Os::Queue*> m_all_queues;
 
     //! Shadow is created

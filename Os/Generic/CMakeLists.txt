@@ -34,7 +34,6 @@ register_fprime_ut(
     Fw_Time
     Os
     STest
-    Os_Generic_PriorityMemQueue_Implementation
   CHOOSES_IMPLEMENTATIONS
     Os_Generic_PriorityMemQueue
 )
@@ -49,6 +48,7 @@ register_fprime_module(
   DEPENDS
     Fw_Types
     Os_Generic_Types
+    Os_Mutex
 )
 register_fprime_implementation(
     Os_Generic_PriorityQueue
@@ -113,11 +113,14 @@ register_fprime_ut(
     Fw_Types
     Fw_Time
     Os
+    Os_Generic_LocklessPriorityQueue_Implementation
     STest
-  CHOOSES_IMPLEMENTATIONS
-    Os_Generic_LocklessPriorityQueue
 )
 if (TARGET LocklessPriorityQueueTest)
+    target_compile_definitions(LocklessPriorityQueueTest PRIVATE
+        OS_TEST_QUEUE_HEADER="Os/Generic/LocklessPriorityQueue.hpp"
+        OS_TEST_QUEUE_IMPLEMENTATION=Os::Generic::LocklessPriorityQueue
+    )
     target_compile_options(LocklessPriorityQueueTest PRIVATE -Wno-conversion)
     target_include_directories(LocklessPriorityQueueTest PRIVATE "${CMAKE_CURRENT_LIST_DIR}/test/ut")
 endif()
@@ -130,8 +133,7 @@ register_fprime_ut(
     Fw_Types
     Fw_Time
     Os
-  CHOOSES_IMPLEMENTATIONS
-    Os_Generic_LocklessPriorityQueue
+    Os_Generic_LocklessPriorityQueue_Implementation
 )
 if (TARGET LocklessPriorityQueueTsanTest)
     target_compile_options(LocklessPriorityQueueTsanTest PRIVATE -Wno-conversion)

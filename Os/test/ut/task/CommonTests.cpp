@@ -4,6 +4,7 @@
 // ======================================================================
 #include "Os/test/ut/task/CommonTests.hpp"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include "Fw/Types/String.hpp"
 #include "Os/Task.hpp"
 #include "Os/test/ut/task/RulesHeaders.hpp"
@@ -21,6 +22,8 @@ Tester::~Tester() {
 
 TestTaskInfo::~TestTaskInfo() {
     this->stop();
+    std::vector<Os::Test::TaskUnderTest*>& started = Tester::getCurrentRegistry()->m_started_tasks;
+    started.erase(std::remove(started.begin(), started.end(), &this->m_task), started.end());
 }
 
 void TestTaskInfo::step() {
@@ -53,6 +56,7 @@ void TestTaskInfo::start(Os::Task::taskRoutine routine) {
     Os::Task::Arguments arguments(name, routine, this);
     s_task_count += 1;
     this->m_task.start(arguments);
+    Tester::getCurrentRegistry()->m_started_tasks.push_back(&this->m_task);
 }
 
 void TestTaskInfo::stop() {
@@ -120,7 +124,7 @@ Tester* Tester::s_current_registry = nullptr;
 
 Tester::Tester() {
     Tester::s_current_registry = this;
-    Os::Task::registerTaskRegistry(this);
+    Os::Test::TaskUnderTest::registerTaskRegistry(this);
 }
 
 Tester* Tester::getCurrentRegistry() {
@@ -129,7 +133,7 @@ Tester* Tester::getCurrentRegistry() {
 }
 
 void Tester::invokeRoutines() {
-    for (Os::Task* task : this->m_all_tasks) {
+    for (Os::Test::TaskUnderTest* task : this->m_started_tasks) {
         if (task->isCooperative()) {
             task->invokeRoutine();
         }

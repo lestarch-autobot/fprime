@@ -11,6 +11,21 @@
 #include "STest/Scenario/RandomScenario.hpp"
 #include "STest/Scenario/Scenario.hpp"
 
+// Wrapper under test: the Os::Task selected in config/OsSelection.hpp, unless the test executable names another
+// implementation by defining OS_TEST_TASK_IMPLEMENTATION and OS_TEST_TASK_HEADER (see its CMakeLists.txt)
+#ifdef OS_TEST_TASK_IMPLEMENTATION
+#include OS_TEST_TASK_HEADER
+#endif
+namespace Os {
+namespace Test {
+#ifdef OS_TEST_TASK_IMPLEMENTATION
+using TaskUnderTest = Os::TaskCommon<OS_TEST_TASK_IMPLEMENTATION>;
+#else
+using TaskUnderTest = Os::Task;
+#endif
+}  // namespace Test
+}  // namespace Os
+
 namespace Os {
 namespace Test {
 namespace Task {
@@ -28,7 +43,7 @@ struct TestTaskInfo {
     Lifecycle m_stage = Lifecycle::UNSET;
     Os::Mutex m_lock;
     Os::Task::State m_state = Os::Task::State::NOT_STARTED;  //!< Shadow state of the task
-    Os::Task m_task;                                         //!< Task under test
+    Os::Test::TaskUnderTest m_task;                          //!< Task under test
     std::shared_ptr<TestTaskInfo> m_other = nullptr;
     bool m_signal = false;
 
@@ -86,8 +101,11 @@ struct Tester : public Os::TaskRegistry {
 
     static Tester* s_current_registry;
 
+    //! Tasks started by the tester. Tracked here, not through the registry, as the registry only handles Os::Task
+    std::vector<Os::Test::TaskUnderTest*> m_started_tasks;
+
   public:
-    static void resetNumTasks() { Os::Task::s_numTasks = 0; }
+    static void resetNumTasks() { Os::Test::TaskUnderTest::s_numTasks = 0; }
 
 #include "TaskRules.hpp"
 };

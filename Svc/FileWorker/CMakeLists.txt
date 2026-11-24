@@ -51,10 +51,9 @@ if (BUILD_TESTING AND NOT __FPRIME_NO_UT_GEN__)
         SOURCES
           "${CMAKE_CURRENT_LIST_DIR}/test/ut/FileWorkerErrTestMain.cpp"
           "${CMAKE_CURRENT_LIST_DIR}/test/ut/FileWorkerErrTester.cpp"
-        CHOOSES_IMPLEMENTATIONS
-          Svc_FileWorker_test_FileTester
         DEPENDS
           STest
+          Svc_FileWorker_test_FileTester
         UT_AUTO_HELPERS
         WORKING_DIRECTORY
           "${CMAKE_CURRENT_LIST_DIR}"

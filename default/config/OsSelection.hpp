@@ -150,7 +150,18 @@ class PriorityQueue;
 }
 using Console = ConsoleCommon<Posix::Console::PosixConsole>;
 using Task = TaskCommon<Posix::Task::PosixTask>;
+#ifdef BUILD_UT
+// Unit test builds wrap the selection above in UtFile so that tests may intercept file calls
+namespace Ut {
+namespace File {
+class UtFile;
+using RealFile = Posix::File::PosixFile;
+}  // namespace File
+}  // namespace Ut
+using File = FileCommon<Ut::File::UtFile>;
+#else
 using File = FileCommon<Posix::File::PosixFile>;
+#endif
 using FileSystem = FileSystemCommon<Posix::FileSystem::PosixFileSystem>;
 using Directory = DirectoryCommon<Posix::Directory::PosixDirectory>;
 using Queue = QueueCommon<Generic::PriorityQueue>;
@@ -195,7 +206,12 @@ using Memory = MemoryCommon<Darwin::Memory::DarwinMemory>;
 
 #define OS_CONSOLE_HEADER <Os/Posix/Console.hpp>
 #define OS_TASK_HEADER <Os/Posix/Task.hpp>
+#ifdef BUILD_UT
+#define OS_FILE_HEADER <Os/Ut/File.hpp>
+#define OS_UT_REAL_FILE_HEADER <Os/Posix/File.hpp>
+#else
 #define OS_FILE_HEADER <Os/Posix/File.hpp>
+#endif
 #define OS_FILE_SYSTEM_HEADER <Os/Posix/FileSystem.hpp>
 #define OS_DIRECTORY_HEADER <Os/Posix/Directory.hpp>
 #define OS_QUEUE_HEADER <Os/Generic/PriorityQueue.hpp>

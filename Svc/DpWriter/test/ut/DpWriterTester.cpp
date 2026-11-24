@@ -9,6 +9,10 @@
 
 namespace Svc {
 
+//! Replaces every Os::File call with the tracking stub for the whole test program. One instance serves all testers:
+//! several exist at once (see Rules/Testers.cpp) and only one interceptor may be installed at a time.
+static Os::Stub::File::Test::TestFileInterceptor s_fileInterceptor;
+
 // ----------------------------------------------------------------------
 // Construction and destruction
 // ----------------------------------------------------------------------

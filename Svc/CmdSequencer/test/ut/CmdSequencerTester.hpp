@@ -14,7 +14,7 @@
 
 #include "CmdSequencerGTestBase.hpp"
 #include "Fw/Types/MallocAllocator.hpp"
-#include "Os/Posix/File.hpp"
+#include "Os/Interfaces/Test/FileTestInterceptor.hpp"
 #include "Svc/CmdSequencer/CmdSequencerImpl.hpp"
 #include "Svc/CmdSequencer/formats/AMPCSSequence.hpp"
 #include "Svc/CmdSequencer/test/ut/SequenceFiles/SequenceFiles.hpp"
@@ -124,20 +124,18 @@ class CmdSequencerTester : public CmdSequencerGTestBase {
         //! Disable the interceptor
         void disable();
 
-        class PosixFileInterceptor : public Os::Posix::File::PosixFile {
-            friend class Interceptor;
-
+        //! Intercepts the open and read calls of every Os::File while it exists
+        class FileInterceptor : public Os::Test::FileTestInterceptor {
           public:
-            PosixFileInterceptor() = default;
+            explicit FileInterceptor(Interceptor& interceptor);
 
-            PosixFileInterceptor(const PosixFileInterceptor& other) = default;
+            Status open(Os::FileInterface& real, const char* path, Mode mode, OverwriteType overwrite) override;
 
-            Os::FileInterface::Status open(const char* path, Mode mode, OverwriteType overwrite) override;
+            Status read(Os::FileInterface& real, U8* buffer, FwSizeType& size, WaitType wait) override;
 
-            Status read(U8* buffer, FwSizeType& size, WaitType wait) override;
-
-            //! Current interceptor
-            static Interceptor* s_current_interceptor;
+          private:
+            //! Settings controlling the interception
+            Interceptor& m_interceptor;
         };
 
       public:
@@ -160,6 +158,9 @@ class CmdSequencerTester : public CmdSequencerGTestBase {
 
         //! Status
         Os::File::Status fileStatus;
+
+        //! Os::File interceptor applying the settings above
+        FileInterceptor fileInterceptor;
     };
 
     // ----------------------------------------------------------------------

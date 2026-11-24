@@ -5,6 +5,7 @@
 #include "Os/test/ut/queue/CommonTests.hpp"
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <type_traits>
 #include "Fw/Types/String.hpp"
 #include "Os/Queue.hpp"
 #include "Os/test/ConcurrentRule.hpp"
@@ -22,7 +23,7 @@ PriorityCompare const Tester::QueueMessageComparer::HELPER = PriorityCompare();
 
 Tester::Tester() {
 #if FW_QUEUE_REGISTRATION
-    Os::Queue::setRegistry(this);
+    Os::Test::QueueUnderTest::setRegistry(this);
 #endif
 }
 
@@ -126,7 +127,7 @@ void Tester::registerQueue(Os::Queue* q) {
 }  // namespace Os
 
 TEST(InterfaceUninitialized, SendPointer) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType messageSize = 200;
     const FwQueuePriorityType priority = 127;
@@ -138,7 +139,7 @@ TEST(InterfaceUninitialized, SendPointer) {
 }
 
 TEST(InterfaceUninitialized, SendBuffer) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType messageSize = 200;
     const FwQueuePriorityType priority = 127;
@@ -151,7 +152,7 @@ TEST(InterfaceUninitialized, SendBuffer) {
 }
 
 TEST(InterfaceUninitialized, ReceivePointer) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     FwSizeType size = 200;
     FwQueuePriorityType priority;
@@ -164,7 +165,7 @@ TEST(InterfaceUninitialized, ReceivePointer) {
 }
 
 TEST(InterfaceUninitialized, ReceiveBuffer) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     FwSizeType size = 200;
     FwQueuePriorityType priority;
@@ -177,59 +178,59 @@ TEST(InterfaceUninitialized, ReceiveBuffer) {
 }
 
 TEST(InterfaceInvalid, CreateInvalidDepth) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
-    ASSERT_DEATH_IF_SUPPORTED(queue.create(0, name, 0, 10), "Assert:.*Queue\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(queue.create(0, name, 0, 10), "Assert:.*Queue\\.hpp");
     queue.teardown();
 }
 
 TEST(InterfaceInvalid, CreateInvalidSize) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
-    ASSERT_DEATH_IF_SUPPORTED(queue.create(0, name, 10, 0), "Assert:.*Queue\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(queue.create(0, name, 10, 0), "Assert:.*Queue\\.hpp");
     queue.teardown();
 }
 
 TEST(InterfaceInvalid, SendPointerNull) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType messageSize = 200;
     const FwQueuePriorityType priority = 127;
     ASSERT_DEATH_IF_SUPPORTED(queue.send(nullptr, messageSize, priority, Os::QueueInterface::BlockingType::BLOCKING),
-                              "Assert:.*Queue\\.cpp");
+                              "Assert:.*Queue\\.hpp");
     queue.teardown();
 }
 
 TEST(InterfaceInvalid, SendInvalidEnum) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType messageSize = 200;
     const FwQueuePriorityType priority = 127;
     Os::QueueInterface::BlockingType blockingType =
         static_cast<Os::QueueInterface::BlockingType>(Os::QueueInterface::BlockingType::BLOCKING + 1);
-    ASSERT_DEATH_IF_SUPPORTED(queue.send(nullptr, messageSize, priority, blockingType), "Assert:.*Queue\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(queue.send(nullptr, messageSize, priority, blockingType), "Assert:.*Queue\\.hpp");
     queue.teardown();
 }
 
 TEST(InterfaceInvalid, ReceivePointerNull) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     FwSizeType size = 200;
     FwQueuePriorityType priority;
     ASSERT_DEATH_IF_SUPPORTED(
         queue.receive(nullptr, size, Os::QueueInterface::BlockingType::NONBLOCKING, size, priority),
-        "Assert:.*Queue\\.cpp");
+        "Assert:.*Queue\\.hpp");
     queue.teardown();
 }
 
 TEST(InterfaceInvalid, ReceiveInvalidEnum) {
-    Os::Queue queue;
+    Os::Test::QueueUnderTest queue;
     Fw::String name = "My queue";
     FwSizeType size = 200;
     FwQueuePriorityType priority;
     Os::QueueInterface::BlockingType blockingType =
         static_cast<Os::QueueInterface::BlockingType>(Os::QueueInterface::BlockingType::BLOCKING + 1);
-    ASSERT_DEATH_IF_SUPPORTED(queue.receive(nullptr, size, blockingType, size, priority), "Assert:.*Queue\\.cpp");
+    ASSERT_DEATH_IF_SUPPORTED(queue.receive(nullptr, size, blockingType, size, priority), "Assert:.*Queue\\.hpp");
     queue.teardown();
 }
 
@@ -241,7 +242,12 @@ TEST(BasicRules, Create) {
     // Repetitive create
     create_rule.action(tester);
 #if FW_QUEUE_REGISTRATION
-    EXPECT_GT(tester.m_all_queues.size(), 0) << "No queues were registered.";
+    // Only queues of the selected Os::Queue type are tracked by the registry
+    if (std::is_same<Os::Test::QueueUnderTest, Os::Queue>::value) {
+        EXPECT_GT(tester.m_all_queues.size(), 0) << "No queues were registered.";
+    } else {
+        EXPECT_EQ(tester.m_all_queues.size(), 0) << "Queue of a non-selected type was registered.";
+    }
 #endif
 }
 

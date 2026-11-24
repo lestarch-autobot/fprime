@@ -1,5 +1,6 @@
 #include <string.h>
 #include <Os/Interfaces/FileInterface.hpp>
+#include <Os/Interfaces/Test/FileTestInterceptor.hpp>
 
 #ifndef OS_STUB_FILE_TEST_HPP
 #define OS_STUB_FILE_TEST_HPP
@@ -268,6 +269,26 @@ class TestFile : public FileInterface {
   private:
     //! File handle for PosixFile
     TestFileHandle m_handle;
+};
+
+//! \brief TEST ONLY: interceptor that replaces every Os::File call with the tracking `TestFile` stub
+//!
+//! While an instance exists, no Os::File call reaches the real implementation: calls are recorded in, and answered
+//! from, `StaticData::data`. Subclass and override to alter individual calls.
+class TestFileInterceptor : public Os::Test::FileTestInterceptor {
+  public:
+    Status open(FileInterface& real, const char* path, Mode mode, OverwriteType overwrite) override;
+    void close(FileInterface& real) override;
+    Status size(FileInterface& real, FwSizeType& size_result) override;
+    Status position(FileInterface& real, FwSizeType& position_result) override;
+    Status preallocate(FileInterface& real, FwSizeType offset, FwSizeType length) override;
+    Status seek(FileInterface& real, FwSignedSizeType offset, SeekType seekType) override;
+    Status flush(FileInterface& real) override;
+    Status read(FileInterface& real, U8* buffer, FwSizeType& size, WaitType wait) override;
+    Status write(FileInterface& real, const U8* buffer, FwSizeType& size, WaitType wait) override;
+
+  private:
+    TestFile m_stub;  //!< Stub answering every call
 };
 
 }  // namespace Test

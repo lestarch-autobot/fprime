@@ -7,18 +7,21 @@
 #include "Os/Stub/test/Cpu.hpp"
 #include "STest/Pick/Pick.hpp"
 
+// Wrapper under test: Os::CpuCommon on the implementation named here, not the selection in config/OsSelection.hpp
+using CpuUnderTest = Os::CpuCommon<Os::Stub::Cpu::Test::TestCpu>;
+
 TEST(Interface, Construction) {
-    Os::Cpu cpu;
+    CpuUnderTest cpu;
     ASSERT_EQ(Os::Stub::Cpu::Test::StaticData::data.lastCalled, Os::Stub::Cpu::Test::StaticData::CONSTRUCT_FN);
 }
 
 TEST(Interface, Destruction) {
-    delete (new Os::Cpu);
+    delete (new CpuUnderTest);
     ASSERT_EQ(Os::Stub::Cpu::Test::StaticData::data.lastCalled, Os::Stub::Cpu::Test::StaticData::DESTRUCT_FN);
 }
 
 TEST(Interface, Count) {
-    Os::Cpu cpu;
+    CpuUnderTest cpu;
     FwSizeType count = STest::Pick::lowerUpper(0, 10000);
     FwSizeType count_copy = count;
     Os::CpuInterface::Status status = Os::CpuInterface::Status::ERROR;
@@ -31,12 +34,12 @@ TEST(Interface, Count) {
 }
 
 TEST(Interface, Ticks) {
-    Os::Cpu cpu;
+    CpuUnderTest cpu;
     FwSizeType index = STest::Pick::lowerUpper(0, 10000);
-    Os::Cpu::Ticks ticks;
+    CpuUnderTest::Ticks ticks;
     ticks.used = STest::Pick::lowerUpper(0, 10000);
     ticks.total = STest::Pick::lowerUpper(0, 10000);
-    Os::Cpu::Ticks ticks_copy = ticks;
+    CpuUnderTest::Ticks ticks_copy = ticks;
     Os::CpuInterface::Status status = Os::CpuInterface::Status::ERROR;
     Os::Stub::Cpu::Test::StaticData::data.status_out = status;
     ASSERT_EQ(Os::Stub::Cpu::Test::StaticData::data.lastCalled, Os::Stub::Cpu::Test::StaticData::CONSTRUCT_FN);

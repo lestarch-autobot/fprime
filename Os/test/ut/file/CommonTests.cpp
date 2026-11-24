@@ -513,7 +513,7 @@ TEST_F(FunctionalIO, CrcHardcodedValue_123456789) {
     // Os::File returns raw accumulator (no ones' complement)
     // Expected: CRC32 raw accumulator of "123456789" = 0x340BC6D9
     ASSERT_EQ(crc, static_cast<U32>(0x340BC6D9))
-        << "Os::File CRC of \"123456789\" must equal 0x340BC6D9 (raw accumulator, no ones' complement)";
+        << "Os::Test::FileUnderTest CRC of \"123456789\" must equal 0x340BC6D9 (raw accumulator, no ones' complement)";
 
     tester->m_file.close();
 }
@@ -539,7 +539,8 @@ TEST_F(FunctionalIO, CrcHardcodedValue_DEADBEEF) {
     ASSERT_EQ(status, Os::File::Status::OP_OK);
 
     // Expected: CRC32 raw accumulator of {0xDE,0xAD,0xBE,0xEF} = 0x83635CA5
-    ASSERT_EQ(crc, static_cast<U32>(0x83635CA5)) << "Os::File CRC of {0xDE,0xAD,0xBE,0xEF} must equal 0x83635CA5";
+    ASSERT_EQ(crc, static_cast<U32>(0x83635CA5))
+        << "Os::Test::FileUnderTest CRC of {0xDE,0xAD,0xBE,0xEF} must equal 0x83635CA5";
 
     tester->m_file.close();
 }

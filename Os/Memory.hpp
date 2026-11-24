@@ -2,6 +2,7 @@
 // \title Os/Memory.hpp
 // \brief common function definitions for Os::Memory
 // ======================================================================
+#include "Fw/Types/Assert.hpp"
 #include "Os/Os.hpp"
 #include "config/OsSelection.hpp"  // defines the Os::Memory alias and OS_MEMORY_HEADER; do not remove
 
@@ -90,5 +91,40 @@ class MemoryCommon final : public MemoryUserInterface {
 #endif
 
 #include OS_MEMORY_HEADER
+
+namespace Os {
+
+template <typename T>
+MemoryCommon<T>::MemoryCommon() : m_delegate() {}
+
+template <typename T>
+MemoryCommon<T>::~MemoryCommon() {}
+
+template <typename T>
+void MemoryCommon<T>::init() {
+    (void)MemoryCommon::getSingleton();
+}
+
+template <typename T>
+MemoryCommon<T>& MemoryCommon<T>::getSingleton() {
+    static MemoryCommon _singleton;
+    return _singleton;
+}
+
+template <typename T>
+typename MemoryCommon<T>::Status MemoryCommon<T>::_getUsage(Os::MemoryCommon<T>::Usage& memory_usage) {
+    return this->m_delegate._getUsage(memory_usage);
+}
+
+template <typename T>
+typename MemoryCommon<T>::Status MemoryCommon<T>::getUsage(Os::MemoryCommon<T>::Usage& memory_usage) {
+    return MemoryCommon::getSingleton()._getUsage(memory_usage);
+}
+
+template <typename T>
+MemoryHandle* MemoryCommon<T>::getHandle() {
+    return this->m_delegate.getHandle();
+}
+}  // namespace Os
 
 #endif  // OS_CONDITION_HPP_

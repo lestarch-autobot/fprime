@@ -68,16 +68,20 @@ class PrmDbTester : public PrmDbGTestBase {
     Os::File::Status m_testWriteStatus;
 
   public:
-    class PrmDbTestFile : public Os::Stub::File::Test::TestFile {
+    class PrmDbTestFile : public Os::Stub::File::Test::TestFileInterceptor {
       public:
-        Status read(U8* buffer, FwSizeType& size, WaitType wait) override;
+        Status read(Os::FileInterface& real, U8* buffer, FwSizeType& size, WaitType wait) override;
 
-        Status write(const U8* buffer, FwSizeType& size, WaitType wait) override;
+        Status write(Os::FileInterface& real, const U8* buffer, FwSizeType& size, WaitType wait) override;
 
         // Tracks the current tester
         static void setTester(PrmDbTester* tester);
         static PrmDbTester* s_tester;
     };
+
+  private:
+    //! Intercepts every Os::File call while this tester exists
+    PrmDbTestFile m_fileInterceptor;
 
     //! Expose PrmDbImpl::computeCrc for hardcoded CRC value testing
 };

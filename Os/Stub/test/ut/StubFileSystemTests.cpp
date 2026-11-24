@@ -4,9 +4,14 @@
 // This ensures the delegation of function calls happens properly
 // ======================================================================
 #include <gtest/gtest.h>
+#include "Os/FileSystem.hpp"
 #include "Os/Stub/test/FileSystem.hpp"
 #include "Os/test/ut/filesystem/CommonTests.hpp"
 #include "Os/test/ut/filesystem/RulesHeaders.hpp"
+
+// Wrapper under test: Os::FileSystemCommon on the implementation named here, not the selection in
+// config/OsSelection.hpp
+using FileSystemUnderTest = Os::FileSystemCommon<Os::Stub::FileSystem::Test::TestFileSystem>;
 
 using namespace Os::Stub::FileSystem::Test;
 
@@ -22,21 +27,21 @@ class Interface : public ::testing::Test {
 
 // Ensure that Os::FileSystem properly calls the implementation removeDirectory()
 TEST_F(Interface, RemoveDirectory) {
-    Os::FileSystem::removeDirectory("/does/not/matter");
+    FileSystemUnderTest::removeDirectory("/does/not/matter");
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::REMOVE_DIR_FN);
     ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
 }
 
 // Ensure that Os::FileSystem properly calls the implementation removeFile()
 TEST_F(Interface, RemoveFile) {
-    Os::FileSystem::removeFile("/does/not/matter");
+    FileSystemUnderTest::removeFile("/does/not/matter");
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::REMOVE_FILE_FN);
     ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
 }
 
 // Ensure that Os::FileSystem properly calls the implementation moveFile()
 TEST_F(Interface, Rename) {
-    Os::FileSystem::rename("/does/not/matter", "/does/not/matter");
+    FileSystemUnderTest::rename("/does/not/matter", "/does/not/matter");
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::RENAME_FN);
     ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
 }
@@ -44,14 +49,14 @@ TEST_F(Interface, Rename) {
 // Ensure that Os::FileSystem properly calls the implementation changeWorkingDirectory()
 TEST_F(Interface, GetWorkingDirectory) {
     char unused[1];
-    Os::FileSystem::getWorkingDirectory(unused, 1);
+    FileSystemUnderTest::getWorkingDirectory(unused, 1);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_CWD_FN);
     ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
 }
 
 // Ensure that Os::FileSystem properly calls the implementation changeWorkingDirectory()
 TEST_F(Interface, ChangeWorkingDirectory) {
-    Os::FileSystem::changeWorkingDirectory("/does/not/matter");
+    FileSystemUnderTest::changeWorkingDirectory("/does/not/matter");
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::CHANGE_CWD_FN);
     ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
 }
@@ -60,20 +65,20 @@ TEST_F(Interface, ChangeWorkingDirectory) {
 TEST_F(Interface, GetFreeSpace) {
     FwSizeType totalBytes;
     FwSizeType freeBytes;
-    Os::FileSystem::getFreeSpace("/does/not/matter", totalBytes, freeBytes);
+    FileSystemUnderTest::getFreeSpace("/does/not/matter", totalBytes, freeBytes);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_FREESPACE_FN);
     ASSERT_EQ(StaticData::data.lastStatus, Os::FileSystem::Status::OP_OK);
 }
 
 // Ensure that Os::FileSystem properly calls the implementation getHandle()
 TEST_F(Interface, GetHandle) {
-    ASSERT_NE(Os::FileSystem::getSingleton().getHandle(), nullptr);
+    ASSERT_NE(FileSystemUnderTest::getSingleton().getHandle(), nullptr);
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_HANDLE_FN);
 }
 
 // Ensure that Os::FileSystem properly calls the implementation getPathType()
 TEST_F(Interface, GetPathType) {
-    Os::FileSystem::PathType pathType = Os::FileSystem::getPathType("/does/not/matter");
+    Os::FileSystem::PathType pathType = FileSystemUnderTest::getPathType("/does/not/matter");
     ASSERT_EQ(StaticData::data.lastCalled, StaticData::LastFn::GET_PATH_TYPE_FN);
     ASSERT_EQ(pathType, Os::FileSystem::PathType::NOT_EXIST);
 }

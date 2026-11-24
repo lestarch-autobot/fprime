@@ -20,6 +20,9 @@
 #include "Os/Generic/LocklessPriorityQueue.hpp"
 #include "Os/Queue.hpp"
 
+// Wrapper under test: Os::QueueCommon on the implementation named here, not the selection in config/OsSelection.hpp
+using QueueUnderTest = Os::QueueCommon<Os::Generic::LocklessPriorityQueue>;
+
 namespace {
 
 // -----------------------------------------------------------------------
@@ -68,7 +71,7 @@ struct ConcurrentConfig {
 };
 
 struct ConcurrentState {
-    Os::Queue queue;
+    QueueUnderTest queue;
     std::atomic<U32>* received;  // array of size expectedTotal
     std::atomic<U32> receivedByPriority[MAX_PRIORITIES];
     std::atomic<U32> consumed;
@@ -279,7 +282,7 @@ TEST(Adversarial, SingleSlotPingPong) {
     constexpr FwSizeType DEPTH = 1;
     constexpr U32 MESSAGES = 50000;
 
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name("ping-pong");
     ASSERT_EQ(queue.create(0, name, DEPTH, sizeof(U32)), Os::QueueInterface::Status::OP_OK);
 
@@ -331,7 +334,7 @@ TEST(Adversarial, HighWaterMarkAccuracy) {
 
 // Deterministic high-water mark: send 3, drain, send 1 -- the mark must be exactly 3.
 TEST(Adversarial, HighWaterMarkIntermediate) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name("high-mark-intermediate");
     ASSERT_EQ(queue.create(0, name, 8, sizeof(U32)), Os::QueueInterface::Status::OP_OK);
     U8 buffer[sizeof(U32)] = {0};
@@ -362,7 +365,7 @@ TEST(Adversarial, BlockingPathStress) {
     static constexpr U32 MESSAGES_PER_PRODUCER = 1000;
     static constexpr U32 TOTAL = THREADS * MESSAGES_PER_PRODUCER;
 
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name("blocking-stress");
     ASSERT_EQ(queue.create(0, name, DEPTH, sizeof(U32)), Os::QueueInterface::Status::OP_OK);
 
@@ -475,7 +478,7 @@ TEST(Adversarial, MixedPriorityContention) {
     // Deterministic phase: with no concurrent senders, fill the queue with a shuffled mix of
     // priorities and verify a single-threaded drain returns strictly highest-priority-first,
     // FIFO within equal priorities.
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name("mixed-prio");
     ASSERT_EQ(queue.create(0, name, DEPTH, sizeof(U32)), Os::QueueInterface::Status::OP_OK);
     for (U32 i = 0; i < static_cast<U32>(DEPTH); i++) {
@@ -530,7 +533,7 @@ TEST(Adversarial, BatchedPriorityDrain) {
     constexpr U32 BATCHES = 200;
     constexpr U32 NUM_PRIORITIES = MAX_PRIORITIES;
 
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name("batched-prio");
     ASSERT_EQ(queue.create(0, name, DEPTH, sizeof(U32)), Os::QueueInterface::Status::OP_OK);
 

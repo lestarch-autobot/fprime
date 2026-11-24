@@ -59,6 +59,8 @@ function(add_fprime_supplied_os_module NAMES SUFFIX)
 
     # Ensure expected files with expected filenames exist
     foreach (NAME IN LISTS NAMES)
+        # TODO: the service .cpp files only include their header (all definitions live in the .hpp). Remove them
+        # and this requirement when the Os CMake/config selection is reworked.
         if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp")
             message(FATAL_ERROR "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp does not exist.")
         endif()
@@ -147,6 +149,10 @@ register_fprime_module(
 
 add_named_os_module(Console Fw_Logger)
 add_named_os_module("File;FileSystem;Directory" Utils_Hash Fw_DataStructures)
+# Unit test builds select Os::Ut::File::UtFile, which wraps the non-test selection (see config/OsSelection.hpp)
+if (BUILD_TESTING)
+    target_sources(Os_File PRIVATE "${CMAKE_CURRENT_LIST_DIR}/Ut/File.cpp")
+endif()
 add_named_os_module(Task ${CMAKE_THREAD_LIBS_INIT})
 # Os/Task.hpp includes the implementation header selected in config/OsSelection.hpp. The Posix
 # implementation header needs the constants autocoded by Os_Posix_Models, thus users of the Os
