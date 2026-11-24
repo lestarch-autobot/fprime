@@ -34,7 +34,8 @@ the skill needs (scripts, templates) goes beside its `SKILL.md`.
 Cursor, Gemini CLI, and Devin scan it directly. Claude Code scans only
 `.claude/skills/`, so every skill also needs a symlink there
 (`ln -s ../../.agents/skills/<skill-name> .claude/skills/<skill-name>`).
-`.github/skills` is a symlink kept for older references; never add
+`.github/skills` is a symlink kept for older references in a local
+checkout; it does not resolve in GitHub URLs or API reads. Never add
 files through it. Cite a skill by its full path
 (`.agents/skills/pr-diff-scoping/SKILL.md`) where the reader is being
 sent to it as a source of truth, and by bare name (`pr-diff-scoping`)
