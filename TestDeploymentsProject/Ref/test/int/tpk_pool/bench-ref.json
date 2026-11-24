@@ -2,7 +2,6 @@
   "deployment": "CdhCore",
   "dictionary": "uut-ref/TestDeploymentsProject/build-artifacts/Linux/Ref/dict/RefTopologyDictionary.json",
   "serial": "devin-box",
-  "boot_event": "CdhCore.version.FrameworkVersion",
   "vars": {
     "zmq": "ipc:///tmp/fth-tpk-pool-in ipc:///tmp/fth-tpk-pool-out",
     "port": "50000",
@@ -24,5 +23,5 @@
     "serial_re": "Serial# = (\\S+)",
     "note": "native venue, no debugger: start-uut.sh prints the host name in the place of the debugger serial"
   },
-  "notes": "`deployment` is the instance prefix fth puts before the plan's command names (`cmdDisp`, `version` and `tlmSend` are CdhCore instances). Venue A: Ref on a Linux host, fprime-gds over TCP. Relative paths only: run from the campaign root, which holds `uut-ref/` (lestarch-autobot/fprime, branch tlm-packetizer-membership-pool-harness, built). `serial` is the bench host's name."
+  "notes": "`deployment` is the instance prefix fth puts before the plan's command names (`cmdDisp`, `version` and `tlmSend` are CdhCore instances). No `boot_event`: the plan commands `version.VERSION`, so no version event is logged once per boot only; a restart of the Ref process closes the TCP link and the run stops. Venue A: Ref on a Linux host, fprime-gds over TCP. Relative paths only: run from the campaign root, which holds `uut-ref/` (lestarch-autobot/fprime, branch tlm-packetizer-membership-pool-harness, built). `serial` is the bench host's name."
 }
