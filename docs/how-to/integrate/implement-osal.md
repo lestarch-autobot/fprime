@@ -8,7 +8,7 @@ This guide provides step-by-step instructions for implementing a new OS Abstract
 
 Before starting, you should have:
 
-* An understanding of the [OSAL architecture](../../../Os/docs/sdd.md#5-implementation-architecture), specifically the [delegate pattern](../../../Os/docs/sdd.md#51-delegate-pattern).
+* An understanding of the [OSAL architecture](../../../Os/docs/sdd.md#5-implementation-architecture), specifically the [wrapper pattern](../../../Os/docs/sdd.md#51-wrapper-pattern).
 * A working F´ build environment for testing.
 * Familiarity with [F´ libraries](../develop/develop-fprime-libraries.md) and [F´ platform files](../develop/develop-fprime-libraries.md#optional-platform-folder-and-platform-files).
 * Knowledge of your target OS APIs (e.g., mutex, task creation, file I/O).

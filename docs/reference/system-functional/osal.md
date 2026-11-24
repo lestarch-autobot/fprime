@@ -49,11 +49,13 @@ In addition to the platform-specific core services, the OSAL provides generic se
 
 ### Implementation Architecture
 
-The OSAL uses a delegate pattern where each service has three layers:
+The OSAL uses a wrapper pattern where each service has three layers:
 
-1. **Interface** — A pure-virtual base class defining the service contract
-2. **Wrapper** — A final concrete class that application code interacts with, forwarding calls to the delegate
+1. **Interface** — A pure-virtual base class defining the contract an implementation must meet
+2. **Wrapper** — A class template that application code interacts with through an alias (e.g. `Os::Mutex`); it holds the selected implementation by value and forwards calls to it
 3. **Implementation** — A platform-specific class that implements the interface
+
+The implementation of each service is selected at compile time in the `config/OsSelection.hpp` configuration header.
 
 Services are accessed either as singletons (for global operations like file system queries and CPU statistics) or as handles (for stateful objects like individual files, mutexes, and tasks). The OSAL is initialized once at system startup, though singletons will self-initialize on first use if explicit initialization is omitted.
 

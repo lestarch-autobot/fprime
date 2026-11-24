@@ -68,7 +68,7 @@ Generic services are implemented in the `Os::Generic` namespace and are not tied
 
 ## 5. Implementation Architecture
 
-### 5.1 Delegate Pattern
+### 5.1 Wrapper Pattern
 
 Every OSAL _core service_ (e.g. File, Task, Mutex, etc.) follows a uniform three-layer pattern:
 
