@@ -117,7 +117,7 @@
    "procedure": [
     "MARK(20)",
     "CMD_NO_OP()",
-    "wait 1 CommandsDispatched sample",
+    "wait 2 ticks",
     "MARK(21)"
    ],
    "windows": [
@@ -147,9 +147,9 @@
     "wait 2 ticks",
     "MARK(30)",
     "CMD_NO_OP()",
-    "wait 1 CommandsDispatched sample",
+    "wait 2 ticks",
     "CMD_NO_OP()",
-    "wait 1 CommandsDispatched sample",
+    "wait 2 ticks",
     "MARK(31)",
     "wait 2 ticks",
     "CLEAR_PACKET_OVERRIDE(REALTIME, 61)",
@@ -202,9 +202,9 @@
     "wait 2 ticks",
     "MARK(40)",
     "CMD_NO_OP()",
-    "wait 1 CommandsDispatched sample",
+    "wait 2 ticks",
     "CMD_NO_OP()",
-    "wait 1 CommandsDispatched sample",
+    "wait 2 ticks",
     "MARK(41)",
     "wait 2 ticks",
     "CLEAR_PACKET_OVERRIDE(REALTIME, 60)",
@@ -286,9 +286,9 @@
     "wait 2 ticks",
     "MARK(60)",
     "CMD_NO_OP()",
-    "wait 1 CommandsDispatched sample",
+    "wait 2 ticks",
     "CMD_NO_OP()",
-    "wait 1 CommandsDispatched sample",
+    "wait 2 ticks",
     "MARK(61)"
    ],
    "windows": [
@@ -333,7 +333,8 @@
   "6. 2026-11-24 designer, review round 1 — packets are sent by the rate logic, not SEND_PKT (SEND_PKT bypasses enable checks and logs PacketSent on acceptance); menu max_count 2 over four faulted tests; TPK-013 is UT only with no system test traced.",
   "7. 2026-11-24 designer, review round 2 — the hold-back and its release sit outside the L2 windows, two ticks clear of the markers.",
   "8. 2026-11-24 harness builder, venue A dry runs — the tooling's record integrity accepts no command outside a declared window, so the hold-back and release commands of L2-1 and L2-2 and the two clears of L7-1 are bracketed by setup (`S`) and teardown (`T`) windows that share an edge with the measurement window `W`; they are judged for completeness and for no `PacketNotFound` only. `W`, its markers, checks and planted faults are unchanged.",
-  "9. 2026-11-24 approver ruling, venue A coverage campaign — a plan that keeps `complete`/`all_of` is judged by the tooling's engine and its audit builds no runner-versus-replay table, so the pass rules move, unchanged, to the named checks of the integration tests (`require` for the former `complete` entries, `check` for the former `all_of` entries; `test_L*.py` beside this plan). `amendment-4-equivalence.md` lists every old entry against its new call: 26 identical, 4 helper checks reworded in form only, none added, none dropped. Windows, markers, groups `STD` and `ABS`, rationale, planted faults and their `fails` sets, thresholds, coverage and not-covered entries are unchanged."
+  "9. 2026-11-24 approver ruling, venue A coverage campaign — a plan that keeps `complete`/`all_of` is judged by the tooling's engine and its audit builds no runner-versus-replay table, so the pass rules move, unchanged, to the named checks of the integration tests (`require` for the former `complete` entries, `check` for the former `all_of` entries; `test_L*.py` beside this plan). `amendment-4-equivalence.md` lists every old entry against its new call: 26 identical, 4 helper checks reworded in form only, none added, none dropped. Windows, markers, groups `STD` and `ABS`, rationale, planted faults and their `fails` sets, thresholds, coverage and not-covered entries are unchanged.",
+  "10. 2026-11-24 approver ruling, venue B dry run — the pacing step `wait 1 CommandsDispatched sample` of L0-2, L2-1, L2-2 and L7-1 becomes `wait 2 ticks`, the fixed wait the plan already uses before and after its windows. A wait for one more sample starts counting after the command has completed; when the 1 Hz sample of that command is downlinked before the completion is seen, no further sample follows (the packet is sent on change only) and the wait expires although the unit behaved. Pacing only: windows, markers, commands, checks, planted faults and their `fails` sets are unchanged. The checks are judged over the closed window, so a sample later than two ticks is outside the window and the check fails."
  ],
  "image_version": {
   "policy": "required"

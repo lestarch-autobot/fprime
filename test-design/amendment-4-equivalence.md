@@ -42,3 +42,18 @@ Not identical, for the reviewer:
 - The 4 helper checks (L0-2, L2-1, L2-2, L7-1, window `W`). The plan held `{"helper": "channel_tracks_dispatch_count", "text": <name>, "args": {...}}`; the test holds `check(<name>, lambda h: fth_plan.registry.helpers["channel_tracks_dispatch_count"](h, tick_s=..., min_samples=...))`. Name, helper and arguments are equal; the helper body in `planted_faults.py` is untouched.
 - `plan.md` no longer prints the pass rule or the `rationale` text beside it; it prints "named checks declared in the integration test (test_<id>)". The `rationale` entries remain in `plan.json`.
 - The pass rule is now pinned by the manifest's stimulus hash, not by the plan hash.
+
+## Amendment 5 (pacing)
+
+The table above was regenerated from the tests after amendment 5 and is unchanged: 30 rows, 26 identical, 4 reworded, none added, none dropped. Amendment 5 changes pacing only: the 7 steps `wait 1 CommandsDispatched sample` of L0-2, L2-1, L2-2 and L7-1 become `wait 2 ticks` (`bench.wait(2.5)`, the form and duration of the plan's other two-tick waits). No command, marker, window, `require` or `check` changes.
+
+Why the fixed wait cannot turn a failing check into a pass or hide a late sample. A wait sends nothing; samples come from the unit only, and every check is judged over the closed window from the record.
+
+| test | check in `W` | effect of the fixed wait |
+|---|---|---|
+| L0-2 | at least 1 sample in the window | the end marker follows the command by 2 ticks; a sample later than that is outside the window and the check fails. The former wait admitted a sample up to 30 s late. |
+| L2-1 | at least 2 rising samples, each step equal to the dispatches between them | each command is followed by 2 ticks before the next command or the end marker; a sample that is late or missing shortens the series or breaks a step, judged by the check. With packet 60 also held (planted fault) no sample arrives and the check fails on sample count, without a 30 s timeout. |
+| L2-2 | same as L2-1, through packet 61 | same as L2-1 with the packets exchanged. |
+| L7-1 | same check with both packets released | same as L2-1; with the final packets held (planted fault) no sample arrives and the check fails on sample count. |
+
+One thing the reviewer should know: before amendment 5 a missing sample after a command also ended the test through the wait's `TimeoutError`, which is not a plan check and which a replay does not reproduce (runner and replay then disagree). After amendment 5 only the plan's checks judge. In `W` of L2-1, L2-2 and L7-1 the start marker's own dispatch gives a first sample, so the series normally has 3 samples and the check (`min_samples=2`) holds with 2.

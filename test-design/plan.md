@@ -43,7 +43,7 @@ Title:     Packets flow on change
 Purpose:   Shows the image boots with the two-packet channel and sends it on change.
 Covers:    —
 Setup:     As L0-1.
-Procedure: MARK(20); CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(21).
+Procedure: MARK(20); CMD_NO_OP(); wait 2 ticks; MARK(21).
 Window:    Marker(id=20) … Marker(id=21)
 Pass rule: named checks declared in the integration test (test_L0_2).
 Evidence:  A CommandsDispatched sample inside the window; no NoChan event.
@@ -54,7 +54,7 @@ Title:     Channel value reaches its first packet
 Purpose:   Shows channel updates are stored in, and downlinked by, the first packet listing the channel.
 Covers:    TPK-001, TPK-003
 Setup:     L0-2 passed.
-Procedure: MARK(29); OVERRIDE_PACKET_SEND(REALTIME, 61, SEND_NEVER); wait 2 ticks; MARK(30); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(31); wait 2 ticks; CLEAR_PACKET_OVERRIDE(REALTIME, 61); MARK(32).
+Procedure: MARK(29); OVERRIDE_PACKET_SEND(REALTIME, 61, SEND_NEVER); wait 2 ticks; MARK(30); CMD_NO_OP(); wait 2 ticks; CMD_NO_OP(); wait 2 ticks; MARK(31); wait 2 ticks; CLEAR_PACKET_OVERRIDE(REALTIME, 61); MARK(32).
 Window:    S = Marker(id=29) … Marker(id=30); W = Marker(id=30) … Marker(id=31); T = Marker(id=31) … Marker(id=32)
 Pass rule: named checks declared in the integration test (test_L2_1).
 Evidence:  At least two rising CommandsDispatched samples, each step equal to the OpCodeDispatched rows archived between them.
@@ -65,7 +65,7 @@ Title:     Channel value reaches its second packet
 Purpose:   Shows the same channel's updates are also stored in the second packet listing it.
 Covers:    TPK-001, TPK-003
 Setup:     L2-1 run.
-Procedure: MARK(39); OVERRIDE_PACKET_SEND(REALTIME, 60, SEND_NEVER); wait 2 ticks; MARK(40); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(41); wait 2 ticks; CLEAR_PACKET_OVERRIDE(REALTIME, 60); MARK(42).
+Procedure: MARK(39); OVERRIDE_PACKET_SEND(REALTIME, 60, SEND_NEVER); wait 2 ticks; MARK(40); CMD_NO_OP(); wait 2 ticks; CMD_NO_OP(); wait 2 ticks; MARK(41); wait 2 ticks; CLEAR_PACKET_OVERRIDE(REALTIME, 60); MARK(42).
 Window:    S = Marker(id=39) … Marker(id=40); W = Marker(id=40) … Marker(id=41); T = Marker(id=41) … Marker(id=42)
 Pass rule: named checks declared in the integration test (test_L2_2).
 Evidence:  At least two rising CommandsDispatched samples, each step equal to the OpCodeDispatched rows archived between them.
@@ -87,7 +87,7 @@ Title:     Final state
 Purpose:   Leaves both test packets enabled; the channel's value still follows the archive's dispatch count.
 Covers:    —
 Setup:     All earlier tests run.
-Procedure: MARK(59); CLEAR_PACKET_OVERRIDE(REALTIME, 60); CLEAR_PACKET_OVERRIDE(REALTIME, 61); wait 2 ticks; MARK(60); CMD_NO_OP(); wait 1 CommandsDispatched sample; CMD_NO_OP(); wait 1 CommandsDispatched sample; MARK(61).
+Procedure: MARK(59); CLEAR_PACKET_OVERRIDE(REALTIME, 60); CLEAR_PACKET_OVERRIDE(REALTIME, 61); wait 2 ticks; MARK(60); CMD_NO_OP(); wait 2 ticks; CMD_NO_OP(); wait 2 ticks; MARK(61).
 Window:    S = Marker(id=59) … Marker(id=60); W = Marker(id=60) … Marker(id=61)
 Pass rule: named checks declared in the integration test (test_L7_1).
 Evidence:  Rising CommandsDispatched samples that match the OpCodeDispatched rows the ground archive holds (a path independent of the packetizer's storage).
@@ -123,3 +123,4 @@ Generated from `planted_faults.py` planted fault declarations (`fth planted-faul
 7. 2026-11-24 designer, review round 2 — the hold-back and its release sit outside the L2 windows, two ticks clear of the markers.
 8. 2026-11-24 harness builder, venue A dry runs — the tooling's record integrity accepts no command outside a declared window, so the hold-back and release commands of L2-1 and L2-2 and the two clears of L7-1 are bracketed by setup (`S`) and teardown (`T`) windows that share an edge with the measurement window `W`; they are judged for completeness and for no `PacketNotFound` only. `W`, its markers, checks and planted faults are unchanged.
 9. 2026-11-24 approver ruling, venue A coverage campaign — a plan that keeps `complete`/`all_of` is judged by the tooling's engine and its audit builds no runner-versus-replay table, so the pass rules move, unchanged, to the named checks of the integration tests (`require` for the former `complete` entries, `check` for the former `all_of` entries; `test_L*.py` beside this plan). `amendment-4-equivalence.md` lists every old entry against its new call: 26 identical, 4 helper checks reworded in form only, none added, none dropped. Windows, markers, groups `STD` and `ABS`, rationale, planted faults and their `fails` sets, thresholds, coverage and not-covered entries are unchanged.
+10. 2026-11-24 approver ruling, venue B dry run — the pacing step `wait 1 CommandsDispatched sample` of L0-2, L2-1, L2-2 and L7-1 becomes `wait 2 ticks`, the fixed wait the plan already uses before and after its windows. A wait for one more sample starts counting after the command has completed; when the 1 Hz sample of that command is downlinked before the completion is seen, no further sample follows (the packet is sent on change only) and the wait expires although the unit behaved. Pacing only: windows, markers, commands, checks, planted faults and their `fails` sets are unchanged. The checks are judged over the closed window, so a sample later than two ticks is outside the window and the check fails.

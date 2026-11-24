@@ -12,4 +12,4 @@ def test_L0_2(window, send, bench, check, require, fth_plan):
         check("cmdDisp.CommandsDispatched has >= 1 sample in the window",
               lambda h: fth_plan.registry.helpers["channel_tracks_dispatch_count"](h, tick_s=1.0, min_samples=1))
         send("cmdDisp.CMD_NO_OP", [])
-        bench.wait_samples("cmdDisp.CommandsDispatched", 1)
+        bench.wait(2.5)  # wait 2 ticks
