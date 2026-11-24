@@ -171,17 +171,19 @@ Member | Type | Meaning
 
 #### 3.5.2 setPacketList
 
-`setPacketList()` fills the pool in three bounded passes with no allocation, and must complete before the component's ports are invoked.
+`setPacketList()` fills the pool in three bounded passes with no allocation. It is not synchronized against the port handlers: it clears `m_configured` on entry and sets it when done, and `TlmRecv`, `TlmGet` and `Run` assert `m_configured`. Call it from topology configuration, before any task that can invoke the component's ports is started.
 
-1. Register and count: for each channel entry of each packet, find or insert the channel slot and increment its `count` and the running `total`. Then `FW_ASSERT(total <= MAX_PACKETIZER_MEMBERSHIPS, total, MAX_PACKETIZER_MEMBERSHIPS)`: the first assert argument is the capacity the packet list needs (TPK-013).
+1. Register and count: for each channel entry of each packet, find or insert the channel slot and increment its `count` and the running `total`. Then `FW_ASSERT(total <= MAX_PACKETIZER_MEMBERSHIPS, total, MAX_PACKETIZER_MEMBERSHIPS)`: the first assert argument is the capacity the packet list needs (TPK-013). `total` is an `FwSizeType`, and a slot's `count` cannot wrap unnoticed: a wrap needs more entries than `FwTlmPacketizePoolIndexType` can represent, which is more than `MAX_PACKETIZER_MEMBERSHIPS`, so the assert fires. This pass keeps the existing per-packet checks (packet count, packet length against `FW_COM_BUFFER_MAX_SIZE`, matching size for a repeated channel).
 2. Prefix sum: for each slot in index order, set `first` to the running sum of the counts, then reset `count` to 0.
-3. Fill: for each channel entry of each packet, in the same order, write `{offset, packet}` at `m_memberships[first + count]` and increment `count`.
+3. Fill: for each channel entry of each packet, in the same order, write `{offset, packet}` at `m_memberships[first + count]` and increment `count`. Offsets are recomputed as in pass 1, so each fits `FwTlmPacketizeOffsetType` by the pass 1 packet length check.
 
-The omit list is then processed as before: each omitted channel takes a channel slot with `ignored` set and no memberships. When `IGNORE_OMIT_LIST` is passed, omitted channels take no slot and are reported as missing instead of silently ignored. A channel listed twice in one packet is written at both offsets.
+The omit list is then processed as before: each omitted channel takes a channel slot with `ignored` set and no memberships. When `IGNORE_OMIT_LIST` is passed, omitted channels take no slot and are reported as missing instead of silently ignored. A channel listed twice in one packet is written at both offsets (previously only the last listing was written).
 
 #### 3.5.3 TlmRecv and TlmGet
 
 `TlmRecv` copies the value into each packet in the channel's range `[first, first + count)`, so its work is proportional to the channel's memberships. `TlmGet` reads the value from the channel's first membership, the first packet in packet-list order that contains the channel.
+
+`first`, `count` and `m_memberships` are written only by `setPacketList()` and are read without `m_lock`. `TlmRecv` takes `m_lock` once per membership, around the copy into that packet buffer and the `hasValue` update, as before. This change does not alter which reads in `TlmGet` are locked.
 
 ## 4. Configuration
 
@@ -189,7 +191,7 @@ The `Svc::TlmPacketizer` component has the following configuration parameters:
 
 - `MAX_PACKETIZER_PACKETS` (TlmPacketizerCfg.fpp): Maximum allowed packets
 - `MAX_PACKETIZER_CHANNELS` (TlmPacketizerCfg.hpp): Maximum allowed telemetry channels
-- `MAX_PACKETIZER_MEMBERSHIPS` (TlmPacketizerCfg.hpp): Maximum allowed memberships, summed over all packets of the packet list (default `MAX_PACKETIZER_CHANNELS`). Must be at least 1.
+- `MAX_PACKETIZER_MEMBERSHIPS` (TlmPacketizerCfg.hpp, `FwSizeType`): Maximum allowed memberships, summed over all packets of the packet list (default `MAX_PACKETIZER_CHANNELS`). Must be at least 1 (`Fw::Array` rejects size 0 at compile time) and no greater than the maximum of `FwTlmPacketizePoolIndexType` (`static_assert`).
 - `TLMPACKETIZER_MAX_MISSING_TLM_CHECK` (TlmPacketizerCfg.hpp): Maximum reported missing telemetry channels
 - `TelemetrySection` (TlmPacketizerCfg.fpp): An enumeration of the telemetry sections used by the project. Must end with `NUM_SECTIONS` to specify the number of sections.
 - `MAX_CONFIGURABLE_TLMPACKETIZER_GROUP` (TlmPacketizerCfg.fpp): Maximum value allowed for a packet's group/level identifier
@@ -202,7 +204,7 @@ The `Svc::TlmPacketizer` component has the following configuration parameters:
 
 ### 4.1 Sizing
 
-Overall memory usage of the `Svc::TlmPacketizer` is determined by the following configuration parameters: `MAX_PACKETIZER_PACKETS`, `MAX_PACKETIZER_CHANNELS`, `MAX_PACKETIZER_MEMBERSHIPS`, `TLMPACKETIZER_MAX_MISSING_TLM_CHECK`, and `TelemetrySection::NUM_SECTIONS`. The channel table scales as `MAX_PACKETIZER_CHANNELS × sizeof(TlmEntry)` and the membership pool as `MAX_PACKETIZER_MEMBERSHIPS × sizeof(Membership)`; neither scales with `MAX_PACKETIZER_PACKETS`.
+Overall memory usage of the `Svc::TlmPacketizer` is determined by the following configuration parameters: `MAX_PACKETIZER_PACKETS`, `MAX_PACKETIZER_CHANNELS`, `MAX_PACKETIZER_MEMBERSHIPS`, `TLMPACKETIZER_MAX_MISSING_TLM_CHECK`, and `TelemetrySection::NUM_SECTIONS`. The channel table scales as `MAX_PACKETIZER_CHANNELS × sizeof(TlmEntry)` and the membership pool as `MAX_PACKETIZER_MEMBERSHIPS × sizeof(Membership)`; neither scales with `MAX_PACKETIZER_PACKETS`. At the defaults on a 64-bit target the two take about 5.6 kB (4.8 kB + 0.8 kB) against 24 kB before (estimated from the struct layout). Each membership costs `sizeof(Membership)` (4 B at the default types), so a configuration with one or two packets, or a pool sized near `MAX_PACKETIZER_CHANNELS × MAX_PACKETIZER_PACKETS`, uses more RAM than the previous layout.
 
 The per-packet override table adds a dense static block of `TelemetrySection::NUM_SECTIONS × MAX_PACKETIZER_PACKETS` `PacketOverrideConfig` entries. All enumerations use `U8` storage so a record serializes to a few bytes; in RAM each entry is an FPP struct whose nested serializables each carry a vtable pointer (roughly 44 bytes on a 32-bit target, 80 bytes on a 64-bit target). At the sample defaults (2 sections × 50 packets) this is about 4.4 kB (8 kB on 64-bit); a project with many sections and packets should budget for it, since the table scales with the configured maximum packet count, not with the number of overrides in use.
 
@@ -379,16 +381,18 @@ Per-packet override mirror (`packetOverrideOut`) and reload (`packetOverrideIn`)
 `packetOverrideIn` is an asynchronous port, so each reload buffer becomes one message on the component's queue, and the queue asserts when full. A persistence component that replays stored overrides at boot must therefore batch them into no more buffers than the component's configured queue depth — ideally a single buffer holding all records, since one buffer may carry many records back-to-back. Dropping a reload buffer is not an option (a dropped buffer is never returned to the pool), so sizing the reload into the queue is the integrator's responsibility. See the "Buffer ownership" note in Section 3.3.4 for the pool and ownership contract.
 ### 4.7 Membership Sizing Check
 
-A deployment that instantiates `Svc::TlmPacketizer` is checked at build time: a packet set that does not fit `MAX_PACKETIZER_MEMBERSHIPS` or `MAX_PACKETIZER_CHANNELS` fails to compile instead of asserting at boot. Hand-written packet lists are not in the dictionary and are checked only by the `setPacketList()` assert.
+A deployment that depends on the `Svc_TlmPacketizer` module is checked at build time: every packet set in its topology dictionary must fit `MAX_PACKETIZER_MEMBERSHIPS` and `MAX_PACKETIZER_CHANNELS`, or the deployment fails to compile instead of asserting at boot. A packet set that is defined but not passed to `setPacketList()` is checked too. Hand-written packet lists are not in the dictionary and are checked only by the `setPacketList()` assert. The check is a component-owned script because the equivalent `fpp-to-cpp` assertion needs an FPP release; it is to be retired when FPP emits one.
 
 Part | Location | Role
 ---- | -------- | ----
 Dictionary check stage | `cmake/target/dictionary_check.cmake` | For each deployment, runs every registered checker on the deployment's topology dictionary and compiles the source file it generates into the deployment
 Registration | `register_fprime_dictionary_check(SCRIPT)` in `cmake/API.cmake` | Called by the module that owns a checker; the checker runs only for deployments that depend on that module
 Checker | `Svc/TlmPacketizer/tools/tlm_packetizer_sizing.py` | Reads `telemetryPacketSets` from the dictionary and writes `<Deployment>TlmPacketizerSizing.cpp`
-Generated source | `<Deployment>TlmPacketizerSizing.cpp` | Per packet set: `static_assert(Svc::MAX_PACKETIZER_MEMBERSHIPS >= memberships)` and `static_assert(Svc::MAX_PACKETIZER_CHANNELS >= channels)`, each naming the packet set and the value needed
+Generated source | `<Deployment>TlmPacketizerSizing.cpp` | Per packet set: `static_assert(Svc::MAX_PACKETIZER_MEMBERSHIPS >= memberships)` and `static_assert(Svc::MAX_PACKETIZER_CHANNELS >= channels)`, each naming the packet set and the value needed; the channel message also gives the used and omitted counts and names `FPRIME_TLM_PACKETIZER_OMIT_LIST`
 
-`channels` is the number of distinct channels listed in the set's packets, plus the set's omitted channels when the CMake variable `FPRIME_TLM_PACKETIZER_OMIT_LIST` is `ON` (the default). A deployment that passes `IGNORE_OMIT_LIST` to `setPacketList()` sets it to `OFF`; the variable and the call must be set together, since the check cannot see the call. The checker exits non-zero with a one-line diagnostic and writes no output on an unreadable or malformed dictionary, or on a channel that is both listed in a packet and omitted.
+`channels` is the number of distinct channels listed in the set's packets, plus the set's omitted channels when the CMake variable `FPRIME_TLM_PACKETIZER_OMIT_LIST` is `ON` (the default). A deployment that passes `IGNORE_OMIT_LIST` to `setPacketList()` sets it to `OFF`; the variable and the call must be set together, since the check cannot see the call. `ON` with `IGNORE_OMIT_LIST` counts omitted channels that take no slot and can reject a deployment that would run. `OFF` with the omit list supplied does not count omitted channels, and a channel table too small for them is caught only by the `setPacketList()` assert at boot. The variable is not a build-wide cache option: it is read once per deployment when `register_fprime_deployment` runs, and a deployment sets it in its own `CMakeLists.txt` before that call. A deployment whose `Svc::TlmPacketizer` instances differ sets it `OFF`. The checker exits non-zero with a one-line diagnostic and writes no output on an unreadable or malformed dictionary, or on a channel that is both listed in a packet and omitted.
+
+A checker must be registered before the deployments it applies to; framework modules are. The stage and `register_fprime_dictionary_check` are documented in `docs/user-manual/build-system/cmake-targets.md`.
 
 ## 5. Unit Testing
 
@@ -407,3 +411,4 @@ Date | Description
 10/26/2026 | `TlmSendState` replaces enabled/force/SILENCED; per-field packet overrides (`PacketOverrideType`); `CONFIGURE_*_SEND` commands; reload buffers returned on `packetOverrideReturnOut`. **Migration:** the serialized shape of `SECTION_CONFIGS` changed (`GroupConfig` → `TlmSendConfig`); a saved value of the old shape is rejected at load (`FW_DESERIALIZE_SIZE_MISMATCH`) and the defaults apply, so regenerate or re-save the parameter database
 10/26/2026 | Renamed CONFIGURE_PACKET_SEND/RATES to OVERRIDE_PACKET_SEND/RATES; added packetOverrideReturnIn for mirror buffers
 10/27/2026 | Buffer lock taken with `Os::ScopeLock`; `Run` snapshots only the packet buffer and time tag under the lock; new configuration type `FwTlmPacketizeOffsetType` (default `U16`) types the per-channel packet offsets. **Migration:** a project that overrides `TlmPacketizerCfg.fpp` must add `type FwTlmPacketizeOffsetType = U16` to its copy (the generated `FwTlmPacketizeOffsetTypeAliasAc.h` is included by `TlmPacketizer.hpp`)
+11/24/2026 | Shared membership pool replaces the per-channel packet offset table (TPK-013); build-time membership sizing check; a channel listed twice in one packet is now written at both offsets. **Migration:** a project that overrides `TlmPacketizerCfg.hpp` must add `MAX_PACKETIZER_MEMBERSHIPS`; one that overrides `TlmPacketizerCfg.fpp` must add `type FwTlmPacketizePacketIndexType = U8` and `type FwTlmPacketizePoolIndexType = U16`. A packet list with more channel entries than `MAX_PACKETIZER_CHANNELS` (the default pool size) must raise `MAX_PACKETIZER_MEMBERSHIPS` to the value reported by the build-time check or the `setPacketList()` assert. A deployment that passes `IGNORE_OMIT_LIST` and sizes `MAX_PACKETIZER_CHANNELS` for used channels only must set `FPRIME_TLM_PACKETIZER_OMIT_LIST` to `OFF`.
