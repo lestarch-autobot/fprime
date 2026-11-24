@@ -15,6 +15,21 @@
 #include "STest/Scenario/RandomScenario.hpp"
 #include "STest/Scenario/Scenario.hpp"
 
+// Wrapper under test: the Os::File selected in config/OsSelection.hpp, unless the test executable names another
+// implementation by defining OS_TEST_FILE_IMPLEMENTATION and OS_TEST_FILE_HEADER (see its CMakeLists.txt)
+#ifdef OS_TEST_FILE_IMPLEMENTATION
+#include OS_TEST_FILE_HEADER
+#endif
+namespace Os {
+namespace Test {
+#ifdef OS_TEST_FILE_IMPLEMENTATION
+using FileUnderTest = Os::FileCommon<OS_TEST_FILE_IMPLEMENTATION>;
+#else
+using FileUnderTest = Os::File;
+#endif
+}  // namespace Test
+}  // namespace Os
+
 namespace Os {
 namespace Test {
 namespace FileTest {
@@ -136,7 +151,7 @@ struct Tester {
     void assert_file_seek(const FwSizeType original_position, const FwSignedSizeType seek_desired, const bool absolute);
 
     //! File under test
-    Os::File m_file;
+    Os::Test::FileUnderTest m_file;
 
     //! Shadow file state: file system
     Os::Test::SyntheticFile m_shadow;

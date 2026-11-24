@@ -67,20 +67,20 @@ std::unique_ptr<Os::Test::FileTest::Tester> get_tester_implementation() {
 
 // Ensure that Os::File properly routes constructor calls to the `constructInternal` function.
 TEST_F(Interface, Construction) {
-    Os::File file;
+    Os::Test::FileUnderTest file;
     ASSERT_EQ(Os::Stub::File::Test::StaticData::data.lastCalled, Os::Stub::File::Test::StaticData::CONSTRUCT_FN);
 }
 
 // Ensure that Os::File properly routes destructor calls to the `destructInternal` function.
 TEST_F(Interface, Destruction) {
-    delete (new Os::File);
+    delete (new Os::Test::FileUnderTest);
     ASSERT_EQ(Os::Stub::File::Test::StaticData::data.lastCalled, Os::Stub::File::Test::StaticData::DESTRUCT_FN);
 }
 
 // Ensure that Os::File properly routes open calls to the `openInternal` function.
 TEST_F(Interface, Open) {
     const char* path = "/does/not/matter";
-    Os::File file;
+    Os::Test::FileUnderTest file;
     ASSERT_EQ(file.open(path, Os::File::OPEN_CREATE, Os::File::OverwriteType::OVERWRITE), Os::File::Status::OP_OK);
     ASSERT_EQ(Os::Stub::File::Test::StaticData::data.lastCalled, Os::Stub::File::Test::StaticData::OPEN_FN);
     ASSERT_EQ(Os::Stub::File::Test::StaticData::data.openPath, path);
@@ -90,7 +90,7 @@ TEST_F(Interface, Open) {
 
 // Ensure that Os::File properly routes close calls to the `closeInternal` function.
 TEST_F(Interface, Close) {
-    Os::File file;
+    Os::Test::FileUnderTest file;
     Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
     ASSERT_EQ(file.open("/does/not/matter", Os::File::OPEN_CREATE, Os::File::OverwriteType::OVERWRITE),
               Os::File::OP_OK);
@@ -101,7 +101,7 @@ TEST_F(Interface, Close) {
 // Ensure that Os::File properly routes close calls to the `sizeInternal` function.
 TEST_F(Interface, Size) {
     FwSizeType sizeResult = std::numeric_limits<FwSizeType>::max();
-    Os::File file;
+    Os::Test::FileUnderTest file;
     Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
     ASSERT_EQ(file.open("/does/not/matter", Os::File::OPEN_CREATE, Os::File::OverwriteType::OVERWRITE),
               Os::File::OP_OK);
@@ -114,7 +114,7 @@ TEST_F(Interface, Size) {
 // Ensure that Os::File properly routes close calls to the `positionInternal` function.
 TEST_F(Interface, Position) {
     FwSizeType positionResult = std::numeric_limits<FwSizeType>::max();
-    Os::File file;
+    Os::Test::FileUnderTest file;
     Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
     ASSERT_EQ(file.open("/does/not/matter", Os::File::OPEN_CREATE, Os::File::OverwriteType::OVERWRITE),
               Os::File::OP_OK);
@@ -126,7 +126,7 @@ TEST_F(Interface, Position) {
 
 // Ensure that Os::File properly routes preallocate calls to the `preallocateInternal` function.
 TEST_F(Interface, Preallocate) {
-    Os::File file;
+    Os::Test::FileUnderTest file;
     Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
     ASSERT_EQ(file.open("/does/not/matter", Os::File::OPEN_CREATE, Os::File::OverwriteType::OVERWRITE),
               Os::File::OP_OK);
@@ -139,7 +139,7 @@ TEST_F(Interface, Preallocate) {
 
 // Ensure that Os::File properly routes seek calls to the `seekInternal` function.
 TEST_F(Interface, Seek) {
-    Os::File file;
+    Os::Test::FileUnderTest file;
     Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
     ASSERT_EQ(file.open("/does/not/matter", Os::File::OPEN_CREATE, Os::File::OverwriteType::OVERWRITE),
               Os::File::OP_OK);
@@ -152,7 +152,7 @@ TEST_F(Interface, Seek) {
 
 // Ensure that Os::File properly routes flush calls to the `flushInternal` function.
 TEST_F(Interface, Flush) {
-    Os::File file;
+    Os::Test::FileUnderTest file;
     Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
     ASSERT_EQ(file.open("/does/not/matter", Os::File::OPEN_CREATE, Os::File::OverwriteType::OVERWRITE),
               Os::File::OP_OK);
@@ -166,7 +166,7 @@ TEST_F(Interface, Read) {
     U8 buffer[] = {0xab, 0xcd, 0xef};
     FwSizeType size = static_cast<FwSizeType>(sizeof buffer);
     FwSizeType original_size = size;
-    Os::File file;
+    Os::Test::FileUnderTest file;
     Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
     ASSERT_EQ(file.open("/does/not/matter", Os::File::OPEN_READ, Os::File::OverwriteType::OVERWRITE), Os::File::OP_OK);
     Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OTHER_ERROR);
@@ -182,7 +182,7 @@ TEST_F(Interface, Write) {
     U8 buffer[] = {0xab, 0xcd, 0xef};
     FwSizeType size = static_cast<FwSizeType>(sizeof buffer);
     FwSizeType original_size = size;
-    Os::File file;
+    Os::Test::FileUnderTest file;
     Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OP_OK);
     ASSERT_EQ(file.open("/does/not/matter", Os::File::OPEN_WRITE, Os::File::OverwriteType::OVERWRITE), Os::File::OP_OK);
     Os::Stub::File::Test::StaticData::setNextStatus(Os::File::OTHER_ERROR);

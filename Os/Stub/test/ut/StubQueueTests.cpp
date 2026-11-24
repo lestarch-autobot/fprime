@@ -10,6 +10,9 @@
 #include "Os/Stub/test/Queue.hpp"
 #include "STest/Random/Random.hpp"
 
+// Wrapper under test: Os::QueueCommon on the implementation named here, not the selection in config/OsSelection.hpp
+using QueueUnderTest = Os::QueueCommon<Os::Stub::Queue::Test::InjectableStlQueue>;
+
 void resetInjections() {
     Os::Stub::Queue::Test::StaticData::data.createStatus = Os::QueueInterface::Status::OP_OK;
     Os::Stub::Queue::Test::StaticData::data.sendStatus = Os::QueueInterface::Status::OP_OK;
@@ -20,21 +23,21 @@ void resetInjections() {
 
 // Construction test
 TEST(Interface, Construction) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     ASSERT_EQ(Os::Stub::Queue::Test::StaticData::data.lastCalled, Os::Stub::Queue::Test::StaticData::CONSTRUCT_FN);
     resetInjections();
 }
 
 // Destruct test
 TEST(Interface, Destruction) {
-    delete (new Os::Queue);
+    delete (new QueueUnderTest);
     ASSERT_EQ(Os::Stub::Queue::Test::StaticData::data.lastCalled, Os::Stub::Queue::Test::StaticData::DESTRUCT_FN);
     resetInjections();
 }
 
 // Create test
 TEST(Interface, Create) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType depth = STest::Random::lowerUpper(
         std::numeric_limits<FwSizeType>::min(),
@@ -54,7 +57,7 @@ TEST(Interface, Create) {
 
 // Send test
 TEST(Interface, SendPointer) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType depth = STest::Random::lowerUpper(
         std::numeric_limits<FwSizeType>::min(),
@@ -82,7 +85,7 @@ TEST(Interface, SendPointer) {
 
 // Send test
 TEST(Interface, SendBuffer) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType depth = STest::Random::lowerUpper(
         std::numeric_limits<FwSizeType>::min(),
@@ -113,7 +116,7 @@ TEST(Interface, SendBuffer) {
 
 // Receive test
 TEST(Interface, ReceivePointer) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType depth = STest::Random::lowerUpper(
         std::numeric_limits<FwSizeType>::min(),
@@ -149,7 +152,7 @@ TEST(Interface, ReceivePointer) {
 
 // Receive test
 TEST(Interface, ReceiveBuffer) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType depth = STest::Random::lowerUpper(
         std::numeric_limits<FwSizeType>::min(),
@@ -184,7 +187,7 @@ TEST(Interface, ReceiveBuffer) {
 }
 
 TEST(Interface, MessageCount) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType depth = 1;
     const FwSizeType messageSize = 1;
@@ -199,7 +202,7 @@ TEST(Interface, MessageCount) {
 }
 
 TEST(Interface, MessageHighWaterMarkCount) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name = "My queue";
     const FwSizeType depth = 100;
     const FwSizeType messageSize = 200;
@@ -214,7 +217,7 @@ TEST(Interface, MessageHighWaterMarkCount) {
 }
 
 TEST(Interface, QueueHandle) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     ASSERT_EQ(queue.getHandle(), Os::Stub::Queue::Test::StaticData::data.handle);
     ASSERT_EQ(Os::Stub::Queue::Test::StaticData::data.lastCalled, Os::Stub::Queue::Test::StaticData::HANDLE_FN);
     resetInjections();

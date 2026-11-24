@@ -11,6 +11,9 @@
 #include "Os/Queue.hpp"
 #include "STest/Random/Random.hpp"
 
+// Wrapper under test: Os::QueueCommon on the implementation named here, not the selection in config/OsSelection.hpp
+using QueueUnderTest = Os::QueueCommon<Os::Generic::LocklessPriorityQueue>;
+
 namespace {
 
 constexpr FwSizeType CONCURRENT_DEPTH = 64;
@@ -22,7 +25,7 @@ constexpr U32 CONCURRENT_TOTAL_MESSAGES = CONCURRENT_PRODUCERS * CONCURRENT_MESS
 
 //! Shared state for the multi-producer / multi-consumer concurrency test.
 struct ConcurrentTestState {
-    Os::Queue queue;
+    QueueUnderTest queue;
     std::atomic<U32> received[CONCURRENT_TOTAL_MESSAGES];
     std::atomic<U32> consumed;
     std::atomic<bool> producers_done;
@@ -149,7 +152,7 @@ TEST(LocklessConcurrent, AvailableNeverWraps) {
     constexpr U32 WRAP_TOTAL = WRAP_PRODUCERS * WRAP_MESSAGES_PER_PRODUCER;
 
     struct WrapState {
-        Os::Queue queue;
+        QueueUnderTest queue;
         std::atomic<U32> consumed;
         std::atomic<bool> producers_done;
         std::atomic<bool> invariant_violated;
@@ -235,7 +238,7 @@ TEST(LocklessConcurrent, PriorityOrderSingleProducer) {
     constexpr U32 BATCHES = 200;
     constexpr U32 BATCH_DEPTH = 16;
 
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name("priority-order-test");
     ASSERT_EQ(queue.create(0, name, DEPTH, MESSAGE_SIZE), Os::QueueInterface::Status::OP_OK);
 
@@ -270,7 +273,7 @@ TEST(LocklessConcurrent, PriorityOrderSingleProducer) {
 //! the SDD §12.1.
 TEST(LocklessLifetime, DestructWithoutCreate) {
     {
-        Os::Queue queue;
+        QueueUnderTest queue;
         // No create(), no teardown(): the queue object simply leaves scope. The destructor
         // must be a no-op and must not perform any virtual dispatch into the memory
         // allocator registry.
@@ -284,7 +287,7 @@ TEST(LocklessLifetime, DestructWithoutCreate) {
 //! destructor were to free resources it would double-free the slot pool.
 TEST(LocklessLifetime, CreateTeardownDestruct) {
     {
-        Os::Queue queue;
+        QueueUnderTest queue;
         Fw::String name("lifetime-test");
         ASSERT_EQ(queue.create(0, name, 4, sizeof(U32)), Os::QueueInterface::Status::OP_OK);
         queue.teardown();
@@ -296,7 +299,7 @@ TEST(LocklessLifetime, CreateTeardownDestruct) {
 //! Validate that `teardown()` is idempotent: calling it twice on the same queue must not
 //! double-free or otherwise misbehave.
 TEST(LocklessLifetime, TeardownIsIdempotent) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name("idempotent-test");
     ASSERT_EQ(queue.create(0, name, 4, sizeof(U32)), Os::QueueInterface::Status::OP_OK);
     queue.teardown();
@@ -307,7 +310,7 @@ TEST(LocklessLifetime, TeardownIsIdempotent) {
 
 //! Validate that an oversized send is rejected with SIZE_MISMATCH and leaves the queue empty.
 TEST(LocklessLifetime, OversizedSendRejected) {
-    Os::Queue queue;
+    QueueUnderTest queue;
     Fw::String name("oversize-test");
     ASSERT_EQ(queue.create(0, name, 4, sizeof(U32)), Os::QueueInterface::Status::OP_OK);
     U8 buffer[sizeof(U32) + 1] = {0};

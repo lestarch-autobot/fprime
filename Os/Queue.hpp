@@ -195,6 +195,11 @@ class QueueCommon final : public QueueUserInterface {
 
   private:
     static QueueRegistry* s_queueRegistry;  //!< Queue registry store
+
+    //! \brief register a queue of the type selected in config/OsSelection.hpp (Os::Queue)
+    static void registerQueue(QueueRegistry& registry, Queue* queue);
+    //! \brief queues of any other type are not tracked: the registry handles Os::Queue only
+    static void registerQueue(QueueRegistry& registry, const void* queue);
 #endif
 
     // This section is used to store the implementation-defined file handle. To Os::File and fprime, this type is
@@ -265,7 +270,7 @@ QueueUserInterface::Status QueueCommon<T>::create(FwEnumStoreType id,
         QueueCommon::s_queueCount++;
 #if FW_QUEUE_REGISTRATION
         if (QueueCommon::s_queueRegistry != nullptr) {
-            QueueCommon::s_queueRegistry->registerQueue(this);
+            QueueCommon::registerQueue(*QueueCommon::s_queueRegistry, this);
         }
 #endif
     }
@@ -380,6 +385,14 @@ Os::Mutex& QueueCommon<T>::getStaticMutex() {
 }
 
 #if FW_QUEUE_REGISTRATION
+template <typename T>
+void QueueCommon<T>::registerQueue(QueueRegistry& registry, Queue* queue) {
+    registry.registerQueue(queue);
+}
+
+template <typename T>
+void QueueCommon<T>::registerQueue(QueueRegistry& registry, const void* queue) {}
+
 template <typename T>
 void QueueCommon<T>::setRegistry(QueueRegistry* registry) {
     ScopeLock lock(QueueCommon::getStaticMutex());
