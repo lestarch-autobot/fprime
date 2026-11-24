@@ -28,6 +28,7 @@ The requirements for `Svc::TlmPacketizer` are as follows:
 | TPK-010 | The `Svc::TlmPacketizer` component shall mirror per-packet override changes out `packetOverrideOut` and accept a reload of overrides on `packetOverrideIn` for persistence across reboot | Unit Test |
 | TPK-011 | The `Svc::TlmPacketizer` component shall event on a configuration referencing an unknown packet id, on a `packetOverrideIn` record carrying a section out of range, and on a `packetOverrideIn` buffer that could not be fully applied | Unit Test |
 | TPK-012 | The `Svc::TlmPacketizer` component shall event each per-packet override applied or cleared by command, and shall reject the command when the override could not be mirrored out `packetOverrideOut` | Unit Test |
+| TPK-013 | The maximum total number of channel-to-packet memberships, defined as the sum over all packets in the packet list of the number of channels listed in each packet (omitted channels excluded), shall be configurable through `MAX_PACKETIZER_MEMBERSHIPS` | Unit Test |
 
 
 ## 3. Design
