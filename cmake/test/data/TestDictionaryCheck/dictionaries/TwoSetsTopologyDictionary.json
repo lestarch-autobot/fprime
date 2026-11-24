@@ -1,0 +1,21 @@
+{
+  "metadata": {"deploymentName": "TwoSets"},
+  "telemetryPacketSets": [
+    {
+      "name": "Realtime",
+      "members": [
+        {"name": "First", "id": 1, "group": 1, "members": ["a.One", "a.Two"]},
+        {"name": "Second", "id": 2, "group": 1, "members": ["a.One", "a.Three"]},
+        {"name": "Empty", "id": 3, "group": 2, "members": []},
+        {"name": "Null", "id": 4, "group": 2, "members": null}
+      ],
+      "omitted": ["a.Four", "a.Five"]
+    },
+    {
+      "name": "Recorded",
+      "members": [
+        {"name": "Twice", "id": 1, "group": 1, "members": ["a.One", "a.One"]}
+      ]
+    }
+  ]
+}

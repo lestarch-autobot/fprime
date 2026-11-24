@@ -17,6 +17,13 @@ register_fprime_module(
     Svc_TlmPacketizer_config_TlmPacketizerConfig
 )
 
+# Checks each dependent deployment's packet sets against the configured table sizes at build time. A deployment
+# that passes IGNORE_OMIT_LIST to setPacketList sets FPRIME_TLM_PACKETIZER_OMIT_LIST to OFF.
+register_fprime_dictionary_check(
+    "${CMAKE_CURRENT_LIST_DIR}/tools/tlm_packetizer_sizing.py"
+  VARIABLES
+    FPRIME_TLM_PACKETIZER_OMIT_LIST
+)
 
 ### UTs ###
 register_fprime_ut(
