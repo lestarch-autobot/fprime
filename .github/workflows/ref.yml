@@ -13,6 +13,8 @@ on:
       - ".github/actions/spelling/**"
       - ".github/ISSUE_TEMPLATE/**"
       - ".github/agents/**"
+      - ".agents/**"
+      - ".claude/**"
   workflow_dispatch:
     inputs:
       runner:

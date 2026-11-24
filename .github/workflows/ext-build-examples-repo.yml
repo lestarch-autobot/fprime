@@ -18,6 +18,8 @@ on:
       - '.github/ISSUE_TEMPLATE/**'
       - '.gitignore'
       - '.github/agents/**'
+      - '.agents/**'
+      - '.claude/**'
   workflow_dispatch:
 # Cancel in-progress runs if a newer run is started on a given PR
   
