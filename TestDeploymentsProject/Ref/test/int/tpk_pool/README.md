@@ -190,8 +190,9 @@ alone, as the dry runs made them (`vector.json`, `record/` with `record.sha256`,
 made at this branch for the replay (same image entry; plan and stimulus hashes of this branch).
 `record.sha256` is the tool's list for the whole record and also names the `raw/` files, which are not
 committed (they are in the evidence bundle); `files.sha256` lists the files that are committed.
-`rejudge/` holds the verdicts of a replay of each record with the plan files of this branch (amendment 7):
-verdict and failed checks equal to `runner/verdicts.json` in every vector. `../../campaign/dry-runs.sh` makes the runs, replays each record
+`rejudge/` holds the verdicts of a replay of each record with the plan files of this branch (amendment 8),
+after `fth export --plan` of the record's raw logs with the plan's 60 s reboot limit (the export is byte-equal
+to the committed `channels.jsonl` and `events.jsonl`): verdict and failed checks equal to `runner/verdicts.json` in every vector. `../../campaign/dry-runs.sh` makes the runs, replays each record
 (`fth run --replay-record`), builds the set (`../../campaign/mk-vectors.py`) and applies the vector rule:
 
 ```sh

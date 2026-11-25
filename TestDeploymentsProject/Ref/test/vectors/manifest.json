@@ -1,15 +1,15 @@
 {
   "uut": {
     "path": "uut-ref",
-    "sha": "e290ef095b546e645ea99ec09d53500d2c3d993d",
-    "describe": "e290ef095",
+    "sha": "0bc85ea2c6b1fff6a8d32ba895e22ce1928dedf6",
+    "describe": "0bc85ea2c",
     "url": "https://github.com/lestarch-autobot/fprime",
     "dirty": false
   },
   "harness": {
     "path": "uut-ref",
-    "sha": "e290ef095b546e645ea99ec09d53500d2c3d993d",
-    "describe": "e290ef095",
+    "sha": "0bc85ea2c6b1fff6a8d32ba895e22ce1928dedf6",
+    "describe": "0bc85ea2c",
     "url": "https://github.com/lestarch-autobot/fprime",
     "dirty": false
   },
@@ -17,23 +17,23 @@
     {
       "name": "uut",
       "path": "uut-ref",
-      "sha": "e290ef095b546e645ea99ec09d53500d2c3d993d",
-      "describe": "e290ef095",
+      "sha": "0bc85ea2c6b1fff6a8d32ba895e22ce1928dedf6",
+      "describe": "0bc85ea2c",
       "url": "https://github.com/lestarch-autobot/fprime",
       "dirty": false
     },
     {
       "name": "harness",
       "path": "uut-ref",
-      "sha": "e290ef095b546e645ea99ec09d53500d2c3d993d",
-      "describe": "e290ef095",
+      "sha": "0bc85ea2c6b1fff6a8d32ba895e22ce1928dedf6",
+      "describe": "0bc85ea2c",
       "url": "https://github.com/lestarch-autobot/fprime",
       "dirty": false
     }
   ],
   "plan": {
     "path": "uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool/plan.json",
-    "sha256": "3f0e3a04388581829dd2ded43514c9bab57eed9e8012e667d202809e1cb7d5aa",
+    "sha256": "5be97bf19932123dd7f63777b4a9967b8608946bf648376d82a5ead7fe14c1d3",
     "revision": "",
     "tests": [
       "L0-1",
@@ -76,7 +76,7 @@
   "stimulus": {
     "path": "uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool",
     "repo": "uut",
-    "sha": "e290ef095b546e645ea99ec09d53500d2c3d993d",
+    "sha": "0bc85ea2c6b1fff6a8d32ba895e22ce1928dedf6",
     "files": {
       "planted_faults.py": "3d3f178bed530e883324b421c9fd898e242d7ebd1366014c538d58fec0725a9f",
       "test_L0_1.py": "0398b1809ca95a48e92a9857921dbde0af085586df3a54aa8b657c90f984f622",
@@ -93,7 +93,7 @@
       "path": "uut-ref/TestDeploymentsProject/build-artifacts/Linux/Ref/bin/Ref",
       "sha256": "f6caa77a9f030ffe70f1573a8d92f90a2c689b28b1eca6c29623bc68571b8839",
       "build_cmd": [],
-      "version_check": "SKIPPED (uut, harness not found): replay of the committed vector records only: the image is the one of those runs, built at b93ae6f19, not at this commit"
+      "version_check": "SKIPPED (uut, harness not found): replay of earlier records only (re-exported from their raw logs under plan amendment 8): the image on disk is the one of the committed runs, built at b93ae6f19, not at this commit"
     }
   ],
   "menu": {
@@ -178,5 +178,5 @@
     "sha256": "d6ff4e9ceb35b75fe8f91f3fa572b687b2964f91a7ee41cb32f93ce6de6572df"
   },
   "toolchain": {},
-  "no_version_check": "replay of the committed vector records only: the image is the one of those runs, built at b93ae6f19, not at this commit"
+  "no_version_check": "replay of earlier records only (re-exported from their raw logs under plan amendment 8): the image on disk is the one of the committed runs, built at b93ae6f19, not at this commit"
 }

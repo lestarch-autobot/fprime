@@ -1,9 +1,9 @@
 {
-  "run": "dry-3",
-  "record_sha256": "abdabe095441f30d5d634b7812df9d651b9add95c23d6a33b583e8fa2422affd",
+  "run": "mine-dry-3",
+  "record_sha256": "77a7270e4fcb72e077574695714be0825729a9d6f39455bc515bb2a9a4be387a",
   "checker": "fth.junit",
   "plan": "TPK-POOL — Svc.TlmPacketizer membership pool (issue 6431)",
-  "junit_sha256": "e09512a528a598f0505b0f1bc285c2cee136bfe6a9a08477716f928ff13a4f02",
+  "junit_sha256": "3c056957b0d1fcf32093dd2b4f6f2e23ea0a8e22a7b43b97ea6dcd001acdc56f",
   "tests": {
     "L0-1": {
       "verdict": "PASS",
@@ -641,5 +641,5 @@
       "junit": "test_L7_1"
     }
   },
-  "replay_record": "/home/ubuntu/work/uut-ref/TestDeploymentsProject/Ref/test/vectors/dry-3/record"
+  "replay_record": "/home/ubuntu/work/r3/rj/A/rec/mine-dry-3/record"
 }
