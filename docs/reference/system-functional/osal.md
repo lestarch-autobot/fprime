@@ -55,7 +55,7 @@ The OSAL uses a wrapper pattern where each service has three layers:
 2. **Wrapper** — A class template that application code interacts with through an alias (e.g. `Os::Mutex`); it holds the selected implementation by value and forwards calls to it
 3. **Implementation** — A platform-specific class that implements the interface
 
-The implementation of each service is selected at compile time in that service's `config/<Service>Selection.hpp` configuration header.
+The implementation of each service is selected at compile time by that service's `config/<Service>Selection.hpp` configuration header, which the build system takes from the implementation chosen with `CHOOSES_IMPLEMENTATIONS`.
 
 Services are accessed either as singletons (for global operations like file system queries and CPU statistics) or as handles (for stateful objects like individual files, mutexes, and tasks). The OSAL is initialized once at system startup, though singletons will self-initialize on first use if explicit initialization is omitted.
 

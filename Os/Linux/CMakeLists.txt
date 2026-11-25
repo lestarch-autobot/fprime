@@ -19,8 +19,6 @@ register_fprime_ut(
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/../test/ut/cpu/CommonCpuTests.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/LinuxCpuTests.cpp"
-  CHOOSES_IMPLEMENTATIONS
-    Os_Cpu_Linux
   DEPENDS
     Fw_Types
     Fw_Time
@@ -35,8 +33,6 @@ register_fprime_ut(
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/../test/ut/memory/CommonMemoryTests.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/LinuxMemoryTests.cpp"
-  CHOOSES_IMPLEMENTATIONS
-    Os_Memory_Linux
   DEPENDS
     Fw_Types
     Fw_Time
