@@ -117,19 +117,19 @@ classDiagram
 
 The implementation used by each service is selected at compile time:
 
-1. Each service has its own configuration header, `config/<Service>Selection.hpp`, which includes the header defining the selected implementation `T` and names it `Os::Selected::<Service>`.
+1. Each service has its own configuration header, `config/<Service>Selection.hpp`, supplied by the chosen implementation, which includes the header defining the selected implementation `T` and names it `Os::Selected::<Service>`.
 2. `Os/<Service>.hpp` includes that header and defines `Os::<Service>` as an alias of `Os::<Service>Common<Os::Selected::<Service>>`. The wrapper holds `T` by value; there is no factory function and no handle storage.
 3. Calls from the wrapper to the implementation are direct calls on a known type, which the compiler can devirtualize and inline.
 
-F´ provides defaults (`default/config/Os/<Service>Selection.hpp`) selecting the in-tree implementations. Projects and platforms override the header of each service they change; the others keep their defaults.
+Each implementation supplies the selection header that selects it (e.g. `Os/Posix/selection/MutexSelection.hpp`) as one of its `CONFIGURATION_HEADERS` in the build system. Choosing an implementation with `CHOOSES_IMPLEMENTATIONS` in a configuration module (platform or project; the last choice wins) links it and places its header at `config/<Service>Selection.hpp`. The compiled selection and the linked implementation are thus one choice. See [Implementations with Configuration Headers](../../docs/user-manual/build-system/cmake-implementations.md#implementations-with-configuration-headers).
 
 The types shared by users and implementations of a service (`<Service>Handle`, `<Service>UserInterface`) are defined in `Os/Interfaces/<Service>UserInterface.hpp`, which includes no other service header. `Os/Interfaces/<Service>Interface.hpp` and the implementation headers build on it, so none of them includes `Os/<Service>.hpp`.
 
 **Constraints:**
 
-- **One selection per build**: `Os::<Service>` is a different type for each selection, so every file in a build must see the same `config/<Service>Selection.hpp` headers.
+- **One selection per build**: `Os::<Service>` is a different type for each selection, so the selection is global to the build. Executables, deployments, and unit tests cannot choose an OSAL implementation of their own, and selection headers cannot be replaced with `CONFIGURATION_OVERRIDES`.
 - **No circular dependencies**: an implementation header must not include the `Os/<Service>.hpp` of its own service. It may use other services (e.g. `Os::Generic::PriorityQueue` holds an `Os::Mutex`), provided their selected implementations do not depend back on it.
-- **Linking**: the alias changes only the C++ type. The module providing the implementation must still be in the link.
+- **Paired services**: Mutex and ConditionVariable are supplied by one implementation module, and so are always chosen together.
 - **Mutex and ConditionVariable** must be selected as a compatible pair: a condition variable implementation operates on the handle of the selected `Os::Mutex` (Posix casts it to its own handle type). `Os::ConditionVariableCommon` additionally requires that the same mutex is supplied on every call to `pend()`/`wait()`, returning `ERROR_DIFFERENT_MUTEX` otherwise.
 - **RawTime** implementations must be copyable and constructible from a `RawTimeSource`.
 - **Registries**: `Os::QueueRegistry` and `Os::TaskRegistry` track only wrappers of the selected implementation type.
@@ -151,7 +151,7 @@ The following OSAL implementations are available in the core F´ repository:
 
 Additional OSAL implementations are available through platform support packages. For more information, see [Supported Platforms](../../docs/user-manual/framework/supported-platforms.md) or search for a platform support package in the [fprime-community](https://github.com/fprime-community) GitHub organization.
 
-OSAL selection is made in the `config/<Service>Selection.hpp` headers (see [Compile-Time Selection](#52-compile-time-selection)); the CMake build system brings the module of each selected implementation into the link.
+OSAL selection is made with `CHOOSES_IMPLEMENTATIONS` in the configuration modules of the platform and project; the CMake build system brings the module of each chosen implementation into the link and places its `config/<Service>Selection.hpp` header (see [Compile-Time Selection](#52-compile-time-selection)).
 
 ## 7. Resources
 

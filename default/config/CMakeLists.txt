@@ -53,18 +53,6 @@ register_fprime_config(
         "${CMAKE_CURRENT_LIST_DIR}/FileManagerConfig.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/WasmSequencerConfig.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/WasmSequencerSpacewasmConfig.h"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/ConditionVariableSelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/ConsoleSelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/CountingSemaphoreSelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/CpuSelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/DirectorySelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/FileSelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/FileSystemSelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/MemorySelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/MutexSelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/QueueSelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/RawTimeSelection.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Os/TaskSelection.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Os/RawTimeSource.hpp"
     GLOBAL_IMPLICIT_DEPENDENCY
     DEPENDS

@@ -57,8 +57,6 @@ register_fprime_ut(PosixFileTest
     Fw_Types
     Os_Test_File_SyntheticFileSystem
     STest
-  CHOOSES_IMPLEMENTATIONS
-    "Os_File_Posix" 
 )
 
 # -----------------------------------------
@@ -71,8 +69,6 @@ register_fprime_ut(
   DEPENDS
     Fw_Types
     STest
-  CHOOSES_IMPLEMENTATIONS
-    "Os_Console_Posix"
 )
 
 # -----------------------------------------
@@ -87,8 +83,6 @@ register_fprime_ut(
   DEPENDS
     Fw_Types
     STest
-  CHOOSES_IMPLEMENTATIONS
-     "Os_Task_Posix"
 )
 
 # -----------------------------------------
@@ -104,8 +98,6 @@ register_fprime_ut(
   DEPENDS
     Fw_Types
     STest
-  CHOOSES_IMPLEMENTATIONS
-    "Os_Mutex_Posix"
 )
 
 # -----------------------------------------
@@ -120,8 +112,6 @@ register_fprime_ut(
   DEPENDS
     Fw_Types
     STest
-  CHOOSES_IMPLEMENTATIONS
-    "Os_File_Posix"
 )
 
 # -----------------------------------------
@@ -137,8 +127,6 @@ register_fprime_ut(
   DEPENDS
     Fw_Types
     STest
-  CHOOSES_IMPLEMENTATIONS
-    "Os_File_Posix"
 )
 
 # -----------------------------------------
@@ -154,8 +142,6 @@ register_fprime_ut(
   DEPENDS
     Fw_Types
     STest
-  CHOOSES_IMPLEMENTATIONS
-    "Os_Mutex_Posix"
 )
 
 # -----------------------------------------
@@ -171,8 +157,6 @@ register_fprime_ut(
   DEPENDS
     Fw_Types
     STest
-  CHOOSES_IMPLEMENTATIONS
-    "Os_CountingSemaphore_Posix"
 )
 endif()
 
@@ -188,6 +172,4 @@ register_fprime_ut(
   DEPENDS
     Fw_Types
     STest
-  CHOOSES_IMPLEMENTATIONS
-    "Os_RawTime_Posix"
 )

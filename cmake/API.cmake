@@ -756,6 +756,20 @@ endfunction()
 # > [!WARNING]
 # > The result of this call will always be an OBJECT library.
 #
+# The following directive is supported in addition to those of `register_fprime_library`:
+#
+# - **CONFIGURATION_HEADERS**: headers that configure the code using the implemented package for this implementation
+#   (e.g. a header naming the C++ type of the implementation). When, and only when, the implementation is the one
+#   chosen for the build (CHOOSES_IMPLEMENTATIONS of `register_fprime_config`; the last choice for a package wins)
+#   each header is placed in the build cache and included as `config/<header file name>`. As these headers are global
+#   to the build:
+#     - an implementation supplying them may only be chosen by `register_fprime_config`: it is an error for an
+#       executable, deployment, or unit test to choose it
+#     - when one implementation of a package supplies them, the chosen implementation of that package must as well
+#     - chosen implementations supplying a header of the same file name must supply identical content
+#     - a configuration module may not supply a file of the same name: the headers cannot be replaced with
+#       CONFIGURATION_OVERRIDES, another implementation is chosen instead
+#
 # **Example:**
 #
 # ```
@@ -770,6 +784,8 @@ endfunction()
 #         model.fpp
 #     HEADERS
 #         module.h
+#     CONFIGURATION_HEADERS
+#         selection/SomeImplementationSelection.hpp
 # )
 # ```
 #
@@ -783,7 +799,7 @@ function(register_fprime_implementation)
     if (NOT "OBJECT" IN_LIST ARGN_PASS AND NOT INTERFACE IN_LIST ARGN_PASS)
         list(APPEND ARGN_PASS OBJECT)
     endif()
-    fprime__internal_add_build_target("Library" "IMPLEMENTS;OBJECT;INTERFACE" ${ARGN_PASS})
+    fprime__internal_add_build_target("Library" "IMPLEMENTS;OBJECT;INTERFACE;CONFIGURATION_HEADERS" ${ARGN_PASS})
 
     #### Special implementation handling ####
 
@@ -800,6 +816,9 @@ function(register_fprime_implementation)
     )
     set_target_properties("${INTERNAL_MODULE_NAME}" PROPERTIES FPRIME_IMPLEMENTS "${INTERNAL_IMPLEMENTS}")
     append_list_property("${INTERNAL_MODULE_NAME}" GLOBAL PROPERTY "FPRIME_${INTERNAL_IMPLEMENTS}_IMPLEMENTORS")
+    if (DEFINED INTERNAL_CONFIGURATION_HEADERS)
+        fprime__internal_implementation_configuration_headers("${INTERNAL_MODULE_NAME}" "${INTERNAL_CONFIGURATION_HEADERS}")
+    endif()
 
     fprime_attach_custom_targets("${INTERNAL_MODULE_NAME}")
 endfunction()
@@ -811,6 +830,10 @@ endfunction()
 #   1. NAMES is a list of 1 or more named files separated by ;
 #   2. For each item e listed in NAMES, there exists a file called ${e}.hpp and ${e}.cpp in the same directory
 #       where this cmake function was called
+#   3. For each item e listed in NAMES, there exists a file called selection/${e}Selection.hpp in that directory
+#       selecting the implementation as Os::Selected::${e}. These are supplied as the CONFIGURATION_HEADERS of the
+#       implementation (see `register_fprime_implementation`): choosing the implementation places them at
+#       config/${e}Selection.hpp
 #
 # NAMES: list of named files to add to this module.  The first will be treated as the name of the module.
 #        i.e. File;Directory;FileSystem will contain the file, directory, and filesystem files in a module called File.

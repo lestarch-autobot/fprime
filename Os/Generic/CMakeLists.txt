@@ -18,6 +18,8 @@ register_fprime_implementation(
   IMPLEMENTS
     Os_Queue
   INTERFACE
+  CONFIGURATION_HEADERS
+    "${CMAKE_CURRENT_LIST_DIR}/selection/PriorityMemQueue/QueueSelection.hpp"
 )
 # Os_Queue instantiates the common class on the implementation: link the whole implementation
 # as nothing earlier in the link order references it
@@ -34,8 +36,7 @@ register_fprime_ut(
     Fw_Time
     Os
     STest
-  CHOOSES_IMPLEMENTATIONS
-    Os_Generic_PriorityMemQueue
+    Os_Generic_PriorityMemQueue_Implementation
 )
 
 #### Os/Generic/Queue Section ####
@@ -55,6 +56,8 @@ register_fprime_implementation(
   IMPLEMENTS
     Os_Queue
   INTERFACE
+  CONFIGURATION_HEADERS
+    "${CMAKE_CURRENT_LIST_DIR}/selection/PriorityQueue/QueueSelection.hpp"
 )
 # Os_Queue instantiates the common class on the implementation: link the whole implementation
 # as nothing earlier in the link order references it
@@ -72,8 +75,6 @@ register_fprime_ut(
     Fw_Time
     Os
     STest
-  CHOOSES_IMPLEMENTATIONS
-    Os_Generic_PriorityQueue
 )
 if (TARGET PriorityQueueTest)
     target_compile_options(PriorityQueueTest PRIVATE -Wno-conversion)
@@ -97,6 +98,8 @@ register_fprime_implementation(
   IMPLEMENTS
     Os_Queue
   INTERFACE
+  CONFIGURATION_HEADERS
+    "${CMAKE_CURRENT_LIST_DIR}/selection/LocklessPriorityQueue/QueueSelection.hpp"
 )
 # Os_Queue instantiates the common class on the implementation: link the whole implementation
 # as nothing earlier in the link order references it

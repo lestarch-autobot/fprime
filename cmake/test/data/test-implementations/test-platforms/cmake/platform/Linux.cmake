@@ -10,5 +10,6 @@ register_fprime_config(
     CHOOSES_IMPLEMENTATIONS
         Test_Implementation_Platform
         Test_Override_Unused
+        Test_Configured_First
 )
 

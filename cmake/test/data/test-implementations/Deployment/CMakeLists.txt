@@ -15,6 +15,11 @@ include("${FPRIME_FRAMEWORK_PATH}/cmake/FPrime-Code.cmake")
 
 add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/TestModule")
 set(FPRIME_CURRENT_MODULE Deployment)
+# Implementations supplying CONFIGURATION_HEADERS may not be chosen by an executable
+set(TEST_TARGET_CHOICES Test_Override_Override)
+if (_TEST_IMPLEMENTATION_TARGET_CHOICE)
+    list(APPEND TEST_TARGET_CHOICES Test_Configured_Second)
+endif()
 register_fprime_executable(
         Deployment
     SOURCES
@@ -22,6 +27,5 @@ register_fprime_executable(
     DEPENDS
         Fw_Types Deployment_TestModule
     CHOOSES_IMPLEMENTATIONS
-        Test_Override_Override
-        Os_File_Posix
+        ${TEST_TARGET_CHOICES}
 )

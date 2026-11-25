@@ -80,6 +80,10 @@ function(add_fprime_supplied_os_module NAMES SUFFIX)
         if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.hpp")
             message(FATAL_ERROR "${CMAKE_CURRENT_LIST_DIR}/${NAME}.hpp does not exist.")
         endif()
+        # Selects the implementation at compile time when the implementation is chosen: see CONFIGURATION_HEADERS
+        if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/selection/${NAME}Selection.hpp")
+            message(FATAL_ERROR "${CMAKE_CURRENT_LIST_DIR}/selection/${NAME}Selection.hpp does not exist.")
+        endif()
     endforeach()
 
     # Setup variables
@@ -87,10 +91,12 @@ function(add_fprime_supplied_os_module NAMES SUFFIX)
     # Clear variables
     set(SOURCE_INPUTS)
     set(HEADER_INPUTS)
+    set(SELECTION_INPUTS)
     # Add files for each name supplied
     foreach (NAME IN LISTS NAMES)
         list(APPEND SOURCE_INPUTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp")
         list(APPEND HEADER_INPUTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.hpp")
+        list(APPEND SELECTION_INPUTS "${CMAKE_CURRENT_LIST_DIR}/selection/${NAME}Selection.hpp")
     endforeach ()
     # Set up module
     register_fprime_module(
@@ -105,12 +111,15 @@ function(add_fprime_supplied_os_module NAMES SUFFIX)
         "Os_${FIRST_ITEM}"
         ${ARGN}
     )
-    # The implementation is selected in config/<Service>Selection.hpp
+    # Choosing the implementation places its selection/<Service>Selection.hpp at config/<Service>Selection.hpp, which
+    # selects it at compile time
     register_fprime_implementation(
          "${OS_MODULE_NAME}"
       IMPLEMENTS
         "Os_${FIRST_ITEM}"
       INTERFACE
+      CONFIGURATION_HEADERS
+        ${SELECTION_INPUTS}
     )
     # Os_<Name> instantiates the common class on the implementation: link the whole implementation
     # as nothing earlier in the link order references it
