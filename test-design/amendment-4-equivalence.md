@@ -76,3 +76,11 @@ Harness review finding `helper-duplicate-samples`: `TpkA` and `TpkB` both carry 
 - What the rule can no longer see: a packet sent again although its channel did not change gives a second row with the same time and value. Before, the helper failed on it, by accident and only when the export had not collapsed it (adjacent copies were always collapsed). The plan has no check for it; it is not a change of what the plan judges by design.
 - `fails` sets, check names, windows, commands, waits: unchanged. `faults-menu.json` regenerates byte-identical. Decision-log entry 12.
 - Known-answer tests (`test/kat/test_helper_kat.py`, 30): split copies one tick apart on a correct unit pass (L0-2 and L7-1 forms, and through the real export); equal value with a later time is not dropped and fails; equal time with another value is not dropped; a copy not directly after its first copy is not dropped; lost and late samples still fail with copies present; two copies do not count as two samples.
+
+## Amendment 8 (record export: reboot limit 60 s)
+
+`plan.json` gains `reboot_min_backstep_s: 60.0` (decision 13) and two `not_covered` lines. No `test_L*.py`,
+`planted_faults.py` or `faults-menu.json` byte changes, so the table above has no row change (26 identical,
+1 reworded, 3 strengthened). The setting changes only which channel rows of a record fall in a window: with the
+tool's 5 s default, a held packet released in a teardown with a time tag 6 ticks old moved all later channel rows
+to another boot epoch and the windows after it held none.
