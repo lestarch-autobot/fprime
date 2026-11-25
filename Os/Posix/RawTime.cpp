@@ -25,6 +25,7 @@ PosixRawTime::Status PosixRawTime::now() {
 }
 
 PosixRawTime::Status PosixRawTime::getTimeInterval(const RawTimeInterface& other, Fw::TimeInterval& interval) const {
+    // Precondition: other is a PosixRawTime. Os::RawTimeCommon<PosixRawTime> only supplies another PosixRawTime.
     // const_cast: RawTimeInterface::getHandle() is non-const; the handle is only read here
     const PosixRawTimeHandle* other_handle =
         static_cast<const PosixRawTimeHandle*>(const_cast<RawTimeInterface&>(other).getHandle());

@@ -74,7 +74,7 @@ Every OSAL _core service_ (e.g. File, Task, Mutex, etc.) follows a uniform three
 
 | Layer | Example | Description |
 |---|---|---|
-| User interface | [`Os::FileUserInterface`](../File.hpp) | A struct holding the types, enumerations and constants shared by the wrapper and the implementations (e.g. `Status`). |
+| User interface | [`Os::FileUserInterface`](../Interfaces/FileUserInterface.hpp) | A struct holding the types, enumerations and constants shared by the wrapper and the implementations (e.g. `Status`). |
 | Interface | [`Os::FileInterface`](../Interfaces/FileInterface.hpp) | A pure-virtual base class, derived from the user interface, that defines the contract an implementation must meet. |
 | Wrapper | [`Os::FileCommon<T>`](../File.hpp) | A class template, derived from the user interface, that holds the implementation `T` by value and forwards to it. `Os::File` is an alias of the wrapper instantiated on the selected implementation. Application code interacts exclusively with `Os::File`. |
 | Implementation | [`Os::Posix::File::PosixFile`](../Posix/File.hpp) | A concrete class that implements the interface. This is what needs to be implemented to support a new OS on F Prime. |
@@ -119,7 +119,7 @@ The implementation used by each service is selected at compile time:
 
 1. Each service has its own configuration header, `config/<Service>Selection.hpp`, supplied by the chosen implementation, which includes the header defining the selected implementation `T` and names it `Os::Selected::<Service>`.
 2. `Os/<Service>.hpp` includes that header and defines `Os::<Service>` as an alias of `Os::<Service>Common<Os::Selected::<Service>>`. The wrapper holds `T` by value; there is no factory function and no handle storage.
-3. Calls from the wrapper to the implementation are direct calls on a known type, which the compiler can devirtualize and inline.
+3. Calls from the wrapper to the implementation are calls on a known type: the compiler binds them directly, without virtual dispatch, and inlines the wrapper into its caller. The implementation functions are defined in their own source files, so inlining them as well requires link-time optimization.
 
 Each implementation supplies the selection header that selects it (e.g. `Os/Posix/selection/MutexSelection.hpp`) as one of its `CONFIGURATION_HEADERS` in the build system. Choosing an implementation with `CHOOSES_IMPLEMENTATIONS` in a configuration module (platform or project; the last choice wins) links it and places its header at `config/<Service>Selection.hpp`. The compiled selection and the linked implementation are thus one choice. See [Implementations with Configuration Headers](../../docs/user-manual/build-system/cmake-implementations.md#implementations-with-configuration-headers).
 
@@ -130,7 +130,7 @@ The types shared by users and implementations of a service (`<Service>Handle`, `
 - **One selection per build**: `Os::<Service>` is a different type for each selection, so the selection is global to the build. Executables, deployments, and unit tests cannot choose an OSAL implementation of their own, and selection headers cannot be replaced with `CONFIGURATION_OVERRIDES`.
 - **No circular dependencies**: an implementation header must not include the `Os/<Service>.hpp` of its own service. It may use other services (e.g. `Os::Generic::PriorityQueue` holds an `Os::Mutex`), provided their selected implementations do not depend back on it.
 - **Paired services**: Mutex and ConditionVariable are supplied by one implementation module, and so are always chosen together.
-- **Mutex and ConditionVariable** must be selected as a compatible pair: a condition variable implementation operates on the handle of the selected `Os::Mutex` (Posix casts it to its own handle type). `Os::ConditionVariableCommon` additionally requires that the same mutex is supplied on every call to `pend()`/`wait()`, returning `ERROR_DIFFERENT_MUTEX` otherwise.
+- **Mutex and ConditionVariable** must be selected as a compatible pair: a condition variable implementation operates on the handle of the selected `Os::Mutex` (Posix casts it to its own handle type, and its selection header checks the pairing at compile time with a `static_assert`). `Os::ConditionVariableCommon` additionally requires that the same mutex is supplied on every call to `pend()`/`wait()`, returning `ERROR_DIFFERENT_MUTEX` otherwise.
 - **RawTime** implementations must be copyable and constructible from a `RawTimeSource`.
 - **Registries**: `Os::QueueRegistry` and `Os::TaskRegistry` track only wrappers of the selected implementation type.
 

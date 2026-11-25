@@ -14,11 +14,18 @@
 #define CONFIG_CONDITIONVARIABLESELECTION_HPP
 
 #include <Os/Posix/ConditionVariable.hpp>
+#include <Os/Posix/Mutex.hpp>
+#include <config/MutexSelection.hpp>
+#include <type_traits>
 
 namespace Os {
 namespace Selected {
 using ConditionVariable = Posix::Mutex::PosixConditionVariable;
 }  // namespace Selected
 }  // namespace Os
+
+// PosixConditionVariable::pend reads the handle of the mutex it is given as a PosixMutexHandle
+static_assert(std::is_same<Os::Selected::Mutex, Os::Posix::Mutex::PosixMutex>::value,
+              "Os_ConditionVariable_Posix requires the Os_Mutex_Posix implementation of Os::Mutex");
 
 #endif  // CONFIG_CONDITIONVARIABLESELECTION_HPP

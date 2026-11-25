@@ -27,7 +27,7 @@ A configuration module supplies files under three directives, each with a differ
 | Directive | Contents | Typical use |
 |---|---|---|
 | `AUTOCODER_INPUTS` | `.fpp` files | Constants and types consumed by FPP models and by the autocoder: `FpConfig.fpp`, `AcConstants.fpp`, `PlatformTypes.fpp`, `<Subtopology>Config.fpp` |
-| `HEADERS` | `.h` / `.hpp` files | Compile-time C++ settings: `FpConfig.h`, `<Component>Cfg.hpp`, `PlatformTypes.h`, `OsDelegateRawTime.hpp` |
+| `HEADERS` | `.h` / `.hpp` files | Compile-time C++ settings: `FpConfig.h`, `<Component>Cfg.hpp`, `PlatformTypes.h` |
 | `SOURCES` | `.cpp` files | C++ implementations that are themselves configuration, e.g. the allocator set-up shipped by a subtopology |
 
 Only files listed under these directives are treated as configuration and can be overridden. In particular, a

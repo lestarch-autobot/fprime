@@ -456,9 +456,10 @@ region exactly as they would with the existing `Os::Generic::PriorityQueue`.
 The new module is registered through CMake as
 `Os_Generic_LocklessPriorityQueue_Implementation`, with a corresponding
 `register_fprime_implementation(Os_Generic_LocklessPriorityQueue ...)` block
-that supplies a delegate file `DefaultLocklessPriorityQueue.cpp`. A test target
-`LocklessPriorityQueueTest` chooses this implementation through
-`CHOOSES_IMPLEMENTATIONS`. The implementation is **opt-in**: platform default
+that supplies the selection header `selection/LocklessPriorityQueue/QueueSelection.hpp`
+as its `CONFIGURATION_HEADERS`. The test target `LocklessPriorityQueueTest` does
+not choose the implementation: it instantiates
+`Os::QueueCommon<Os::Generic::LocklessPriorityQueue>` directly. The implementation is **opt-in**: platform default
 queues are unchanged (unix remains on `Os_Generic_PriorityQueue`), and any
 deployment or platform that needs ISR-safe queueing can select
 `Os_Generic_LocklessPriorityQueue` through the same CMake mechanism the
@@ -492,7 +493,7 @@ lockless-specific tests, including:
   be strictly non-increasing in priority.
 - `LocklessLifetime` tests covering destruct-without-create,
   create/teardown/destruct ordering, teardown idempotency, oversized-send
-  rejection (wrapper and delegate level), and zero-size message round-trip.
+  rejection (wrapper and implementation level), and zero-size message round-trip.
 
 All tests are compiled with AddressSanitizer, UndefinedBehaviorSanitizer, and
 LeakSanitizer enabled, and pass under those sanitizers. ThreadSanitizer stress
