@@ -39,7 +39,7 @@ from it unless a `cd` is shown. About 40 minutes.
 ```sh
 # The three repositories are private: git needs a credential for github.com/lestarch-autobot (a token with read
 # access, e.g. `gh auth setup-git` or a credential helper), also for the `pip install git+https://` line below.
-mkdir tpk-campaign && cd tpk-campaign
+mkdir tpk-campaign && cd tpk-campaign              # a new, empty directory; not the one of venue B
 B=tlm-packetizer-membership-pool-harness
 git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref          # harness = image source
 git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref-cov      # same commit, coverage image
