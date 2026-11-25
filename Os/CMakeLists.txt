@@ -24,7 +24,7 @@ function(add_named_os_module NAMES)
     set(HEADER_INPUTS)
     # Add files for each name supplied
     foreach (NAME IN LISTS NAMES)
-        list(APPEND SOURCE_INPUTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp")
+        # Each service is defined entirely in its header: the module has sources in unit test builds only
         list(APPEND HEADER_INPUTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.hpp")
         # Unit test builds select the Os::Ut implementation of each service, which wraps the non-test selection and
         # lets tests intercept its calls (see Os/<Service>.hpp, Os/test/ut/implementations and Os/test/ut/interceptors)
@@ -41,12 +41,16 @@ function(add_named_os_module NAMES)
         endif()
     endforeach ()
     # Set up module
+    # Without sources nothing compiles, and the module is an INTERFACE library
+    set(SOURCE_ARGUMENTS INTERFACE)
+    if (SOURCE_INPUTS)
+        set(SOURCE_ARGUMENTS SOURCES ${SOURCE_INPUTS})
+    endif()
     register_fprime_module(
           "${OS_MODULE_NAME}"
         REQUIRES_IMPLEMENTATIONS
           "Os_${FIRST_ITEM}"
-        SOURCES
-          ${SOURCE_INPUTS}
+        ${SOURCE_ARGUMENTS}
         HEADERS
           ${HEADER_INPUTS}
         DEPENDS
@@ -72,8 +76,6 @@ function(add_fprime_supplied_os_module NAMES SUFFIX)
 
     # Ensure expected files with expected filenames exist
     foreach (NAME IN LISTS NAMES)
-        # TODO: the service .cpp files only include their header (all definitions live in the .hpp). Remove them
-        # and this requirement when the Os CMake/config selection is reworked.
         if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp")
             message(FATAL_ERROR "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp does not exist.")
         endif()

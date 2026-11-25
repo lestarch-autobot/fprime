@@ -17,7 +17,7 @@ Before starting, you should have:
 
 ## Overview
 
-The OSAL uses a wrapper pattern to decouple F´ application code from platform-specific OS calls. Each OSAL _service_ (Mutex, File, Task, etc.) has three layers: an **interface class** defining the contract, a **wrapper class** (e.g., `Os::Mutex`) that application code uses, and a **platform-specific implementation** that the wrapper holds by value and forwards to. The implementation is selected at compile time in the service's `config/<Service>Selection.hpp`. Before proceeding, read the [OSAL Software Design Document](../../../Os/docs/sdd.md) — in particular the [delegate pattern](../../../Os/docs/sdd.md#51-delegate-pattern) and [implementation architecture](../../../Os/docs/sdd.md#5-implementation-architecture) sections — as this guide assumes familiarity with those concepts.
+The OSAL uses a wrapper pattern to decouple F´ application code from platform-specific OS calls. Each OSAL _service_ (Mutex, File, Task, etc.) has three layers: an **interface class** defining the contract, a **wrapper class** (e.g., `Os::Mutex`) that application code uses, and a **platform-specific implementation** that the wrapper holds by value and forwards to. The implementation is selected at compile time in the service's `config/<Service>Selection.hpp`. Before proceeding, read the [OSAL Software Design Document](../../../Os/docs/sdd.md) — in particular the [wrapper pattern](../../../Os/docs/sdd.md#51-wrapper-pattern) and [implementation architecture](../../../Os/docs/sdd.md#5-implementation-architecture) sections — as this guide assumes familiarity with those concepts.
 
 This guide walks through implementing an OSAL for a hypothetical OS called **"MyOs"**, and walks through the implementation of the `Os::Mutex` service as the example. The same process applies for all other OSAL services. Reference implementations are linked in the [Additional Resources](#additional-resources) section below.
 
@@ -51,7 +51,7 @@ add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/FprimeMyOs/Os")
 
 ## Step 2 — Implement an OSAL Module
 
-Each OSAL service is implemented through a CMake/C++ module that requires an **implementation class** that inherits from the corresponding interface. The interface header files in `fprime/Os/` define the contract (pure virtual methods) that must be implemented. 
+Each OSAL service is implemented through a CMake/C++ module that requires an **implementation class** that inherits from the corresponding interface. The interface header files in `fprime/Os/Interfaces/` define the contract (pure virtual methods) that must be implemented.
 
 To keep track of state through the OS's native constructs (e.g. a mutex handle, such as `pthread_mutex_t` in Posix), the implementation class contains a **m_handle** member that wraps the native OS primitives.
 
@@ -97,7 +97,7 @@ class MyOsMutex : public MutexInterface {
 ```
 
 > [!TIP]
-> Look at each interface header in `Os/` (e.g., `Os/Interfaces/MutexInterface.hpp`, `Os/Interfaces/FileInterface.hpp`, `Os/Interfaces/TaskInterface.hpp`) to see the exact set of pure virtual methods that need to be implemented for each. Each interface also defines a `Status` enum — your implementation must return the appropriate [status values](../../../Os/docs/sdd.md#24-error-handling). Note: for services that support compile-time selection, the pure-virtual contract lives in the `*Interface.hpp` header (e.g. `Os/MutexInterface.hpp`, `Os/RawTimeInterface.hpp`), while `Os/Mutex.hpp` / `Os/RawTime.hpp` are thin alias/aggregation headers.
+> Look at each interface header in `Os/` (e.g., `Os/Interfaces/MutexInterface.hpp`, `Os/Interfaces/FileInterface.hpp`, `Os/Interfaces/TaskInterface.hpp`) to see the exact set of pure virtual methods that need to be implemented for each. Each interface also defines a `Status` enum — your implementation must return the appropriate [status values](../../../Os/docs/sdd.md#24-error-handling). Note: for services that support compile-time selection, the pure-virtual contract lives in the `*Interface.hpp` header (e.g. `Os/Interfaces/MutexInterface.hpp`, `Os/Interfaces/RawTimeInterface.hpp`), while `Os/Mutex.hpp` / `Os/RawTime.hpp` define the wrapper used by application code.
 
 ### 2.2 — Implement the Methods
 
@@ -150,8 +150,8 @@ MutexHandle* MyOsMutex::getHandle() {
 }  // namespace Os
 ```
 
-> [!CAUTION]
-> When an `Os::Mutex` wrapper object is created, the underlying implementation object `MyOsMutex` is constructed in-place using placement new into a fixed-size byte array of size `FW_MUTEX_HANDLE_MAX_SIZE`. This constant must be defined in `PlatformCfg.fpp` in the library configuration. The compiler will help identify the required size based on the `sizeof(MyOsMutex)`.
+> [!NOTE]
+> An `Os::Mutex` wrapper object holds the implementation object `MyOsMutex` by value, so `sizeof(Os::Mutex)` follows from the implementation. There is no handle storage to size.
 
 ---
 
@@ -188,7 +188,8 @@ using Mutex = MyOs::Mutex::MyOsMutex;
 
 - **One Selection per Build**: `Os::Mutex` is a different type for each selection, so the selection is global to the build. An executable, deployment, or unit test cannot choose a different OSAL implementation (see [Implementations with Configuration Headers](../../user-manual/build-system/cmake-implementations.md#implementations-with-configuration-headers)).
 - **No Circular Dependencies**: an implementation header must not include the `Os/<Service>.hpp` of its own service; it includes `Os/Interfaces/<Service>Interface.hpp`. It may include other services (e.g. a queue holding an `Os::Mutex`) as long as their selected implementations do not depend back on it.
-- **Paired Services**: a ConditionVariable implementation operates on the handle of the selected `Os::Mutex`, so the two are registered, and therefore chosen, together (`register_os_implementation("Mutex;ConditionVariable" ...)`).
+- **Paired Services**: a ConditionVariable implementation operates on the handle of the selected `Os::Mutex`, so the two are registered, and therefore chosen, together (`register_os_implementation("Mutex;ConditionVariable" ...)`). The ConditionVariable selection header should also check the pairing at compile time, as `Os/Posix/selection/ConditionVariableSelection.hpp` does: `static_assert(std::is_same<Os::Selected::Mutex, MyOs::Mutex::MyOsMutex>::value, "...");`.
+- **Arguments of Another Interface**: a function receiving another interface object (e.g. `RawTimeInterface::getTimeInterval`) is only called by `Os::<Service>Common<T>` with an object of the same implementation `T`. Implementations may rely on that and should state it where they convert the argument.
 - **RawTime**: the implementation must be copyable and constructible from a `RawTimeSource`.
 - **Unit Test Builds**: under `BUILD_UT` each `Os/<Service>.hpp` wraps the selection in a test-only `Os::Ut::<Service>::Ut<Service>` implementation so that unit tests can intercept calls (see `Os/test/ut/implementations/` and `Os/test/ut/interceptors/`). A selection header needs nothing for this.
 
@@ -282,7 +283,6 @@ The bottom line is that to use your new OSAL implementation, you need to add the
 
 - **Start with Stubs.** Only implement the modules you need. The [Stub backend](../../../Os/Stub) returns `NOT_SUPPORTED` for unimplemented services, allowing you to bring up an OSAL incrementally.
 - **Map error codes consistently.** Create a shared error-translation module (like `Os/Posix/error.hpp`) that converts your OS's native error codes to the F´ Os `Status` enums. This keeps error handling centralized and testable.
-- **Watch the handle size.** Each implementation object must fit in the fixed-size handle storage. If your native OS primitives are large, override `FW_MUTEX_HANDLE_MAX_SIZE` (or equivalent) in your platform configuration.
 - **Use other implementations as references.** The `Os/Posix/` directory is the most complete OSAL implementation in F´ and serves as the canonical example for all modules. Other implementations exist (see links above, or in the resources below)
 - **Test with the F´ OSAL unit tests.** The framework provides OS-agnostic unit tests under `Os/test/` that exercise the OSAL interfaces. Run these tests against your implementation to validate correctness.
 
