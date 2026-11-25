@@ -1,1 +1,1 @@
-run mine-dry-2: record 9da88452 -> runner/verdicts.json (pytest exit 1)
+run dry-2: record 0d4f9d21 -> runner/verdicts.json (pytest exit 1)

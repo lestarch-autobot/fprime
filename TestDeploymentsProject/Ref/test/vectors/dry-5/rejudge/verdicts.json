@@ -1,9 +1,9 @@
 {
-  "run": "mine-dry-5",
-  "record_sha256": "a7b352a7db47c6c119846dbb556f3f00b8b61f794170fac64052cc54705d4e63",
+  "run": "dry-5",
+  "record_sha256": "f1bc43cbd6e5c9bed3954bacc496db3ca8a69f9b32573e8f9e073ece5692c29f",
   "checker": "fth.junit",
   "plan": "TPK-POOL — Svc.TlmPacketizer membership pool (issue 6431)",
-  "junit_sha256": "45bd397c756401d3407240db03cf9052a74468e36ce9d3f6a35806471c33d695",
+  "junit_sha256": "4b055653ef02cc8200b6af5cd3f7e684181927bc2a863e0dbc8c42dd11a4ee7c",
   "tests": {
     "L0-1": {
       "verdict": "PASS",
@@ -641,5 +641,5 @@
       "reason": "fth.checks.CheckFailures: check failed: cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2 increasing samples, each step == dispatches between them, a sample within 2 ticks after each dispatch — seen 0 samples, need 2"
     }
   },
-  "replay_record": "/home/ubuntu/work/r3/rj/A/rec/mine-dry-5/record"
+  "replay_record": "/home/ubuntu/work/uut-ref/TestDeploymentsProject/Ref/test/vectors/dry-5/record"
 }
