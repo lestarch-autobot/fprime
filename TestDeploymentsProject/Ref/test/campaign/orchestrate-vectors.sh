@@ -1,6 +1,6 @@
 #!/bin/sh
 # Venue A mutation vectors: the planted fault -> run id mapping lives only here.
-T=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool
+T=uut/TestDeploymentsProject/Ref/test/int/tpk_pool
 n=2
 for p in L2-1=first_packet_also_held L2-2=second_packet_also_held L6-1=known_packet_requested L7-1=final_packets_held; do
   rm -f /tmp/fth-tpk-pool-*

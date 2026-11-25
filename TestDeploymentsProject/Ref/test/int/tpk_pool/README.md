@@ -15,17 +15,18 @@ changed by anything here. Tooling: `fprime-testing-harness` v0.1.29 (`fth`), `fp
 
 All paths in `bench-*.json` are relative to the campaign root, the directory every command below is run from.
 
-Venue A (`bench-ref.json`): `<root>/uut-ref/` is `lestarch-autobot/fprime` on branch
+Venue A (`bench-ref.json`): `<root>/uut/` is `lestarch-autobot/fprime` on branch
 `tlm-packetizer-membership-pool-harness` (the unit under test plus commits under `TestDeploymentsProject/Ref` only).
-It is the image source and holds the tests: the manifest names it `uut` and `project`. `<root>/harness/` is the
+It is the image source and holds the tests: the manifest names it `uut`, `project` and `fprime` (one repository, one commit).
+`fth rfr` accepts only paths under `uut/`, `harness/` and `rfr/` (its output), so the test tree must have this name. `<root>/harness/` is the
 pinned `fprime-testing-harness` checkout that `fth` is installed from: the manifest names it `harness`, the shape the
 run for record uses (plan `image_version.harness_in_image` is false: the tool is not in the image):
 
 ```sh
-(cd uut-ref/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF && fprime-util build)
-T=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool
-I=uut-ref/TestDeploymentsProject/build-artifacts/Linux/Ref/bin/Ref
-fth manifest --uut uut-ref --harness harness --repo project=uut-ref --plan $T/plan.json --menu $T/faults-menu.json --bench $T/bench-ref.json --tests $T --image Ref=$I -o manifest.json
+(cd uut/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF && fprime-util build)
+T=uut/TestDeploymentsProject/Ref/test/int/tpk_pool
+I=uut/TestDeploymentsProject/build-artifacts/Linux/Ref/bin/Ref
+fth manifest --uut uut --harness harness --repo project=uut --repo fprime=uut --plan $T/plan.json --menu $T/faults-menu.json --bench $T/bench-ref.json --tests $T --image Ref=$I -o manifest.json
 ```
 
 The same plan and stimulus files are kept beside the Zephyr reference deployment
@@ -41,29 +42,30 @@ from it unless a `cd` is shown. About 40 minutes.
 ```sh
 # The three repositories are private: git needs a credential for github.com/lestarch-autobot (a token with read
 # access, e.g. `gh auth setup-git` or a credential helper), also for the clone of `fprime-testing-harness`.
-mkdir tpk-campaign && cd tpk-campaign              # a new, empty directory; not the one of venue B
+D=tpk-campaign-a-$(date +%Y%m%d-%H%M); [ ! -e $D ] || { echo "$D exists: wait a minute, never reuse a campaign directory"; exit 1; }
+mkdir $D && cd $D                                  # a new, dated directory; not the one of venue B
 B=tlm-packetizer-membership-pool-harness
-git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref          # image source and tests
-git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref-cov      # same commit, coverage image
-git clone --recurse-submodules -b tlm-packetizer-membership-pool https://github.com/lestarch-autobot/fprime uut   # unit under test, for its unit tests
-git -C uut rev-parse HEAD                      # 14dc2e3077b1a5b108a067805abac48c1f765be9
-git -C uut-ref rev-parse HEAD; git -C uut-ref-cov rev-parse HEAD      # both the harness head named in the hand-off; stop if not
+git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut          # image source and tests
+git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-cov      # same commit, coverage image
+git clone --recurse-submodules -b tlm-packetizer-membership-pool https://github.com/lestarch-autobot/fprime unit   # unit under test, for its unit tests
+git -C unit rev-parse HEAD                      # 14dc2e3077b1a5b108a067805abac48c1f765be9
+git -C uut rev-parse HEAD; git -C uut-cov rev-parse HEAD      # both the harness head named in the hand-off; stop if not
 python3 -m venv venv && . venv/bin/activate
-pip install -r uut-ref/requirements.txt                  # pins gcovr 8.2
+pip install -r uut/requirements.txt                  # pins gcovr 8.2
 git clone https://github.com/lestarch-autobot/fprime-testing-harness harness && git -C harness checkout --detach v0.1.29   # fth; commit fb09828
 pip install -e "harness[test]"                           # fth runs from the checkout the manifest pins as `harness`
 python -c "import fth.cli, os; assert os.path.realpath(fth.cli.__file__).startswith(os.path.realpath('harness')), fth.cli.__file__"
 fth selftest | tail -1                                   # selftest ok
-T=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool
+T=uut/TestDeploymentsProject/Ref/test/int/tpk_pool
 ```
 
 1. Build the three trees (the image carries `git describe` of its tree: build only a clean checkout).
 
 ```sh
-(cd uut-ref/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF && fprime-util build -j4) > ref-build.log 2>&1; echo "ref build rc=$?"
-(cd uut-ref-cov/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_C_FLAGS=--coverage -DCMAKE_EXE_LINKER_FLAGS=--coverage && fprime-util build -j4) > cov-build.log 2>&1; echo "cov build rc=$?"
-(cd uut && fprime-util generate --ut) > ut-generate.log 2>&1; echo "ut generate rc=$?"
-grep -E "MEMBERSHIPS = |CHANNELS = |needs MAX" uut-ref/TestDeploymentsProject/build-fprime-automatic-native/Ref/RefTlmPacketizerSizing.cpp
+(cd uut/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF && fprime-util build -j4) > ref-build.log 2>&1; echo "ref build rc=$?"
+(cd uut-cov/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_C_FLAGS=--coverage -DCMAKE_EXE_LINKER_FLAGS=--coverage && fprime-util build -j4) > cov-build.log 2>&1; echo "cov build rc=$?"
+(cd unit && fprime-util generate --ut) > ut-generate.log 2>&1; echo "ut generate rc=$?"
+grep -E "MEMBERSHIPS = |CHANNELS = |needs MAX" uut/TestDeploymentsProject/build-fprime-automatic-native/Ref/RefTlmPacketizerSizing.cpp
 ```
 
 Expected: three `rc=0`, and from the generated sizing check of the unit under test (its `static_assert`
@@ -88,7 +90,7 @@ static constexpr FwSizeType CHANNELS = 177;
 ```sh
 fth verify-plan $T/plan.json --tests $T          # plan ok: ... 6 tests, 1 helpers, 4 planted faults, 1 waived requirements, 0 warnings
 fth verify-stimulus $T/plan.json --tests $T      # 6 lines MATCH, 0 FAIL
-pytest -q uut-ref/TestDeploymentsProject/Ref/test/kat      # 30 passed
+pytest -q uut/TestDeploymentsProject/Ref/test/kat      # 30 passed
 ```
 
 4. The five dry runs, audit, replay, vector set and vector rule: one script. It makes `manifest.json`, starts the
@@ -98,8 +100,8 @@ pytest -q uut-ref/TestDeploymentsProject/Ref/test/kat      # 30 passed
    dry-5 `L7-1=final_packets_held`, each as `fth run --unsealed --plant <test>=<fault>`).
 
 ```sh
-sh uut-ref/TestDeploymentsProject/Ref/test/campaign/dry-runs.sh 2>&1 | tee venue-a.out
-grep -a -h MATCH runs/dry-?/record/raw/flash.log           # 5 lines "MATCH: pid <n> runs uut-ref/..."
+sh uut/TestDeploymentsProject/Ref/test/campaign/dry-runs.sh 2>&1 | tee venue-a.out
+grep -a -h MATCH runs/dry-?/record/raw/flash.log           # 5 lines "MATCH: pid <n> runs uut/..."
 ```
 
 Expected in `venue-a.out` (`<V>` is the check name `cmdDisp.CommandsDispatched tracks cmdDisp.OpCodeDispatched: >= 2
@@ -145,13 +147,15 @@ rm -f seed.txt seed-unseal.txt; grep -c -i "traceback" runs/reh-1.log
 ```
 
    Expected: `draw rc=0`; `run rc=0` (the sealed run does not show its verdicts; `runs/reh-1.log` names the record);
+   the log line `run reh-1: record <id> ... (pytest exit 1)` is normal when the draw planted a fault (a planted test
+   fails by design) and is not a tooling error; `fth run` itself returns 0;
    `audit rc=0` and `unseal rc=0`; `0` tracebacks: no tooling error. The verdicts are not evidence of anything.
 
 6. Coverage and `fth dev-campaign` (uses `runs/dry-1` and `manifest.json` of step 4; give the `gcov` of the
    compiler that built the trees if it is not the first `gcov` on the path):
 
 ```sh
-sh uut-ref/TestDeploymentsProject/Ref/test/campaign/coverage.sh
+sh uut/TestDeploymentsProject/Ref/test/campaign/coverage.sh
 ```
 
 Expected: `cov-1 rc=0`, some hundreds of `.gcda` files (315 here), last lines
@@ -160,8 +164,25 @@ Expected: `cov-1 rc=0`, some hundreds of `.gcda` files (315 here), last lines
 
 `coverage.sh` and the `mkdir` of `dry-runs.sh` were written for this procedure from the commands used for the
 committed evidence; the script as a whole had not been run when it was committed.
-`coverage.sh` writes `uut/Svc/TlmPacketizer/coverage/print-summary.txt` from the three gcovr totals in
+`coverage.sh` writes `unit/Svc/TlmPacketizer/coverage/print-summary.txt` from the three gcovr totals in
 `ut-check.log` (gcovr prints them to the log only) and stops if they are missing; nothing is typed in by hand.
+
+## Run for record (`fth rfr`)
+
+From a new dated campaign root that holds `uut/` (this branch) and `harness/` (v0.1.29), both clean at the pins of
+the package's manifest, the venv with `fth` installed from `harness/`, `rfr-input.zip` and `rfr-input.zip.sha256`.
+No build is needed: image and dictionary come from the package. The seed file is chmod 600, at the root (not
+inside a checkout: an untracked file there makes the tree dirty) and is deleted when read. Port 50000 must be
+free and the host must have the name in `bench-ref.json` `serial`. `rfr/` must not exist from another package.
+
+```sh
+fth rfr rfr-input.zip --dry-run                    # rehearsal OK, no seed, nothing started
+rm -f /tmp/fth-tpk-pool-*
+fth rfr rfr-input.zip --seed-file seed.txt; echo "rfr rc=$?"
+uut/TestDeploymentsProject/Ref/test/int/tpk_pool/venue/stop-uut.sh
+```
+
+Stop at the first refusal and report it verbatim; nothing is retried or assembled by hand.
 
 ## Static checks (no bench)
 
