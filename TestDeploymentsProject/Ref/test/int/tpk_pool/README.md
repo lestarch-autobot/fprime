@@ -37,14 +37,17 @@ a bench other than the host itself. One directory, the campaign root, holds ever
 from it unless a `cd` is shown. About 40 minutes.
 
 ```sh
+# The three repositories are private: git needs a credential for github.com/lestarch-autobot (a token with read
+# access, e.g. `gh auth setup-git` or a credential helper), also for the `pip install git+https://` line below.
 mkdir tpk-campaign && cd tpk-campaign
 B=tlm-packetizer-membership-pool-harness
 git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref          # harness = image source
 git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref-cov      # same commit, coverage image
 git clone --recurse-submodules -b tlm-packetizer-membership-pool https://github.com/lestarch-autobot/fprime uut   # unit under test, for its unit tests
 git -C uut rev-parse HEAD                      # 14dc2e3077b1a5b108a067805abac48c1f765be9
+git -C uut-ref rev-parse HEAD; git -C uut-ref-cov rev-parse HEAD      # both the harness head named in the hand-off; stop if not
 python3 -m venv venv && . venv/bin/activate
-pip install -r uut-ref/requirements.txt gcovr
+pip install -r uut-ref/requirements.txt                  # pins gcovr 8.2
 pip install git+https://github.com/lestarch-autobot/fprime-testing-harness@v0.1.29      # fth; commit fb09828
 T=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool
 ```
@@ -52,22 +55,27 @@ T=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool
 1. Build the three trees (the image carries `git describe` of its tree: build only a clean checkout).
 
 ```sh
-(cd uut-ref/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF && fprime-util build -j4) 2>&1 | grep "needs MAX_PACKETIZER"
-(cd uut-ref-cov/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_C_FLAGS=--coverage -DCMAKE_EXE_LINKER_FLAGS=--coverage && fprime-util build -j4) > cov-build.log 2>&1
-(cd uut && fprime-util generate --ut) > ut-generate.log 2>&1
+(cd uut-ref/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF && fprime-util build -j4) > ref-build.log 2>&1; echo "ref build rc=$?"
+(cd uut-ref-cov/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_C_FLAGS=--coverage -DCMAKE_EXE_LINKER_FLAGS=--coverage && fprime-util build -j4) > cov-build.log 2>&1; echo "cov build rc=$?"
+(cd uut && fprime-util generate --ut) > ut-generate.log 2>&1; echo "ut generate rc=$?"
+grep -E "MEMBERSHIPS = |CHANNELS = |needs MAX" uut-ref/TestDeploymentsProject/build-fprime-automatic-native/Ref/RefTlmPacketizerSizing.cpp
 ```
 
-Expected from the first line (the sizing check of the unit under test):
+Expected: three `rc=0`, and from the generated sizing check of the unit under test (its `static_assert`
+messages are compiled, not printed, when the build passes):
 
 ```text
-Packet set RefPackets needs MAX_PACKETIZER_MEMBERSHIPS >= 178
-Packet set RefPackets needs MAX_PACKETIZER_CHANNELS >= 177 (177 listed in packets; 25 omitted not counted, FPRIME_TLM_PACKETIZER_OMIT_LIST is OFF)
+static constexpr FwSizeType MEMBERSHIPS = 178;
+static constexpr FwSizeType CHANNELS = 177;
+              "Packet set RefPackets needs MAX_PACKETIZER_MEMBERSHIPS >= 178");
+              "Packet set RefPackets needs MAX_PACKETIZER_CHANNELS >= 177 (177 listed in packets; 25 omitted not counted, FPRIME_TLM_PACKETIZER_OMIT_LIST is OFF)");
 ```
 
 2. Bench file. `bench-ref.json` names the host in `serial` (`devin-box`); `start-uut.sh` prints `hostname` in the
    place of a debugger serial and the audit compares the two. On a host with another name the audit's step
    "bench file resolved (serial comparison)" fails: either run on a host of that name, or change `serial`,
    commit, and rebuild (the file is pinned by the manifest and the commit is in the image's version string).
+   That makes a head nobody reviewed: state it in the run report with the diff, which must be that one line.
    The image listens on TCP port 50000 of 127.0.0.1; the port must be free.
 
 3. Static checks, no bench.
@@ -130,6 +138,8 @@ Expected: `cov-1 rc=0`, some hundreds of `.gcda` files (315 here), last lines
 
 `coverage.sh` and the `mkdir` of `dry-runs.sh` were written for this procedure from the commands used for the
 committed evidence; the script as a whole had not been run when it was committed.
+`coverage.sh` writes `uut/Svc/TlmPacketizer/coverage/print-summary.txt` from the three gcovr totals in
+`ut-check.log` (gcovr prints them to the log only) and stops if they are missing; nothing is typed in by hand.
 
 ## Static checks (no bench)
 

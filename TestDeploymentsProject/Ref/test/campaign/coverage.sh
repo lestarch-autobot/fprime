@@ -11,6 +11,9 @@ B=$root/uut-ref-cov/TestDeploymentsProject/build-fprime-automatic-native
 [ "$(git -C uut-ref rev-parse HEAD)" = "$(git -C uut-ref-cov rev-parse HEAD)" ] || { echo "uut-ref-cov is not at the commit of uut-ref"; exit 1; }
 # unit-test coverage of the component (default-config project)
 (cd uut/Svc/TlmPacketizer && fprime-util check --coverage > "$root/ut-check.log" 2>&1) || { echo "unit tests failed, see ut-check.log"; exit 1; }
+# gcovr prints its totals ("lines: X% (a out of b)") only to the log; `fth dev-campaign` reads them from a file
+grep -E '^(lines|functions|branches): [0-9.]+% \([0-9]+ out of [0-9]+\)$' ut-check.log > uut/Svc/TlmPacketizer/coverage/print-summary.txt || true
+[ "$(wc -l < uut/Svc/TlmPacketizer/coverage/print-summary.txt)" -eq 3 ] || { echo "ut-check.log does not hold the three gcovr totals"; exit 1; }
 # the plan once on the instrumented image, in its own root (the bench file's paths start at uut-ref/)
 mkdir -p cov/runs && ln -sfn ../uut-ref-cov cov/uut-ref
 find "$B" -name '*.gcda' -delete
