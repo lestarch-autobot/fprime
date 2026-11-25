@@ -1,6 +1,6 @@
 #!/bin/sh
 # Venue A coverage and `fth dev-campaign`, run from the campaign root after dry-runs.sh (it needs runs/dry-1 and
-# manifest.json). Needs beside the root's uut-ref/: uut-ref-cov/ (the same commit, built with --coverage) and
+# manifest.json). Needs beside the root's uut-ref/ and harness/ (the pinned fth checkout): uut-ref-cov/ (the same commit, built with --coverage) and
 # uut/ (the unit under test alone, for its unit tests). See the README for how the three are made.
 # usage: coverage.sh [gcov]   (the gcov of the compiler that built uut-ref-cov; default `gcov`)
 set -eu
@@ -15,10 +15,10 @@ B=$root/uut-ref-cov/TestDeploymentsProject/build-fprime-automatic-native
 grep -E '^(lines|functions|branches): [0-9.]+% \([0-9]+ out of [0-9]+\)$' ut-check.log > uut/Svc/TlmPacketizer/coverage/print-summary.txt || true
 [ "$(wc -l < uut/Svc/TlmPacketizer/coverage/print-summary.txt)" -eq 3 ] || { echo "ut-check.log does not hold the three gcovr totals"; exit 1; }
 # the plan once on the instrumented image, in its own root (the bench file's paths start at uut-ref/)
-mkdir -p cov/runs && ln -sfn ../uut-ref-cov cov/uut-ref
+mkdir -p cov/runs && ln -sfn ../uut-ref-cov cov/uut-ref && ln -sfn ../harness cov/harness   # the manifest names both
 find "$B" -name '*.gcda' -delete
 (cd cov && rm -rf runs/cov-1 gcda && rm -f /tmp/fth-tpk-pool-* \
-  && fth manifest --uut uut-ref --harness uut-ref --plan $T/plan.json --menu $T/faults-menu.json --bench $T/bench-ref.json --tests $T \
+  && fth manifest --uut uut-ref --harness harness --repo project=uut-ref --plan $T/plan.json --menu $T/faults-menu.json --bench $T/bench-ref.json --tests $T \
        --image Ref=uut-ref/TestDeploymentsProject/build-artifacts/Linux/Ref/bin/Ref -o manifest.json | tail -1 | cut -c1-200 \
   && fth run --unsealed --run-dir runs/cov-1 --manifest manifest.json --plan $T/plan.json --bench $T/bench-ref.json --tests $T > runs/cov-1.log 2>&1; \
   echo "cov-1 rc=$?"; tail -1 runs/cov-1.log | cut -c1-200; $T/venue/stop-uut.sh)   # the image writes its .gcda files when it is stopped

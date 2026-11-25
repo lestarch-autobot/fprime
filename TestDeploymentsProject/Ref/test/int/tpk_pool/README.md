@@ -17,13 +17,15 @@ All paths in `bench-*.json` are relative to the campaign root, the directory eve
 
 Venue A (`bench-ref.json`): `<root>/uut-ref/` is `lestarch-autobot/fprime` on branch
 `tlm-packetizer-membership-pool-harness` (the unit under test plus commits under `TestDeploymentsProject/Ref` only).
-It is both the image source and the harness checkout:
+It is the image source and holds the tests: the manifest names it `uut` and `project`. `<root>/harness/` is the
+pinned `fprime-testing-harness` checkout that `fth` is installed from: the manifest names it `harness`, the shape the
+run for record uses (plan `image_version.harness_in_image` is false: the tool is not in the image):
 
 ```sh
 (cd uut-ref/TestDeploymentsProject/Ref && fprime-util generate -DFPRIME_TLM_PACKETIZER_OMIT_LIST=OFF && fprime-util build)
 T=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool
 I=uut-ref/TestDeploymentsProject/build-artifacts/Linux/Ref/bin/Ref
-fth manifest --uut uut-ref --harness uut-ref --plan $T/plan.json --menu $T/faults-menu.json --bench $T/bench-ref.json --tests $T --image Ref=$I -o manifest.json
+fth manifest --uut uut-ref --harness harness --repo project=uut-ref --plan $T/plan.json --menu $T/faults-menu.json --bench $T/bench-ref.json --tests $T --image Ref=$I -o manifest.json
 ```
 
 The same plan and stimulus files are kept beside the Zephyr reference deployment
@@ -38,17 +40,20 @@ from it unless a `cd` is shown. About 40 minutes.
 
 ```sh
 # The three repositories are private: git needs a credential for github.com/lestarch-autobot (a token with read
-# access, e.g. `gh auth setup-git` or a credential helper), also for the `pip install git+https://` line below.
+# access, e.g. `gh auth setup-git` or a credential helper), also for the clone of `fprime-testing-harness`.
 mkdir tpk-campaign && cd tpk-campaign              # a new, empty directory; not the one of venue B
 B=tlm-packetizer-membership-pool-harness
-git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref          # harness = image source
+git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref          # image source and tests
 git clone --recurse-submodules -b $B https://github.com/lestarch-autobot/fprime uut-ref-cov      # same commit, coverage image
 git clone --recurse-submodules -b tlm-packetizer-membership-pool https://github.com/lestarch-autobot/fprime uut   # unit under test, for its unit tests
 git -C uut rev-parse HEAD                      # 14dc2e3077b1a5b108a067805abac48c1f765be9
 git -C uut-ref rev-parse HEAD; git -C uut-ref-cov rev-parse HEAD      # both the harness head named in the hand-off; stop if not
 python3 -m venv venv && . venv/bin/activate
 pip install -r uut-ref/requirements.txt                  # pins gcovr 8.2
-pip install git+https://github.com/lestarch-autobot/fprime-testing-harness@v0.1.29      # fth; commit fb09828
+git clone https://github.com/lestarch-autobot/fprime-testing-harness harness && git -C harness checkout --detach v0.1.29   # fth; commit fb09828
+pip install -e "harness[test]"                           # fth runs from the checkout the manifest pins as `harness`
+python -c "import fth.cli, os; assert os.path.realpath(fth.cli.__file__).startswith(os.path.realpath('harness')), fth.cli.__file__"
+fth selftest | tail -1                                   # selftest ok
 T=uut-ref/TestDeploymentsProject/Ref/test/int/tpk_pool
 ```
 
@@ -125,7 +130,24 @@ vector rule rc=0
    still show no DIVERGENCE. Only the clean run's audit ends ok (`runs/dry-1/auditor/`, table
    `diff-runner-replay.md`).
 
-5. Coverage and `fth dev-campaign` (uses `runs/dry-1` and `manifest.json` of step 4; give the `gcov` of the
+5. Stage-3 rehearsal: a REHEARSAL, not a record. The run-for-record commands once, with a throwaway seed that is
+   never printed (`fth draw` deletes the file it reads, so a copy is kept for `fth unseal`), run id `reh-1`:
+
+```sh
+(umask 077; head -c 32 /dev/urandom | base64 > seed.txt; cp seed.txt seed-unseal.txt)
+rm -f /tmp/fth-tpk-pool-*
+fth draw --manifest manifest.json --run-dir runs/reh-1 --seed-file seed.txt > runs/reh-1.log 2>&1; echo "draw rc=$?"
+fth run --run-dir runs/reh-1 --manifest manifest.json --plan $T/plan.json --bench $T/bench-ref.json --tests $T >> runs/reh-1.log 2>&1; echo "run rc=$?"
+cp ref-uut/uut.out runs/reh-1.uut.out; $T/venue/stop-uut.sh; sleep 2
+fth audit --run-dir runs/reh-1 --manifest manifest.json --plan $T/plan.json --tests $T --bench $T/bench-ref.json >> runs/reh-1.log 2>&1; echo "audit rc=$?"
+fth unseal --run-dir runs/reh-1 --manifest manifest.json --seed-file seed-unseal.txt -o runs/reh-1/unseal.md >> runs/reh-1.log 2>&1; echo "unseal rc=$?"
+rm -f seed.txt seed-unseal.txt; grep -c -i "traceback" runs/reh-1.log
+```
+
+   Expected: `draw rc=0`; `run rc=1` (at least one test is planted, so the run fails by design; `rc=0` never);
+   `audit rc=0` and `unseal rc=0`; `0` tracebacks: no tooling error. The verdicts are not evidence of anything.
+
+6. Coverage and `fth dev-campaign` (uses `runs/dry-1` and `manifest.json` of step 4; give the `gcov` of the
    compiler that built the trees if it is not the first `gcov` on the path):
 
 ```sh
