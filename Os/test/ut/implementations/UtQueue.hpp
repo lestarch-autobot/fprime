@@ -2,15 +2,11 @@
 // \title Os/test/ut/implementations/UtQueue.hpp
 // \brief TEST ONLY: Os::Queue implementation selected in unit test builds
 // ======================================================================
-// Included before the guard: Os/Queue.hpp includes this file, and may be reached from the interface header
-#include <Os/Interfaces/QueueInterface.hpp>
 #ifndef OS_TEST_UT_IMPLEMENTATIONS_UTQUEUE_HPP_
 #define OS_TEST_UT_IMPLEMENTATIONS_UTQUEUE_HPP_
 
-#ifndef OS_SELECTED_QUEUE_HEADER
-#error "OS_SELECTED_QUEUE_HEADER must be defined in config/OsSelection.hpp"
-#endif
-#include OS_SELECTED_QUEUE_HEADER
+#include <Os/Interfaces/QueueInterface.hpp>
+#include "config/QueueSelection.hpp"
 
 namespace Os {
 namespace Ut {

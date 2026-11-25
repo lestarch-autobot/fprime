@@ -2,11 +2,11 @@
 // \title Os/Interfaces/ConditionVariableInterface.hpp
 // \brief pure-virtual interface implemented by Os::ConditionVariable implementations
 // ======================================================================
-// Included before the guard: Os/Condition.hpp includes the selected implementation, which includes this file
-#include <Os/Condition.hpp>
-
 #ifndef OS_INTERFACES_CONDITIONVARIABLEINTERFACE_HPP_
 #define OS_INTERFACES_CONDITIONVARIABLEINTERFACE_HPP_
+
+#include <Os/Interfaces/ConditionVariableUserInterface.hpp>
+#include <Os/Mutex.hpp>
 
 namespace Os {
 

@@ -10,46 +10,27 @@
 #include <Fw/Types/Assert.hpp>
 #include <Os/Directory.hpp>
 #include <Os/File.hpp>
+#include <Os/Interfaces/FileSystemUserInterface.hpp>
 #include <Os/Os.hpp>
 #include <algorithm>
-#include "config/OsSelection.hpp"  // defines the Os::FileSystem alias and OS_FILE_SYSTEM_HEADER; do not remove
+#include "config/FileSystemSelection.hpp"
+#ifdef BUILD_UT
+#include <Os/test/ut/implementations/UtFileSystem.hpp>
+#endif
 
 namespace Os {
 
-struct FileSystemHandle {};
+template <typename T>
+class FileSystemCommon;
 
-//! \brief types and constants shared by users of Os::FileSystem and by its implementations
-struct FileSystemUserInterface {
-    // Size of file chunks to use for file system operations (e.g. copyFile)
-    static constexpr FwSizeType FILE_SYSTEM_FILE_CHUNK_SIZE = FW_FILE_CHUNK_SIZE;  //!< Size of file system chunk
-
-    enum Status {
-        OP_OK,             //!<  Operation was successful
-        ALREADY_EXISTS,    //!<  File already exists
-        NO_SPACE,          //!<  No space left
-        NO_PERMISSION,     //!<  No permission to write
-        NOT_DIR,           //!<  Path is not a directory
-        IS_DIR,            //!< Path is a directory
-        NOT_EMPTY,         //!<  directory is not empty
-        INVALID_PATH,      //!< Path is too long, too many sym links, etc.
-        DOESNT_EXIST,      //!<  Path doesn't exist
-        FILE_LIMIT,        //!< Too many files or links
-        BUSY,              //!< Operand is in use by the system or by a process
-        NO_MORE_FILES,     //!<  Directory stream has no more files
-        BUFFER_TOO_SMALL,  //!<  Buffer size is too small to hold full path (for getWorkingDirectory)
-        EXDEV_ERROR,       // Operation not supported across devices (e.g. rename)
-        OVERFLOW_ERROR,    // Operation failed due to overflow in calculation of the result
-        NOT_SUPPORTED,     //!<  Operation is not supported by the current implementation
-        OTHER_ERROR,       //!<  other OS-specific error
-    };
-
-    enum PathType {
-        FILE,       //!< Path is a file
-        DIRECTORY,  //!< Path is a directory
-        OTHER,      //!< Path is not a file or directory, e.g. a socket
-        NOT_EXIST,  //!< Path does not exist
-    };
-};
+#ifdef BUILD_UT
+//! \brief Os::FileSystem in unit test builds: wraps the implementation selected in config/FileSystemSelection.hpp in
+//! the test-only UtFileSystem, so that tests may intercept its calls
+using FileSystem = FileSystemCommon<Ut::FileSystem::UtFileSystem>;
+#else
+//! \brief Os::FileSystem: the common class on the implementation selected in config/FileSystemSelection.hpp
+using FileSystem = FileSystemCommon<Selected::FileSystem>;
+#endif
 
 //! \brief FileSystem class
 //!
@@ -330,13 +311,6 @@ class FileSystemCommon final : public FileSystemUserInterface {
 };
 
 }  // namespace Os
-
-// Validate that OS_FILE_SYSTEM_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_FILE_SYSTEM_HEADER
-#error "OS_FILE_SYSTEM_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
-#include OS_FILE_SYSTEM_HEADER
 
 namespace Os {
 

@@ -2,11 +2,10 @@
 // \title Os/Interfaces/ConsoleInterface.hpp
 // \brief pure-virtual interface implemented by Os::Console implementations
 // ======================================================================
-// Included before the guard: Os/Console.hpp includes the selected implementation, which includes this file
-#include <Os/Console.hpp>
-
 #ifndef OS_INTERFACES_CONSOLEINTERFACE_HPP_
 #define OS_INTERFACES_CONSOLEINTERFACE_HPP_
+
+#include <Os/Interfaces/ConsoleUserInterface.hpp>
 
 namespace Os {
 

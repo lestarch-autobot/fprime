@@ -27,7 +27,7 @@ function(add_named_os_module NAMES)
         list(APPEND SOURCE_INPUTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.cpp")
         list(APPEND HEADER_INPUTS "${CMAKE_CURRENT_LIST_DIR}/${NAME}.hpp")
         # Unit test builds select the Os::Ut implementation of each service, which wraps the non-test selection and
-        # lets tests intercept its calls (see config/OsSelection.hpp , Os/test/ut/implementations and Os/test/ut/interceptors)
+        # lets tests intercept its calls (see Os/<Service>.hpp, Os/test/ut/implementations and Os/test/ut/interceptors)
         if (BUILD_TESTING)
             set(UT_NAME "${NAME}")
             if (NAME STREQUAL "Condition")
@@ -105,7 +105,7 @@ function(add_fprime_supplied_os_module NAMES SUFFIX)
         "Os_${FIRST_ITEM}"
         ${ARGN}
     )
-    # The implementation is selected in config/OsSelection.hpp
+    # The implementation is selected in config/<Service>Selection.hpp
     register_fprime_implementation(
          "${OS_MODULE_NAME}"
       IMPLEMENTS
@@ -149,7 +149,7 @@ register_fprime_module(
 add_named_os_module(Console Fw_Logger)
 add_named_os_module("File;FileSystem;Directory" Utils_Hash Fw_DataStructures)
 add_named_os_module(Task ${CMAKE_THREAD_LIBS_INIT})
-# Os/Task.hpp includes the implementation header selected in config/OsSelection.hpp. The Posix
+# Os/Task.hpp includes the implementation header selected in config/TaskSelection.hpp. The Posix
 # implementation header needs the constants autocoded by Os_Posix_Models, thus users of the Os
 # headers must build after Os_Posix_Models.
 if (TARGET Os_Posix_Models)

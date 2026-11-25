@@ -17,7 +17,7 @@
 
 #include "QueueRulesDefinitions.hpp"
 
-// Wrapper under test: the Os::Queue selected in config/OsSelection.hpp, unless the test executable names another
+// Wrapper under test: the Os::Queue selected in config/QueueSelection.hpp, unless the test executable names another
 // implementation by defining OS_TEST_QUEUE_IMPLEMENTATION and OS_TEST_QUEUE_HEADER (see its CMakeLists.txt)
 #ifdef OS_TEST_QUEUE_IMPLEMENTATION
 #include OS_TEST_QUEUE_HEADER

@@ -9,15 +9,26 @@
 #include <Fw/Logger/Logger.hpp>
 #include <Fw/Types/Assert.hpp>
 #include <Os/Console.hpp>
+#include <Os/Interfaces/ConsoleUserInterface.hpp>
 #include <Os/Os.hpp>
-#include "config/OsSelection.hpp"  // defines the Os::Console alias and OS_CONSOLE_HEADER; do not remove
+#include "config/ConsoleSelection.hpp"
+#ifdef BUILD_UT
+#include <Os/test/ut/implementations/UtConsole.hpp>
+#endif
 
 namespace Os {
-//! \brief Base class for storing implementation specific handle information
-struct ConsoleHandle {};
 
-//! \brief types and constants shared by users of Os::Console and by its implementations
-struct ConsoleUserInterface {};
+template <typename T>
+class ConsoleCommon;
+
+#ifdef BUILD_UT
+//! \brief Os::Console in unit test builds: wraps the implementation selected in config/ConsoleSelection.hpp in the
+//! test-only UtConsole, so that tests may intercept its calls
+using Console = ConsoleCommon<Ut::Console::UtConsole>;
+#else
+//! \brief Os::Console: the common class on the implementation selected in config/ConsoleSelection.hpp
+using Console = ConsoleCommon<Selected::Console>;
+#endif
 
 template <typename T>
 class ConsoleCommon : public ConsoleUserInterface, public Fw::Logger {
@@ -90,13 +101,6 @@ class ConsoleCommon : public ConsoleUserInterface, public Fw::Logger {
 };
 
 }  // namespace Os
-
-// Validate that OS_CONSOLE_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_CONSOLE_HEADER
-#error "OS_CONSOLE_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
-#include OS_CONSOLE_HEADER
 
 namespace Os {
 template <typename T>

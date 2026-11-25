@@ -4,26 +4,29 @@
 // ======================================================================
 #ifndef OS_COUNTING_SEMAPHORE_HPP_
 #define OS_COUNTING_SEMAPHORE_HPP_
+#include <Os/Interfaces/CountingSemaphoreUserInterface.hpp>
 #include "Fw/Time/TimeInterval.hpp"
 #include "Fw/Types/Assert.hpp"
 #include "Os/Os.hpp"
-#include "config/OsSelection.hpp"  // defines the Os::CountingSemaphore alias and OS_COUNTING_SEMAPHORE_HEADER; do not remove
+#include "config/CountingSemaphoreSelection.hpp"
+#ifdef BUILD_UT
+#include <Os/test/ut/implementations/UtCountingSemaphore.hpp>
+#endif
 
 namespace Os {
 
-class CountingSemaphoreHandle {};
+template <typename T>
+class CountingSemaphoreCommon;
 
-//! \brief types and constants shared by users of Os::CountingSemaphore and by its implementations
-struct CountingSemaphoreUserInterface {
-    enum Status {
-        OP_OK,                  //!< Operation was successful
-        ERROR_TIMEOUT,          //!< Timeout occurred during wait
-        ERROR_INVALID,          //!< Invalid semaphore or argument
-        ERROR_NOT_IMPLEMENTED,  //!< Feature not implemented
-        NOT_SUPPORTED,          //!< CountingSemaphore does not support operation
-        ERROR_OTHER             //!< All other errors
-    };
-};
+#ifdef BUILD_UT
+//! \brief Os::CountingSemaphore in unit test builds: wraps the implementation selected in
+//! config/CountingSemaphoreSelection.hpp in the test-only UtCountingSemaphore, so that tests may intercept its calls
+using CountingSemaphore = CountingSemaphoreCommon<Ut::CountingSemaphore::UtCountingSemaphore>;
+#else
+//! \brief Os::CountingSemaphore: the common class on the implementation selected in
+//! config/CountingSemaphoreSelection.hpp
+using CountingSemaphore = CountingSemaphoreCommon<Selected::CountingSemaphore>;
+#endif
 
 template <typename T>
 class CountingSemaphoreCommon final : public CountingSemaphoreUserInterface {
@@ -52,13 +55,6 @@ class CountingSemaphoreCommon final : public CountingSemaphoreUserInterface {
 };
 
 }  // namespace Os
-// Validate that OS_COUNTING_SEMAPHORE_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_COUNTING_SEMAPHORE_HEADER
-#error "OS_COUNTING_SEMAPHORE_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
-#include OS_COUNTING_SEMAPHORE_HEADER
-
 namespace Os {
 template <typename T>
 CountingSemaphoreCommon<T>::CountingSemaphoreCommon(U32 initial_count) : m_delegate(initial_count) {}

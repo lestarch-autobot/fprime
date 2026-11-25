@@ -2,11 +2,10 @@
 // \title Os/Interfaces/DirectoryInterface.hpp
 // \brief pure-virtual interface implemented by Os::Directory implementations
 // ======================================================================
-// Included before the guard: Os/Directory.hpp includes the selected implementation, which includes this file
-#include <Os/Directory.hpp>
-
 #ifndef OS_INTERFACES_DIRECTORYINTERFACE_HPP_
 #define OS_INTERFACES_DIRECTORYINTERFACE_HPP_
+
+#include <Os/Interfaces/DirectoryUserInterface.hpp>
 
 namespace Os {
 

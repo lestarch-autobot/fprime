@@ -2,15 +2,11 @@
 // \title Os/test/ut/implementations/UtFile.hpp
 // \brief TEST ONLY: Os::File implementation selected in unit test builds
 // ======================================================================
-// Included before the guard: Os/File.hpp includes this file, and may be reached from the interface header
-#include <Os/Interfaces/FileInterface.hpp>
 #ifndef OS_TEST_UT_IMPLEMENTATIONS_UTFILE_HPP_
 #define OS_TEST_UT_IMPLEMENTATIONS_UTFILE_HPP_
 
-#ifndef OS_SELECTED_FILE_HEADER
-#error "OS_SELECTED_FILE_HEADER must be defined in config/OsSelection.hpp"
-#endif
-#include OS_SELECTED_FILE_HEADER
+#include <Os/Interfaces/FileInterface.hpp>
+#include "config/FileSelection.hpp"
 
 namespace Os {
 namespace Ut {

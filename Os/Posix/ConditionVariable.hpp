@@ -2,11 +2,10 @@
 // \title Os/Posix/ConditionVariable.hpp
 // \brief Posix definitions for Os::ConditionVariable
 // ======================================================================
-// Included before the guard: the interface header may itself include this file through config/OsSelection.hpp
-#include <Os/Interfaces/ConditionVariableInterface.hpp>
 #ifndef OS_POSIX_CONDITION_VARIABLE_HPP
 #define OS_POSIX_CONDITION_VARIABLE_HPP
 #include <pthread.h>
+#include <Os/Interfaces/ConditionVariableInterface.hpp>
 
 namespace Os {
 namespace Posix {

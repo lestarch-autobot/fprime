@@ -23,7 +23,7 @@ class RawTimeTester : public Os::Test::RawTimeTestInterceptor {
     //! \brief set the real raw time to the test-controlled time, or fail with the test-controlled status
     //!
     //! The time is loaded through deserializeFrom as a (seconds, nanoseconds) pair of U32, the serialized form of
-    //! the Posix implementation selected in config/OsSelection.hpp.
+    //! the Posix implementation selected in config/RawTimeSelection.hpp.
     Status now(Os::RawTimeInterface& real) override;
 
     static void setNowTime(const Fw::Time&& t) { s_now_time = t; }

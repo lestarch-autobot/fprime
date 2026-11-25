@@ -2,11 +2,10 @@
 // \title Os/Interfaces/MutexInterface.hpp
 // \brief pure-virtual interface implemented by Os::Mutex implementations
 // ======================================================================
-// Included before the guard: Os/Mutex.hpp includes the selected implementation, which includes this file
-#include <Os/Mutex.hpp>
-
 #ifndef OS_INTERFACES_MUTEXINTERFACE_HPP_
 #define OS_INTERFACES_MUTEXINTERFACE_HPP_
+
+#include <Os/Interfaces/MutexUserInterface.hpp>
 
 namespace Os {
 

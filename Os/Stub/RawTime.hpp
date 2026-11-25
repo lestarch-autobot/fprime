@@ -2,10 +2,9 @@
 // \title Os/Stub/RawTime.hpp
 // \brief stub definitions for Os::RawTime
 // ======================================================================
-// Included before the guard: Os/RawTime.hpp may include this file while it is itself being included
-#include "Os/Interfaces/RawTimeInterface.hpp"
 #ifndef OS_STUB_RAWTIME_HPP
 #define OS_STUB_RAWTIME_HPP
+#include "Os/Interfaces/RawTimeInterface.hpp"
 
 namespace Os {
 namespace Stub {

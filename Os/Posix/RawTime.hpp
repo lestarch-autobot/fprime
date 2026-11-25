@@ -2,10 +2,9 @@
 // \title Os/Posix/RawTime.hpp
 // \brief Posix definitions for Os::RawTime
 // ======================================================================
-// Included before the guard: Os/RawTime.hpp may include this file while it is itself being included
-#include <Os/Interfaces/RawTimeInterface.hpp>
 #ifndef OS_POSIX_RAWTIME_HPP
 #define OS_POSIX_RAWTIME_HPP
+#include <Os/Interfaces/RawTimeInterface.hpp>
 
 #include <ctime>
 

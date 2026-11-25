@@ -2,15 +2,11 @@
 // \title Os/test/ut/implementations/UtConsole.hpp
 // \brief TEST ONLY: Os::Console implementation selected in unit test builds
 // ======================================================================
-// Included before the guard: Os/Console.hpp includes this file, and may be reached from the interface header
-#include <Os/Interfaces/ConsoleInterface.hpp>
 #ifndef OS_TEST_UT_IMPLEMENTATIONS_UTCONSOLE_HPP_
 #define OS_TEST_UT_IMPLEMENTATIONS_UTCONSOLE_HPP_
 
-#ifndef OS_SELECTED_CONSOLE_HEADER
-#error "OS_SELECTED_CONSOLE_HEADER must be defined in config/OsSelection.hpp"
-#endif
-#include OS_SELECTED_CONSOLE_HEADER
+#include <Os/Interfaces/ConsoleInterface.hpp>
+#include "config/ConsoleSelection.hpp"
 
 namespace Os {
 namespace Ut {

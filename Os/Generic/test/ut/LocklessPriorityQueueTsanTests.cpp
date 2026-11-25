@@ -20,7 +20,7 @@
 #include "Os/Generic/LocklessPriorityQueue.hpp"
 #include "Os/Queue.hpp"
 
-// Wrapper under test: Os::QueueCommon on the implementation named here, not the selection in config/OsSelection.hpp
+// Wrapper under test: Os::QueueCommon on the implementation named here, not the selection in config/QueueSelection.hpp
 using QueueUnderTest = Os::QueueCommon<Os::Generic::LocklessPriorityQueue>;
 
 namespace {

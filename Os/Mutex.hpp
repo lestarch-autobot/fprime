@@ -7,28 +7,31 @@
 
 #include <Fw/FPrimeBasicTypes.hpp>
 #include <Fw/Types/Assert.hpp>
+#include <Os/Interfaces/MutexUserInterface.hpp>
 #include <Os/Os.hpp>
-#include "config/OsSelection.hpp"  // defines the Os::Mutex alias and OS_MUTEX_HEADER; do not remove
+#include "config/MutexSelection.hpp"
+#ifdef BUILD_UT
+#include <Os/test/ut/implementations/UtMutex.hpp>
+#endif
 
 namespace Os {
 
-struct MutexHandle {};
+template <typename T>
+class MutexCommon;
 
-//! \brief types shared by Os::Mutex users and implementations
-struct MutexUserInterface {
-    enum Status {
-        OP_OK,           //!< Operation was successful
-        ERROR_BUSY,      //!< Mutex is busy
-        ERROR_DEADLOCK,  //!< Deadlock condition detected
-        NOT_SUPPORTED,   //!< Mutex does not support operation
-        ERROR_OTHER      //!< All other errors
-    };
-};
+#ifdef BUILD_UT
+//! \brief Os::Mutex in unit test builds: wraps the implementation selected in config/MutexSelection.hpp in the
+//! test-only UtMutex, so that tests may intercept its calls
+using Mutex = MutexCommon<Ut::Mutex::UtMutex>;
+#else
+//! \brief Os::Mutex: the common class on the implementation selected in config/MutexSelection.hpp
+using Mutex = MutexCommon<Selected::Mutex>;
+#endif
 
 //! \brief Os::Mutex wrapper around the implementation `T` selected at compile time
 //!
 //! Holds the implementation by value and forwards every operation to it. `Os::Mutex` is this class instantiated on
-//! the implementation selected in config/OsSelection.hpp.
+//! the implementation selected in config/MutexSelection.hpp.
 template <typename T>
 class MutexCommon final : public MutexUserInterface {
   public:
@@ -95,13 +98,6 @@ class ScopeLockCommon {
 using ScopeLock = ScopeLockCommon<Mutex>;
 
 }  // namespace Os
-
-// Validate that OS_MUTEX_HEADER was defined by config/OsSelection.hpp
-#ifndef OS_MUTEX_HEADER
-#error "OS_MUTEX_HEADER must be defined in config/OsSelection.hpp"
-#endif
-
-#include OS_MUTEX_HEADER
 
 namespace Os {
 

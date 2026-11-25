@@ -80,7 +80,7 @@ CpuInterface::Status LinuxCpu::_getCount(FwSizeType& cpu_count) {
     return Status::ERROR;
 }
 
-CpuInterface::Status LinuxCpu::_getTicks(Os::Cpu::Ticks& ticks, FwSizeType cpu_index) {
+CpuInterface::Status LinuxCpu::_getTicks(Os::CpuInterface::Ticks& ticks, FwSizeType cpu_index) {
     FwSizeType count = 0;
     CpuInterface::Status status = this->_getCount(count);
     if (status != CpuInterface::Status::OP_OK) {

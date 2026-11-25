@@ -13,7 +13,7 @@ CpuInterface::Status StubCpu::_getCount(FwSizeType& cpu_count) {
     return Status::ERROR;
 }
 
-CpuInterface::Status StubCpu::_getTicks(Os::Cpu::Ticks& ticks, FwSizeType cpu_index) {
+CpuInterface::Status StubCpu::_getTicks(Os::CpuInterface::Ticks& ticks, FwSizeType cpu_index) {
     ticks.total = 1;
     ticks.used = 1;
     return Status::ERROR;

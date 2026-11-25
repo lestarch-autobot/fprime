@@ -2,11 +2,10 @@
 // \title Os/Interfaces/RawTimeInterface.hpp
 // \brief pure-virtual interface implemented by Os::RawTime implementations
 // ======================================================================
-// Included before the guard: Os/RawTime.hpp includes the selected implementation, which includes this file
-#include <Os/RawTime.hpp>
-
 #ifndef OS_INTERFACES_RAWTIMEINTERFACE_HPP_
 #define OS_INTERFACES_RAWTIMEINTERFACE_HPP_
+
+#include <Os/Interfaces/RawTimeUserInterface.hpp>
 
 namespace Os {
 

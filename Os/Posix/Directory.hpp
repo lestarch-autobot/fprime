@@ -2,11 +2,10 @@
 // \title Os/Posix/Directory.hpp
 // \brief Posix definitions for Os::Directory
 // ======================================================================
-// Included before the guard: the interface header may itself include this file through config/OsSelection.hpp
-#include <Os/Interfaces/DirectoryInterface.hpp>
 #ifndef OS_POSIX_DIRECTORY_HPP
 #define OS_POSIX_DIRECTORY_HPP
 #include <dirent.h>
+#include <Os/Interfaces/DirectoryInterface.hpp>
 
 namespace Os {
 namespace Posix {

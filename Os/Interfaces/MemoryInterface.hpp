@@ -2,11 +2,10 @@
 // \title Os/Interfaces/MemoryInterface.hpp
 // \brief pure-virtual interface implemented by Os::Memory implementations
 // ======================================================================
-// Included before the guard: Os/Memory.hpp includes the selected implementation, which includes this file
-#include <Os/Memory.hpp>
-
 #ifndef OS_INTERFACES_MEMORYINTERFACE_HPP_
 #define OS_INTERFACES_MEMORYINTERFACE_HPP_
+
+#include <Os/Interfaces/MemoryUserInterface.hpp>
 
 namespace Os {
 

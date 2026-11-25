@@ -2,15 +2,11 @@
 // \title Os/test/ut/implementations/UtRawTime.hpp
 // \brief TEST ONLY: Os::RawTime implementation selected in unit test builds
 // ======================================================================
-// Included before the guard: Os/RawTime.hpp includes this file, and may be reached from the interface header
-#include <Os/Interfaces/RawTimeInterface.hpp>
 #ifndef OS_TEST_UT_IMPLEMENTATIONS_UTRAWTIME_HPP_
 #define OS_TEST_UT_IMPLEMENTATIONS_UTRAWTIME_HPP_
 
-#ifndef OS_SELECTED_RAW_TIME_HEADER
-#error "OS_SELECTED_RAW_TIME_HEADER must be defined in config/OsSelection.hpp"
-#endif
-#include OS_SELECTED_RAW_TIME_HEADER
+#include <Os/Interfaces/RawTimeInterface.hpp>
+#include "config/RawTimeSelection.hpp"
 
 namespace Os {
 namespace Ut {
